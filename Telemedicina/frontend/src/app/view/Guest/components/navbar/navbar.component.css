@@ -1,0 +1,69 @@
+.desktop-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6vh;
+  width: 100%;
+  display: grid;
+  background-color: #26c6da;
+  z-index: 1000;
+  box-shadow: 0 0.5rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.navbar-content {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.logo {
+  max-height: 5vh;
+}
+
+.title {
+  font-family: Century;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: black;
+  user-select: none;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 1rem;
+}
+
+.navbar-right {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-right: 2rem;
+}
+
+.custom-btn {
+  background: #B2EBF2;
+  color: black;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  -webkit-user-select: none;
+  cursor: pointer;
+  box-shadow: 0.25rem 0.25rem 0.25rem rgba(0, 0, 0, 0.1);
+  transition: all 0.5s ease;
+}
+
+.custom-btn.primary {
+  background: #0288d1;
+  color: white;
+}
+
+.custom-btn:hover {
+  background: #B2EBF2;
+  color: black;
+  transform: scale(1.05);
+}

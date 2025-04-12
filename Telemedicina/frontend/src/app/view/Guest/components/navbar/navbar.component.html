@@ -1,0 +1,30 @@
+<!-- Mobil nézet -->
+<ng-container *ngIf="isMobile">
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      <ion-title>CareLink</ion-title>
+    </ion-toolbar>
+  </ion-header>
+</ng-container>
+
+<!-- Desktop nézet -->
+<ng-container *ngIf="!isMobile">
+  <ion-header class="desktop-navbar">
+    <ion-toolbar>
+      <div class="navbar-content">
+        <div class="navbar-left">
+          <img src="logo.png" alt="Logo" class="logo"/>
+          <span class="title">CareLink</span>
+        </div>
+
+        <div class="navbar-right">
+          <ion-button class="custom-btn" routerLink="/login">Bejelentkezés</ion-button>
+          <ion-button class="custom-btn primary" routerLink="/register">Regisztráció</ion-button>
+        </div>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+</ng-container>

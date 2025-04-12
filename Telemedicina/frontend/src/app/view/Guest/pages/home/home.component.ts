@@ -3,16 +3,19 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
+import { NavbarComponent } from '../../components/navbar/navbar.component';
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  templateUrl: './home.html',
+  templateUrl: './home.component.html',
   imports: [
     CommonModule,
     RouterLink,
-    IonicModule
+    IonicModule,
+    NavbarComponent
   ],
-  styleUrls: ['./home.css']
+  styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
 }
