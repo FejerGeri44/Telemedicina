@@ -1,0 +1,56 @@
+<!-- Mobil nézet -->
+<ng-container *ngIf="isMobile">
+  <ion-header class="mobile-navbar">
+    <ion-toolbar>
+      <div class="mobile-navbar-content">
+        <div class="mobile-left">
+          <img src="pictures/logo.png" alt="Logo" class="logo" />
+          <span class="title">CareLink</span>
+        </div>
+        <div class="mobile-right">
+          <ion-button (click)="toggleMenu()" fill="clear">
+            <img src="/icons/menu.png" class="menu-btn" alt="Menü" style="height: 2rem; width: 2rem;" />
+          </ion-button>
+        </div>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Jobb oldali menü -->
+  <div class="mobile-menu" [class.open]="isMenuOpen">
+    <div class="menu-header">
+      <ion-icon name="close-outline" class="close-icon" (click)="toggleMenu()"></ion-icon>
+    </div>
+    <div class="menu-content">
+      <ion-button class="close-wrapper" expand="full" color="medium" (click)="toggleMenu()">
+        <img src="/icons/close.png" class="close-btn" alt="Menü" style="height: 1.8rem; width: 1.8rem;" />
+      </ion-button>
+      <div class="menu-item">
+        <ion-button expand="full" (click)="navigateToLogin()">Bejelentkezés</ion-button>
+      </div>
+      <div class="menu-item">
+        <ion-button expand="full" (click)="navigateToLogin()">Regisztráció</ion-button>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+
+<!-- Desktop nézet -->
+<ng-container *ngIf="!isMobile">
+  <ion-header class="desktop-navbar">
+    <ion-toolbar>
+      <div class="navbar-content">
+        <div class="navbar-left">
+          <img src="pictures/logo.png" alt="Logo" class="logo"/>
+          <span class="title">CareLink</span>
+        </div>
+
+        <div class="navbar-right">
+          <ion-button class="custom-btn" (click)="navigateToLogin()">Bejelentkezés</ion-button>
+          <ion-button class="custom-btn primary" (click)="navigateToLogin()">Regisztráció</ion-button>
+        </div>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+</ng-container>

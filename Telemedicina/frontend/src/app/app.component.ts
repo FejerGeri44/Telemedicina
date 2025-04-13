@@ -1,13 +1,16 @@
 import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { RouterOutlet } from '@angular/router';
+import {RegistLoginComponent} from './view/guest/pages/regist-login/regist-login.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  template: `<ion-app><router-outlet></router-outlet></ion-app>`,
-  imports: [IonicModule, RouterOutlet]
+  templateUrl: 'app.component.html',
+  imports: [
+    IonicModule,
+    RouterOutlet,
+    RegistLoginComponent
+  ]
 })
-export class AppComponent {
-
-}
+export class AppComponent {}

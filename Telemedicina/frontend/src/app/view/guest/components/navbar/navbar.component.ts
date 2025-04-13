@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import {CommonModule, NgOptimizedImage} from '@angular/common';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -15,6 +16,7 @@ import {CommonModule, NgOptimizedImage} from '@angular/common';
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   isMobile = false;
+  isMenuOpen = false;
   private resizeListener!: () => void;
 
   ngOnInit() {
@@ -30,5 +32,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   updateScreenSize() {
     this.isMobile = window.innerWidth < 768;
+  }
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  constructor(private router: Router) {}
+
+  navigateToLogin() {
+    this.toggleMenu();
+    void this.router.navigate(['/regist-login']);
   }
 }

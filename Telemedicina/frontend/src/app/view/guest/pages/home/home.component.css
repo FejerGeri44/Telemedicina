@@ -1,0 +1,134 @@
+.slideshow-container {
+  position: relative;
+  width: 100%;
+  height: 84vh;
+  overflow: hidden;
+  margin-top: 6vh;
+}
+
+.slide-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  z-index: 0;
+}
+
+.slide-wrapper.active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.slide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.slide-image.active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.slide-content {
+  position: absolute;
+  top: 30%;
+  left: 5%;
+  width: 40%;
+  max-width: 30%;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1.5rem;
+  border-radius: 3rem 0 3rem 0;
+}
+
+.user-label {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 1.5rem auto;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #26c6da;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.5rem;
+  letter-spacing: 0.15rem;
+}
+
+.slide-title {
+  margin: 0 0 1rem;
+  font-size: 2rem;
+}
+
+.slide-header {
+  margin-bottom: 1rem;
+}
+
+.slide-description {
+  margin: 0 0 15px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+ion-button.slide-button {
+  background-color: #0288d1;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+ion-button.slide-button:hover {
+  background-color: #0277bd;
+}
+
+.button-wrapper {
+  margin-top: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.dots {
+  position: absolute;
+  bottom: 0.8rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 99999;
+}
+
+.dot {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background-color: #9d9d9d;
+  cursor: pointer;
+  border: 0.15rem solid #7c7c7c;
+  transition: background-color 0.3s ease;
+}
+
+.dot.active {
+  background-color: #0288d1;
+  border: 0.15rem solid #006ea6;
+}
+
+.mobile-slide-card {
+  position: absolute;
+  bottom: 3.5rem;
+  left: 5%;
+  right: 5%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 1rem;
+  z-index: 9999;
+  padding: 1.5rem;
+}
+
+.mobile-slide-card ion-card-title {
+  margin-bottom: 1rem;
+}
