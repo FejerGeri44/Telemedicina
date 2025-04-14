@@ -1,0 +1,148 @@
+ion-content.page {
+  background: url("/pictures/desktop-background.png") no-repeat center center;
+  background-size: cover;
+  height: 100%;
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  align-items: center;
+  padding: 5rem;
+}
+
+.desktop-content-wrapper {
+  width: 80%;
+  max-width: 750px;
+  background: #e0e0e0;
+  padding: 2rem;
+  border-radius: 2rem;
+  border: solid rgba(157, 157, 157, 0.4);
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.3);
+  transition: height 0.3s ease;
+}
+
+.mobil-content-wrapper {
+  height: 100%;
+  width: 80%;
+  background: #e0e0e0;
+  padding: 2rem;
+  border-radius: 2rem;
+  border: solid rgba(157, 157, 157, 0.4);
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.3);
+  transition: height 0.3s ease;
+}
+
+.icon{
+  width: 2.5rem;
+  height: 2.5rem;
+  padding-top: 0.4rem;
+}
+
+ion-card-content.custom-button-switch {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 300px;
+  flex-wrap: nowrap;
+  padding: 0.5rem;
+  gap: 0;
+  margin: auto auto 2rem;
+}
+
+ion-button.switch-btn {
+  background-color: #0277bd;
+  font-size: 1.2rem;
+  letter-spacing: 0.1rem;
+  padding: 0.8rem 1.4rem;
+  align-content: center;
+  text-transform: none;
+  min-width: 50px;
+  text-align: center;
+  border-radius: 0;
+  user-select: none;
+  cursor: pointer;
+  margin: 0;
+  border: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+/* Bal oldali gomb (csak jobb oldalra árnyék) */
+ion-button.switch-btn:nth-child(1) {
+  border-top-left-radius: 2rem;
+  border-bottom-left-radius: 2rem;
+  box-shadow: 0.2rem 0 2rem rgba(0, 0, 0, 0.1);
+}
+
+/* Középső gomb (mindkét oldalra árnyék) */
+ion-button.switch-btn:nth-child(2) {
+  box-shadow: -0.2rem 0 2rem rgba(0, 0, 0, 0.1), 0.2rem 0 2rem rgba(0, 0, 0, 0.1);
+}
+
+/* Jobb oldali gomb (csak bal oldalra árnyék) */
+ion-button.switch-btn:nth-child(3) {
+  border-top-right-radius: 2rem;
+  border-bottom-right-radius: 2rem;
+  box-shadow: -0.2rem 0 2rem rgba(0, 0, 0, 0.1);
+}
+
+ion-button.switch-btn:hover {
+  background-color: #26c6da;
+  color: black;
+}
+
+ion-button.switch-btn.active {
+  background-color: #26c6da;
+  color: black;
+  cursor: default;
+}
+
+ion-button.switch-btn:disabled {
+  pointer-events: none;
+}
+
+app-login-form, app-patient-regist, app-doctor-regist {
+  width: 100%;
+  max-width: 30rem;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Animáció a formok megjelenésére */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  ion-content.page {
+    padding: 1rem;
+    background-position: center top;
+  }
+
+  ion-card-content.custom-button-switch {
+    display: flex;
+    width: 100%;
+    max-width: 300px;
+    padding: 0;
+    margin: auto auto 1rem;
+  }
+
+  ion-button.switch-btn {
+    background-color: #0277bd;
+    padding: 0.8rem 1.4rem;
+    min-width: 30px;
+    text-align: center;
+    border-radius: 0;
+    user-select: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    position: relative;
+  }
+}

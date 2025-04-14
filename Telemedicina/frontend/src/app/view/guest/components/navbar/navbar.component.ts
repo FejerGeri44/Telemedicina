@@ -21,7 +21,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.updateScreenSize();
-    console.log('isMobile:', this.isMobile);
     this.resizeListener = () => this.updateScreenSize();
     window.addEventListener('resize', this.resizeListener);
   }
@@ -42,6 +41,22 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   navigateToLogin() {
     this.toggleMenu();
-    void this.router.navigate(['/regist-login']);
+    void this.router.navigate(['/regist-login'], {
+      queryParams: { tab: 'login' }
+    });
+  }
+
+  navigateToPatient() {
+    this.toggleMenu();
+    void this.router.navigate(['/regist-login'], {
+      queryParams: { tab: 'patient' }
+    });
+  }
+
+  navigateToDoctor() {
+    this.toggleMenu();
+    void this.router.navigate(['/regist-login'], {
+      queryParams: { tab: 'doctor' }
+    });
   }
 }

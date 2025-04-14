@@ -1,1 +1,87 @@
-<p>login works!</p>
+<!-- Desktop view -->
+<ion-content *ngIf="!isMobile" class="page">
+
+  <div class="desktop-content-wrapper"
+       [ngStyle]="{height: activeTab === 'login' ? '50vh' : activeTab === 'patient' ? '72vh' : '62vh'}">
+
+    <ion-card>
+      <ion-card-content class="custom-button-switch">
+        <ion-button class="switch-btn"
+                    [ngClass]="{ active: activeTab === 'login' }"
+                    [disabled]="activeTab === 'login'"
+                    (click)="activeTab = 'login'">
+          <img src="icons/login-icon.png" alt="login" class="icon"/>
+        </ion-button>
+
+        <ion-button class="switch-btn"
+                    [ngClass]="{ active: activeTab === 'patient' }"
+                    [disabled]="activeTab === 'patient'"
+                    (click)="activeTab = 'patient'">
+          <img src="icons/patient-icon.png" alt="patient" class="icon"/>
+        </ion-button>
+
+        <ion-button class="switch-btn"
+                    [ngClass]="{ active: activeTab === 'doctor' }"
+                    [disabled]="activeTab === 'doctor'"
+                    (click)="activeTab = 'doctor'">
+          <img src="icons/doctor-icon.png" alt="doctor" class="icon"/>
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <div *ngIf="activeTab === 'login'">
+      <app-login-form></app-login-form>
+    </div>
+    <div *ngIf="activeTab === 'patient'">
+      <app-patient-regist></app-patient-regist>
+    </div>
+    <div *ngIf="activeTab === 'doctor'">
+      <app-doctor-regist></app-doctor-regist>
+    </div>
+
+  </div>
+
+</ion-content>
+
+<!-- Mobil view -->
+<ion-content *ngIf="isMobile" class="page">
+
+  <div class="mobil-content-wrapper">
+    <ion-card>
+      <ion-card-content class="custom-button-switch">
+        <ion-button class="switch-btn"
+                    [ngClass]="{ active: activeTab === 'login' }"
+                    [disabled]="activeTab === 'login'"
+                    (click)="activeTab = 'login'">
+          <img src="icons/login-icon.png" alt="login" class="icon"/>
+        </ion-button>
+
+        <ion-button class="switch-btn"
+                    [ngClass]="{ active: activeTab === 'patient' }"
+                    [disabled]="activeTab === 'patient'"
+                    (click)="activeTab = 'patient'">
+          <img src="icons/patient-icon.png" alt="patient" class="icon"/>
+        </ion-button>
+
+        <ion-button class="switch-btn"
+                    [ngClass]="{ active: activeTab === 'doctor' }"
+                    [disabled]="activeTab === 'doctor'"
+                    (click)="activeTab = 'doctor'">
+          <img src="icons/doctor-icon.png" alt="doctor" class="icon"/>
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <div *ngIf="activeTab === 'login'">
+      <app-login-form></app-login-form>
+    </div>
+    <div *ngIf="activeTab === 'patient'">
+      <app-patient-regist></app-patient-regist>
+    </div>
+    <div *ngIf="activeTab === 'doctor'">
+      <app-doctor-regist></app-doctor-regist>
+    </div>
+
+  </div>
+
+</ion-content>

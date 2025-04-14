@@ -4,5 +4,5 @@ import { RegistLoginComponent } from "../regist-login/regist-login.component";
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
-  { path: 'regist_login', component: RegistLoginComponent }
+  { path: 'regist_login', component: RegistLoginComponent },
 ];

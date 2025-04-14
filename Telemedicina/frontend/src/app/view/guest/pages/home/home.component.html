@@ -8,7 +8,7 @@
   >
     <img [src]="img" class="slide-image" alt="Slide" />
 
-    <!-- Páciens szöveg csak az első képen (desktop nézetben) -->
+    <!-- Páciens desktop nézet - 1. kép -->
     <ion-card *ngIf="!isMobile && i === 0 && currentSlideIndex === 0" class="slide-content" color="dark">
       <ion-card-header>
         <div class="slide-header">
@@ -26,7 +26,7 @@
         </ion-text>
 
         <div class="button-wrapper">
-          <ion-button class="slide-button" expand="block" color="primary" routerLink="/regist-login">Regisztráció</ion-button>
+          <ion-button class="slide-button" expand="block" color="primary" routerLink="/regist-login" [queryParams]="{ tab: 'patient' }">Regisztráció</ion-button>
         </div>
       </ion-card-content>
     </ion-card>
@@ -46,12 +46,12 @@
           </p>
         </ion-text>
         <div class="button-wrapper">
-          <ion-button class="slide-button" expand="block" routerLink="/regist-login">Regisztráció</ion-button>
+          <ion-button class="slide-button" expand="block" routerLink="/regist-login" [queryParams]="{ tab: 'patient' }">Regisztráció</ion-button>
         </div>
       </ion-card-content>
     </ion-card>
 
-    <!-- Orvos szöveg csak a harmadik képen (desktop nézetben) -->
+    <!-- Orvos desktop nézet - 3. kép -->
     <ion-card *ngIf="!isMobile && i === 2 && currentSlideIndex === 2" class="slide-content" color="dark">
       <ion-card-header>
         <div class="slide-header">
@@ -69,7 +69,7 @@
         </ion-text>
 
         <div class="button-wrapper">
-          <ion-button class="slide-button" expand="block" color="primary" routerLink="/regist-login">Jelentkezés</ion-button>
+          <ion-button class="slide-button" expand="block" color="primary" routerLink="/regist-login" [queryParams]="{ tab: 'doctor' }">Jelentkezés</ion-button>
         </div>
       </ion-card-content>
     </ion-card>
@@ -89,7 +89,7 @@
           </p>
         </ion-text>
         <div class="button-wrapper">
-          <ion-button class="slide-button" expand="block" routerLink="/regist-login">Jelentkezés</ion-button>
+          <ion-button class="slide-button" expand="block" routerLink="/regist-login" [queryParams]="{ tab: 'doctor' }">Jelentkezés</ion-button>
         </div>
       </ion-card-content>
     </ion-card>

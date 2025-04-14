@@ -1,0 +1,45 @@
+<ion-card>
+
+  <ion-card-header>
+    <ion-card-title>Bejelentkezés</ion-card-title>
+  </ion-card-header>
+
+  <!-- Desktop view -->
+  <ion-card-content *ngIf="!isMobile" class="form">
+
+    <ion-item>
+      <ion-label position="floating">E-mail cím</ion-label>
+      <input id="email" class="input" type="email" [(ngModel)]="email" placeholder="Email cím">
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Jelszó</ion-label>
+      <input id="password" class="input" type="password" [(ngModel)]="password" placeholder="Jelszó">
+    </ion-item>
+
+    <div class="button-row">
+      <ion-button class="back" (click)="backToDash()">Vissza</ion-button>
+      <ion-button class="form-button" (click)="onRegister()">Belépés</ion-button>
+    </div>
+
+  </ion-card-content>
+  <!-- Mobil view -->
+  <ion-card-content *ngIf="isMobile" class="form">
+
+    <ion-item>
+      <ion-label position="floating">E-mail cím</ion-label>
+      <input id="email" class="input" type="email" [(ngModel)]="email" placeholder="Email cím">
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Jelszó</ion-label>
+      <input id="password" class="input" type="password" [(ngModel)]="password" placeholder="Jelszó">
+    </ion-item>
+
+    <ion-button class="mobil-form-button" (click)="onRegister()">Belépés</ion-button>
+    <ion-button class="mobil-back" (click)="backToDash()">Vissza</ion-button>
+
+  </ion-card-content>
+
+</ion-card>
+
