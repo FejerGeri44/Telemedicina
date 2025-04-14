@@ -1,5 +1,7 @@
 <!-- Desktop view -->
-<ion-content *ngIf="!isMobile" class="page">
+<ion-content *ngIf="!isMobile" class="page" [ngStyle]="{
+    height: getTabHeight()
+  }">
 
   <div class="desktop-content-wrapper"
        [ngStyle]="{height: activeTab === 'login' ? '50vh' : activeTab === 'patient' ? '72vh' : '62vh'}">
@@ -44,9 +46,12 @@
 </ion-content>
 
 <!-- Mobil view -->
-<ion-content *ngIf="isMobile" class="page">
+<ion-content *ngIf="isMobile" class="page" [ngStyle]="{
+    height: getTabHeight()} ">
 
-  <div class="mobil-content-wrapper">
+  <div class="mobil-content-wrapper" [ngStyle]="{
+    'max-height': activeTab === 'login' ? '500px' : 'none'
+  }">
     <ion-card>
       <ion-card-content class="custom-button-switch">
         <ion-button class="switch-btn"
@@ -84,4 +89,4 @@
 
   </div>
 
-</ion-content>
+</ion-content   >
