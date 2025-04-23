@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './view/guest/pages/home/home.component';
-import {RegistLoginComponent} from './view/guest/pages/regist-login/regist-login.component';
+import { RegistLoginComponent } from './view/guest/pages/regist-login/regist-login.component';
+import { DoctorDashboardComponent } from './view/doctor/doctor-dashboard/doctor-dashboard.component';
+import { PatientDashboardComponent } from './view/patient/patient-dashboard/patient-dashboard.component';
+import { AdminDashboardComponent } from './view/admin/admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -24,5 +27,8 @@ export const routes: Routes = [
     path: 'patient-regist',
     loadComponent: () =>
       import('./view/guest/pages/regist-login/forms/patient-regist/patient-regist.component').then((m) => m.PatientRegistComponent)
-  }
+  },
+  { path: 'dashboard/doctor', component: DoctorDashboardComponent },
+  { path: 'dashboard/patient', component: PatientDashboardComponent },
+  { path: 'dashboard/admin', component: AdminDashboardComponent },
 ];

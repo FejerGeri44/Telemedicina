@@ -31,7 +31,7 @@
   z-index: 1;
 }
 
-.slide-content {
+.desktop-slide-card {
   position: absolute;
   top: 30%;
   left: 5%;
@@ -41,6 +41,18 @@
   background: rgba(0, 0, 0, 0.5);
   padding: 1.5rem;
   border-radius: 3rem 0 3rem 0;
+}
+
+.mobile-slide-card {
+  position: absolute;
+  bottom: 10%;
+  left: 5%;
+  right: 5%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 1rem;
+  z-index: 9999;
+  padding: 1.5rem;
 }
 
 .user-label {
@@ -115,20 +127,4 @@ ion-button.slide-button:hover {
 .dot.active {
   background-color: #0288d1;
   border: 0.15rem solid #006ea6;
-}
-
-.mobile-slide-card {
-  position: absolute;
-  bottom: 3.5rem;
-  left: 5%;
-  right: 5%;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border-radius: 1rem;
-  z-index: 9999;
-  padding: 1.5rem;
-}
-
-.mobile-slide-card ion-card-title {
-  margin-bottom: 1rem;
 }

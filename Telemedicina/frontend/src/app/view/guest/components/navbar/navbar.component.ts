@@ -41,22 +41,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   navigateToLogin() {
     this.toggleMenu();
-    void this.router.navigate(['/regist-login'], {
-      queryParams: { tab: 'login' }
-    });
+    void this.router.navigate(['/regist-login'], { queryParams: { tab: 'login' }});
   }
 
   navigateToPatient() {
     this.toggleMenu();
-    void this.router.navigate(['/regist-login'], {
-      queryParams: { tab: 'patient' }
-    });
+    void this.router.navigate(['/regist-login'], { queryParams: { tab: 'patient' }});
   }
 
   navigateToDoctor() {
     this.toggleMenu();
-    void this.router.navigate(['/regist-login'], {
-      queryParams: { tab: 'doctor' }
-    });
+    void this.router.navigate(['/regist-login'], { queryParams: { tab: 'doctor' }});
   }
 }

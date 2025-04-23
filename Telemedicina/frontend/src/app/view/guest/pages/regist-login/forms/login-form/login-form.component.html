@@ -9,34 +9,41 @@
 
     <ion-item>
       <ion-label position="floating">E-mail cím</ion-label>
-      <input id="email" class="input" type="email" [(ngModel)]="email" placeholder="Email cím">
+      <input id="email1" class="desktop-input" type="email" [(ngModel)]="email" placeholder="Email cím" required>
     </ion-item>
 
     <ion-item>
       <ion-label position="floating">Jelszó</ion-label>
-      <input id="password" class="input" type="password" [(ngModel)]="password" placeholder="Jelszó">
+      <input id="password1" class="desktop-input" type="password" [(ngModel)]="password" placeholder="Jelszó" required>
     </ion-item>
 
     <div class="button-row">
       <ion-button class="back" (click)="backToDash()">Vissza</ion-button>
-      <ion-button class="form-button" (click)="onRegister()">Belépés</ion-button>
+      <ion-button class="form-button" (click)="onLogin()">Belépés</ion-button>
     </div>
 
   </ion-card-content>
+
+  <app-notification
+    [message]="notificationMessage"
+    [type]="notificationType"
+    [show]="showNotification">
+  </app-notification>
+
   <!-- Mobil view -->
   <ion-card-content *ngIf="isMobile" class="form">
 
     <ion-item>
       <ion-label position="floating">E-mail cím</ion-label>
-      <input id="email" class="input" type="email" [(ngModel)]="email" placeholder="Email cím">
+      <input id="email2" class="mobil-input" type="email" [(ngModel)]="email" placeholder="Email cím" required>
     </ion-item>
 
     <ion-item>
       <ion-label position="floating">Jelszó</ion-label>
-      <input id="password" class="input" type="password" [(ngModel)]="password" placeholder="Jelszó">
+      <input id="password2" class="mobil-input" type="password" [(ngModel)]="password" placeholder="Jelszó" required>
     </ion-item>
 
-    <ion-button class="mobil-form-button" (click)="onRegister()">Belépés</ion-button>
+    <ion-button class="mobil-form-button" (click)="onLogin()">Belépés</ion-button>
     <ion-button class="mobil-back" (click)="backToDash()">Vissza</ion-button>
 
   </ion-card-content>

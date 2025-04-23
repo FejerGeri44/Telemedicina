@@ -11,11 +11,11 @@
     <div class="grid-pair">
       <ion-item>
         <ion-label position="floating">Teljes név</ion-label>
-        <input type="text" class="input" [(ngModel)]="fullName" placeholder="Teljes név" />
+        <input type="text" class="desktop-input" [(ngModel)]="fullName" placeholder="Teljes név" required/>
       </ion-item>
       <ion-item>
         <ion-label position="floating">E-mail cím</ion-label>
-        <input type="email" class="input" [(ngModel)]="email" placeholder="Email cím" />
+        <input type="email" class="desktop-input" [(ngModel)]="email" placeholder="Email cím" required/>
       </ion-item>
     </div>
 
@@ -23,11 +23,11 @@
     <div class="grid-pair">
       <ion-item>
         <ion-label position="floating">Jelszó</ion-label>
-        <input type="password" class="input" [(ngModel)]="password" placeholder="Jelszó" />
+        <input type="password" class="desktop-input" [(ngModel)]="password" placeholder="Jelszó" required/>
       </ion-item>
       <ion-item>
         <ion-label position="floating">Jelszó ismét</ion-label>
-        <input type="password" class="input" [(ngModel)]="password_again" placeholder="Jelszó még egyszer" />
+        <input type="password" class="desktop-input" [(ngModel)]="password_again" placeholder="Jelszó még egyszer" required/>
       </ion-item>
     </div>
 
@@ -35,11 +35,11 @@
     <div class="grid-pair">
       <ion-item>
         <ion-label position="floating">Telefonszám</ion-label>
-        <input type="tel" class="input" [(ngModel)]="phone" placeholder="+36 XX XXX XXX" />
+        <input type="tel" class="desktop-input" [(ngModel)]="phoneNumber" placeholder="06XXXXXXXXX" required/>
       </ion-item>
       <ion-item>
         <ion-label position="floating">Cím</ion-label>
-        <input type="text" class="input" [(ngModel)]="address" placeholder="Baranyai utca 52." />
+        <input type="text" class="desktop-input" [(ngModel)]="address" placeholder="Baranyai utca 52." required/>
       </ion-item>
     </div>
 
@@ -47,17 +47,24 @@
     <div class="grid-pair">
       <ion-item>
         <ion-label position="floating">Születési dátum</ion-label>
-        <input type="date" class="input" [(ngModel)]="date"/>
+        <input type="date" class="desktop-input" [(ngModel)]="birthDate"/>
       </ion-item>
     </div>
 
     <!-- Gomb -->
     <div class="button-row">
       <ion-button class="back" (click)="backToDash()">Vissza</ion-button>
-      <ion-button class="form-button" (click)="onRegister()">Csatlakozz</ion-button>
+      <ion-button class="form-button" (click)="onPatientRegister()">Csatlakozz</ion-button>
     </div>
 
   </ion-card-content>
+
+  <app-notification
+    [message]="notificationMessage"
+    [type]="notificationType"
+    [show]="showNotification">
+  </app-notification>
+
   <!-- Mobil view -->
   <ion-card-content *ngIf="isMobile" class="form-grid">
 
@@ -65,11 +72,11 @@
     <div class="mobil-grid-pair">
       <ion-item>
         <ion-label position="floating">Teljes név</ion-label>
-        <input type="text" class="input" [(ngModel)]="fullName" placeholder="Teljes név" />
+        <input type="text" class="mobil-input" [(ngModel)]="fullName" placeholder="Teljes név" required/>
       </ion-item>
       <ion-item>
         <ion-label position="floating">E-mail cím</ion-label>
-        <input type="email" class="input" [(ngModel)]="email" placeholder="Email cím" />
+        <input type="email" class="mobil-input" [(ngModel)]="email" placeholder="Email cím" required/>
       </ion-item>
     </div>
 
@@ -77,11 +84,11 @@
     <div class="mobil-grid-pair">
       <ion-item>
         <ion-label position="floating">Jelszó</ion-label>
-        <input type="password" class="input" [(ngModel)]="password" placeholder="Jelszó" />
+        <input type="password" class="mobil-input" [(ngModel)]="password" placeholder="Jelszó" required/>
       </ion-item>
       <ion-item>
         <ion-label position="floating">Jelszó ismét</ion-label>
-        <input type="password" class="input" [(ngModel)]="password_again" placeholder="Jelszó még egyszer" />
+        <input type="password" class="mobil-input" [(ngModel)]="password_again" placeholder="Jelszó még egyszer" required/>
       </ion-item>
     </div>
 
@@ -89,11 +96,11 @@
     <div class="mobil-grid-pair">
       <ion-item>
         <ion-label position="floating">Telefonszám</ion-label>
-        <input type="tel" class="input" [(ngModel)]="phone" placeholder="+36 XX XXX XXX" />
+        <input type="tel" class="mobil-input" [(ngModel)]="phoneNumber" placeholder="06XXXXXXXXX" required/>
       </ion-item>
       <ion-item>
         <ion-label position="floating">Cím</ion-label>
-        <input type="text" class="input" [(ngModel)]="address" placeholder="Baranyai utca 52." />
+        <input type="text" class="mobil-input" [(ngModel)]="address" placeholder="Baranyai utca 52." required/>
       </ion-item>
     </div>
 
@@ -101,12 +108,12 @@
     <div class="mobil-grid-pair">
       <ion-item>
         <ion-label position="floating">Születési dátum</ion-label>
-        <input type="date" class="input" [(ngModel)]="date"/>
+        <input type="date" class="mobil-input" [(ngModel)]="birthDate"/>
       </ion-item>
     </div>
 
     <!-- Gomb -->
-    <ion-button class="mobil-form-button" (click)="onRegister()">Csatlakozz</ion-button>
+    <ion-button class="mobil-form-button" (click)="onPatientRegister()">Csatlakozz</ion-button>
     <ion-button class="mobil-back" (click)="backToDash()">Vissza</ion-button>
 
   </ion-card-content>
