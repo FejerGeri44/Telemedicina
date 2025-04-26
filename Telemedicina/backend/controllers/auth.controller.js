@@ -5,7 +5,8 @@ const jwt = require('jsonwebtoken');
 
 const registerPatient = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber, address, birthDate } = req.body;
+    const { name, email, password, phoneNumber, address, birthDate, height, weight, homePhone } = req.body;
+    const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-images%2Fpatient.png?alt=media&token=1ebd70ba-15a8-49bb-bc75-94b596a9c63d';
 
     // Ellenőrizzük, hogy van-e már ilyen e-mail
     const existingUser = await User.findOne({ where: { email } });
@@ -24,12 +25,16 @@ const registerPatient = async (req, res) => {
       role: 'patient',
       phoneNumber,
       address,
-      birthDate
+      birthDate,
+      pictureUrl
     });
 
     // Páciens bejegyzés létrehozása
     await Patient.create({
       userId: user.id,
+      height,
+      weight,
+      homePhone,
       registDate: new Date()
     });
 
@@ -44,6 +49,7 @@ const registerPatient = async (req, res) => {
 const registerDoctor = async (req, res) => {
   try {
     const { name, email, password, phoneNumber, address, birthDate, speciality, introduction } = req.body;
+    const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-images%2Fdoctor.png?alt=media&token=d9271e62-b461-46e4-841e-f046d675c760';
 
     // Ellenőrzés: van-e már ilyen felhasználó?
     const existingUser = await User.findOne({ where: { email } });
@@ -62,7 +68,8 @@ const registerDoctor = async (req, res) => {
       role: 'doctor',
       phoneNumber,
       address,
-      birthDate
+      birthDate,
+      pictureUrl
     });
 
     // Orvos-specifikus adatok mentése
@@ -112,7 +119,11 @@ const login = async (req, res) => {
       user: {
         email: existingUser.email,
         name: existingUser.name,
-        role: existingUser.role
+        role: existingUser.role,
+        phoneNumber: existingUser.phoneNumber,
+        address: existingUser.address,
+        birthDate: existingUser.birthDate,
+        pictureUrl: existingUser.pictureUrl
       }
     });
 

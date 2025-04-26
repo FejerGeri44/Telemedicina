@@ -1,1 +1,8 @@
-<p>patient-dashboard works!</p>
+<div class="profile" *ngIf="user">
+  <img [src]="user.pictureUrl" alt="Profilkép" style="width: 150px; height: 150px; border-radius: 50%;" />
+  <h2>{{ user.name }}</h2>
+</div>
+
+<button (click)="logout()" style="margin-top: 10px; padding: 8px 16px; border: none; background-color: #ff4d4f; color: white; border-radius: 5px; cursor: pointer;">
+  Kijelentkezés
+</button>

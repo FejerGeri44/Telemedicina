@@ -61,7 +61,7 @@ export class LoginFormComponent {
       .subscribe({
         next: res => {
           localStorage.setItem('token', res.token);
-          localStorage.setItem('role', res.user.role);
+          localStorage.setItem('user', JSON.stringify(res.user));
 
           // Iranyitas szerepkor szerint
           switch (res.user.role) {

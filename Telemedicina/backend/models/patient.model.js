@@ -11,6 +11,18 @@ module.exports = (sequelize) => {
         key: 'id'
       }
     },
+    height: {
+      type: DataTypes.FLOAT,
+      allowNull: true
+    },
+    weight: {
+      type: DataTypes.FLOAT,
+      allowNull: true
+    },
+    homePhone: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     registDate: {
       type: DataTypes.DATEONLY
     }

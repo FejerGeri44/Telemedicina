@@ -35,6 +35,10 @@ module.exports = (sequelize) => {
     birthDate: {
       type: DataTypes.DATEONLY,
       allowNull: true
+    },
+    pictureUrl: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'users',
