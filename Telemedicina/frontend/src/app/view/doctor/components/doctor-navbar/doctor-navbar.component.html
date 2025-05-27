@@ -1,0 +1,54 @@
+<div class="sidebar" [class.expanded]="isExpanded">
+  <div class="toggle-btn-container" (click)="toggleSidebar()">
+    <img [src]="isExpanded ? '/icons/collapse.png' : '/icons/extend.png'" class="toggle-btn" alt="Toggle"/>
+  </div>
+
+  <nav class="menu">
+    <a routerLink="/dashboard/doctor" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <img src="/icons/doctorIcon.png" class="menu-btn" alt="Kezdőlap"/>
+      <span *ngIf="isExpanded">Kezdőlap</span>
+    </a>
+
+    <a routerLink="/dashboard/patient/health-diary" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <img src="/icons/fileUpload.png" class="menu-btn" alt="Dokumentum feltöltés"/>
+      <span *ngIf="isExpanded">Dokumentum feltöltés</span>
+    </a>
+
+    <a routerLink="/dashboard/patient/doctor-search" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <img src="/icons/diagnosis.png" class="menu-btn" alt="Új diagnózis"/>
+      <span *ngIf="isExpanded">Új diagnózis</span>
+    </a>
+
+    <a routerLink="/dashboard/patient/appointments" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <img src="/icons/appointment.png" class="menu-btn" alt="Rendelési időpontok"/>
+      <span *ngIf="isExpanded">Rendelési időpontok</span>
+    </a>
+
+    <a routerLink="/dashboard/patient/notifications" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <img src="/icons/notification.png" class="menu-btn" alt="Értesítések"/>
+      <span *ngIf="isExpanded">Értesítések</span>
+    </a>
+  </nav>
+
+  <div class="bottom-btns">
+    <a routerLink="/dashboard/patient/settings" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <img src="/icons/settings.png" class="menu-btn" alt="Beállítások"/>
+      <span *ngIf="isExpanded">Beállítások</span>
+    </a>
+
+    <a (click)="toggleLogoutPopup()">
+      <img src="/icons/logout.png" class="menu-btn" alt="Toggle"/>
+      <span *ngIf="isExpanded">Kijelentkezés</span>
+    </a>
+  </div>
+
+  <div class="logout-popup" *ngIf="showLogoutPopup">
+    <div class="popup-content">
+      <h3>Biztosan ki akarsz jelentkezni?</h3>
+      <div class="popup-buttons">
+        <button class="confirm" (click)="confirmLogout()">Igen, biztosan</button>
+        <button class="decline" (click)="toggleLogoutPopup()">Nem szeretnék</button>
+      </div>
+    </div>
+  </div>
+</div>

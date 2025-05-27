@@ -1,130 +1,264 @@
-.slideshow-container {
-  position: relative;
-  width: 100%;
-  height: 84vh;
+.hero {
+  height: 100vh;
+  background: linear-gradient(-10deg, #ffffff, #00acc1);
+  padding: 55px 20px 0 20px;
   overflow: hidden;
-  margin-top: 6vh;
+  display: flex;
+  align-items: center;
+  user-select: none;
 }
 
-.slide-wrapper {
-  position: absolute;
+.hero-content {
+  max-width: 600px;
+  margin-bottom: 25px;
+  padding-left: 15px;
+  padding-right: 15px;
+
+  @media (min-width: 768px) {
+    padding-left: 10px;
+  }
+}
+
+.grid {
+  width: 90%;
+  margin: auto;
+  z-index: 999;
+}
+
+.hero h1 {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  color: rgba(0, 0, 0, 0.75);
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+}
+
+.primaryBtn {
+  border-radius: 15px;
+  --border-radius: 10px;
+  --background: #006ea6;
+  --box-shadow: none;
+  border: 2px solid #006ea6;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 110, 166, 0.3);
+}
+
+.primaryBtn:hover {
+  background: #006ea6;
+  color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 110, 166, 0.4);
+  transform: translateY(-2px);
+}
+
+.secondaryBtn {
   width: 100%;
+  border-radius: 15px;
+  --background: none;
+  --box-shadow: none;
+  border: 2px solid #006ea6;
+  color: #006ea6;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 110, 166, 0.3);
+}
+
+.secondaryBtn:hover {
+  background: #006ea6;
+  color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 110, 166, 0.4);
+  transform: translateY(-2px);
+}
+
+.secondaryBtn:hover {
+  background: #006ea6;
+  color: white;
+  --border-radius: 10px;
+}
+
+.info-boxes .info {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.info-boxes .mainFocus {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #007acc;
+}
+
+.info-boxes .complamentary {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.image-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.floating {
+  width: 100%;
+  max-width: 500px;
+  animation: float 4s ease-in-out infinite;
+}
+
+.quote {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2);
+  user-select: none;
+}
+
+.quote-text {
+  text-align: center;
+  font-size: 1.25rem;
+  font-style: italic;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.quote-author {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bolder;
+  color: #007acc;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.quote-author:hover {
+  opacity: 0.6;
+}
+
+ion-grid.grid-section {
+  --ion-grid-padding: 0;
+  --ion-grid-column-padding: 0;
+  }
+
+.box {
+  background: white;
+  padding: 1.5rem;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.listText {
+  width: 80%;
+  margin: auto;
+}
+
+.service-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 1rem;
+}
+
+.service-list li {
+  position: relative;
+  text-align: left;
+  padding-left: 16%;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
+
+.service-list li::before {
+  content: '✓';
+  color: #006ea6;
+  font-weight: bold;
+  position: absolute;
+  left: 6%;
+}
+
+.testimonial {
+  text-align: left;
+  font-style: italic;
+  font-size: 1.25rem;
+  color: #444;
+  margin: 1rem 0;
+}
+
+.testimonial-author {
+  font-weight: 600;
+  color: #007acc;
+  font-size: 1rem;
+}
+
+.box.imageBox {
+  padding: 0;
+  display: flex;
+  align-items: stretch;
   height: 100%;
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
-  z-index: 0;
+  border: 1px solid #00acc1;
 }
-
-.slide-wrapper.active {
-  opacity: 1;
-  z-index: 1;
-}
-
-.slide-image {
+.box img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.slide-image.active {
-  opacity: 1;
-  z-index: 1;
-}
-
-.desktop-slide-card {
-  position: absolute;
-  top: 30%;
-  left: 5%;
-  width: 40%;
-  max-width: 30%;
-  color: white;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 1.5rem;
-  border-radius: 3rem 0 3rem 0;
-}
-
-.mobile-slide-card {
-  position: absolute;
-  bottom: 10%;
-  left: 5%;
-  right: 5%;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border-radius: 1rem;
-  z-index: 9999;
-  padding: 1.5rem;
-}
-
-.user-label {
   display: block;
-  width: fit-content;
-  margin: 0 auto 1.5rem auto;
-  font-size: 1rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  color: #26c6da;
-  background-color: rgba(0, 0, 0, 0.4);
-  padding: 0.5rem 0.8rem;
-  border-radius: 0.5rem;
-  letter-spacing: 0.15rem;
 }
 
-.slide-title {
-  margin: 0 0 1rem;
-  font-size: 2rem;
+@media (max-width: 767px) {
+  .list-col {
+    order: 1;
+  }
+
+  .image-col {
+    order: 2;
+  }
 }
 
-.slide-header {
-  margin-bottom: 1rem;
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
-.slide-description {
-  margin: 0 0 15px;
-  font-size: 16px;
-  line-height: 1.4;
+@media (min-width: 768px) {
+  .hero-buttons {
+    flex-direction: row;
+  }
 }
 
-ion-button.slide-button {
-  background-color: #0277bd;
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-ion-button.slide-button:hover {
-  background-color: #0277bd;
-}
-
-.button-wrapper {
-  margin-top: 1.8rem;
-  margin-bottom: 1rem;
-}
-
-.dots {
-  position: absolute;
-  bottom: 0.8rem;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  z-index: 99999;
-}
-
-.dot {
-  width: 0.8rem;
-  height: 0.8rem;
-  border-radius: 50%;
-  background-color: #9d9d9d;
-  cursor: pointer;
-  border: 0.15rem solid #7c7c7c;
-  transition: background-color 0.3s ease;
-}
-
-.dot.active {
-  background-color: #0288d1;
-  border: 0.15rem solid #006ea6;
+@media (max-width: 767px) {
+  .hero {
+    margin-top: 50px;
+    padding-bottom: 50px;
+  }
+  .hero-buttons {
+    gap: 5px;
+  }
+  ion-row {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  ion-row.cards {
+    flex-direction: row;
+  }
+  .floating {
+    width: 50%;
+  }
+  .grid-section ion-row {
+    flex-direction: column;
+  }
 }

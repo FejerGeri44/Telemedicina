@@ -1,108 +1,118 @@
 <app-navbar></app-navbar>
 
-<div class="slideshow-container">
-  <div
-    *ngFor="let img of images; let i = index"
-    [class.active]="i === currentSlideIndex"
-    class="slide-wrapper"
-  >
-    <img [src]="img" class="slide-image" alt="Slide" />
+<section class="hero">
+  <ion-grid class="grid">
+    <ion-row>
+      <!-- Bal oldal: szöveges rész -->
+      <ion-col size="12" size-md="6">
+        <div class="hero-content">
+          <h1 class="ion-text-wrap">Telemedicina, egyszerűen</h1>
+          <p class="ion-text-wrap">Orvosi ellátás bárhol, bármikor. Csatlakozz még ma!</p>
 
-    <!-- Páciens desktop nézet - 1. kép -->
-    <ion-card *ngIf="!isMobile && i === 0 && currentSlideIndex === 0" class="desktop-slide-card">
-      <ion-card-header>
-        <div class="slide-header">
-          <ion-label class="user-label">Pácienseknek</ion-label>
-          <ion-card-title class="slide-title">Lépj be a rendelőbe!</ion-card-title>
+          <div class="hero-buttons">
+            <ion-button class="primaryBtn" (click)="navigateToPatient()">Regisztráció</ion-button>
+            <ion-button class="secondaryBtn" (click)="navigateToDoctor()">Orvosi jelentkezés</ion-button>
+          </div>
         </div>
-      </ion-card-header>
 
-      <ion-card-content>
-        <ion-text color="light">
-          <p class="slide-description">
-            Kezdd el még ma a saját egészségügyi utadat!<br />
-            Regisztrálj egyszerűen, foglalj időpontot szakorvoshoz, és érj el gyorsan segítséget – akár otthonról is.
-          </p>
-        </ion-text>
+        <ion-grid class="info-boxes">
+          <ion-row class="cards">
+            <ion-col size="4">
+              <div class="info">
+                <p class="mainFocus">50+</p>
+                <p class="complamentary">Partner orvos</p>
+              </div>
+            </ion-col>
+            <ion-col size="4">
+              <div class="info">
+                <p class="mainFocus">6</p>
+                <p class="complamentary">Szolgáltatás</p>
+              </div>
+            </ion-col>
+            <ion-col size="4">
+              <div class="info">
+                <p class="mainFocus">2K+</p>
+                <p class="complamentary">Elégedett felhasználó</p>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-col>
 
-        <div class="button-wrapper">
-          <ion-button class="slide-button" expand="block" color="primary" routerLink="/regist-login" [queryParams]="{ tab: 'patient' }">Regisztráció</ion-button>
+      <!-- Jobb oldal: kép -->
+      <ion-col class="image-col" size="12" size-md="6">
+        <img src="pictures/heroPicture.png" alt="heroPicture" class="floating" draggable="false">
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</section>
+
+<section class="quote">
+  <blockquote class="quote-text">
+    "Az egészség nem minden, de egészség nélkül minden semmi."
+  </blockquote>
+  <span class="quote-author"><a (click)="navigateToWiki()">Arthur Schopenhauer</a></span>
+</section>
+
+<section class="gridSystem">
+  <ion-grid class="grid-section">
+    <ion-row>
+      <ion-col size="12" size-md="6">
+        <div class="box">
+          <div class="listText">
+            <h3>Szolgáltatásaink</h3>
+            <ul class="service-list">
+              <li>Online receptfelírás</li>
+              <li>Szakorvosi konzultáció</li>
+              <li>Laboreredmény kiértékelés</li>
+              <li>Egészségügyi tanácsadás</li>
+              <li>Gyors receptelérés</li>
+              <li>M.I. Asszisztens</li>
+              <li>Biztonságos adatkezelés</li>
+              <li>Gyors időpontfoglalás</li>
+            </ul>
+          </div>
         </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Páciens mobil nézet - 1. kép -->
-    <ion-card *ngIf="isMobile && i === 0 && currentSlideIndex === 0" class="mobile-slide-card">
-      <ion-card-header>
-        <div class="slide-header">
-          <ion-label class="user-label">Pácienseknek</ion-label>
-          <ion-card-title class="slide-title">Lépj be a rendelőbe!</ion-card-title>
+      </ion-col>
+      <ion-col size="12" size-md="6">
+        <div class="box imageBox">
+          <img src="pictures/gridPicture1.jpg" alt="kep">
         </div>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-text color="light">
-          <p class="slide-description">
-            Egészségügyi tanácsadás, időpontfoglalás és szakorvosi elérés – bárhol, bármikor.
-          </p>
-        </ion-text>
-        <div class="button-wrapper">
-          <ion-button class="slide-button" expand="block" routerLink="/regist-login" [queryParams]="{ tab: 'patient' }">Regisztráció</ion-button>
+      </ion-col>
+      <ion-col size="12" size-md="6" class="image-col">
+        <div class="box imageBox">
+          <img src="pictures/gridPicture2.png" alt="kep">
         </div>
-      </ion-card-content>
-    </ion-card>
+      </ion-col>
+      <ion-col size="12" size-md="6" class="list-col">
+        <div class="box">
+          <h3>Pácienseink mondták</h3>
+          <blockquote class="testimonial">
+            „Gyors segítséget kaptam! A videókonzultáció egyszerű és megbízható volt.”
+          </blockquote>
+          <span class="testimonial-author">Kovács Éva, 34</span>
 
-    <!-- Orvos desktop nézet - 3. kép -->
-    <ion-card *ngIf="!isMobile && i === 2 && currentSlideIndex === 2" class="desktop-slide-card">
-      <ion-card-header>
-        <div class="slide-header">
-          <ion-label class="user-label">Orvosoknak</ion-label>
-          <ion-card-title class="slide-title">Rendelj online!</ion-card-title>
+          <blockquote class="testimonial">
+            „Nem gondoltam volna, hogy ilyen gyorsan lehet orvoshoz jutni. Reggel jeleztem a problémám, délutánra már beszéltem egy szakorvossal!”
+          </blockquote>
+          <span class="testimonial-author">Szabó Márk, 42</span>
+
+          <blockquote class="testimonial">
+            „Nagyon egyszerű volt használni az oldalt, és biztonságban éreztem magam. Külön jó, hogy nem kellett szabadságot kivennem csak egy konzultáció miatt.”
+          </blockquote>
+          <span class="testimonial-author">Nagy Katalin, 29</span>
+
+          <blockquote class="testimonial">
+            „Külföldön dolgozom, de a magyar orvosaimmal továbbra is könnyen tudok konzultálni. Óriási segítség!”          </blockquote>
+          <span class="testimonial-author">Varga András, 38</span>
+
+          <blockquote class="testimonial">
+            „A rendszer átlátható, az időpontfoglalás gyors, és az orvos is nagyon segítőkész volt. Csak ajánlani tudom.”          </blockquote>
+          <span class="testimonial-author">Tóth Melinda, 46</span>
         </div>
-      </ion-card-header>
-
-      <ion-card-content>
-        <ion-text color="light">
-          <p class="slide-description">
-            Bővítsd praxisod digitálisan, és tarts konzultációkat bárhonnan, biztonságos rendszerben.<br />
-            Te szabod meg az idődet – mi hozzuk a pácienseket.
-          </p>
-        </ion-text>
-
-        <div class="button-wrapper">
-          <ion-button class="slide-button" expand="block" color="primary" routerLink="/regist-login" [queryParams]="{ tab: 'doctor' }">Jelentkezés</ion-button>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Orvos mobil nézet - 3. kép -->
-    <ion-card *ngIf="isMobile && i === 2 && currentSlideIndex === 2" class="mobile-slide-card">
-      <ion-card-header>
-        <div class="slide-header">
-          <ion-label class="user-label">Orvosoknak</ion-label>
-          <ion-card-title class="slide-title">Rendelj online!</ion-card-title>
-        </div>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-text color="light">
-          <p class="slide-description">
-            Digitális praxisod elindításához regisztrálj most, és fogadj pácienseket online!
-          </p>
-        </ion-text>
-        <div class="button-wrapper">
-          <ion-button class="slide-button" expand="block" routerLink="/regist-login" [queryParams]="{ tab: 'doctor' }">Jelentkezés</ion-button>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <div class="dots">
-      <span
-        *ngFor="let img of images; let i = index"
-        [class.active]="i === currentSlideIndex"
-        class="dot"
-        (click)="goToSlide(i)"
-      ></span>
-    </div>
-  </div>
-</div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</section>
 
 <app-footer></app-footer>

@@ -1,1 +1,97 @@
-<p>doctor-dashboard works!</p>
+<app-doctor-navbar></app-doctor-navbar>
+
+<div class="page">
+
+  <ion-content class="grid">
+    <ion-card class="profile">
+      <div class="data-left">
+        <ion-card-header class="header-content">
+          <ion-avatar class="profile-picture">
+            <img *ngIf="user" [src]="user.pictureUrl" alt="Profilkép" />
+          </ion-avatar>
+          <ion-card-title *ngIf="user"><h2>{{ user.name }}</h2></ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <div class="user-grid">
+            <div class="user-info">
+              <div class="title">Kor</div>
+              <div class="value">{{ getAge(user?.birthDate) }}</div>
+            </div>
+            <div class="user-info">
+              <div class="title">Magasság</div>
+              <div class="value">{{ user?.height }}</div>
+            </div>
+            <div class="user-info">
+              <div class="title">Cím</div>
+              <div class="value">{{ user?.address }}</div>
+            </div>
+            <div class="user-info">
+              <div class="title">Súly</div>
+              <div class="value">{{ user?.weight }}</div>
+            </div>
+          </div>
+        </ion-card-content>
+
+        <div class="edit-button-container">
+          <button class="edit-button" (click)="openEditModal()">Módosítás</button>
+        </div>
+      </div>
+
+      <ion-content class="modal" *ngIf="isEditModalOpen">
+        <div class="modal-content">
+          <h2>Adatok módosítása</h2>
+          <form>
+            <div *ngIf="previewImage">
+              <img [src]="previewImage" alt="Profilkép előnézet">
+            </div>
+
+            <button class="select-picture-button" type="button" (click)="triggerFileInput()">Kép kiválasztása</button>
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+
+            <div class="modal-items">
+              <div class="form-group">
+                <label position="stacked">Magasság</label>
+                <input type="number" [(ngModel)]="editUser.height" name="height">
+              </div>
+
+              <div class="form-group">
+                <label position="stacked">Súly</label>
+                <input type="number" [(ngModel)]="editUser.weight" name="weight">
+              </div>
+
+              <div class="form-group">
+                <label position="stacked">Cím</label>
+                <input type="text" [(ngModel)]="editUser.address" name="address">
+              </div>
+
+              <div class="form-group">
+                <label position="stacked">Mobil szám</label>
+                <input type="text" [(ngModel)]="editUser.phoneNumber" name="phoneNumber">
+              </div>
+
+              <div class="form-group">
+                <label position="stacked">Otthoni szám</label>
+                <input type="text" [(ngModel)]="editUser.homePhone" name="homePhone">
+              </div>
+            </div>
+
+            <div class="button-row">
+              <ion-button class="cancel" type="button" (click)="closeEditModal()">Mégse</ion-button>
+              <ion-button class="submit" type="submit" (click)="saveChanges()">Mentés</ion-button>
+            </div>
+
+          </form>
+        </div>
+      </ion-content>
+    </ion-card>
+    <ion-card class="profile-data"></ion-card>
+    <ion-card class="patients"></ion-card>
+    <ion-card class="messages"></ion-card>
+    <ion-card class="review"></ion-card>
+    <ion-card class="today-appointments"></ion-card>
+    <ion-card class="new-appointments"></ion-card>
+    <ion-card class="declined-appointments"></ion-card>
+  </ion-content>
+
+</div>

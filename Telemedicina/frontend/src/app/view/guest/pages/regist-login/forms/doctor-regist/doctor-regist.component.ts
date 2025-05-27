@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-doctor-regist',
@@ -30,12 +31,13 @@ export class DoctorRegistComponent {
   birthDate: string = '';
   introduction: string = '';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router,  private toastController: ToastController) {}
 
   ngOnInit() {
     this.updateScreenSize();
     this.resizeListener = () => this.updateScreenSize();
     window.addEventListener('resize', this.resizeListener);
+    void this.presentToast('Teszt toast', 'warning');
   }
 
   ngOnDestroy(): void {
@@ -70,17 +72,31 @@ export class DoctorRegistComponent {
     this.http.post('http://localhost:3000/api/auth/register/doctor', doctorData)
       .subscribe({
         next: () => {
-          alert('Sikeres orvos regisztráció!');
+          void this.presentToast('Sikeres orvos regisztráció!', 'success');
           void this.router.navigate(['/login']);
         },
         error: err => {
           console.error(err);
-          alert('Hiba történt az orvos regisztráció során.');
+          void this.presentToast('Hiba történt az orvos regisztráció során.', 'danger');
         }
       });
   }
 
   backToDash() {
     void this.router.navigate(['/']);
+  }
+
+  async presentToast(message: string, color: string = 'primary') {
+    try {
+      const toast = await this.toastController.create({
+        message,
+        duration: 3000,
+        position: 'bottom',
+        color
+      });
+      await toast.present();
+    } catch (err) {
+      console.error('Toast error:', err);
+    }
   }
 }

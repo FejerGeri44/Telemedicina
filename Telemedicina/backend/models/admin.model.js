@@ -10,7 +10,10 @@ module.exports = (sequelize) => {
         model: 'users',
         key: 'id'
       }
-    }
+    },
+    registDate: {
+    type: DataTypes.DATEONLY
+  }
   }, {
     tableName: 'admins',
     timestamps: false

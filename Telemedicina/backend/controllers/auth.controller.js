@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { User, Patient } = require('../models');
+const { User, Patient, Admin } = require('../models');
 const { Doctor } = require('../models');
 const jwt = require('jsonwebtoken');
 
@@ -113,6 +113,25 @@ const login = async (req, res) => {
       { expiresIn: '2h' }
     );
 
+    let extraData = {};
+
+    if (existingUser.role === 'patient') {
+      const patientData = await Patient.findOne({ where: { userId: existingUser.id }, attributes: ['height', 'weight', 'homePhone', 'registDate'] });
+      if (patientData) {
+        extraData = replaceNullWithNA(patientData.dataValues);
+      }
+    } else if (existingUser.role === 'doctor') {
+      const doctorData = await Doctor.findOne({ where: { userId: existingUser.id }, attributes: ['speciality', 'introduction', 'registDate'] });
+      if (doctorData) {
+        extraData = replaceNullWithNA(doctorData.dataValues);
+      }
+    } else if (existingUser.role === 'admin') {
+      const adminData = await Admin.findOne({ where: { userId: existingUser.id }, attributes: ['registDate'] });
+      if (adminData) {
+        extraData = replaceNullWithNA(adminData.dataValues);
+      }
+    }
+
     return res.status(200).json({
       message: 'Sikeres bejelentkezés.',
       token,
@@ -120,10 +139,11 @@ const login = async (req, res) => {
         email: existingUser.email,
         name: existingUser.name,
         role: existingUser.role,
-        phoneNumber: existingUser.phoneNumber,
-        address: existingUser.address,
-        birthDate: existingUser.birthDate,
-        pictureUrl: existingUser.pictureUrl
+        phoneNumber: existingUser.phoneNumber ?? 'N/A',
+        address: existingUser.address ?? 'N/A',
+        birthDate: existingUser.birthDate ?? 'N/A',
+        pictureUrl: existingUser.pictureUrl ?? 'N/A',
+        ...extraData
       }
     });
 
@@ -132,6 +152,16 @@ const login = async (req, res) => {
     return res.status(500).json({ message: 'Szerverhiba a bejelentkezés során.' });
   }
 };
+
+function replaceNullWithNA(data) {
+  const cleanedData = {};
+  for (const key in data) {
+    if (data.hasOwnProperty(key)) {
+      cleanedData[key] = data[key] === null ? 'N/A' : data[key];
+    }
+  }
+  return cleanedData;
+}
 
 module.exports = {
   registerPatient,

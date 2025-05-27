@@ -1,0 +1,76 @@
+.page {
+  height: 100%;
+  background-color: #E2FFFE;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: [first] 1fr [second] 1fr [third] 1fr [fourth] 1fr [fifth] 1fr [sixth] 1fr [seventh];
+  grid-template-rows: [top] auto [middle-top] auto [middle] auto [middle-bottom] auto [bottom];
+  gap: 1.5rem;
+  width: 75%;
+  margin: auto;
+  padding: 5rem;
+}
+
+.profile {
+  background: white;
+  border-radius: 1rem;
+  grid-column: second / sixth;
+  grid-row: top / middle;
+  box-shadow: 0 0 1rem rgba(0,0,0,0.1);
+}
+
+.patients {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  grid-column: first / third;
+  grid-row: middle / middle-bottom;
+  box-shadow: 0 0 1rem rgba(0,0,0,0.1);
+}
+
+.doctors {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  grid-column: third / fifth;
+  grid-row: middle / middle-bottom;
+  box-shadow: 0 0 1rem rgba(0,0,0,0.1);
+}
+
+.admins {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  grid-column: fifth / seventh;
+  grid-row: middle / middle-bottom;
+  box-shadow: 0 0 1rem rgba(0,0,0,0.1);
+}
+
+.doctor-applications {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  grid-column: first / third;
+  grid-row: middle-bottom / bottom;
+  box-shadow: 0 0 1rem rgba(0,0,0,0.1);
+}
+
+.messages {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  grid-column: third / fifth;
+  grid-row: middle-bottom / bottom;
+  box-shadow: 0 0 1rem rgba(0,0,0,0.1);
+}
+
+.ai-assistant {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  grid-column: fifth / seventh;
+  grid-row: middle-bottom / bottom;
+  box-shadow: 0 0 1rem rgba(0,0,0,0.1);
+}

@@ -54,21 +54,4 @@ export class RegistLoginComponent {
     document.documentElement.style.setProperty('--content-height', `${viewportHeight}px`);
   }
 
-  getTabHeight(): string {
-    if (this.isMobile) {
-      switch (this.activeTab) {
-        case 'login':
-          return '96.4vh';
-        case 'patient':
-          return 'auto';
-        case 'doctor':
-          return 'auto';
-        default:
-          return 'auto';
-      }
-    } else {
-      return '82.4vh';
-    }
-  }
-
 }

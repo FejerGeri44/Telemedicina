@@ -1,60 +1,44 @@
-<!-- Mobil nézet -->
-<ng-container *ngIf="isMobile">
-  <ion-header class="navbar">
-    <ion-toolbar>
-      <div class="navbar-content">
+<ion-app>
+  <!-- Mobile view -->
+  <ion-menu contentId="main-content" type="overlay" side="end" class="sideMenu">
+    <ion-content>
+      <ion-list>
+        <ion-item button (click)="navigateToPatient()">Regisztráció</ion-item>
+        <ion-item button (click)="navigateToDoctor()">Orvosi jelentkezés</ion-item>
+        <ion-item button (click)="navigateToLogin()">Bejelentkezés</ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+  <div *ngIf="isMobile" class="ion-page" id="main-content">
+    <ion-header>
+      <ion-toolbar color="primary" class="navbar-container">
+        <ion-buttons slot="end">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
         <div class="navbar-left">
-          <img src="pictures/logo.png" alt="Logo" class="logo" />
-          <span class="title">CareLink</span>
+          <img src="pictures/logo.png" alt="Logo" class="logo" draggable="false"/>
+          <ion-title>CareLink</ion-title>
         </div>
-
-        <div class="mobile-right">
-          <ion-button (click)="toggleMenu()" fill="clear">
-            <img src="/icons/menu.png" class="menu-btn" alt="Menü" style="height: 2rem; width: 2rem;" />
-          </ion-button>
-        </div>
-      </div>
-    </ion-toolbar>
-  </ion-header>
-
-  <!-- Jobb oldali menü -->
-  <div class="mobile-menu" [class.open]="isMenuOpen">
-    <div class="menu-header">
-      <ion-icon name="close-outline" class="close-icon" (click)="toggleMenu()"></ion-icon>
-    </div>
-    <div class="menu-content">
-      <ion-button class="close-wrapper" expand="full" color="medium" (click)="toggleMenu()">
-        <img src="/icons/close.png" class="close-btn" alt="Menü" style="height: 1.8rem; width: 1.8rem;" />
-      </ion-button>
-      <div class="menu-item">
-        <ion-button expand="full" (click)="navigateToLogin()">Bejelentkezés</ion-button>
-      </div>
-      <div class="menu-item">
-        <ion-button expand="full" (click)="navigateToPatient()">Regisztráció</ion-button>
-      </div>
-      <div class="menu-item">
-        <ion-button expand="full" (click)="navigateToDoctor()">Orvosi jelentkezés</ion-button>
-      </div>
-    </div>
+      </ion-toolbar>
+    </ion-header>
+    <ion-router-outlet></ion-router-outlet>
   </div>
-</ng-container>
 
-
-<!-- Desktop nézet -->
-<ng-container *ngIf="!isMobile">
-  <ion-header class="navbar">
+  <!-- Desktop view -->
+  <ion-header *ngIf="!isMobile">
     <ion-toolbar>
       <div class="navbar-content">
         <div class="navbar-left">
-          <img src="pictures/logo.png" alt="Logo" class="logo"/>
-          <span class="title">CareLink</span>
+          <img src="pictures/logo.png" alt="Logo" class="logo" draggable="false"/>
+          <ion-title>CareLink</ion-title>
         </div>
 
         <div class="navbar-right">
-          <ion-button class="custom-btn" (click)="navigateToLogin()">Bejelentkezés</ion-button>
-          <ion-button class="custom-btn primary" (click)="navigateToPatient()">Regisztráció</ion-button>
+          <a (click)="navigateToPatient()" class="nav-link">Regisztráció</a>
+          <a (click)="navigateToDoctor()" class="nav-link">Orvosi jelentkezés</a>
+          <a (click)="navigateToLogin()" class="nav-link">Bejelentkezés</a>
         </div>
       </div>
     </ion-toolbar>
   </ion-header>
-</ng-container>
+</ion-app>

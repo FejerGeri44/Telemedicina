@@ -38,13 +38,17 @@
         <input type="tel" class="desktop-input" [(ngModel)]="phoneNumber" placeholder="06XXXXXXXXX" required/>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Cím</ion-label>
-        <input type="text" class="desktop-input" [(ngModel)]="address" placeholder="Baranyai utca 52." required/>
+        <ion-label position="floating">TAJ szám</ion-label>
+        <input type="text" class="desktop-input" [(ngModel)]="address" placeholder="TAJ" required/>
       </ion-item>
     </div>
 
     <!-- 4. sor -->
     <div class="grid-pair">
+      <ion-item>
+        <ion-label position="floating">Cím</ion-label>
+        <input type="text" class="desktop-input" [(ngModel)]="address" placeholder="Baranyai utca 52." required/>
+      </ion-item>
       <ion-item>
         <ion-label position="floating">Születési dátum</ion-label>
         <input type="date" class="desktop-input" [(ngModel)]="birthDate"/>
@@ -99,13 +103,17 @@
         <input type="tel" class="mobil-input" [(ngModel)]="phoneNumber" placeholder="06XXXXXXXXX" required/>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Cím</ion-label>
-        <input type="text" class="mobil-input" [(ngModel)]="address" placeholder="Baranyai utca 52." required/>
+        <ion-label position="floating">TAJ szám</ion-label>
+        <input type="text" class="desktop-input" [(ngModel)]="address" placeholder="TAJ" required/>
       </ion-item>
     </div>
 
     <!-- 4. sor -->
     <div class="mobil-grid-pair">
+      <ion-item>
+        <ion-label position="floating">Cím</ion-label>
+        <input type="text" class="mobil-input" [(ngModel)]="address" placeholder="Baranyai utca 52." required/>
+      </ion-item>
       <ion-item>
         <ion-label position="floating">Születési dátum</ion-label>
         <input type="date" class="mobil-input" [(ngModel)]="birthDate"/>
