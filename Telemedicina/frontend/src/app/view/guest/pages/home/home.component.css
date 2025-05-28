@@ -115,7 +115,7 @@
 
 .floating {
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
   animation: float 4s ease-in-out infinite;
 }
 

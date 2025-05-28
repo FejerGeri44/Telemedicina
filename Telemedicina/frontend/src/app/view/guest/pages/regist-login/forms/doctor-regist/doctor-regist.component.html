@@ -1,97 +1,93 @@
 <ion-card>
-
   <ion-card-header>
     <ion-card-title>Orvosi jelentkezés</ion-card-title>
   </ion-card-header>
 
-  <!-- Desktop view -->
-  <ion-card-content *ngIf="!isMobile" class="form-grid">
+  <ion-card-content class="form">
 
     <!-- 1. sor -->
-    <div class="desktop-grid-pair">
+    <div class="grid-pair">
       <ion-item>
-        <ion-label position="floating">Teljes név</ion-label>
-        <input type="text" class="desktop-input" [(ngModel)]="fullName" placeholder="Teljes név" required/>
+        <ion-label class="custom-label" position="stacked">Teljes név</ion-label>
+        <ion-input
+          type="text"
+          class="custom-input"
+          [(ngModel)]="fullName"
+          placeholder="Teljes név"
+          fill="outline"
+          required
+          clearInput/>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">E-mail cím</ion-label>
-        <input type="email" class="desktop-input" [(ngModel)]="email" placeholder="Email cím" required/>
+        <ion-label class="custom-label" position="stacked">E-mail cím</ion-label>
+        <ion-input
+          type="email"
+          class="custom-input"
+          [(ngModel)]="email"
+          placeholder="Email cím"
+          fill="outline"
+          required
+          clearInput/>
       </ion-item>
     </div>
 
     <!-- 2. sor -->
-    <div class="desktop-grid-pair">
+    <div class="grid-pair">
       <ion-item>
-        <ion-label position="floating">Jelszó</ion-label>
-        <input type="password" class="desktop-input" [(ngModel)]="password" placeholder="Jelszó" required/>
+        <ion-label class="custom-label" position="stacked">Jelszó</ion-label>
+        <ion-input
+          type="password"
+          class="custom-input"
+          [(ngModel)]="password"
+          placeholder="Jelszó"
+          fill="outline"
+          required
+          clearInput/>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Jelszó ismét</ion-label>
-        <input type="password" class="desktop-input" [(ngModel)]="password_again" placeholder="Jelszó még egyszer" required/>
-      </ion-item>
-    </div>
-
-    <!-- 3. sor -->
-    <div class="desktop-grid-pair">
-      <ion-item>
-        <ion-label position="floating">Telefonszám</ion-label>
-        <input type="tel" class="desktop-input" [(ngModel)]="phoneNumber" placeholder="06XXXXXXXXX" required/>
-      </ion-item>
-      <ion-item>
-        <ion-label position="floating">Szakterület</ion-label>
-        <input type="text" class="desktop-input" [(ngModel)]="speciality" placeholder="Szakterület" required/>
-      </ion-item>
-    </div>
-
-    <!-- Gomb -->
-    <div class="desktop-button-row">
-      <ion-button class="back" (click)="backToDash()">Vissza</ion-button>
-      <ion-button class="form-button" (click)="onDoctorRegister()">Jelentkezek</ion-button>
-    </div>
-
-  </ion-card-content>
-  <!-- Mobil view -->
-  <ion-card-content *ngIf="isMobile" class="form-grid">
-
-    <!-- 1. sor -->
-    <div class="mobil-grid-pair">
-      <ion-item>
-        <ion-label position="floating">Teljes név</ion-label>
-        <input type="text" class="mobil-input" [(ngModel)]="fullName" placeholder="Teljes név" required/>
-      </ion-item>
-      <ion-item>
-        <ion-label position="floating">E-mail cím</ion-label>
-        <input type="email" class="mobil-input" [(ngModel)]="email" placeholder="Email cím" required/>
-      </ion-item>
-    </div>
-
-    <!-- 2. sor -->
-    <div class="mobil-grid-pair">
-      <ion-item>
-        <ion-label position="floating">Jelszó</ion-label>
-        <input type="password" class="mobil-input" [(ngModel)]="password" placeholder="Jelszó" required/>
-      </ion-item>
-      <ion-item>
-        <ion-label position="floating">Jelszó ismét</ion-label>
-        <input type="password" class="mobil-input" [(ngModel)]="password_again" placeholder="Jelszó még egyszer" required/>
+        <ion-label class="custom-label" position="stacked">Jelszó ismét</ion-label>
+        <ion-input
+          type="password"
+          class="custom-input"
+          [(ngModel)]="password_again"
+          placeholder="Jelszó még egyszer"
+          fill="outline"
+          required
+          clearInput/>
       </ion-item>
     </div>
 
     <!-- 3. sor -->
-    <div class="mobil-grid-pair">
+    <div class="grid-pair">
       <ion-item>
-        <ion-label position="floating">Telefonszám</ion-label>
-        <input type="tel" class="mobil-input" [(ngModel)]="phoneNumber" placeholder="06XXXXXXXXX" required/>
+        <ion-label class="custom-label" position="stacked">Telefonszám</ion-label>
+        <ion-input
+          type="tel"
+          class="custom-input"
+          [(ngModel)]="phoneNumber"
+          placeholder="06XXXXXXXXX"
+          fill="outline"
+          required
+          clearInput/>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Szakterület</ion-label>
-        <input type="text" class="mobil-input" [(ngModel)]="speciality" placeholder="Szakterület" required/>
+        <ion-label class="custom-label" position="stacked">Szakterület</ion-label>
+        <ion-input
+          type="text"
+          class="custom-input"
+          [(ngModel)]="speciality"
+          placeholder="Szakterület"
+          fill="outline"
+          required
+          clearInput/>
       </ion-item>
     </div>
 
     <!-- Gomb -->
-    <ion-button class="mobil-form-button" (click)="onDoctorRegister()">Jelentkezek</ion-button>
-    <ion-button class="mobil-back" (click)="backToDash()">Vissza</ion-button>
+    <div class="button-row">
+      <ion-button class="btn-back" (click)="backToDash()">Vissza</ion-button>
+      <ion-button class="btn-regist" (click)="onDoctorRegister()">Jelentkezek</ion-button>
+    </div>
 
   </ion-card-content>
 
