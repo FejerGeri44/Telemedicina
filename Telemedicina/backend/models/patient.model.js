@@ -19,6 +19,10 @@ module.exports = (sequelize) => {
       type: DataTypes.FLOAT,
       allowNull: true
     },
+    taj: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
     homePhone: {
       type: DataTypes.STRING,
       allowNull: true

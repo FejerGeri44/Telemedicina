@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import {Component, ComponentRef, Injector, ViewContainerRef} from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import {NotificationComponent} from '../../../../../../shared/notification/notification.component';
+import { ToastController } from '@ionic/angular';
+import {CustomToastComponent} from '../../../../../../shared/toast/toast.component';
 
 @Component({
   selector: 'app-patient-regist',
@@ -12,57 +13,57 @@ import {NotificationComponent} from '../../../../../../shared/notification/notif
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule,
-    NotificationComponent
+    IonicModule
   ],
   templateUrl: './patient-regist.component.html',
   styleUrls: ['./patient-regist.component.css']
 })
 
 export class PatientRegistComponent {
-  isMobile: boolean = false;
-  private resizeListener!: () => void;
 
   fullName: string = '';
   email: string = '';
   password: string = '';
   password_again: string = '';
   phoneNumber: string = '';
+  taj: string = '';
   address: string = '';
   birthDate: string = '';
 
-  notificationMessage = '';
-  notificationType: 'success' | 'error' = 'success';
-  showNotification = false;
+  validEmail: boolean = false;
+  invalidEmail: boolean = false;
 
-  constructor(private http: HttpClient, private router: Router) {}
-
-  ngOnInit() {
-    this.updateScreenSize();
-    this.resizeListener = () => this.updateScreenSize();
-    window.addEventListener('resize', this.resizeListener);
-  }
-
-  ngOnDestroy(): void {
-    window.removeEventListener('resize', this.resizeListener);
-  }
-
-  updateScreenSize() {
-    this.isMobile = window.innerWidth < 768;
-  }
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private viewContainerRef: ViewContainerRef,
+    private injector: Injector
+  ) {}
 
   onPatientRegister() {
 
     // Üres mezők ellenőrzése
-    if (!this.fullName || !this.email || !this.password || !this.password_again) {
-      this.showCustomNotification('Kérlek tölts ki minden mezőt!', 'error');
+    if (!this.fullName || !this.email || !this.password || !this.password_again || !this.phoneNumber || !this.address ||! this.birthDate) {
+      this.showCustomToast('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
       return;
-    }
+    } else {
 
-    // Jelszavak egyezősége
-    if (this.password !== this.password_again) {
-      this.showCustomNotification('A jelszavak nem egyeznek!', 'error');
-      return;
+      // Email ellenőrzése
+      if (!this.email.includes('@')) {
+        this.invalidEmail = true;
+        this.validEmail = false;
+        this.showCustomToast('Hibás e-mail cím!', 'danger');
+        return;
+      } else {
+        this.invalidEmail = false;
+        this.validEmail = true;
+      }
+
+      // Jelszavak egyezősége
+      if (this.password !== this.password_again) {
+        this.showCustomToast('A jelszavak nem egyeznek!', 'warning');
+        return;
+      }
     }
 
     const patientData = {
@@ -70,6 +71,7 @@ export class PatientRegistComponent {
       email: this.email,
       password: this.password,
       phoneNumber: this.phoneNumber,
+      taj: this.taj,
       address: this.address,
       birthDate: this.birthDate
     };
@@ -77,12 +79,20 @@ export class PatientRegistComponent {
     this.http.post('http://localhost:3000/api/auth/register/patient', patientData)
       .subscribe({
         next: () => {
-          this.showCustomNotification('Sikeres regisztráció!', 'success');
-          void this.router.navigate(['/regist-login'], { queryParams: { tab: 'login' }});
+          setTimeout(() => {
+            void this.router.navigate(['/regist-login'], {
+              queryParams: {
+                tab: 'login',
+                toast: 'Sikeres páciens regisztráció!',
+                type: 'success',
+                successfulRegist: true
+              }
+            });
+          }, 500);
         },
         error: err => {
           console.error(err);
-          this.showCustomNotification('Hiba történt a regisztráció során.', 'error');
+          this.showCustomToast('Hiba történt a páciens regisztráció során.', 'danger');
         }
       });
   }
@@ -91,13 +101,14 @@ export class PatientRegistComponent {
     void this.router.navigate(['/']);
   }
 
-  showCustomNotification(message: string, type: 'success' | 'error' = 'success') {
-    this.notificationMessage = message;
-    this.notificationType = type;
-    this.showNotification = true;
+  showCustomToast(message: string, type: 'success' | 'warning' | 'danger') {
+    const toastRef: ComponentRef<CustomToastComponent> = this.viewContainerRef.createComponent(CustomToastComponent, {
+      injector: this.injector
+    });
 
-    setTimeout(() => {
-      this.showNotification = false;
-    }, 3000);
+    toastRef.instance.message = message;
+    toastRef.instance.type = type;
+
+    setTimeout(() => toastRef.destroy(), 4000);
   }
 }

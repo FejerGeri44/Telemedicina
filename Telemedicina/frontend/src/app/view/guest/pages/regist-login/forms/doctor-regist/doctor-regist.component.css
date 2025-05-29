@@ -11,8 +11,11 @@ ion-card-header {
 
 ion-card-title {
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: bolder;
   color: #007acc;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  line-height: 1.5;
 }
 
 ion-card-content.form {
@@ -20,16 +23,14 @@ ion-card-content.form {
   flex-direction: column;
   gap: 10px;
   padding: 10px 0;
+  line-height: normal;
 }
 
 ion-item {
-  --background: transparent;
-  --highlight-color-focused: #007acc;
-  --border-style: none;
-  margin-bottom: 1rem;
-  border-radius: 10px;
   --padding-start: 0;
   --inner-padding-end: 0;
+  --border-style: none;
+  margin: 0;
 }
 
 ion-label.custom-label {

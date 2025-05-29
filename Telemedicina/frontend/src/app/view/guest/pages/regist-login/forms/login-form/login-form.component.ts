@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import {Component, ComponentRef, Injector, ViewContainerRef} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { NotificationComponent } from '../../../../../../shared/notification/notification.component';
+import { CustomToastComponent } from '../../../../../../shared/toast/toast.component';
 
 @Component({
   selector: 'app-login-form',
@@ -14,42 +14,71 @@ import { NotificationComponent } from '../../../../../../shared/notification/not
   imports: [
     CommonModule,
     IonicModule,
-    FormsModule,
-    NotificationComponent
+    FormsModule
   ]
 })
 export class LoginFormComponent {
-  isMobile: boolean = false;
-  private resizeListener!: () => void;
-
+  validEmail: boolean = false;
+  invalidEmail: boolean = false;
   email: string = '';
   password: string = '';
 
-  notificationMessage = '';
-  notificationType: 'success' | 'error' = 'success';
-  showNotification = false;
-
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private viewContainerRef: ViewContainerRef,
+    private injector: Injector,
+    private route: ActivatedRoute
+    ) {}
 
   ngOnInit() {
-    this.updateScreenSize();
-    this.resizeListener = () => this.updateScreenSize();
-    window.addEventListener('resize', this.resizeListener);
-  }
+    this.route.queryParams.subscribe(params => {
+      const toast = params['toast'];
+      const type = params['type'] as 'success' | 'warning' | 'danger';
+      const successfulRegist = params['successfulRegist'] === 'true'; // konvertáljuk stringből
 
-  ngOnDestroy(): void {
-    window.removeEventListener('resize', this.resizeListener);
-  }
+      if (toast && type && successfulRegist) {
+        const toastRef = this.viewContainerRef.createComponent(CustomToastComponent, {
+          injector: this.injector
+        });
 
-  updateScreenSize() {
-    this.isMobile = window.innerWidth < 768;
+        toastRef.instance.message = toast;
+        toastRef.instance.type = type;
+
+        setTimeout(() => toastRef.destroy(), 4000);
+
+        setTimeout(() => {
+          void this.router.navigate([], {
+            queryParams: {
+              toast: null,
+              type: null,
+              successfulRegist: null
+            },
+            queryParamsHandling: 'merge'
+          });
+        }, 100);
+      }
+    });
   }
 
   onLogin() {
+
     // Üres mezők ellenőrzése
     if (!this.email || !this.password){
-      this.showCustomNotification('Kérlek tölts ki minden mezőt.', 'error');
+      this.showCustomToast('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
       return;
+    } else {
+
+      // Email ellenőrzése
+      if (!this.email.includes('@')) {
+        this.invalidEmail = true;
+        this.validEmail = false;
+        this.showCustomToast('Hibás e-mail cím!', 'danger');
+        return;
+      } else {
+        this.invalidEmail = false;
+        this.validEmail = true;
+      }
     }
 
     const credentials = {
@@ -62,6 +91,7 @@ export class LoginFormComponent {
         next: res => {
           localStorage.setItem('token', res.token);
           localStorage.setItem('user', JSON.stringify(res.user));
+          this.showCustomToast('Sikeresen bejelentkeztél!', 'success');
 
           // Iranyitas szerepkor szerint
           switch (res.user.role) {
@@ -74,12 +104,11 @@ export class LoginFormComponent {
             case 'admin':
               void this.router.navigate(['/dashboard/admin']);
               break;
-            default:
-              void this.router.navigate(['/']);
           }
         },
         error: err => {
-          this.showCustomNotification('Hibás bejelentkezés.', 'error');
+          console.error(err);
+          this.showCustomToast('Hibás email cím vagy jelszó!', 'danger');
         }
       });
   }
@@ -88,14 +117,15 @@ export class LoginFormComponent {
     void this.router.navigate(['/']);
   }
 
-  showCustomNotification(message: string, type: 'success' | 'error' = 'success') {
-    this.notificationMessage = message;
-    this.notificationType = type;
-    this.showNotification = true;
+  showCustomToast(message: string, type: 'success' | 'warning' | 'danger') {
+    const toastRef: ComponentRef<CustomToastComponent> = this.viewContainerRef.createComponent(CustomToastComponent, {
+      injector: this.injector
+    });
 
-    setTimeout(() => {
-      this.showNotification = false;
-    }, 3000);
+    toastRef.instance.message = message;
+    toastRef.instance.type = type;
+
+    setTimeout(() => toastRef.destroy(), 4000);
   }
 }
 

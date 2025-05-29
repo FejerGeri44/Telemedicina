@@ -1,0 +1,46 @@
+.toast-wrapper {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  z-index: 9999;
+  background: white;
+  color: #333;
+  padding: 14px 20px;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  user-select: none;
+  animation: slideIn 0.4s ease forwards;
+  transition: opacity 0.4s ease;
+}
+
+.toast-wrapper.success { border-left: 15px solid #28a745; }
+.toast-wrapper.warning { border-left: 15px solid #ffc107; }
+.toast-wrapper.danger { border-left: 15px solid #dc3545; }
+
+.toast-wrapper ion-icon {
+  font-size: 1.6rem;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.toast-wrapper.fade-out {
+  animation: slideOut 0.4s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}

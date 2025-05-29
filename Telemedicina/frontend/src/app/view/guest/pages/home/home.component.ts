@@ -41,10 +41,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isMobile = window.innerWidth < 768;
   }
 
-  navigateToLogin() {
-    void this.router.navigate(['/regist-login'], { queryParams: { tab: 'login' }});
-  }
-
   navigateToPatient() {
     void this.router.navigate(['/regist-login'], { queryParams: { tab: 'patient' }});
   }

@@ -1,6 +1,10 @@
 .hero {
   height: 100vh;
-  background: linear-gradient(-10deg, #ffffff, #00acc1);
+  background: linear-gradient(-10deg,
+      #ffffff 0%,
+      #a8dde5 50%,
+      #00acc1 100%
+  );
   padding: 55px 20px 0 20px;
   overflow: hidden;
   display: flex;
@@ -88,10 +92,16 @@
   --border-radius: 10px;
 }
 
+.info-boxes {
+  width: 100%;
+  margin-left: 0;
+}
+
 .info-boxes .info {
+  max-width: 250px;
   background-color: #ffffff;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 15px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
@@ -99,11 +109,13 @@
 .info-boxes .mainFocus {
   font-size: 1.8rem;
   font-weight: bold;
+  margin-bottom: 0;
   color: #007acc;
 }
 
 .info-boxes .complamentary {
   font-size: 0.9rem;
+  margin-top: 5px;
   color: #777;
 }
 
@@ -116,6 +128,7 @@
 .floating {
   width: 100%;
   max-width: 600px;
+  min-width: 300px;
   animation: float 4s ease-in-out infinite;
 }
 

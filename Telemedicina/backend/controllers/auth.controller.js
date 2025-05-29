@@ -1,11 +1,10 @@
 const bcrypt = require('bcrypt');
-const { User, Patient, Admin } = require('../models');
-const { Doctor } = require('../models');
+const { User, Patient, Doctor, Admin } = require('../models');
 const jwt = require('jsonwebtoken');
 
 const registerPatient = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber, address, birthDate, height, weight, homePhone } = req.body;
+    const { name, email, password, phoneNumber, taj, address, birthDate, height, weight, homePhone } = req.body;
     const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-images%2Fpatient.png?alt=media&token=1ebd70ba-15a8-49bb-bc75-94b596a9c63d';
 
     // Ellenőrizzük, hogy van-e már ilyen e-mail
@@ -34,6 +33,7 @@ const registerPatient = async (req, res) => {
       userId: user.id,
       height,
       weight,
+      taj,
       homePhone,
       registDate: new Date()
     });
@@ -61,9 +61,9 @@ const registerDoctor = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Felhasználó mentése
-    await User.create({
-      email,
+    const user = await User.create({
       name,
+      email,
       password: hashedPassword,
       role: 'doctor',
       phoneNumber,
@@ -74,12 +74,11 @@ const registerDoctor = async (req, res) => {
 
     // Orvos-specifikus adatok mentése
     await Doctor.create({
-      userId: User.id,
+      userId: user.id,
       speciality,
       introduction,
       registDate: new Date()
     });
-
 
     return res.status(201).json({ message: 'Orvos regisztráció sikeres.' });
 
