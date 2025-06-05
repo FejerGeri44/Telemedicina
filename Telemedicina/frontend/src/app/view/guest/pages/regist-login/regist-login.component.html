@@ -1,7 +1,7 @@
 <div class="pageContainer">
   <ion-content>
     <ion-card class="switch-card">
-      <ion-segment [(ngModel)]="activeTab" value="login" mode="md" class="custom-segment">
+      <ion-segment [value]="activeTab" (ionChange)="onTabChange($event.detail.value?.toString())" mode="md" class="custom-segment">
         <ion-segment-button value="login">
           <ion-icon name="log-in-outline" class="segment-icon"></ion-icon>
           <ion-label>Bejelentkezés</ion-label>

@@ -3,176 +3,88 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: 10%;
-  max-width: 100px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background: #46A3CE;
-  overflow-x: hidden;
-  padding: 1rem 0;
+  width: 200px;
+  background-color: #1f2b3e;
+  color: white;
+  padding: 10px;
   z-index: 1000;
-  transition: all 0.3s ease;
-  box-shadow: 0.2rem 0 1rem 0 rgba(38, 198, 218, 0.5);
+  transition: width 0.3s ease;
+  overflow: hidden;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.sidebar.expanded {
-  width: 25%;
-  max-width: 250px;
+.sidebar.open {
+  width: 220px;
 }
 
-.toggle-btn-container {
-  margin: 2rem 0 4rem;
+.sidebar:not(.open) {
+  width: 90px;
+}
+
+.logo {
+  margin: 0 auto 20px;
+  width: 40px;
+}
+
+.top-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  margin-left: 23px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.top-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .toggle-btn {
   cursor: pointer;
-  height: 40px;
-  width: 40px;
+  font-size: 24px;
 }
 
-.menu {
+.nav-links {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-  flex-grow: 1;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.menu a {
+.nav-links li {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  color: white;
-  font-size: 1.1rem;
-  text-decoration: none;
-  user-select: none;
+  gap: 15px;
+  padding: 15px 32px;
+  border-radius: 8px;
+  margin-bottom: 10px;
   cursor: pointer;
-  padding: 0.8rem 1rem;
-  width: 20%;
-  transition: all 0.3s;
-  border-radius: 0.5rem;
+  transition: background 0.2s;
 }
 
-.menu-btn {
-  width: 30px;
-  height: 30px;
+.nav-links li:hover {
+  background-color: #32455f;
 }
 
-.sidebar.expanded .menu a {
-  width: 70%;
-  justify-content: flex-start;
+.nav-links li.active {
+  background-color: white;
+  color: #1f2b3e;
 }
 
-.menu a:hover {
-  background: rgba(0, 0, 0, 0.15);
+.nav-links li.active ion-icon {
+  color: #1f2b3e;
 }
 
 ion-icon {
-  font-size: 2rem;
+  font-size: 22px;
 }
 
-.bottom-btns {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.bottom-btns a {
-  color: white;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: auto;
-  gap: 1rem;
-  text-decoration: none;
-  user-select: none;
-  cursor: pointer;
-  padding: 0.8rem 1rem;
-  width: 20%;
-  transition: all 0.3s;
-  border-radius: 0.5rem;
-}
-
-.bottom-btns a:hover {
-  background: rgba(0, 0, 0, 0.15);
-}
-
-.sidebar.expanded .bottom-btns a {
-  width: 70%;
-  justify-content: flex-start;
-}
-
-.menu a.active {
-  background-color: rgba(0, 0, 0, 0.15);
-  font-weight: bold;
-  color: #ffffff;
-}
-
-.logout-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.popup-content {
-  background: white;
-  padding: 2rem 3rem;
-  border-radius: 1rem;
-  text-align: center;
-  box-shadow: 0 0 20px rgba(0,0,0,0.2);
-}
-
-.popup-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.popup-buttons .confirm {
-  font-family: "Bell MT";
-  padding: 0.7rem 1.5rem;
-  font-size: 1rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  background-color: #75ec98;
-  color: black;
-  border: 2px solid #21ab41;
-  transition: all 0.3s ease;
-}
-
-.popup-buttons .confirm:hover {
-  background-color: #21ab41;
-  color: #ffffff;
-}
-
-.popup-buttons .decline {
-  font-family: "Bell MT";
-  padding: 0.7rem 1.5rem;
-  font-size: 1rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  background-color: #f1b3b3;
-  color: black;
-  border: 2px solid #ff0000;
-  transition: all 0.3s ease;
-}
-
-.popup-buttons .decline:hover {
-  background-color: #ff0000;
-  color: #ffffff;
+.bottom-nav-links {
+  margin-top: auto;
+  padding-bottom: 20px;
 }

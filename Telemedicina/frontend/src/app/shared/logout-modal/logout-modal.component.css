@@ -1,0 +1,80 @@
+ion-content.logout-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.4);
+  height: 100%;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+.modal-box {
+  background: #fff;
+  padding: 30px 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.logout-message {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #1f2b3e;
+  margin-bottom: 20px;
+}
+
+.logout-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+ion-button {
+  --border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  flex: 1;
+}
+
+.cancel {
+  --background: none;
+  --color: #1f2b3e;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+}
+
+.confirm {
+  --background: #3880ff;
+  --color: #fff;
+}
+
+ion-button.cancel::part(native) {
+  transition: all 0.3s ease;
+}
+
+ion-button.cancel:hover::part(native) {
+  background-color: #3880ff;
+  color: #fff;
+  transform: scale(1.03);
+}
+
+ion-button.confirm::part(native) {
+  transition: all 0.3s ease;
+}
+
+ion-button.confirm:hover::part(native) {
+  filter: brightness(1.1);
+  transform: scale(1.03);
+}
