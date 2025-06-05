@@ -12,7 +12,7 @@ ion-card-header {
 ion-card-title {
   font-size: 1.5rem;
   font-weight: bolder;
-  color: #007acc;
+  color: var(--accent);
   letter-spacing: 1px;
   text-transform: uppercase;
   line-height: 1.5;
@@ -37,7 +37,7 @@ ion-label.custom-label {
   display: block;
   font-weight: 500;
   font-size: 1.5rem;
-  color: #333;
+  color: var(--smoke-color);
   margin-bottom: 10px;
 }
 
@@ -78,44 +78,8 @@ ion-item {
 .button-row {
   display: flex;
   gap: 20px;
-  width: 97%;
+  width: 100%;
   margin-top: 15px;
-}
-
-ion-button {
-  --border-radius: 8px;
-  font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-ion-button.btn-back {
-  width: 30%;
-  border-radius: 10px;
-  --background: transparent;
-  --color: #007acc;
-  border: 2px solid #007acc;
-}
-
-ion-button.btn-back:hover {
-  --background: #007acc;
-  --color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0, 122, 204, 0.25);
-}
-
-ion-button.btn-regist {
-  width: 70%;
-  border-radius: 10px;
-  --background: #007acc;
-  --color: white;
-  border: none;
-}
-
-ion-button.btn-regist:hover {
-  --background: #005f99;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 110, 166, 0.3);
 }
 
 @media (max-width: 600px) {
@@ -124,8 +88,8 @@ ion-button.btn-regist:hover {
   }
 
   ion-button.btn-back,
-  ion-button.btn-regist {
-    width: 100%;
+  ion-button.btn-submit {
+    width: 98%;
   }
 
   ion-button.btn-regist {

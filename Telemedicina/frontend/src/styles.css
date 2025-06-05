@@ -1,3 +1,21 @@
+:root {
+  --primary: #0276bc;
+  --secondary: #26c5d9;
+  --accent: #006ea6;
+  --light-text-color: #ffffff;
+  --dark-text-color: #000000;
+
+  --navbar-background-color: #00acc1;
+  --navbar-text-color: #ffffff;
+  --smoke-color: #444;
+  --quote-author: #00acc1;
+
+  --button-shadow: 0 2px 5px rgba(0, 110, 166, 0.3);
+  --ion-button-radius: 15px;
+  --button-radius: 10px;
+  --button-border: 2px solid var(--primary);
+}
+
 html, body {
   margin: 0;
   font-family: "Bell MT";
@@ -11,4 +29,47 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  user-select: none;
+}
+
+ion-button.btn-back {
+  width: 30%;
+  border-radius: var(--ion-button-radius);
+  --border-radius: var(--button-radius);
+  --background: none;
+  --box-shadow: none;
+  border: var(--button-border);
+  color: var(--primary);
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: var(--button-shadow);
+}
+
+ion-button.btn-back:hover {
+  background: var(--primary);
+  color: var(--light-text-color);
+  border-radius: var(--button-radius);
+  box-shadow: var(--button-shadow);
+  transform: translateY(-2px);
+}
+
+ion-button.btn-submit {
+  width: 70%;
+  border-radius: var(--ion-button-radius);
+  --border-radius: var(--button-radius);
+  --background: var(--primary);
+  --box-shadow: none;
+  border: var(--button-border);
+  color: var(--light-text-color);
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: var(--button-shadow);
+}
+
+ion-button.btn-submit:hover {
+  background: var(--primary);
+  color: var(--light-text-color);
+  border-radius: var(--button-radius);
+  box-shadow: var(--button-shadow);
+  transform: translateY(-2px);
 }

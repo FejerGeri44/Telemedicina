@@ -1,5 +1,5 @@
 ion-header {
-  background-color: #00acc1;
+  background-color: var(--secondary);
   position: fixed;
   top: 0;
   right: 0;
@@ -12,7 +12,7 @@ ion-buttons {
 }
 
 ion-menu-button {
-  color: white;
+  color: var(--light-text-color);
 }
 
 .navbar-container {
@@ -33,7 +33,7 @@ ion-title {
   font-size: 1.5rem;
   letter-spacing: 1px;
   font-weight: bold;
-  color: white;
+  color: var(--light-text-color);
   user-select: none;
 }
 
@@ -64,7 +64,7 @@ ion-list ion-item {
 }
 
 ion-toolbar {
-  --background: #00acc1;
+  --background: var(--navbar-background-color);
 }
 
 .navbar-content {
@@ -81,7 +81,7 @@ ion-toolbar {
 
 .navbar-right .nav-link {
   position: relative;
-  color: white;
+  color: var(--light-text-color);
   text-decoration: none;
   font-weight: bolder;
   user-select: none;
@@ -96,7 +96,7 @@ ion-toolbar {
   bottom: -5px;
   width: 0;
   height: 2px;
-  background-color: white;
+  background-color: var(--light-text-color);
   transition: width 0.3s ease;
 }
 

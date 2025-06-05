@@ -20,34 +20,33 @@
   max-width: 600px;
   margin: 20px auto;
   border-radius: 20px;
-  border: 2px solid #0276bc;
+  border: 2px solid var(--primary);
   box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 ion-segment.custom-segment {
-  --background: #e0f2fc;
   width: 100%;
   display: flex;
 }
 
 ion-segment-button:not(.segment-button-checked) {
-  background: #0276bc;
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--primary);
+  color: var(--light-text-color);
 }
 
 ion-segment-button:hover {
-  background: #26c5d9;
-  --color: black;
+  background: var(--secondary);
+  --color: var(--dark-text-color);
 }
 
 ion-segment-button.segment-button-checked {
-  background: #26c5d9;
+  background: var(--secondary);
   --indicator-height: 0;
 }
 
 ion-segment-button.segment-button-checked ion-icon,
 ion-segment-button.segment-button-checked ion-label {
-  color: black;
+  color: var(--dark-text-color);
 }
 
 ion-segment.custom-segment ion-segment-button {
@@ -81,7 +80,7 @@ ion-segment-button ion-icon {
   max-width: 600px;
   margin: 30px auto;
   padding: 20px 20px;
-  background: white;
+  background: var(--light-text-color);
   border-radius: 20px;
   box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.1);
   display: flex;

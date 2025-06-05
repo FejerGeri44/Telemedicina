@@ -8,15 +8,6 @@ ion-content.logout-content {
   height: 100%;
 }
 
-.header-content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-}
-
 .modal-box {
   background: #fff;
   padding: 30px 20px;
