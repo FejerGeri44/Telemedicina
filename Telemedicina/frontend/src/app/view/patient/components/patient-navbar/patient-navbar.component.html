@@ -1,54 +1,33 @@
-<div class="sidebar" [class.expanded]="isExpanded">
-  <div class="toggle-btn-container" (click)="toggleSidebar()">
-    <img [src]="isExpanded ? '/icons/collapse.png' : '/icons/extend.png'" class="toggle-btn" alt="Toggle"/>
-  </div>
-
-  <nav class="menu">
-    <a routerLink="/dashboard/patient" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <img src="/icons/patientIcon.png" class="menu-btn" alt="Kezdőlap"/>
-      <span *ngIf="isExpanded">Kezdőlap</span>
-    </a>
-
-    <a routerLink="/dashboard/patient/health-diary" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <img src="/icons/healthLog.png" class="menu-btn" alt="Egészségügyi napló"/>
-      <span *ngIf="isExpanded">Egészségügyi napló</span>
-    </a>
-
-    <a routerLink="/dashboard/patient/doctor-search" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <img src="/icons/staffIcon.png" class="menu-btn" alt="Orvos kereső"/>
-      <span *ngIf="isExpanded">Orvos kereső</span>
-    </a>
-
-    <a routerLink="/dashboard/patient/appointments" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <img src="/icons/calendar.png" class="menu-btn" alt="Időpontjaim"/>
-      <span *ngIf="isExpanded">Időpontjaim</span>
-    </a>
-
-    <a routerLink="/dashboard/patient/notifications" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <img src="/icons/notification.png" class="menu-btn" alt="Értesítések"/>
-      <span *ngIf="isExpanded">Értesítések</span>
-    </a>
-  </nav>
-
-  <div class="bottom-btns">
-    <a routerLink="/dashboard/patient/settings" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <img src="/icons/settings.png" class="menu-btn" alt="Beállítások"/>
-      <span *ngIf="isExpanded">Beállítások</span>
-    </a>
-
-    <a (click)="toggleLogoutPopup()">
-      <img src="/icons/logout.png" class="menu-btn" alt="Toggle"/>
-      <span *ngIf="isExpanded">Kijelentkezés</span>
-    </a>
-  </div>
-
-  <div class="logout-popup" *ngIf="showLogoutPopup">
-    <div class="popup-content">
-      <h3>Biztosan ki akarsz jelentkezni?</h3>
-      <div class="popup-buttons">
-        <button class="confirm" (click)="confirmLogout()">Igen, biztosan</button>
-        <button class="decline" (click)="toggleLogoutPopup()">Nem szeretnék</button>
-      </div>
+<div class="sidebar" [class.open]="!isCollapsed">
+  <img src="pictures/logo.png" alt="Logo" class="logo" draggable="false">
+  <div class="top-section">
+    <div class="top-nav-links">
+      <ion-icon name="apps" (click)="toggleSidebar()"></ion-icon>
+      <span *ngIf="!isCollapsed">Menü</span>
     </div>
+    <ion-icon name="close-outline" class="toggle-btn" *ngIf="!isCollapsed" (click)="toggleSidebar()"></ion-icon>
   </div>
+
+  <ul class="nav-links">
+    <li
+      *ngFor="let item of menuItems.slice(0, menuItems.length - 2)"
+      [routerLink]="item.route"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      <ion-icon [name]="item.icon"></ion-icon>
+      <span *ngIf="!isCollapsed">{{ item.label }}</span>
+    </li>
+  </ul>
+
+  <ul class="nav-links bottom-nav-links">
+    <li
+      *ngFor="let item of menuItems.slice(-2)"
+      (click)="item.label === 'Kijelentkezés' ? confirmLogout() : navigateTo(item.route)"
+      [class.active]="isActiveRoute(item.route)"
+    >
+      <ion-icon [name]="item.icon"></ion-icon>
+      <span *ngIf="!isCollapsed">{{ item.label }}</span>
+    </li>
+  </ul>
 </div>

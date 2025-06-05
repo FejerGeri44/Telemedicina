@@ -2,3 +2,13 @@ html, body {
   margin: 0;
   font-family: "Bell MT";
 }
+
+.custom-logout-modal {
+  --width: 350px;
+  --height: 210px;
+  --border-radius: 16px;
+  --box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

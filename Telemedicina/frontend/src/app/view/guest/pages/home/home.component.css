@@ -164,7 +164,11 @@
 ion-grid.grid-section {
   --ion-grid-padding: 0;
   --ion-grid-column-padding: 0;
-  }
+}
+
+.gridSystem {
+  user-select: none;
+}
 
 .box {
   background: white;

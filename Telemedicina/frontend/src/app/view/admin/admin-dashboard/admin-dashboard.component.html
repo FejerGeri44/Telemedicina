@@ -1,15 +1,54 @@
 <app-admin-navbar></app-admin-navbar>
 
-<div class="page">
+<ion-content class="page-container">
+  <div class="grid">
+    <ion-card class="profile-card">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <div class="profile-card-flex-wrapper">
+              <ion-card-header>
+                <ion-avatar class="profile-picture">
+                  <img *ngIf="user" [src]="user.pictureUrl" alt="Profilkép" />
+                </ion-avatar>
+                <ion-card-title *ngIf="user">
+                  <h2>{{ user.name }}</h2>
+                </ion-card-title>
+              </ion-card-header>
 
-  <ion-content class="grid">
-    <ion-card class="profile"></ion-card>
+              <ion-card-content>
+                <div class="user-grid">
+                  <div class="user-info">
+                    <div class="title">Kor</div>
+                  </div>
+                  <div class="user-info">
+                    <div class="title">Magasság</div>
+                    <div class="value">{{ user?.height }}</div>
+                  </div>
+                  <div class="user-info">
+                    <div class="title">Cím</div>
+                    <div class="value">{{ user?.address }}</div>
+                  </div>
+                  <div class="user-info">
+                    <div class="title">Súly</div>
+                    <div class="value">{{ user?.weight }}</div>
+                  </div>
+                </div>
+
+                <div class="edit-button-container">
+                  <ion-button expand="block" class="edit-button">Módosítás</ion-button>
+                </div>
+              </ion-card-content>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card>
     <ion-card class="patients"></ion-card>
     <ion-card class="doctors"></ion-card>
     <ion-card class="admins"></ion-card>
     <ion-card class="doctor-applications"></ion-card>
     <ion-card class="messages"></ion-card>
     <ion-card class="ai-assistant"></ion-card>
-  </ion-content>
-
-</div>
+  </div>
+</ion-content>

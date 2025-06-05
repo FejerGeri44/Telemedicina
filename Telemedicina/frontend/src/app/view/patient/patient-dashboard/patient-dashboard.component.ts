@@ -19,12 +19,6 @@ import { HttpClient } from '@angular/common/http';
 })
 export class PatientDashboardComponent {
   user: any;
-  isEditModalOpen = false;
-  editUser: any = {};
-  previewImage: string | ArrayBuffer | null = null;
-  selectedFile: File | null = null;
-
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   constructor(private http: HttpClient) {
     const storedUser = localStorage.getItem('user');
@@ -47,32 +41,4 @@ export class PatientDashboardComponent {
     return age;
   }
 
-  openEditModal() {
-    this.editUser = { ...this.user };
-    this.previewImage = this.user.pictureUrl || null;
-    this.isEditModalOpen = true;
-  }
-
-  closeEditModal() {
-    this.isEditModalOpen = false;
-  }
-
-  triggerFileInput() {
-    this.fileInput.nativeElement.click();
-  }
-
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-
-    if (!input.files || input.files.length === 0) {
-      console.warn('Nincs fájl kiválasztva.');
-      return;
-    }
-
-    this.selectedFile = input.files.item(0);
-  }
-
-  saveChanges() {
-    this.closeEditModal();
-  }
 }
