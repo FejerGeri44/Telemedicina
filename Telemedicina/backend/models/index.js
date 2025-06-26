@@ -15,14 +15,14 @@ const Patient = require('./patient.model')(sequelize);
 const Admin = require('./admin.model')(sequelize);
 
 // Kapcsolatok
-User.hasOne(Doctor, { foreignKey: 'email' });
-Doctor.belongsTo(User, { foreignKey: 'email' });
+User.hasOne(Doctor, { foreignKey: 'userId' });
+Doctor.belongsTo(User, { foreignKey: 'userId' });
 
-User.hasOne(Patient, { foreignKey: 'email' });
-Patient.belongsTo(User, { foreignKey: 'email' });
+User.hasOne(Patient, { foreignKey: 'userId' });
+Patient.belongsTo(User, { foreignKey: 'userId' });
 
-User.hasOne(Admin, { foreignKey: 'email' });
-Admin.belongsTo(User, { foreignKey: 'email' });
+User.hasOne(Admin, { foreignKey: 'userId' });
+Admin.belongsTo(User, { foreignKey: 'userId' });
 
 module.exports = {
   sequelize,

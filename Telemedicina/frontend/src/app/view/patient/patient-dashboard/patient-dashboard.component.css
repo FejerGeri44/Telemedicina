@@ -1,6 +1,6 @@
 .page-container {
   min-height: 100vh;
-  --background: #E2FFFE;
+  --background: var(--dashboard-background-color);
   display: flex;
   flex-direction: column;
 }
@@ -101,12 +101,8 @@ ion-card-title {
   margin-top: 1.5rem;
 }
 
-.edit-button {
-  --background: #3880ff;
-  --background-hover: #3171e0;
-  --color: #ffffff;
-  --border-radius: 0.5rem;
-  --box-shadow: 0 2px 8px rgba(56, 128, 255, 0.3);
+.edit {
+  width: 90%;
 }
 
 .data-right {

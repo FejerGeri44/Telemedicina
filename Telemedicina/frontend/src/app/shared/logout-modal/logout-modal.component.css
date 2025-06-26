@@ -33,39 +33,5 @@ ion-content.logout-content {
 }
 
 ion-button {
-  --border-radius: 12px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  flex: 1;
-}
-
-.cancel {
-  --background: none;
-  --color: #1f2b3e;
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-}
-
-.confirm {
-  --background: #3880ff;
-  --color: #fff;
-}
-
-ion-button.cancel::part(native) {
-  transition: all 0.3s ease;
-}
-
-ion-button.cancel:hover::part(native) {
-  background-color: #3880ff;
-  color: #fff;
-  transform: scale(1.03);
-}
-
-ion-button.confirm::part(native) {
-  transition: all 0.3s ease;
-}
-
-ion-button.confirm:hover::part(native) {
-  filter: brightness(1.1);
-  transform: scale(1.03);
+  width: 50%;
 }

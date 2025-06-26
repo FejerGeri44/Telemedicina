@@ -1,14 +1,14 @@
 :root {
-  --primary: #0276bc;
+  --primary: #213A57;
   --secondary: #26c5d9;
-  --accent: #006ea6;
+  --accent: #80ED99;
   --light-text-color: #ffffff;
   --dark-text-color: #000000;
 
-  --navbar-background-color: #00acc1;
-  --navbar-text-color: #ffffff;
+  --navbar-background-color: #213A57;
   --smoke-color: #444;
-  --quote-author: #00acc1;
+  --quote-author: #14919B;
+  --dashboard-background-color: #E2FFFE;
 
   --button-shadow: 0 2px 5px rgba(0, 110, 166, 0.3);
   --ion-button-radius: 15px;
@@ -32,7 +32,7 @@ html, body {
   user-select: none;
 }
 
-ion-button.btn-back {
+ion-button.btn-secondary {
   width: 30%;
   border-radius: var(--ion-button-radius);
   --border-radius: var(--button-radius);
@@ -43,9 +43,13 @@ ion-button.btn-back {
   font-weight: bold;
   transition: all 0.3s ease;
   box-shadow: var(--button-shadow);
+  white-space: normal;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
 }
 
-ion-button.btn-back:hover {
+ion-button.btn-secondary:hover {
   background: var(--primary);
   color: var(--light-text-color);
   border-radius: var(--button-radius);
@@ -53,7 +57,7 @@ ion-button.btn-back:hover {
   transform: translateY(-2px);
 }
 
-ion-button.btn-submit {
+ion-button.btn-primary {
   width: 70%;
   border-radius: var(--ion-button-radius);
   --border-radius: var(--button-radius);
@@ -64,9 +68,13 @@ ion-button.btn-submit {
   font-weight: bold;
   transition: all 0.3s ease;
   box-shadow: var(--button-shadow);
+  white-space: normal;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
 }
 
-ion-button.btn-submit:hover {
+ion-button.btn-primary:hover {
   background: var(--primary);
   color: var(--light-text-color);
   border-radius: var(--button-radius);

@@ -1,10 +1,6 @@
 .hero {
   height: 100vh;
-  background: linear-gradient(-10deg,
-      var(--light-text-color) 0%,
-      #a8dde5 50%,
-      var(--secondary) 100%
-  );
+  background: linear-gradient(-200deg, var(--dashboard-background-color), white);
   padding: 55px 20px 0 20px;
   overflow: hidden;
   display: flex;
@@ -66,7 +62,7 @@
   border-radius: 8px;
   padding: 15px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .info-boxes .mainFocus {

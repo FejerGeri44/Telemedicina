@@ -27,7 +27,7 @@ export class PatientNavbarComponent {
   menuItems = [
     { icon: 'home', label: 'Profil', route: '/dashboard/patient' },
     { icon: 'fitness', label: 'Egészségügyi napló', route: '/naplo' },
-    { icon: 'search', label: 'Orvos kereső', route: '/orvos-kereso' },
+    { icon: 'search', label: 'Orvos kereső', route: '/doctor-search' },
     { icon: 'calendar', label: 'Időpontjaim', route: '/idopontok' },
     { icon: 'notifications', label: 'Értesítések', route: '/ertesitesek' },
     { icon: 'settings-sharp', label: 'Beállítások', route: '/beallitasok' },

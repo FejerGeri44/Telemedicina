@@ -8,7 +8,7 @@
           <ion-col size="12" size-md="6">
             <ion-card-header>
               <ion-avatar class="profile-picture">
-                <img *ngIf="user" [src]="user.pictureUrl" alt="Profilkép" />
+                <img *ngIf="user" [src]="user.pictureUrl" alt="Profilkép" draggable="false" />
               </ion-avatar>
               <ion-card-title *ngIf="user">
                 <h2>{{ user.name }}</h2>
@@ -36,7 +36,7 @@
               </div>
 
               <div class="edit-button-container">
-                <ion-button expand="block" class="edit-button">
+                <ion-button class="btn-primary edit">
                   Módosítás
                 </ion-button>
               </div>

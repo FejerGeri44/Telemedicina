@@ -4,6 +4,7 @@ import { RegistLoginComponent } from './view/guest/pages/regist-login/regist-log
 import { DoctorDashboardComponent } from './view/doctor/doctor-dashboard/doctor-dashboard.component';
 import { PatientDashboardComponent } from './view/patient/patient-dashboard/patient-dashboard.component';
 import { AdminDashboardComponent } from './view/admin/admin-dashboard/admin-dashboard.component';
+import {DoctorSearchComponent} from './view/patient/pages/doctor-search/doctor-search.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -31,4 +32,5 @@ export const routes: Routes = [
   { path: 'dashboard/doctor', component: DoctorDashboardComponent },
   { path: 'dashboard/patient', component: PatientDashboardComponent },
   { path: 'dashboard/admin', component: AdminDashboardComponent },
+  { path: 'doctor-search', component: DoctorSearchComponent },
 ];

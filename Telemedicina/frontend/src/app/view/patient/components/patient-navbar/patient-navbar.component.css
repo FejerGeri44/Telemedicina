@@ -6,13 +6,14 @@
   display: flex;
   flex-direction: column;
   width: 200px;
-  background-color: #1f2b3e;
+  background-color: var(--navbar-background-color);
   color: white;
   padding: 10px;
   z-index: 1000;
   transition: width 0.3s ease;
   overflow: hidden;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  user-select: none;
 }
 
 .sidebar.open {
@@ -68,7 +69,7 @@
 }
 
 .nav-links li:hover {
-  background-color: #32455f;
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 .nav-links li.active {

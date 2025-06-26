@@ -1,6 +1,6 @@
 .page-container {
   min-height: 100vh;
-  --background: #E2FFFE;
+  --background: var(--dashboard-background-color);
   display: flex;
   flex-direction: column;
 }

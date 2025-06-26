@@ -29,16 +29,8 @@ export class DoctorDashboardComponent {
     }
   }
 
-  getAge(birthDateString: string): number {
-    const today = new Date();
-    const birthDate = new Date(birthDateString);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-
-    return age;
+  formatPhoneNumber(phone: string | undefined): string {
+    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
+    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
   }
 }
