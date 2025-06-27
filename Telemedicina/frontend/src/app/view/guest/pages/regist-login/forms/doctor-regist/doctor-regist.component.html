@@ -36,24 +36,38 @@
       <ion-item>
         <ion-label class="custom-label" position="stacked">Jelszó</ion-label>
         <ion-input
-          type="password"
           class="custom-input"
+          [type]="showPassword ? 'text' : 'password'"
           [(ngModel)]="password"
           placeholder="Jelszó"
           fill="outline"
           required
-          clearInput/>
+          clearInput>
+        </ion-input>
+        <ion-icon
+          *ngIf="password"
+          [name]="showPassword ? 'eye-off' : 'eye'"
+          (click)="togglePasswordVisibility()"
+          class="password-toggle-icon">
+        </ion-icon>
       </ion-item>
       <ion-item>
-        <ion-label class="custom-label" position="stacked">Jelszó ismét</ion-label>
+        <ion-label class="custom-label" position="stacked">Jelszó</ion-label>
         <ion-input
-          type="password"
           class="custom-input"
+          [type]="showPassword ? 'text' : 'password'"
           [(ngModel)]="password_again"
-          placeholder="Jelszó még egyszer"
+          placeholder="Jelszó"
           fill="outline"
           required
-          clearInput/>
+          clearInput>
+        </ion-input>
+        <ion-icon
+          *ngIf="password_again"
+          [name]="showPassword ? 'eye-off' : 'eye'"
+          (click)="togglePasswordVisibility()"
+          class="password-toggle-icon">
+        </ion-icon>
       </ion-item>
     </div>
 

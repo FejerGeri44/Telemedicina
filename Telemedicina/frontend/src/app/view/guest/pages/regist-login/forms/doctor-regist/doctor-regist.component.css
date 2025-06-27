@@ -82,6 +82,16 @@ ion-item {
   margin-top: 15px;
 }
 
+.password-toggle-icon {
+  position: absolute;
+  right: 60px;
+  top: 58%;
+  font-size: 1.4rem;
+  color: var(--smoke-color);
+  cursor: pointer;
+  z-index: 10;
+}
+
 @media (max-width: 600px) {
   .button-row {
     flex-direction: column;

@@ -1,7 +1,7 @@
 :root {
   --primary: #213A57;
   --secondary: #26c5d9;
-  --accent: #80ED99;
+  --accent: #B03441;
   --light-text-color: #ffffff;
   --dark-text-color: #000000;
 
@@ -14,6 +14,7 @@
   --ion-button-radius: 15px;
   --button-radius: 10px;
   --button-border: 2px solid var(--primary);
+  --accent-button-border: 2px solid var(--accent);
 }
 
 html, body {
@@ -76,6 +77,31 @@ ion-button.btn-primary {
 
 ion-button.btn-primary:hover {
   background: var(--primary);
+  color: var(--light-text-color);
+  border-radius: var(--button-radius);
+  box-shadow: var(--button-shadow);
+  transform: translateY(-2px);
+}
+
+ion-button.btn-accent {
+  width: 100%;
+  border-radius: var(--ion-button-radius);
+  --border-radius: var(--button-radius);
+  --background: var(--accent);
+  --box-shadow: none;
+  border: var(--accent-button-border);
+  color: var(--light-text-color);
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: var(--button-shadow);
+  white-space: normal;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+ion-button.btn-accent:hover {
+  background: var(--accent);
   color: var(--light-text-color);
   border-radius: var(--button-radius);
   box-shadow: var(--button-shadow);

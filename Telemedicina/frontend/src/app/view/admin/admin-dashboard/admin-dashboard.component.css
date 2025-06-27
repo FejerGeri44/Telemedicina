@@ -15,7 +15,7 @@
   margin: 0 auto;
   justify-content: center;
   align-content: center;
-  padding: 2.5%;
+  padding: 3% 3% 3% 12%;
 }
 
 .profile-card,
@@ -25,7 +25,7 @@
 .doctor-applications,
 .messages,
 .ai-assistant {
-  border-radius: 1rem;
+  border-radius: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   padding: 1rem;
   background-color: #ffffff;
@@ -109,10 +109,9 @@ ion-card-content {
 }
 
 .user-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 ion-card-title {
@@ -121,7 +120,7 @@ ion-card-title {
 }
 
 .user-info {
-  padding: 0.5rem;
+  padding: 5px;
 }
 
 h2 {
@@ -136,21 +135,17 @@ h2 {
 }
 
 .value {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #555;
   word-break: break-word;
 }
 
 .edit-button-container {
-  margin-top: 1.5rem;
+  margin-top: 30px;
 }
 
-.edit-button {
-  --background: #3880ff;
-  --background-hover: #3171e0;
-  --color: #ffffff;
-  --border-radius: 0.5rem;
-  --box-shadow: 0 2px 8px rgba(56, 128, 255, 0.3);
+.edit {
+  width: 90%;
 }
 
 .profile-data-wrapper {
@@ -159,17 +154,8 @@ h2 {
   width: 100%;
 }
 
-.profile-info,
 .profile-fields {
   width: 50%;
-}
-
-.profile-info {
-  display: flex;
-  font-size: 1rem;
-  color: #444;
-  border-radius: 0.5rem;
-  padding: 1rem;
 }
 
 .profile-fields {

@@ -22,6 +22,7 @@ export class LoginFormComponent {
   invalidEmail: boolean = false;
   email: string = '';
   password: string = '';
+  showPassword = false;
 
   constructor(
     private http: HttpClient,
@@ -111,6 +112,10 @@ export class LoginFormComponent {
           this.showCustomToast('Hibás email cím vagy jelszó!', 'danger');
         }
       });
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
   }
 
   backToDash() {

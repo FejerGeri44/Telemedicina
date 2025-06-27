@@ -31,6 +31,7 @@ export class DoctorRegistComponent {
 
   validEmail: boolean = false;
   invalidEmail: boolean = false;
+  showPassword: boolean = false;
 
   constructor(
     private http: HttpClient,
@@ -92,6 +93,10 @@ export class DoctorRegistComponent {
           this.showCustomToast('Hiba történt a regisztráció során!', 'danger');
         }
       });
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
   }
 
   backToDash() {

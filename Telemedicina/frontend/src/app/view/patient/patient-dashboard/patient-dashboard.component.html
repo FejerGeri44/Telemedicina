@@ -19,11 +19,11 @@
               <div class="user-grid">
                 <div class="user-info">
                   <div class="title">Kor</div>
-                  <div class="value">{{ getAge(user?.birthDate) }}</div>
+                  <div class="value">{{ getAge(user?.birthDate) }} év</div>
                 </div>
                 <div class="user-info">
                   <div class="title">Magasság</div>
-                  <div class="value">{{ user?.height }}</div>
+                  <div class="value">{{ user?.height }} cm</div>
                 </div>
                 <div class="user-info">
                   <div class="title">Cím</div>
@@ -31,14 +31,8 @@
                 </div>
                 <div class="user-info">
                   <div class="title">Súly</div>
-                  <div class="value">{{ user?.weight }}</div>
+                  <div class="value">{{ user?.weight }} kg</div>
                 </div>
-              </div>
-
-              <div class="edit-button-container">
-                <ion-button class="btn-primary edit">
-                  Módosítás
-                </ion-button>
               </div>
             </ion-card-content>
           </ion-col>
@@ -56,11 +50,15 @@
                 </div>
                 <div class="user-info">
                   <div class="title">Mobil</div>
-                  <div class="value">{{ user?.phoneNumber }}</div>
+                  <div class="value">{{ formatPhoneNumber(user?.phoneNumber) }}</div>
                 </div>
                 <div class="user-info">
                   <div class="title">Otthoni</div>
-                  <div class="value">{{ user?.homePhone }}</div>
+                  <div class="value">{{ formatPhoneNumber(user?.homePhone) }}</div>
+                </div>
+
+                <div class="edit-button-container">
+                  <ion-button class="btn-accent edit">Módosítás</ion-button>
                 </div>
               </ion-list>
             </ion-card-content>

@@ -16,27 +16,24 @@
                 </ion-card-title>
               </ion-card-header>
 
-              <ion-card-content>
+              <ion-card-content class="profile-fields">
                 <div class="user-grid">
-                  <div class="user-info">
-                    <div class="title">Kor</div>
-                  </div>
-                  <div class="user-info">
-                    <div class="title">Magasság</div>
-                    <div class="value">{{ user?.height }}</div>
-                  </div>
                   <div class="user-info">
                     <div class="title">Cím</div>
                     <div class="value">{{ user?.address }}</div>
                   </div>
                   <div class="user-info">
-                    <div class="title">Súly</div>
-                    <div class="value">{{ user?.weight }}</div>
+                    <div class="title">Email</div>
+                    <div class="value">{{ user?.email }}</div>
+                  </div>
+                  <div class="user-info">
+                    <div class="title">Telefonszám</div>
+                    <div class="value">{{ formatPhoneNumber(user?.phoneNumber) }}</div>
                   </div>
                 </div>
 
                 <div class="edit-button-container">
-                  <ion-button class="btn-primary">Módosítás</ion-button>
+                  <ion-button class="btn-accent edit">Módosítás</ion-button>
                 </div>
               </ion-card-content>
             </div>

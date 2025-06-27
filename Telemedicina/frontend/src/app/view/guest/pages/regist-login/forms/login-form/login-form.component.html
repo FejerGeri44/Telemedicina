@@ -22,13 +22,19 @@
       <ion-label class="custom-label" position="stacked">Jelszó</ion-label>
       <ion-input
         class="custom-input"
-        type="password"
+        [type]="showPassword ? 'text' : 'password'"
         [(ngModel)]="password"
         placeholder="Jelszó"
         fill="outline"
         required
         clearInput>
       </ion-input>
+      <ion-icon
+        *ngIf="password"
+        [name]="showPassword ? 'eye-off' : 'eye'"
+        (click)="togglePasswordVisibility()"
+        class="password-toggle-icon">
+      </ion-icon>
     </ion-item>
 
     <div class="button-row">

@@ -32,6 +32,7 @@ export class PatientRegistComponent {
 
   validEmail: boolean = false;
   invalidEmail: boolean = false;
+  showPassword: boolean = false;
 
   constructor(
     private http: HttpClient,
@@ -95,6 +96,10 @@ export class PatientRegistComponent {
           this.showCustomToast('Hiba történt a páciens regisztráció során.', 'danger');
         }
       });
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
   }
 
   backToDash() {
