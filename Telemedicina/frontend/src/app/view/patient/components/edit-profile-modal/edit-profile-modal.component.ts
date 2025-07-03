@@ -14,7 +14,7 @@ import {HttpClient} from '@angular/common/http';
   styleUrls: ['./edit-profile-modal.component.css']
 })
 export class EditProfileModalComponent {
-  @Input() user: any;
+  user: any;
   editForm: any = {};
 
   constructor(private modalCtrl: ModalController, private http: HttpClient) {}
@@ -25,11 +25,11 @@ export class EditProfileModalComponent {
 
     this.http.get('http://localhost:3000/api/me', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
+        Authorization: `Bearer ${token}`
       }
-    }).subscribe((user: any) => {
-      console.log('Kapott user:', user);
-      this.user = user;
+    }).subscribe((res: any) => {
+      console.log('Kapott user:', res);
+      this.user = res;
     });
   }
 

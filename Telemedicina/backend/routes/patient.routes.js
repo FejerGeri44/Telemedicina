@@ -5,6 +5,6 @@ const authenticateToken = require('../middleware/auth.middleware');
 
 router.get('/doctors', patientController.getAllDoctors);
 router.patch('/profile/update', patientController.updateProfile);
-router.get('/me', authenticateToken, patientController.getCurrentUser);
+router.get('/getPatientMe', authenticateToken, patientController.getCurrentUser);
 
 module.exports = router;

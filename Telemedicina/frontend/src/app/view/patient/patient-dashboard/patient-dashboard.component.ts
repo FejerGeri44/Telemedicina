@@ -18,26 +18,28 @@ import {EditProfileModalComponent} from '../components/edit-profile-modal/edit-p
   standalone: true,
   styleUrl: './patient-dashboard.component.css'
 })
+
 export class PatientDashboardComponent {
   user: any;
-  isEditModalOpen = false;
 
-  editForm: any = {
-    name: '',
-    email: '',
-    address: '',
-    phoneNumber: '',
-    homePhone: '',
-    birthDate: '',
-    pictureUrl: ''
-  };
+  constructor(private http: HttpClient, private modalCtrl: ModalController) {}
 
-  constructor(private http: HttpClient, private modalCtrl: ModalController) {
-    const storedUser = localStorage.getItem('user');
+  ngOnInit() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
-    if (storedUser) {
-      this.user = JSON.parse(storedUser);
-    }
+    this.http.get('http://localhost:3000/api/getPatientMe', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).subscribe({
+      next: (user: any) => {
+        this.user = user;
+      },
+      error: (err) => {
+        console.error('❌ Felhasználó lekérése sikertelen:', err);
+      }
+    });
   }
 
   getAge(birthDateString: string): number {
@@ -74,14 +76,5 @@ export class PatientDashboardComponent {
       this.user = data;
       localStorage.setItem('user', JSON.stringify(data));
     }
-  }
-
-  closeEditModal() {
-    this.isEditModalOpen = false;
-  }
-
-  saveChanges() {
-    console.log('Mentett adatok:', this.editForm);
-    this.closeEditModal();
   }
 }

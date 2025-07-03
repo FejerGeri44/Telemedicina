@@ -21,13 +21,25 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 export class DoctorDashboardComponent {
   user: any;
 
-  constructor(private http: HttpClient) {
-    const storedUser = localStorage.getItem('user');
+  ngOnInit() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
-    if (storedUser) {
-      this.user = JSON.parse(storedUser);
-    }
+    this.http.get('http://localhost:3000/api/getDoctorMe', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).subscribe({
+      next: (user: any) => {
+        this.user = user;
+      },
+      error: (err) => {
+        console.error('❌ Doctor user lekérése sikertelen:', err);
+      }
+    });
   }
+
+  constructor(private http: HttpClient) {}
 
   formatPhoneNumber(phone: string | undefined): string {
     if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';

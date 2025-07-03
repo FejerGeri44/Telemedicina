@@ -3,11 +3,11 @@ const { Doctor, User, Patient} = require('../models');
 exports.getCurrentUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'pictureUrl', 'address', 'birthDate', 'email', 'name', 'phoneNumber', 'role'],
+      attributes: ['id', 'name', 'email', 'role', 'phoneNumber', 'address', 'birthDate', 'pictureUrl'],
       include: [
         {
           model: Patient,
-          attributes: ['height', 'weight', 'homePhone']
+          attributes: ['height', 'weight', 'homePhone', 'taj', 'homePhone', 'registDate']
         }
       ]
     });
