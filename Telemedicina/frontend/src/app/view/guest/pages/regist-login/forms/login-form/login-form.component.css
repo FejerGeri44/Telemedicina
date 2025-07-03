@@ -48,13 +48,6 @@ ion-input.custom-input {
   font-size: 1.1rem;
 }
 
-ion-item {
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  --border-style: none;
-  margin: 0;
-}
-
 .button-row {
   display: flex;
   gap: 20px;
@@ -77,17 +70,14 @@ ion-item {
     flex-direction: column;
   }
 
-  ion-button.btn-back,
-  ion-button.btn-submit {
+  ion-button.submit {
+    order: 1;
     width: 98%;
   }
 
-  ion-button.btn-login {
-    order: 1;
-  }
-
-  ion-button.btn-back {
+  ion-button.back {
     order: 2;
+    width: 98%;
   }
 }
 

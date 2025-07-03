@@ -97,17 +97,14 @@ ion-item {
     flex-direction: column;
   }
 
-  ion-button.btn-back,
-  ion-button.btn-submit {
+  ion-button.submit {
+    order: 1;
     width: 98%;
   }
 
-  ion-button.btn-regist {
-    order: 1;
-  }
-
-  ion-button.btn-back {
+  ion-button.back {
     order: 2;
+    width: 98%;
   }
 }
 

@@ -1,0 +1,104 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Profil módosítása</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row class="profile-picture-container">
+      <label for="fileInput">
+        <img [src]="user?.pictureUrl" alt="Profilkép" class="profile-img" />
+      </label>
+      <input
+        type="file"
+        id="fileInput"
+        hidden
+        (change)="onFileSelected($event)"
+        accept="image/*"
+      />
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Név</ion-label>
+          <ion-input
+            class="custom-input"
+            type="text"
+            [(ngModel)]="editForm.name"
+            [placeholder]="user?.name"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Cím</ion-label>
+          <ion-input
+            class="custom-input"
+            type="text"
+            [(ngModel)]="editForm.address"
+            [placeholder]="user?.address"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Mobil</ion-label>
+          <ion-input
+            class="custom-input"
+            type="text"
+            [(ngModel)]="editForm.phoneNumber"
+            [placeholder]="user?.phoneNumber"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Otthoni telefon</ion-label>
+          <ion-input
+            class="custom-input"
+            type="text"
+            [(ngModel)]="editForm.homePhone"
+            [placeholder]="user?.homePhone"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Magasság</ion-label>
+          <ion-input
+            class="custom-input"
+            type="text"
+            [(ngModel)]="editForm.height"
+            [placeholder]="user?.height"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Testsúly</ion-label>
+          <ion-input
+            class="custom-input"
+            type="text"
+            [(ngModel)]="editForm.weight"
+            [placeholder]="user?.weight"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
+
+      </ion-col>
+    </ion-row>
+
+    <div class="button-row">
+      <ion-button class="btn-secondary back" (click)="close()">Vissza</ion-button>
+      <ion-button class="btn-accent save" (click)="save()">Mentés</ion-button>
+    </div>
+  </ion-grid>
+</ion-content>
