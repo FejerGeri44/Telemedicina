@@ -36,7 +36,7 @@ export class LoginFormComponent {
     this.route.queryParams.subscribe(params => {
       const toast = params['toast'];
       const type = params['type'] as 'success' | 'warning' | 'danger';
-      const successfulRegist = params['successfulRegist'] === 'true'; // konvertáljuk stringből
+      const successfulRegist = params['successfulRegist'] === 'true';
 
       if (toast && type && successfulRegist) {
         const toastRef = this.viewContainerRef.createComponent(CustomToastComponent, {
@@ -91,7 +91,6 @@ export class LoginFormComponent {
       .subscribe({
         next: res => {
           localStorage.setItem('token', res.token);
-          localStorage.setItem('user', JSON.stringify(res.user));
           this.showCustomToast('Sikeresen bejelentkeztél!', 'success');
 
           // Iranyitas szerepkor szerint

@@ -25,7 +25,7 @@ export class AdminNavbarComponent {
   constructor(private router: Router, private modalCtrl: ModalController) {}
 
   menuItems = [
-    { icon: 'home', label: 'Profil', route: '/dashboard/doctor' },
+    { icon: 'home', label: 'Profil', route: '/dashboard/admin' },
     { icon: 'people', label: 'Felhasználók', route: '/naplo' },
     { icon: 'reader', label: 'Orvosi jelentkezések', route: '/orvos-kereso' },
     { icon: 'paper-plane', label: 'Rendszerüzenetek', route: '/idopontok' },

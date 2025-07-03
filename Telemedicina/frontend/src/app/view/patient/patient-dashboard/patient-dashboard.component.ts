@@ -5,6 +5,7 @@ import {IonicModule, ModalController} from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import {EditProfileModalComponent} from '../components/edit-profile-modal/edit-profile-modal.component';
+import { environment } from '../../../../../../enviroments/enviroment';
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -21,6 +22,7 @@ import {EditProfileModalComponent} from '../components/edit-profile-modal/edit-p
 
 export class PatientDashboardComponent {
   user: any;
+  pictureUrl: any;
 
   constructor(private http: HttpClient, private modalCtrl: ModalController) {}
 
@@ -35,6 +37,8 @@ export class PatientDashboardComponent {
     }).subscribe({
       next: (user: any) => {
         this.user = user;
+        this.pictureUrl = this.user.pictureUrl;
+        console.log(this.pictureUrl)
       },
       error: (err) => {
         console.error('❌ Felhasználó lekérése sikertelen:', err);
