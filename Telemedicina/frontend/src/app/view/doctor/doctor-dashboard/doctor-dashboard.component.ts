@@ -1,4 +1,4 @@
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component} from '@angular/core';
 import { DoctorNavbarComponent } from '../components/doctor-navbar/doctor-navbar.component';
 import {IonicModule} from '@ionic/angular';
 import {NgIf} from '@angular/common';
@@ -21,6 +21,8 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 export class DoctorDashboardComponent {
   user: any;
 
+  constructor(private http: HttpClient) {}
+
   ngOnInit() {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -38,8 +40,6 @@ export class DoctorDashboardComponent {
       }
     });
   }
-
-  constructor(private http: HttpClient) {}
 
   formatPhoneNumber(phone: string | undefined): string {
     if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';

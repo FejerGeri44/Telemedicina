@@ -1,0 +1,205 @@
+.page-container {
+  min-height: 100vh;
+  --background: var(--dashboard-background-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.appointments-container {
+  display: flex;
+  gap: 16px;
+  width: 85%;
+  flex-direction: column;
+  --background: none;
+  margin: 0 auto;
+  justify-content: center;
+  align-content: center;
+  padding: 3% 3% 3% 12%;
+}
+
+ion-card {
+  width: 65%;
+  border-radius: 20px;
+  flex: 1;
+  margin: 30px auto;
+}
+
+.calendar {
+  max-width: 500px;
+  height: 400px;
+  margin: 0 auto;
+}
+
+.appointmentDates {
+  min-height: 400px;
+  margin: 0 0 0 30px;
+}
+
+.newAppointment {
+  margin: 0 auto;
+}
+
+.view-container {
+  width: 85%;
+  margin: auto;
+}
+
+.first-slide {
+  width: 65%;
+  display: flex;
+  flex-direction: row;
+}
+
+.view-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.view-toggle button {
+  width: 240px;
+  padding: 10px 15px;
+  border: none;
+  background-color: var(--secondary);
+  cursor: pointer;
+  margin: 50px 10px 30px 10px;
+  border-radius: 5px;
+  border: var(--button-border);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.view-toggle button.active {
+  background-color: var(--primary);
+  color: white;
+}
+
+ion-datetime {
+  max-width: 500px;
+}
+
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --border-style: none;
+  margin: 0;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-column {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+ion-label.custom-label {
+  display: block;
+  font-weight: 500;
+  font-size: 1.5rem;
+  color: var(--smoke-color);
+  margin-bottom: 10px;
+}
+
+ion-select.custom-select {
+  width: 99.2%;
+  border-radius: 15px;
+  --border-radius: 15px;
+  --padding-start: 15px;
+  --padding-end: 15px;
+  --background: #f4f4f4;
+  --color: #333;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+}
+
+ion-select.custom-select::part(placeholder) {
+  color: #aaa;
+}
+
+ion-item.custom-item {
+  --background: transparent;
+  --background-hover: transparent;
+}
+
+.submit {
+  margin-top: 25px;
+}
+
+ion-datetime::part(active) {
+  background: #007bff;
+  color: white;
+  font-size: 1.25rem;
+  border-radius: 50%;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: 1;
+}
+
+ion-datetime::part(active):hover {
+  transform: scale(1.1);
+}
+
+ion-datetime::part(calendar-day) {
+  position: relative;
+}
+
+.appointmentDates ion-card-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: end;
+  padding-right: 1rem;
+}
+
+.expand-toggle {
+  text-transform: none;
+  width: 200px;
+  font-size: 1rem;
+  color: #007bff;
+  --background: none;
+  --border: none;
+  --box-shadow: none;
+  cursor: pointer;
+}
+
+.timeslots {
+  max-height: 300px;
+  overflow: hidden;
+  transition: max-height 0.6s ease-in-out;
+}
+
+.timeslots.expanded {
+  max-height: 1000px;
+}
+
+.timeslot:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.slot-time {
+  min-width: 80px;
+  font-weight: 500;
+}
+
+.slot-info {
+  margin-left: 12px;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+@media (max-width: 1300px) {
+  .first-slide {
+    flex-direction: column;
+  }
+
+  .appointmentDates {
+    max-width: 500px;
+    height: 400px;
+    margin: 30px auto;
+  }
+}

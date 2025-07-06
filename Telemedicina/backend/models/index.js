@@ -13,6 +13,7 @@ const User = require('./user.model')(sequelize);
 const Doctor = require('./doctor.model')(sequelize);
 const Patient = require('./patient.model')(sequelize);
 const Admin = require('./admin.model')(sequelize);
+const Appointment = require('./appointment.model')(sequelize);
 
 // Kapcsolatok
 User.hasOne(Doctor, { foreignKey: 'userId' });
@@ -29,5 +30,6 @@ module.exports = {
   User,
   Doctor,
   Patient,
-  Admin
+  Admin,
+  Appointment
 };

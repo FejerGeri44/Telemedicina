@@ -28,7 +28,7 @@ export class DoctorNavbarComponent {
     { icon: 'home', label: 'Profil', route: '/dashboard/doctor' },
     { icon: 'clipboard', label: 'Új diagnózis', route: '/naplo' },
     { icon: 'document-attach', label: 'Dokumentum feltöltés', route: '/orvos-kereso' },
-    { icon: 'calendar', label: 'Rendelési időpontjaim', route: '/idopontok' },
+    { icon: 'calendar', label: 'Rendelési időpontjaim', route: '/appointments' },
     { icon: 'notifications', label: 'Értesítések', route: '/ertesitesek' },
     { icon: 'settings-sharp', label: 'Beállítások', route: '/beallitasok' },
     { icon: 'log-out-outline', label: 'Kijelentkezés', route: '/logout' }
