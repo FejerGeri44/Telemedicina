@@ -60,6 +60,9 @@
 .today-appointments {
   grid-column: 1 / 2;
   grid-row: 3 / 4;
+  padding: 15px;
+  position: relative;
+  height: 100px;
 }
 
 .new-appointments {
@@ -162,4 +165,44 @@ h2 {
   left: -20px;
   width: 2px;
   background-color: rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 30px;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.expand-btn {
+  --background: transparent;
+  --box-shadow: none;
+  --padding-start: 0;
+  --padding-end: 0;
+  --color: var(--secondary);
+  font-size: 1.5rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.expand-btn:hover {
+  scale: 1.1;
+}
+
+.appointment-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 40px);
+}
+
+.appointment-count span {
+  font-size: 3rem;
+  color: var(--secondary);
+  font-weight: bold;
 }

@@ -24,7 +24,7 @@
         <div class="profile-data-wrapper">
           <div class="profile-info">
             <div class="title">Bemutatkozás</div>
-            <div class="value">{{ user?.user?.introduction }}</div>
+            <div class="value">{{ user?.doctor?.introduction }}</div>
           </div>
 
           <div class="profile-fields">
@@ -42,9 +42,7 @@
             </div>
 
             <div class="edit-button-container">
-              <ion-button class="btn-accent edit">
-                Módosítás
-              </ion-button>
+              <ion-button class="btn-accent edit">Módosítás</ion-button>
             </div>
           </div>
         </div>
@@ -54,7 +52,20 @@
     <ion-card class="patients"></ion-card>
     <ion-card class="messages"></ion-card>
     <ion-card class="review"></ion-card>
-    <ion-card class="today-appointments"></ion-card>
+
+    <ion-card class="today-appointments">
+      <div class="card-header">
+        <h2 class="header-title">Mai időpontjaim</h2>
+        <ion-button class="expand-btn" [routerLink]="['/appointments']">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
+
+      <div class="appointment-count">
+        <span>{{ todaysAppointments }}</span>
+      </div>
+    </ion-card>
+
     <ion-card class="new-appointments"></ion-card>
     <ion-card class="declined-appointments"></ion-card>
   </div>

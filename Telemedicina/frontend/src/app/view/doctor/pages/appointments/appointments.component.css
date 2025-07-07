@@ -3,6 +3,7 @@
   --background: var(--dashboard-background-color);
   display: flex;
   flex-direction: column;
+  padding: 50px 0;
 }
 
 .appointments-container {
@@ -167,6 +168,24 @@ ion-datetime::part(calendar-day) {
   cursor: pointer;
 }
 
+.timeslot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+}
+
+.slot-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.slot-right {
+  margin-left: auto;
+}
+
 .timeslots {
   max-height: 300px;
   overflow: hidden;
@@ -182,15 +201,29 @@ ion-datetime::part(calendar-day) {
 }
 
 .slot-time {
-  min-width: 80px;
-  font-weight: 500;
+  font-weight: bolder;
 }
 
 .slot-info {
   margin-left: 12px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: #333;
 }
+
+.delete {
+  --background: var(--accent);
+  border: var(--accent) 1px solid;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  width: 100px;
+}
+
+.delete:hover {
+  --background: transparent;
+  border: var(--accent) 1px solid;
+  color: var(--accent);
+}
+
 
 @media (max-width: 1300px) {
   .first-slide {

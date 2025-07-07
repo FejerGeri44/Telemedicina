@@ -5,6 +5,8 @@ import {FormsModule} from '@angular/forms';
 import {DatePipe, NgForOf, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {CustomToastComponent} from '../../../../shared/toast/toast.component';
+import { registerLocaleData } from '@angular/common';
+import localeHu from '@angular/common/locales/hu';
 
 interface newAppointment {
   date: string;
@@ -20,6 +22,8 @@ interface prevAppointment {
   to: string;
   status: string;
 }
+
+registerLocaleData(localeHu);
 
 @Component({
   selector: 'app-appointments',
@@ -51,6 +55,9 @@ export class AppointmentsComponent {
   isExpanded = false;
   activeView: 'calendar' | 'new' = 'calendar';
   timeOptions: string[] = [];
+  locale = 'hu-HU';
+  showDeleteModal = false;
+  appointmentToDelete: any = null;
 
   ngOnInit() {
     this.loadMyData();
@@ -247,6 +254,45 @@ export class AppointmentsComponent {
 
   pad(n: number): string {
     return n < 10 ? '0' + n : n.toString();
+  }
+
+  onAppointmentAction(appt: any) {
+    this.appointmentToDelete = appt;
+    this.showDeleteModal = true;
+  }
+
+  alertButtons = [
+    {
+      text: 'Mégse',
+      role: 'cancel'
+    },
+    {
+      text: 'Törlés',
+      role: 'confirm',
+      handler: () => this.confirmDeleteAppointment()
+    }
+  ];
+
+  onAlertDismiss() {
+    this.showDeleteModal = false;
+  }
+
+  confirmDeleteAppointment() {
+    if (!this.appointmentToDelete) return;
+
+    const token = localStorage.getItem('token');
+    this.http.post('http://localhost:3000/api/deleteAppointment', {
+      id: this.appointmentToDelete.id
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).subscribe({
+      next: () => {
+        this.showCustomToast('Sikeres törlés!', 'success');
+        this.loadAppointments();
+        this.appointmentToDelete = null;
+      },
+      error: (err) => console.error('❌ Törlés hiba:', err)
+    });
   }
 
   showCustomToast(message: string, type: 'success' | 'warning' | 'danger') {

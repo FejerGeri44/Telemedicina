@@ -121,3 +121,24 @@ exports.getAppointmentUserData = async (req, res) => {
     res.status(500).json({ message: 'Szerverhiba az időpontok lekérésekor.' });
   }
 };
+
+exports.deleteAppointment = async (req, res) => {
+  const appointmentId = req.body.id;
+
+  if (!appointmentId) {
+    return res.status(400).json({ message: 'Hiányzó appointment ID.' });
+  }
+
+  try {
+    const result = await Appointment.destroy({ where: { id: appointmentId } });
+
+    if (result === 0) {
+      return res.status(404).json({ message: 'Időpont nem található.' });
+    }
+
+    res.status(200).json({ message: 'Időpont sikeresen törölve.' });
+  } catch (err) {
+    console.error('❌ Törlés hiba:', err);
+    res.status(500).json({ message: 'Szerverhiba.' });
+  }
+};

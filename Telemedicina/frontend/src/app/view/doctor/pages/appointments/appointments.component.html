@@ -22,7 +22,9 @@
         <ion-datetime
           presentation="date"
           (ionChange)="onDateChange($event)"
-          [value]="selectedDate">
+          [value]="selectedDate"
+          [locale]="locale"
+          [firstDayOfWeek]="1">
         </ion-datetime>
       </ion-card-content>
     </ion-card>
@@ -39,22 +41,33 @@
           <h4>Időpontok: <strong>{{ selectedDate | date: 'yyyy.MM.dd.' }}</strong></h4>
 
           <div *ngFor="let slot of hourlySlots" class="timeslot">
-            <span class="slot-time">{{ slot }}</span>
+            <div class="slot-left">
+              <span class="slot-time">{{ slot }}</span>
 
-            <ng-container *ngIf="getAppointmentForSlot(slot) as appt">
-          <span class="slot-info">
-            <ng-container *ngIf="appt.patient_id && appointmentUserDataMap[appt.patient_id] as patient; else noPatient">
-              <strong>Név:</strong> {{ patient.name }} |
-              <strong>Email:</strong> {{ patient.email }} |
-              <strong>Tel.:</strong> {{ patient.phoneNumber }} |
-              <strong>Státusz:</strong> {{ appt.status }}
-            </ng-container>
+              <ng-container *ngIf="getAppointmentForSlot(slot) as appt">
+              <span class="slot-info">
+                <ng-container *ngIf="appt.patient_id && appointmentUserDataMap[appt.patient_id] as patient; else noPatient">
+                  <strong>Név:</strong> {{ patient.name }} |
+                  <strong>Email:</strong> {{ patient.email }} |
+                  <strong>Tel.:</strong> {{ patient.phoneNumber }} |
+                  <strong>Státusz:</strong> {{ appt.status }}
+                </ng-container>
 
-            <ng-template #noPatient>
-              <strong>{{ appt.status }}</strong>
-            </ng-template>
-          </span>
-            </ng-container>
+                <ng-template #noPatient>
+                  <strong>{{ appt.status }}</strong>
+                </ng-template>
+              </span>
+              </ng-container>
+            </div>
+
+            <div class="slot-right" *ngIf="getAppointmentForSlot(slot)">
+              <ion-button
+                class="delete"
+                size="small"
+                (click)="onAppointmentAction(getAppointmentForSlot(slot))">
+                Törlés
+              </ion-button>
+            </div>
           </div>
         </div>
       </ion-card-content>
@@ -73,7 +86,9 @@
               <ion-label class="custom-label" position="stacked">Dátum</ion-label>
               <ion-datetime
                 [(ngModel)]="newAppointment.date"
-                presentation="date">
+                presentation="date"
+                [locale]="locale"
+                [firstDayOfWeek]="1">
               </ion-datetime>
             </ion-item>
           </div>
@@ -100,3 +115,11 @@
     </ion-card>
   </div>
 </ion-content>
+
+<ion-alert
+  [isOpen]="showDeleteModal"
+  header="Biztosan törlöd az időpontot?"
+  message="Ez a művelet nem visszavonható."
+  [buttons]="alertButtons"
+  (didDismiss)="onAlertDismiss()">
+</ion-alert>
