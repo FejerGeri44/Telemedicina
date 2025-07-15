@@ -90,35 +90,36 @@ exports.getAppointmentsForCurrentDoctor = async (req, res) => {
 };
 
 exports.getAppointmentUserData = async (req, res) => {
+  const { patientIds } = req.body;
+
+  if (!patientIds || !Array.isArray(patientIds)) {
+    return res.status(400).json({ message: 'Hiányzó vagy érvénytelen patientIds tömb.' });
+  }
+
   try {
-    const doctor = await Doctor.findOne({
-      where: { userId: req.user.id }
-    });
-
-    if (!doctor) {
-      return res.status(404).json({ message: 'Orvos nem található.' });
-    }
-
-    const appointments = await Appointment.findAll({
-      where: { doctor_id: doctor.id },
+    const patients = await Patient.findAll({
+      where: { id: patientIds },
       include: [
         {
-          model: Patient,
-          include: [
-            {
-              model: User,
-              attributes: ['name', 'email', 'phoneNumber']
-            }
-          ]
+          model: User,
+          attributes: ['name', 'email', 'phoneNumber']
         }
-      ],
-      order: [['from', 'ASC']]
+      ]
     });
 
-    res.status(200).json(appointments);
+    const userDataMap = {};
+    for (const patient of patients) {
+      userDataMap[patient.id] = {
+        name: patient.User.name,
+        email: patient.User.email,
+        phoneNumber: patient.User.phoneNumber
+      };
+    }
+
+    res.status(200).json(userDataMap);
   } catch (err) {
-    console.error('❌ Hiba az időpontok lekérésekor:', err);
-    res.status(500).json({ message: 'Szerverhiba az időpontok lekérésekor.' });
+    console.error('❌ Hiba a beteg adatok lekérésekor:', err);
+    res.status(500).json({ message: 'Szerverhiba a beteg adatok lekérésekor.' });
   }
 };
 

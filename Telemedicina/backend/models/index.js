@@ -5,7 +5,8 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
   host: dbConfig.HOST,
   dialect: dbConfig.DIALECT,
   port: dbConfig.PORT,
-  logging: false
+  logging: false,
+  timezone: '+02:00'
 });
 
 // Modellek betöltése

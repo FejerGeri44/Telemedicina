@@ -47,10 +47,7 @@
               <ng-container *ngIf="getAppointmentForSlot(slot) as appt">
               <span class="slot-info">
                 <ng-container *ngIf="appt.patient_id && appointmentUserDataMap[appt.patient_id] as patient; else noPatient">
-                  <strong>Név:</strong> {{ patient.name }} |
-                  <strong>Email:</strong> {{ patient.email }} |
-                  <strong>Tel.:</strong> {{ patient.phoneNumber }} |
-                  <strong>Státusz:</strong> {{ appt.status }}
+                  {{ patient.name }} | {{ patient.email }} | {{ patient.phoneNumber }}
                 </ng-container>
 
                 <ng-template #noPatient>
@@ -115,11 +112,3 @@
     </ion-card>
   </div>
 </ion-content>
-
-<ion-alert
-  [isOpen]="showDeleteModal"
-  header="Biztosan törlöd az időpontot?"
-  message="Ez a művelet nem visszavonható."
-  [buttons]="alertButtons"
-  (didDismiss)="onAlertDismiss()">
-</ion-alert>

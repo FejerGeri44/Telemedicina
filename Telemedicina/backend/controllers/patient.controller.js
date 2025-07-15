@@ -1,4 +1,4 @@
-const { Doctor, User, Patient} = require('../models');
+const { Doctor, User, Patient, Appointment} = require('../models');
 
 exports.getCurrentUser = async (req, res) => {
   try {
@@ -7,7 +7,7 @@ exports.getCurrentUser = async (req, res) => {
       include: [
         {
           model: Patient,
-          attributes: ['height', 'weight', 'homePhone', 'taj', 'homePhone', 'registDate']
+          attributes: ['id', 'height', 'weight', 'homePhone', 'taj', 'registDate']
         }
       ]
     });
@@ -17,13 +17,31 @@ exports.getCurrentUser = async (req, res) => {
     }
 
     const response = {
-      ...user.toJSON(),
-      ...user.Patient?.dataValues
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phoneNumber: user.phoneNumber,
+        address: user.address,
+        birthDate: user.birthDate,
+        pictureUrl: user.pictureUrl
+      },
+      patient: user.Patient
+        ? {
+          id: user.Patient.id,
+          height: user.Patient.height,
+          weight: user.Patient.weight,
+          homePhone: user.Patient.homePhone,
+          taj: user.Patient.taj,
+          registDate: user.Patient.registDate
+        }
+        : null
     };
 
     res.status(200).json(response);
   } catch (err) {
-    console.error('Hiba a /me route-nál:', err);
+    console.error('Hiba a route-nál:', err);
     res.status(500).json({ message: 'Szerverhiba.' });
   }
 };
@@ -84,3 +102,89 @@ exports.getAllDoctors = async (req, res) => {
   }
 };
 
+exports.getDoctorsAppointments = async  (req, res) => {
+  const { doctorId } = req.body;
+
+  if (!doctorId) {
+    return res.status(400).json({ error: 'doctorId nincs megadva a body-ban.' });
+  }
+
+  try {
+    const appointments = await Appointment.findAll({
+      where: { doctor_id: doctorId }
+    });
+
+    const adjustedAppointments = appointments.map(appt => {
+      const adjustedFrom = new Date(appt.from);
+      adjustedFrom.setHours(adjustedFrom.getHours() + 2);
+
+      const adjustedTo = new Date(appt.to);
+      adjustedTo.setHours(adjustedTo.getHours() + 2);
+
+      return {
+        ...appt.toJSON(),
+        from: adjustedFrom,
+        to: adjustedTo
+      };
+    });
+
+    return res.status(200).json(adjustedAppointments);
+  } catch (err) {
+    console.error('❌ Lekérdezési hiba:', err);
+    return res.status(500).json({ error: 'Szerverhiba.' });
+  }
+};
+
+exports.registerToAppointment = async  (req, res) => {
+  const { doctorId, patientId, from, to } = req.body;
+
+  if (!doctorId || !patientId || !from || !to) {
+    return res.status(400).json({ error: 'Hiányzó mezők a kérésben.' });
+  }
+
+  try {
+    const appointment = await Appointment.findOne({
+      where: {
+        doctor_id: doctorId,
+        from: new Date(from),
+        to: new Date(to),
+        status: 'free'
+      }
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ error: 'Nem található szabad időpont.' });
+    }
+
+    appointment.patient_id = patientId;
+    appointment.status = 'accepted';
+
+    await appointment.save();
+
+    return res.status(200).json({ message: 'Foglalás sikeres.' });
+  } catch (err) {
+    console.error('❌ Foglalási hiba:', err);
+    return res.status(500).json({ error: 'Szerverhiba foglalás közben.' });
+  }
+};
+
+exports.loadMyAppointments = async (req, res) => {
+  try {
+    const patient = await Patient.findOne({
+      where: { userId: req.user.id }
+    });
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Páciens nem található.' });
+    }
+
+    const count = await Appointment.count({
+      where: { patient_id: patient.id }
+    });
+
+    return res.status(200).json({ count });
+  } catch (err) {
+    console.error('❌ Hiba az időpontok számának lekérésekor:', err);
+    return res.status(500).json({ message: 'Szerverhiba.' });
+  }
+};

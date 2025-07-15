@@ -206,3 +206,84 @@ h2 {
   color: var(--secondary);
   font-weight: bold;
 }
+
+@media (max-width: 1400px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto auto auto auto;
+    padding: 3% 3% 3% 12%;
+  }
+
+  .profile-card {
+    grid-column: 1 / 2;
+    grid-row: 1;
+  }
+
+  .profile-data {
+    grid-column: 2 / 3;
+    grid-row: 1;
+  }
+
+  .patients {
+    grid-column: 1 / 2;
+    grid-row: 2;
+  }
+
+  .messages {
+    grid-column: 2 / 3;
+    grid-row: 2;
+  }
+
+  .review {
+    grid-column: 1 / 2;
+    grid-row: 3;
+  }
+
+  .today-appointments {
+    grid-column: 2 / 3;
+    grid-row: 3;
+  }
+
+  .new-appointments {
+    grid-column: 1 / 2;
+    grid-row: 4;
+  }
+
+  .declined-appointments {
+    grid-column: 2 / 3;
+    grid-row: 4;
+  }
+}
+
+@media (max-width: 800px) {
+  .grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    padding: 3% 3% 3% 12%;
+  }
+
+  .profile-card,
+  .profile-data,
+  .patients,
+  .messages,
+  .review,
+  .today-appointments,
+  .new-appointments,
+  .declined-appointments {
+    grid-column: 1 / 2;
+    grid-row: auto;
+  }
+
+  .profile-data-wrapper {
+    flex-direction: column;
+  }
+
+  .profile-info,
+  .profile-fields {
+    width: 100%;
+  }
+
+  .profile-fields::before {
+    display: none;
+  }
+}

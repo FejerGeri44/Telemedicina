@@ -1,6 +1,6 @@
 import {Component, ComponentRef, Injector, ViewContainerRef} from '@angular/core';
 import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
-import {IonicModule} from '@ionic/angular';
+import {AlertController, IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {DatePipe, NgForOf, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
@@ -56,14 +56,11 @@ export class AppointmentsComponent {
   activeView: 'calendar' | 'new' = 'calendar';
   timeOptions: string[] = [];
   locale = 'hu-HU';
-  showDeleteModal = false;
   appointmentToDelete: any = null;
 
   ngOnInit() {
     this.loadMyData();
     this.loadAppointments();
-    const patientIds = [...new Set(this.appointments.map(a => a.patient_id).filter(id => id))];
-    this.loadAppointmentUserData(patientIds);
     this.onDateChange({ detail: { value: this.selectedDate } });
 
     const startHour = 8;
@@ -77,7 +74,9 @@ export class AppointmentsComponent {
   constructor(
     private http: HttpClient,
     private viewContainerRef: ViewContainerRef,
-    private injector: Injector) {}
+    private injector: Injector,
+    private alertController: AlertController
+  ) {}
 
   loadMyData () {
     const token = localStorage.getItem('token');
@@ -107,6 +106,9 @@ export class AppointmentsComponent {
         this.appointmentDates = appointments.map(appt =>
           new Date(appt.from).toISOString().split('T')[0]
         );
+
+        const patientIds = [...new Set(this.appointments.map(a => a.patient_id).filter(id => id))];
+        this.loadAppointmentUserData(patientIds);
       },
       error: (err) => console.error('❌ Hiba az időpontok lekérésekor:', err)
     });
@@ -256,25 +258,28 @@ export class AppointmentsComponent {
     return n < 10 ? '0' + n : n.toString();
   }
 
-  onAppointmentAction(appt: any) {
+  async onAppointmentAction(appt: any) {
     this.appointmentToDelete = appt;
-    this.showDeleteModal = true;
-  }
 
-  alertButtons = [
-    {
-      text: 'Mégse',
-      role: 'cancel'
-    },
-    {
-      text: 'Törlés',
-      role: 'confirm',
-      handler: () => this.confirmDeleteAppointment()
-    }
-  ];
-
-  onAlertDismiss() {
-    this.showDeleteModal = false;
+    const alert = await this.alertController.create({
+      header: 'Megerősítés',
+      message: `Biztosan törölni szeretnéd az időpontot?`,
+      buttons: [
+        {
+          text: 'Mégsem',
+          role: 'cancel',
+          cssClass: 'cancel-button'
+        },
+        {
+          text: 'Igen',
+          cssClass: 'confirm-button',
+          handler: () => {
+            this.confirmDeleteAppointment();
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   confirmDeleteAppointment() {

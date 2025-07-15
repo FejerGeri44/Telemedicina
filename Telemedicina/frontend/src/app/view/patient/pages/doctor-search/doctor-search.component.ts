@@ -5,6 +5,8 @@ import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {CustomToastComponent} from '../../../../shared/toast/toast.component';
+import { ModalController } from '@ionic/angular';
+import { AppointmentModalComponent } from '../../components/appointment-modal/appointment-modal.component';
 
 @Component({
   selector: 'app-doctor-search',
@@ -20,6 +22,7 @@ import {CustomToastComponent} from '../../../../shared/toast/toast.component';
   standalone: true,
   styleUrl: './doctor-search.component.css'
 })
+
 export class DoctorSearchComponent {
   doctors: any[] = [];
   currentPage = 1;
@@ -36,7 +39,8 @@ export class DoctorSearchComponent {
     private http: HttpClient,
     private toastController: ToastController,
     private viewContainerRef: ViewContainerRef,
-    private injector: Injector) {}
+    private injector: Injector,
+    private modalCtrl: ModalController) {}
 
   ngOnInit() {
     this.http.get<any[]>('http://localhost:3000/api/doctors').subscribe(data => {
@@ -126,6 +130,22 @@ export class DoctorSearchComponent {
 
   onSearchChange() {
     this.applyFilters();
+  }
+
+  async openAppointmentModal(doctor: any) {
+    const modal = await this.modalCtrl.create({
+      component: AppointmentModalComponent,
+      componentProps: { doctor },
+      cssClass: 'registerTo-appointment-modal'
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+    if (data) {
+      console.log('Felvett időpont:', data);
+      // Backend hívás ide
+    }
   }
 
   showCustomToast(message: string, type: 'success' | 'warning' | 'danger') {

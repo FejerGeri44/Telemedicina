@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import {EditProfileModalComponent} from '../components/edit-profile-modal/edit-profile-modal.component';
 import { environment } from '../../../../../../enviroments/enviroment';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -13,7 +14,8 @@ import { environment } from '../../../../../../enviroments/enviroment';
     NgIf,
     PatientNavbarComponent,
     IonicModule,
-    FormsModule
+    FormsModule,
+    RouterLink
   ],
   templateUrl: './patient-dashboard.component.html',
   standalone: true,
@@ -23,10 +25,17 @@ import { environment } from '../../../../../../enviroments/enviroment';
 export class PatientDashboardComponent {
   user: any;
   pictureUrl: any;
+  myAppointments: number = 0;
 
-  constructor(private http: HttpClient, private modalCtrl: ModalController) {}
+  constructor(private http: HttpClient, private modalCtrl: ModalController) {
+  }
 
   ngOnInit() {
+    this.getMyData();
+    this.loadMyAppointments();
+  }
+
+  getMyData() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -80,5 +89,23 @@ export class PatientDashboardComponent {
       this.user = data;
       localStorage.setItem('user', JSON.stringify(data));
     }
+  }
+
+  loadMyAppointments() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    this.http.get<{ count: number }>('http://localhost:3000/api/loadMyAppointments', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).subscribe({
+      next: (res) => {
+        this.myAppointments = res.count;
+      },
+      error: (err) => {
+        console.error('❌ Nem sikerült lekérni az időpontok számát:', err);
+      }
+    });
   }
 }

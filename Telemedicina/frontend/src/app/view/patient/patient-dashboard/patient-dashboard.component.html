@@ -8,10 +8,10 @@
           <ion-col size="12" size-md="6">
             <ion-card-header>
               <ion-avatar class="profile-picture">
-                <img [src]="pictureUrl" alt="Profilkép" draggable="false"/>
+                <img [src]="user?.user?.pictureUrl" alt="Profilkép" draggable="false"/>
               </ion-avatar>
               <ion-card-title *ngIf="user">
-                <h2>{{ user.name }}</h2>
+                <h2>{{ user?.user?.name }}</h2>
               </ion-card-title>
             </ion-card-header>
 
@@ -19,19 +19,19 @@
               <div class="user-grid">
                 <div class="user-info">
                   <div class="title">Kor</div>
-                  <div class="value">{{ getAge(user?.birthDate) }} év</div>
+                  <div class="value">{{ getAge(user?.user?.birthDate) }} év</div>
                 </div>
                 <div class="user-info">
                   <div class="title">Magasság</div>
-                  <div class="value">{{ user?.height }} cm</div>
+                  <div class="value">{{ user?.patient?.height }} cm</div>
                 </div>
                 <div class="user-info">
                   <div class="title">Cím</div>
-                  <div class="value">{{ user?.address }}</div>
+                  <div class="value">{{ user?.user?.address }}</div>
                 </div>
                 <div class="user-info">
                   <div class="title">Súly</div>
-                  <div class="value">{{ user?.weight }} kg</div>
+                  <div class="value">{{ user?.patient?.weight }} kg</div>
                 </div>
               </div>
             </ion-card-content>
@@ -42,19 +42,19 @@
               <ion-list class="user-data">
                 <div class="user-info">
                   <div class="title">Email</div>
-                  <div class="value">{{ user?.email }}</div>
+                  <div class="value">{{ user?.user?.email }}</div>
                 </div>
                 <div class="user-info">
                   <div class="title">Születési dátum</div>
-                  <div class="value">{{ user?.birthDate }}</div>
+                  <div class="value">{{ user?.user?.birthDate }}</div>
                 </div>
                 <div class="user-info">
                   <div class="title">Mobil</div>
-                  <div class="value">{{ formatPhoneNumber(user?.phoneNumber) }}</div>
+                  <div class="value">{{ formatPhoneNumber(user?.user?.phoneNumber) }}</div>
                 </div>
                 <div class="user-info">
                   <div class="title">Otthoni</div>
-                  <div class="value">{{ formatPhoneNumber(user?.homePhone) }}</div>
+                  <div class="value">{{ formatPhoneNumber(user?.patient?.homePhone) }}</div>
                 </div>
 
                 <div class="edit-button-container">
@@ -67,7 +67,19 @@
       </ion-grid>
     </ion-card>
 
-    <ion-card class="appointments"></ion-card>
+    <ion-card class="appointments">
+      <div class="card-header">
+        <h2 class="header-title">Időpontjaim</h2>
+        <ion-button class="expand-btn" [routerLink]="['/']">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
+
+      <div class="appointment-count">
+        <span>{{ myAppointments }}</span>
+      </div>
+    </ion-card>
+
     <ion-card class="results"></ion-card>
     <ion-card class="prescriptions"></ion-card>
   </div>

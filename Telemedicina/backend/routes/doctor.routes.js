@@ -7,7 +7,7 @@ const authenticateToken = require('../middleware/auth.middleware');
 router.get('/getDoctorMe', authenticateToken, doctorController.getCurrentUser);
 router.post('/createAppointment', authenticateToken, appointmentsController.createAppointment);
 router.get('/myAppointments', authenticateToken, doctorController.getAppointmentsForCurrentDoctor);
-router.get('/getAppointmentUserData', authenticateToken, doctorController.getAppointmentUserData);
+router.post('/getAppointmentUserData', authenticateToken, doctorController.getAppointmentUserData);
 router.post('/deleteAppointment', authenticateToken, doctorController.deleteAppointment);
 
 module.exports = router;

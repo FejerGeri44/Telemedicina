@@ -33,31 +33,6 @@ html, body {
   user-select: none;
 }
 
-ion-button.btn-secondary {
-  width: 30%;
-  border-radius: var(--ion-button-radius);
-  --border-radius: var(--button-radius);
-  --background: none;
-  --box-shadow: none;
-  border: var(--button-border);
-  color: var(--primary);
-  font-weight: bold;
-  transition: all 0.3s ease;
-  box-shadow: var(--button-shadow);
-  white-space: normal;
-  text-align: center;
-  line-height: 1.2;
-  word-break: break-word;
-}
-
-ion-button.btn-secondary:hover {
-  background: var(--primary);
-  color: var(--light-text-color);
-  border-radius: var(--button-radius);
-  box-shadow: var(--button-shadow);
-  transform: translateY(-2px);
-}
-
 ion-button.btn-primary {
   width: 70%;
   border-radius: var(--ion-button-radius);
@@ -76,6 +51,31 @@ ion-button.btn-primary {
 }
 
 ion-button.btn-primary:hover {
+  background: var(--primary);
+  color: var(--light-text-color);
+  border-radius: var(--button-radius);
+  box-shadow: var(--button-shadow);
+  transform: translateY(-2px);
+}
+
+ion-button.btn-secondary {
+  width: 30%;
+  border-radius: var(--ion-button-radius);
+  --border-radius: var(--button-radius);
+  --background: none;
+  --box-shadow: none;
+  border: var(--button-border);
+  color: var(--primary);
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: var(--button-shadow);
+  white-space: normal;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+ion-button.btn-secondary:hover {
   background: var(--primary);
   color: var(--light-text-color);
   border-radius: var(--button-radius);
@@ -106,4 +106,73 @@ ion-button.btn-accent:hover {
   border-radius: var(--button-radius);
   box-shadow: var(--button-shadow);
   transform: translateY(-2px);
+}
+
+ion-modal {
+  --border-radius: 10px;
+}
+
+.alert-wrapper.sc-ion-alert-md {
+  border-radius: 15px;
+  padding: 15px;
+}
+
+.alert-button-group.sc-ion-alert-md {
+  flex-wrap: nowrap;
+}
+
+.alert-button-inner.sc-ion-alert-md {
+  justify-content: center;
+}
+
+.alert-button.sc-ion-alert-md.cancel-button {
+  font-family: "Bell MT";
+  width: 50%;
+  border-radius: var(--ion-button-radius);
+  --border-radius: var(--button-radius);
+  border: var(--button-border);
+  color: var(--primary);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: var(--button-shadow);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.alert-button.sc-ion-alert-md.cancel-button:hover {
+  background: var(--primary);
+  color: var(--light-text-color);
+  border-radius: var(--button-radius);
+  box-shadow: var(--button-shadow);
+  transform: translateY(-2px);
+}
+
+.alert-button.sc-ion-alert-md.confirm-button {
+  font-family: "Bell MT";
+  width: 50%;
+  background: var(--primary);
+  border-radius: var(--ion-button-radius);
+  --border-radius: var(--button-radius);
+  border: var(--button-border);
+  color: var(--light-text-color);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: var(--button-shadow);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.alert-button.sc-ion-alert-md.confirm-button:hover {
+  background: var(--primary);
+  color: var(--light-text-color);
+  border-radius: var(--button-radius);
+  box-shadow: var(--button-shadow);
+  transform: translateY(-2px);
+}
+
+@media (min-width: 768px) {
+  ion-modal.registerTo-appointment-modal::part(content) {
+    width: 80% !important;
+    max-width: 1000px !important;
+  }
 }

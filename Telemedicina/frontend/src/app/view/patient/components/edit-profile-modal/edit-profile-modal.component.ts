@@ -20,15 +20,18 @@ export class EditProfileModalComponent {
   constructor(private modalCtrl: ModalController, private http: HttpClient) {}
 
   ngOnInit() {
+    this.getMyData();
+  }
+
+  getMyData () {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/me', {
+    this.http.get('http://localhost:3000/api/getPatientMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe((res: any) => {
-      console.log('Kapott user:', res);
       this.user = res;
     });
   }

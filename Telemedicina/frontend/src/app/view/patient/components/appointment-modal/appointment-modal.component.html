@@ -1,0 +1,61 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Időpontfoglalás</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="close-button" (click)="dismiss()">Bezárás</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card class="appointment-modal-card">
+    <ion-card-header>
+      <ion-card-title>Dr. {{ doctor.User.name }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="time-table">
+        <div class="table-month-header">
+          <ion-button fill="clear" size="small" (click)="changeMonth(-1)">
+            <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+          </ion-button>
+
+          <div class="month-label">
+            {{ selectedDate | date: 'yyyy. MMMM' }}
+          </div>
+
+          <ion-button fill="clear" size="small" (click)="changeMonth(1)">
+            <ion-icon slot="icon-only" name="chevron-forward-outline"></ion-icon>
+          </ion-button>
+        </div>
+        <!-- Header sor -->
+        <div class="time-table-header">
+          <ion-button fill="clear" size="small" (click)="changeWeek(-1)">
+            <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+          </ion-button>
+
+          <div class="day-header" *ngFor="let day of days">
+            <div>{{ day.weekday }}</div>
+            <div>{{ day.date | date: 'MMM d.' }}</div>
+          </div>
+
+          <ion-button fill="clear" size="small" (click)="changeWeek(1)">
+            <ion-icon slot="icon-only" name="chevron-forward-outline"></ion-icon>
+          </ion-button>
+        </div>
+
+        <!-- Időpontok -->
+        <div class="time-table-body">
+          <div class="time-column" *ngFor="let day of days">
+            <ion-button
+              size="small"
+              [class]="getButtonClass(day, time)"
+              *ngFor="let time of timeSlots"
+              (click)="selectTime(day, time)">
+              {{ time }}
+            </ion-button>
+          </div>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
