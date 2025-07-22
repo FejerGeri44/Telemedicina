@@ -9,5 +9,6 @@ router.get('/getPatientMe', authenticateToken, patientController.getCurrentUser)
 router.post('/getDoctorsAppointments', authenticateToken, patientController.getDoctorsAppointments);
 router.post('/registerToAppointment', authenticateToken, patientController.registerToAppointment);
 router.get('/loadMyAppointments', authenticateToken, patientController.loadMyAppointments);
+router.post('/getDoctorCardData', authenticateToken, patientController.getDoctorCardData);
 
 module.exports = router;

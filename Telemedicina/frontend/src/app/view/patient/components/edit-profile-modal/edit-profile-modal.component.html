@@ -8,7 +8,7 @@
   <ion-grid>
     <ion-row class="profile-picture-container">
       <label for="fileInput">
-        <img [src]="user?.pictureUrl" alt="Profilkép" class="profile-img" />
+        <img [src]="user?.user?.pictureUrl" alt="Profilkép" class="profile-img" />
       </label>
       <input
         type="file"
@@ -27,7 +27,7 @@
             class="custom-input"
             type="text"
             [(ngModel)]="editForm.name"
-            [placeholder]="user?.name"
+            [placeholder]="user?.user?.name"
             fill="outline"
             clearInput>
           </ion-input>
@@ -39,7 +39,7 @@
             class="custom-input"
             type="text"
             [(ngModel)]="editForm.address"
-            [placeholder]="user?.address"
+            [placeholder]="user?.user?.address"
             fill="outline"
             clearInput>
           </ion-input>
@@ -51,7 +51,7 @@
             class="custom-input"
             type="text"
             [(ngModel)]="editForm.phoneNumber"
-            [placeholder]="user?.phoneNumber"
+            [placeholder]="user?.user?.phoneNumber"
             fill="outline"
             clearInput>
           </ion-input>
@@ -63,7 +63,7 @@
             class="custom-input"
             type="text"
             [(ngModel)]="editForm.homePhone"
-            [placeholder]="user?.homePhone"
+            [placeholder]="user?.patient?.homePhone"
             fill="outline"
             clearInput>
           </ion-input>
@@ -75,7 +75,7 @@
             class="custom-input"
             type="text"
             [(ngModel)]="editForm.height"
-            [placeholder]="user?.height"
+            [placeholder]="user?.patient?.height"
             fill="outline"
             clearInput>
           </ion-input>
@@ -87,7 +87,7 @@
             class="custom-input"
             type="text"
             [(ngModel)]="editForm.weight"
-            [placeholder]="user?.weight"
+            [placeholder]="user?.patient?.weight"
             fill="outline"
             clearInput>
           </ion-input>

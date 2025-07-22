@@ -153,12 +153,11 @@ export class AppointmentModalComponent {
   getButtonClass(day: any, time: string): string {
     const match = this.appointments.find(app => {
       const from = new Date(app.from);
-      const to : Date = new Date(app.to);
-      from.setHours(from.getHours() - 2);
-      to.setHours(to.getHours() - 2);
 
       const buttonDate = new Date(day.date);
-      buttonDate.setHours(Number(time.split(':')[0]), Number(time.split(':')[1]), 0, 0);
+      const hours = Number(time.split(':')[0]) ;
+      const minutes = Number(time.split(':')[1]);
+      buttonDate.setHours(hours, minutes, 0, 0);
 
       return from.getTime() === buttonDate.getTime();
     });

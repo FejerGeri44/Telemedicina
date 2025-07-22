@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
+import {ToastService} from '../../../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -17,7 +18,11 @@ export class EditProfileModalComponent {
   user: any;
   editForm: any = {};
 
-  constructor(private modalCtrl: ModalController, private http: HttpClient) {}
+  constructor(
+    private modalCtrl: ModalController,
+    private http: HttpClient,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
     this.getMyData();
@@ -44,13 +49,12 @@ export class EditProfileModalComponent {
     const modifiedFields = this.getModifiedFields();
 
     if (Object.keys(modifiedFields).length === 0) {
-      console.log('Nincs módosított mező. Modal bezárva.');
-      this.close();
+      this.toast.show('Nincs kitöltve módosítandó mező!', 'warning');
       return;
     }
 
     const payload = {
-      id: this.user?.id,
+      id: this.user?.user?.id,
       ...modifiedFields
     };
 
@@ -67,7 +71,7 @@ export class EditProfileModalComponent {
         const updatedUser = {...existingUser, ...modifiedFields};
         localStorage.setItem('user', JSON.stringify(updatedUser));
 
-        this.user = updatedUser;
+        this.getMyData();
         void this.modalCtrl.dismiss(updatedUser);
       },
       error: (err) => {

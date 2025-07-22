@@ -1,0 +1,23 @@
+<app-patient-navbar></app-patient-navbar>
+
+<ion-content class="page-container">
+  <div class="table-container">
+    <ion-grid class="appointment-table">
+      <ion-row class="table-header">
+        <ion-col><strong>Dátum</strong></ion-col>
+        <ion-col><strong>Időpont</strong></ion-col>
+        <ion-col><strong>Orvos</strong></ion-col>
+        <ion-col><strong>Státusz</strong></ion-col>
+      </ion-row>
+
+      <ion-row
+        *ngFor="let appointment of sortedAppointments; let i = index"
+        [class.alt-row]="i % 2 === 1">
+        <ion-col>{{ appointment.date | date: 'yyyy. MMM d.' }}</ion-col>
+        <ion-col>{{ appointment.time }}</ion-col>
+        <ion-col>{{ appointment.doctor }}</ion-col>
+        <ion-col>{{ appointment.status }}</ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>

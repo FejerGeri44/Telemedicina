@@ -6,6 +6,7 @@ import { PatientDashboardComponent } from './view/patient/patient-dashboard/pati
 import { AdminDashboardComponent } from './view/admin/admin-dashboard/admin-dashboard.component';
 import { DoctorSearchComponent } from './view/patient/pages/doctor-search/doctor-search.component';
 import { AppointmentsComponent } from './view/doctor/pages/appointments/appointments.component';
+import { AppointmentListComponent } from './view/patient/pages/appointment-list/appointment-list.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -34,5 +35,6 @@ export const routes: Routes = [
   { path: 'dashboard/patient', component: PatientDashboardComponent },
   { path: 'dashboard/admin', component: AdminDashboardComponent },
   { path: 'doctor-search', component: DoctorSearchComponent },
-  { path: 'appointments', component: AppointmentsComponent }
+  { path: 'appointments', component: AppointmentsComponent },
+  { path: 'appointment-list', component: AppointmentListComponent }
 ];

@@ -83,7 +83,9 @@
         <ion-col class="custom-col" *ngFor="let doctor of paginatedDoctors">
           <ion-card>
             <ion-card-header class="doctor-card-header">
-              <img [src]="doctor.User.pictureUrl" alt="Profilkép" class="doctor-avatar" />
+              <ion-avatar>
+                <img [src]="doctor.User.pictureUrl" class="doctor-avatar" alt="Profilkép" draggable="false"/>
+              </ion-avatar>
               <div class="doctor-header-info">
                 <ion-card-title>Dr. {{ doctor.User.name }}</ion-card-title>
                 <ion-card-subtitle>{{ doctor.speciality }}</ion-card-subtitle>

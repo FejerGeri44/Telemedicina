@@ -1,12 +1,20 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { NgIf } from '@angular/common';
-import { PatientNavbarComponent } from '../components/patient-navbar/patient-navbar.component';
+import {Component} from '@angular/core';
+import {NgForOf, NgIf} from '@angular/common';
+import {PatientNavbarComponent} from '../components/patient-navbar/patient-navbar.component';
 import {IonicModule, ModalController} from '@ionic/angular';
-import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import {FormsModule} from '@angular/forms';
+import {HttpClient} from '@angular/common/http';
 import {EditProfileModalComponent} from '../components/edit-profile-modal/edit-profile-modal.component';
-import { environment } from '../../../../../../enviroments/enviroment';
 import {RouterLink} from '@angular/router';
+
+export interface Appointment {
+  id: number;
+  doctor_id: number;
+  patient_id: number;
+  from: Date;
+  to: Date;
+  status: 'free' | 'accepted' | 'rejected';
+}
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -15,7 +23,8 @@ import {RouterLink} from '@angular/router';
     PatientNavbarComponent,
     IonicModule,
     FormsModule,
-    RouterLink
+    RouterLink,
+    NgForOf
   ],
   templateUrl: './patient-dashboard.component.html',
   standalone: true,
@@ -25,7 +34,15 @@ import {RouterLink} from '@angular/router';
 export class PatientDashboardComponent {
   user: any;
   pictureUrl: any;
-  myAppointments: number = 0;
+  appointments: Appointment[] = [];
+  upcomingAppointments: Awaited<{
+    date: string;
+    pictureUrl: string | undefined;
+    name: string | undefined;
+    speciality: string | undefined;
+    from: string;
+    to: string
+  }>[] = [];
 
   constructor(private http: HttpClient, private modalCtrl: ModalController) {
   }
@@ -88,24 +105,83 @@ export class PatientDashboardComponent {
     if (data) {
       this.user = data;
       localStorage.setItem('user', JSON.stringify(data));
+      this.getMyData();
     }
   }
 
-  loadMyAppointments() {
+  loadMyAppointments(): void {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get<{ count: number }>('http://localhost:3000/api/loadMyAppointments', {
+    this.http.get<Appointment[]>('http://localhost:3000/api/loadMyAppointments', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (res) => {
-        this.myAppointments = res.count;
+      next: async (appointments) => {
+        const now = new Date();
+
+        const upcoming = appointments
+          .filter(app => new Date(app.from) >= now && app.status === 'accepted')
+          .sort((a, b) => new Date(a.from).getTime() - new Date(b.from).getTime())
+          .slice(0, 2);
+
+        this.upcomingAppointments = await Promise.all(
+          upcoming.map(app => this.formatAppointmentWithPicture(app))
+        );
+        console.log(this.upcomingAppointments);
       },
       error: (err) => {
-        console.error('❌ Nem sikerült lekérni az időpontok számát:', err);
+        console.error('❌ Nem sikerült lekérni az időpontokat:', err);
       }
     });
+  }
+
+  private async formatAppointmentWithPicture(app: Appointment): Promise<{
+    date: string;
+    pictureUrl: string | undefined;
+    name: string | undefined;
+    speciality: string | undefined;
+    from: string;
+    to: string;
+  }> {
+    const fromDate = new Date(app.from);
+    const toDate = new Date(app.to);
+
+    const dateStr = fromDate
+      .toLocaleDateString('hu-HU')
+      .replace(/\./g, '/')
+      .replace(/\s/g, '');
+
+    const fromTime = fromDate.toLocaleTimeString('hu-HU', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const toTime = toDate.toLocaleTimeString('hu-HU', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const token = localStorage.getItem('token');
+
+    const response = await this.http.post<{ pictureUrl: string; name: string; speciality: string }>(
+      'http://localhost:3000/api/getDoctorCardData',
+      { doctorId: app.doctor_id },
+      {
+        headers: {
+          Authorization: `Bearer ${token || ''}`
+        }
+      }
+    ).toPromise();
+
+    return {
+      pictureUrl: response?.pictureUrl,
+      name: response?.name,
+      speciality: response?.speciality,
+      date: dateStr,
+      from: fromTime,
+      to: toTime
+    };
   }
 }

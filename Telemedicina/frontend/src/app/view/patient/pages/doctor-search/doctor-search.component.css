@@ -64,8 +64,10 @@ ion-skeleton-text {
   border-radius: 50%;
   overflow: hidden;
   display: flex;
+  object-fit: cover;
   align-items: center;
   justify-content: center;
+  border: 2px solid #ccc;
 }
 
 .skeleton-avatar {

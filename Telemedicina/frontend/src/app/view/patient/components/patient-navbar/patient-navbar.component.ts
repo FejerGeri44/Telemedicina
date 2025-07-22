@@ -28,9 +28,9 @@ export class PatientNavbarComponent {
     { icon: 'home', label: 'Profil', route: '/dashboard/patient' },
     { icon: 'fitness', label: 'Egészségügyi napló', route: '/naplo' },
     { icon: 'search', label: 'Orvos kereső', route: '/doctor-search' },
-    { icon: 'calendar', label: 'Időpontjaim', route: '/idopontok' },
+    { icon: 'calendar', label: 'Időpontjaim', route: '/appointment-list' },
+    { icon: 'chatbubbles', label: 'Üzenetek', route: '/messages' },
     { icon: 'notifications', label: 'Értesítések', route: '/ertesitesek' },
-    { icon: 'settings-sharp', label: 'Beállítások', route: '/beallitasok' },
     { icon: 'log-out-outline', label: 'Kijelentkezés', route: '/logout' }
   ];
 

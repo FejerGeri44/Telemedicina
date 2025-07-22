@@ -114,21 +114,18 @@ exports.getDoctorsAppointments = async  (req, res) => {
       where: { doctor_id: doctorId }
     });
 
-    const adjustedAppointments = appointments.map(appt => {
-      const adjustedFrom = new Date(appt.from);
-      adjustedFrom.setHours(adjustedFrom.getHours() + 2);
-
-      const adjustedTo = new Date(appt.to);
-      adjustedTo.setHours(adjustedTo.getHours() + 2);
+    const Appointments = appointments.map(appt => {
+      const From = new Date(appt.from);
+      const To = new Date(appt.to);
 
       return {
         ...appt.toJSON(),
-        from: adjustedFrom,
-        to: adjustedTo
+        from: From,
+        to: To
       };
     });
 
-    return res.status(200).json(adjustedAppointments);
+    return res.status(200).json(Appointments);
   } catch (err) {
     console.error('❌ Lekérdezési hiba:', err);
     return res.status(500).json({ error: 'Szerverhiba.' });
@@ -168,6 +165,7 @@ exports.registerToAppointment = async  (req, res) => {
   }
 };
 
+
 exports.loadMyAppointments = async (req, res) => {
   try {
     const patient = await Patient.findOne({
@@ -178,13 +176,41 @@ exports.loadMyAppointments = async (req, res) => {
       return res.status(404).json({ message: 'Páciens nem található.' });
     }
 
-    const count = await Appointment.count({
+    const appointments = await Appointment.findAll({
       where: { patient_id: patient.id }
     });
 
-    return res.status(200).json({ count });
+    return res.status(200).json(appointments);
   } catch (err) {
-    console.error('❌ Hiba az időpontok számának lekérésekor:', err);
+    console.error('❌ Hiba az időpontok lekérésekor:', err);
     return res.status(500).json({ message: 'Szerverhiba.' });
+  }
+};
+
+exports.getDoctorCardData = async (req, res) => {
+  const { doctorId } = req.body;
+
+  if (!doctorId) {
+    return res.status(400).json({ error: 'Hiányzó doctorId.' });
+  }
+
+  try {
+    const doctor = await Doctor.findOne({
+      where: { id: doctorId },
+      attributes: ['speciality'],
+      include: [{
+        model: User,
+        attributes: ['name', 'pictureUrl']
+      }]
+    });
+
+    if (!doctor || !doctor.User) {
+      return res.status(404).json({ error: 'Orvos nem található.' });
+    }
+
+    return res.status(200).json({ pictureUrl: doctor.User.pictureUrl, name: doctor.User.name, speciality: doctor.speciality });
+  } catch (err) {
+    console.error('❌ Hiba a doctor kép lekérdezésénél:', err);
+    return res.status(500).json({ error: 'Szerverhiba.' });
   }
 };

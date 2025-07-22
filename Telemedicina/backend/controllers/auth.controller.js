@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const registerPatient = async (req, res) => {
   try {
     const { name, email, password, phoneNumber, taj, address, birthDate, height, weight, homePhone } = req.body;
-    const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-images%2Fpatient.png?alt=media&token=1ebd70ba-15a8-49bb-bc75-94b596a9c63d';
+    const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-profilePictures%2Fpatient.png?alt=media&token=cd37f41f-37cf-4a6e-a8f5-091327113834';
 
     // Ellenőrizzük, hogy van-e már ilyen e-mail
     const existingUser = await User.findOne({ where: { email } });
@@ -49,7 +49,7 @@ const registerPatient = async (req, res) => {
 const registerDoctor = async (req, res) => {
   try {
     const { name, email, password, phoneNumber, address, birthDate, speciality, introduction } = req.body;
-    const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-images%2Fdoctor.png?alt=media&token=d9271e62-b461-46e4-841e-f046d675c760';
+    const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-profilePictures%2Fdoctor.png?alt=media&token=7a578ae2-23b6-4316-b9d8-568a0ee9e310';
 
     // Ellenőrzés: van-e már ilyen felhasználó?
     const existingUser = await User.findOne({ where: { email } });

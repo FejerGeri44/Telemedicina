@@ -41,6 +41,7 @@
 .appointments {
   grid-column: 1 / 2;
   grid-row: 3 / 4;
+  user-select: none;
 }
 
 .results {
@@ -82,6 +83,10 @@ ion-card-title {
 
 .user-info {
   padding: 5px;
+}
+
+.main-info {
+  text-align: center;
 }
 
 .title {
@@ -130,6 +135,7 @@ ion-card-title {
   justify-content: space-between;
   align-items: center;
   height: 30px;
+  margin-bottom: 15px;
 }
 
 .header-title {
@@ -152,17 +158,56 @@ ion-card-title {
   scale: 1.1;
 }
 
-.appointment-count {
+.appointments-wrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  height: calc(100% - 40px);
+  flex-direction: column;
+  gap: 10px;
 }
 
-.appointment-count span {
-  font-size: 3rem;
-  color: var(--secondary);
+.appointment-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f7f7f7;
+  border-radius: 15px;
+  padding: 10px 15px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+}
+
+.appointment-left {
+  display: flex;
+  align-items: center;
+}
+
+.doctor-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+  border: 2px solid #ccc;
+}
+
+.doctor-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.doctor-name {
   font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.doctor-speciality {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.appointment-date {
+  display: flex;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #555;
 }
 
 @media screen and (max-width: 768px) {

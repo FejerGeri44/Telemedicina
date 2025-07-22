@@ -17,19 +17,19 @@
 
             <ion-card-content>
               <div class="user-grid">
-                <div class="user-info">
+                <div class="user-info main-info">
                   <div class="title">Kor</div>
                   <div class="value">{{ getAge(user?.user?.birthDate) }} év</div>
                 </div>
-                <div class="user-info">
+                <div class="user-info main-info">
                   <div class="title">Magasság</div>
                   <div class="value">{{ user?.patient?.height }} cm</div>
                 </div>
-                <div class="user-info">
+                <div class="user-info main-info">
                   <div class="title">Cím</div>
                   <div class="value">{{ user?.user?.address }}</div>
                 </div>
-                <div class="user-info">
+                <div class="user-info main-info">
                   <div class="title">Súly</div>
                   <div class="value">{{ user?.patient?.weight }} kg</div>
                 </div>
@@ -70,13 +70,27 @@
     <ion-card class="appointments">
       <div class="card-header">
         <h2 class="header-title">Időpontjaim</h2>
-        <ion-button class="expand-btn" [routerLink]="['/']">
+        <ion-button class="expand-btn" [routerLink]="['/appointment-list']">
           <ion-icon name="chevron-forward-outline"></ion-icon>
         </ion-button>
       </div>
 
-      <div class="appointment-count">
-        <span>{{ myAppointments }}</span>
+      <div class="appointments-wrapper">
+        <div *ngFor="let app of upcomingAppointments" class="appointment-card">
+          <div class="appointment-left">
+            <img [src]="app.pictureUrl" alt="Doktor" class="doctor-image" draggable="false"/>
+            <div class="doctor-info">
+              <div class="doctor-name">{{ app.name }}</div>
+              <div class="doctor-speciality">{{ app.speciality }}</div>
+            </div>
+          </div>
+          <div class="appointment-date">
+            <div>{{ app.date }}</div>
+            <div>
+              {{ app.from }} - {{ app.to }}
+            </div>
+          </div>
+        </div>
       </div>
     </ion-card>
 
