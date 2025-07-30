@@ -17,6 +17,7 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 export class EditProfileModalComponent {
   user: any;
   editForm: any = {};
+  file: File | null = null;
 
   constructor(
     private modalCtrl: ModalController,
@@ -67,12 +68,8 @@ export class EditProfileModalComponent {
       next: (res) => {
         console.log('✅ Sikeres mentés:', res);
 
-        const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
-        const updatedUser = {...existingUser, ...modifiedFields};
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-
         this.getMyData();
-        void this.modalCtrl.dismiss(updatedUser);
+        void this.modalCtrl.dismiss(res, 'updated');
       },
       error: (err) => {
         console.error('❌ Mentési hiba:', err);
@@ -80,10 +77,23 @@ export class EditProfileModalComponent {
     });
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      return;
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const selectedFile = input?.files[0];
+      const fileType = selectedFile.type;
+
+      if (fileType === 'image/svg+xml') {
+        this.toast.show('Az SVG formátum nem engedélyezett!', 'danger');
+        return;
+      }
+
+      if (fileType === 'image/gif') {
+        this.toast.show('A GIF formátum nem engedélyezett!', 'danger');
+        return;
+      }
+
+      this.file = selectedFile;
     }
   }
 

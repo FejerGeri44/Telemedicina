@@ -210,6 +210,19 @@ ion-card-title {
   color: #555;
 }
 
+.appointment-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 40px);
+}
+
+.appointment-count span {
+  font-size: 3rem;
+  color: var(--secondary);
+  font-weight: bold;
+}
+
 @media screen and (max-width: 768px) {
   .user-grid {
     grid-template-columns: 1fr;

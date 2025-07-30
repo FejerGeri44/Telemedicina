@@ -8,7 +8,12 @@
   <ion-grid>
     <ion-row class="profile-picture-container">
       <label for="fileInput">
-        <img [src]="user?.user?.pictureUrl" alt="Profilkép" class="profile-img" />
+        <img
+          [src]="user?.user?.pictureUrl"
+          [ngModel]="editForm.pictrureUrl"
+          alt="Profilkép"
+          class="profile-img"
+        />
       </label>
       <input
         type="file"

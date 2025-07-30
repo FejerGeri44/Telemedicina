@@ -10,5 +10,7 @@ router.post('/getDoctorsAppointments', authenticateToken, patientController.getD
 router.post('/registerToAppointment', authenticateToken, patientController.registerToAppointment);
 router.get('/loadMyAppointments', authenticateToken, patientController.loadMyAppointments);
 router.post('/getDoctorCardData', authenticateToken, patientController.getDoctorCardData);
+router.get('/loadMyRegisteredAppointments', authenticateToken, patientController.loadMyRegisteredAppointments);
+router.delete('/deleteAppointment', authenticateToken, patientController.deleteAppointment);
 
 module.exports = router;

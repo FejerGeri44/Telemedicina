@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {CustomToastComponent} from '../../../../../../shared/toast/toast.component';
+import {ToastService} from '../../../../../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-doctor-regist',
@@ -36,15 +37,14 @@ export class DoctorRegistComponent {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private viewContainerRef: ViewContainerRef,
-    private injector: Injector
+    private toast: ToastService
   ) {}
 
   onDoctorRegister() {
 
     // Üres mezők ellenőrzése
     if (!this.fullName || !this.email || !this.password || !this.password_again || !this.phoneNumber || !this.speciality) {
-      this.showCustomToast('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
+      this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
       return;
     } else {
 
@@ -52,7 +52,7 @@ export class DoctorRegistComponent {
       if (!this.email.includes('@')) {
         this.invalidEmail = true;
         this.validEmail = false;
-        this.showCustomToast('Hibás e-mail cím!', 'danger');
+        this.toast.show('Hibás e-mail cím!', 'danger');
         return;
       } else {
         this.invalidEmail = false;
@@ -61,7 +61,7 @@ export class DoctorRegistComponent {
 
       // Jelszavak egyezősége
       if (this.password !== this.password_again) {
-        this.showCustomToast('A jelszavak nem egyeznek!', 'warning');
+        this.toast.show('A jelszavak nem egyeznek!', 'warning');
         return;
       }
     }
@@ -90,7 +90,7 @@ export class DoctorRegistComponent {
         },
         error: err => {
           console.error(err);
-          this.showCustomToast('Hiba történt a regisztráció során!', 'danger');
+          this.toast.show('Hiba történt a regisztráció során!', 'danger');
         }
       });
   }
@@ -101,16 +101,5 @@ export class DoctorRegistComponent {
 
   backToDash() {
     void this.router.navigate(['/']);
-  }
-
-  showCustomToast(message: string, type: 'success' | 'warning' | 'danger') {
-    const toastRef: ComponentRef<CustomToastComponent> = this.viewContainerRef.createComponent(CustomToastComponent, {
-      injector: this.injector
-    });
-
-    toastRef.instance.message = message;
-    toastRef.instance.type = type;
-
-    setTimeout(() => toastRef.destroy(), 4000);
   }
 }

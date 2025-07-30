@@ -58,6 +58,11 @@ ion-button.btn-primary:hover {
   transform: translateY(-2px);
 }
 
+ion-button.btn-primary:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
 ion-button.btn-secondary {
   width: 30%;
   border-radius: var(--ion-button-radius);
@@ -83,6 +88,11 @@ ion-button.btn-secondary:hover {
   transform: translateY(-2px);
 }
 
+ion-button.btn-secondary:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
 ion-button.btn-accent {
   width: 100%;
   border-radius: var(--ion-button-radius);
@@ -106,6 +116,11 @@ ion-button.btn-accent:hover {
   border-radius: var(--button-radius);
   box-shadow: var(--button-shadow);
   transform: translateY(-2px);
+}
+
+ion-button.btn-accent:active {
+  transform: scale(0.98);
+  box-shadow: none;
 }
 
 ion-modal {
@@ -147,6 +162,11 @@ ion-modal {
   transform: translateY(-2px);
 }
 
+.alert-button.sc-ion-alert-md.cancel-button:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
 .alert-button.sc-ion-alert-md.confirm-button {
   font-family: "Bell MT";
   width: 50%;
@@ -168,6 +188,11 @@ ion-modal {
   border-radius: var(--button-radius);
   box-shadow: var(--button-shadow);
   transform: translateY(-2px);
+}
+
+.alert-button.sc-ion-alert-md.confirm-button:active {
+  transform: scale(0.98);
+  box-shadow: none;
 }
 
 @media (min-width: 768px) {

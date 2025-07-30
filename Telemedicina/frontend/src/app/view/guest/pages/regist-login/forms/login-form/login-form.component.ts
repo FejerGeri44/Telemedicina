@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CustomToastComponent } from '../../../../../../shared/toast/toast.component';
+import {ToastService} from '../../../../../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-login-form',
@@ -29,7 +30,8 @@ export class LoginFormComponent {
     private router: Router,
     private viewContainerRef: ViewContainerRef,
     private injector: Injector,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toast: ToastService
     ) {}
 
   ngOnInit() {
@@ -66,7 +68,7 @@ export class LoginFormComponent {
 
     // Üres mezők ellenőrzése
     if (!this.email || !this.password){
-      this.showCustomToast('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
+      this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
       return;
     } else {
 
@@ -74,7 +76,7 @@ export class LoginFormComponent {
       if (!this.email.includes('@')) {
         this.invalidEmail = true;
         this.validEmail = false;
-        this.showCustomToast('Hibás e-mail cím!', 'danger');
+        this.toast.show('Hibás e-mail cím!', 'danger');
         return;
       } else {
         this.invalidEmail = false;
@@ -91,7 +93,7 @@ export class LoginFormComponent {
       .subscribe({
         next: res => {
           localStorage.setItem('token', res.token);
-          this.showCustomToast('Sikeresen bejelentkeztél!', 'success');
+          this.toast.show('Sikeresen bejelentkeztél!', 'success');
 
           // Iranyitas szerepkor szerint
           switch (res.user.role) {
@@ -108,7 +110,7 @@ export class LoginFormComponent {
         },
         error: err => {
           console.error(err);
-          this.showCustomToast('Hibás email cím vagy jelszó!', 'danger');
+          this.toast.show('Hibás email cím vagy jelszó!', 'danger');
         }
       });
   }
@@ -119,17 +121,6 @@ export class LoginFormComponent {
 
   backToDash() {
     void this.router.navigate(['/']);
-  }
-
-  showCustomToast(message: string, type: 'success' | 'warning' | 'danger') {
-    const toastRef: ComponentRef<CustomToastComponent> = this.viewContainerRef.createComponent(CustomToastComponent, {
-      injector: this.injector
-    });
-
-    toastRef.instance.message = message;
-    toastRef.instance.type = type;
-
-    setTimeout(() => toastRef.destroy(), 4000);
   }
 }
 

@@ -1,4 +1,4 @@
-import {Component, ComponentRef, Injector, ViewContainerRef} from '@angular/core';
+import {Component, ComponentRef, Injector, OnInit, ViewContainerRef} from '@angular/core';
 import {PatientNavbarComponent} from '../../components/patient-navbar/patient-navbar.component';
 import {IonicModule, ToastController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
@@ -23,7 +23,7 @@ import { AppointmentModalComponent } from '../../components/appointment-modal/ap
   styleUrl: './doctor-search.component.css'
 })
 
-export class DoctorSearchComponent {
+export class DoctorSearchComponent implements OnInit{
   doctors: any[] = [];
   currentPage = 1;
   pageSize = 6;

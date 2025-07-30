@@ -69,7 +69,7 @@ exports.updateProfile = async (req, res) => {
 
     await user.save();
 
-    if (homePhone) {
+    if (homePhone || height || weight) {
       const patient = await Patient.findOne({ where: { userId } });
       if (patient) {
         patient.homePhone = homePhone;
@@ -211,6 +211,77 @@ exports.getDoctorCardData = async (req, res) => {
     return res.status(200).json({ pictureUrl: doctor.User.pictureUrl, name: doctor.User.name, speciality: doctor.speciality });
   } catch (err) {
     console.error('❌ Hiba a doctor kép lekérdezésénél:', err);
+    return res.status(500).json({ error: 'Szerverhiba.' });
+  }
+};
+
+exports.loadMyRegisteredAppointments = async (req, res) => {
+  try {
+    const patient = await Patient.findOne({
+      where: { userId: req.user.id }
+    });
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Páciens nem található.' });
+    }
+
+    const appointments = await Appointment.findAll({
+      where: { patient_id: patient.id },
+      attributes: ['id', 'patient_id', 'doctor_id', 'from', 'to', 'status'],
+      include: [
+        {
+          model: Doctor,
+          attributes: ['speciality'],
+          include: [
+            {
+              model: User,
+              attributes: ['name', 'phoneNumber', 'address', 'email', 'pictureUrl']
+            }
+          ]
+        }
+      ]
+    });
+
+    const formatted = appointments.map((appt) => ({
+      id: appt.id,
+      patient_id: appt.patient_id,
+      doctor_id: appt.doctor_id,
+      from: appt.from,
+      to: appt.to,
+      status: appt.status,
+      speciality: appt.Doctor?.speciality || null,
+      doctor: appt.Doctor?.User
+        ? {
+          name: appt.Doctor.User.name,
+          phoneNumber: appt.Doctor.User.phoneNumber,
+          address: appt.Doctor.User.address,
+          email: appt.Doctor.User.email,
+          pictureUrl: appt.Doctor.User.pictureUrl
+        }
+        : null
+    }));
+
+    return res.status(200).json(formatted);
+  } catch (err) {
+    console.error('❌ Hiba az időpontok lekérésekor:', err);
+    return res.status(500).json({ message: 'Szerverhiba.' });
+  }
+};
+
+exports.deleteAppointment = async (req, res) => {
+  const appointmentId = req.body.id;
+  if (!appointmentId) {
+    return res.status(400).json({ error: 'Hiányzik az appointment ID.' });
+  }
+
+  try {
+    const appt = await Appointment.findByPk(appointmentId);
+    if (!appt) return res.status(404).json({ error: 'Időpont nem található.' });
+
+    await appt.destroy();
+    return res.status(200).json({ message: 'Időpont törölve.' });
+  } catch (err) {
+    console.error('❌ Hiba törlés közben:', err);
     return res.status(500).json({ error: 'Szerverhiba.' });
   }
 };

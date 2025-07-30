@@ -26,6 +26,12 @@ Patient.belongsTo(User, { foreignKey: 'userId' });
 User.hasOne(Admin, { foreignKey: 'userId' });
 Admin.belongsTo(User, { foreignKey: 'userId' });
 
+Doctor.hasMany(Appointment, { foreignKey: 'doctor_id' });
+Appointment.belongsTo(Doctor, { foreignKey: 'doctor_id' });
+
+Patient.hasMany(Appointment, { foreignKey: 'patient_id' });
+Appointment.belongsTo(Patient, { foreignKey: 'patient_id' });
+
 module.exports = {
   sequelize,
   User,

@@ -5,46 +5,105 @@
   flex-direction: column;
 }
 
-.table-container {
-  width: 75%;
+.appointment-container {
   margin: auto;
-  padding: 20px;
-}
-
-.pagination {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  margin-top: 15px;
-  font-size: 20px;
-}
-
-.pagination span {
-  cursor: pointer;
-  transition: transform 0.3s ease;
-  padding: 5px 10px;
-}
-
-.pagination span.active {
-  font-size: 25px;
-  font-weight: bold;
+  padding-left: 110px;
 }
 
 .appointment-table {
+  width: 100%;
+  border-collapse: collapse;
   background-color: white;
 }
 
-.appointment-table .ion-row {
-  padding: 8px 0;
-  align-items: center;
+.appointment-table th,
+.appointment-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
 }
 
-.appointment-table .table-header {
-  background-color: #f0f0f0;
+.appointment-table th {
+  background-color: var(--primary);
+  color: var(--light-text-color);
   font-weight: bold;
+  padding: 20px 10px 20px 2%;
 }
 
-.appointment-table .alt-row {
-  background-color: #f9f9f9;
+.sort {
+  cursor: pointer;
+}
+
+.appointment-table tr:nth-child(even) {
+  background-color: #eeeeee;
+}
+
+.doctor-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.doctor-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  object-fit: cover;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ccc;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  text-align: center;
+  color: #666;
+  font-size: 1.2rem;
+}
+
+.empty-state ion-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: var(--ion-color-medium);
+}
+
+.empty-state ion-button {
+  margin-top: 12px;
+}
+
+.appointment {
+  width: 50%;
+  max-width: 300px;
+  min-width: 200px;
+}
+
+.delete-appointment {
+  width: 50%;
+  min-width: 100px;
+  border-radius: var(--ion-button-radius);
+  --border-radius: var(--button-radius);
+  --background: var(--accent);
+  --box-shadow: none;
+  color: var(--light-text-color);
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: var(--button-shadow);
+  text-align: center;
+}
+
+.delete-appointment:hover {
+  transform: scale(1.01);
+  filter: brightness(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.delete-appointment:active {
+  transform: scale(0.98);
+  box-shadow: none;
 }

@@ -100,11 +100,9 @@ export class PatientDashboardComponent {
 
     await modal.present();
 
-    const {data} = await modal.onDidDismiss();
+    const { role } = await modal.onDidDismiss();
 
-    if (data) {
-      this.user = data;
-      localStorage.setItem('user', JSON.stringify(data));
+    if (role === 'updated') {
       this.getMyData();
     }
   }

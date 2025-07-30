@@ -1,7 +1,10 @@
 import { ApplicationRef, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 import { CustomToastComponent } from './toast.component';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
+
 export class ToastService {
   constructor(
     private appRef: ApplicationRef,

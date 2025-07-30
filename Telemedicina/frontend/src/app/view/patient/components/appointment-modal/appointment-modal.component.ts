@@ -1,9 +1,10 @@
 import {Component, Input} from '@angular/core';
-import {AlertController, IonicModule, ModalController} from '@ionic/angular';
+import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {DatePipe, NgForOf, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
+import {AlertService} from '../../../../shared/alert/alert.service.component';
 
 interface prevAppointment {
   id: number;
@@ -41,7 +42,7 @@ export class AppointmentModalComponent {
     private modalCtrl: ModalController,
     private http: HttpClient,
     private toast: ToastService,
-    private alertController: AlertController
+    private alert: AlertService
     ) {}
 
   ngOnInit() {
@@ -122,26 +123,14 @@ export class AppointmentModalComponent {
     to.setMinutes(from.getMinutes() + 30);
 
     if (cssClass.includes('btn-free')) {
-      const alert = await this.alertController.create({
-        header: 'Megerősítés',
-        message: `Biztosan szeretnél időpontot foglalni?`,
-        buttons: [
-          {
-            text: 'Mégsem',
-            role: 'cancel',
-            cssClass: 'cancel-button'
-          },
-          {
-            text: 'Igen',
-            cssClass: 'confirm-button',
-            handler: () => {
-              this.handleAppointmentSaving(from, to);
-              this.toast.show('Sikeres foglalás!', 'success');
-            }
-          }
-        ]
-      });
-      await alert.present();
+      await this.alert.show(
+        'Megerősítés',
+        'Biztosan szeretnél időpontot foglalni?',
+        () => {
+          this.handleAppointmentSaving(from, to);
+          this.toast.show('Sikeres foglalás!', 'success');
+        }
+      );
 
     } else if (cssClass.includes('btn-accepted')) {
       this.toast.show('Ez az időpont már foglalt!', 'danger');

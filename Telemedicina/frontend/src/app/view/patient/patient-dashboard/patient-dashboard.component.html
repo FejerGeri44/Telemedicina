@@ -75,7 +75,7 @@
         </ion-button>
       </div>
 
-      <div class="appointments-wrapper">
+      <div *ngIf="upcomingAppointments.length > 0" class="appointments-wrapper">
         <div *ngFor="let app of upcomingAppointments" class="appointment-card">
           <div class="appointment-left">
             <img [src]="app.pictureUrl" alt="Doktor" class="doctor-image" draggable="false"/>
@@ -91,6 +91,10 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div *ngIf="upcomingAppointments.length === 0" class="appointment-count">
+        <span>N/A</span>
       </div>
     </ion-card>
 

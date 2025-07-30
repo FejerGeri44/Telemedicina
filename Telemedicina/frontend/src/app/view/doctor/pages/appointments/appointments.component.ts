@@ -1,12 +1,13 @@
-import {Component, ComponentRef, Injector, ViewContainerRef} from '@angular/core';
+import {Component, Injector, ViewContainerRef} from '@angular/core';
 import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
 import {AlertController, IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {DatePipe, NgForOf, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
-import {CustomToastComponent} from '../../../../shared/toast/toast.component';
 import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
+import {AlertService} from '../../../../shared/alert/alert.service.component';
+import {ToastService} from '../../../../shared/toast/toast.service';
 
 interface newAppointment {
   date: string;
@@ -58,6 +59,15 @@ export class AppointmentsComponent {
   locale = 'hu-HU';
   appointmentToDelete: any = null;
 
+  constructor(
+    private http: HttpClient,
+    private viewContainerRef: ViewContainerRef,
+    private injector: Injector,
+    private alertController: AlertController,
+    private alert: AlertService,
+    private toast: ToastService
+  ) {}
+
   ngOnInit() {
     this.loadMyData();
     this.loadAppointments();
@@ -70,13 +80,6 @@ export class AppointmentsComponent {
       this.timeOptions.push(`${this.pad(hour)}:00`, `${this.pad(hour)}:30`);
     }
   }
-
-  constructor(
-    private http: HttpClient,
-    private viewContainerRef: ViewContainerRef,
-    private injector: Injector,
-    private alertController: AlertController
-  ) {}
 
   loadMyData () {
     const token = localStorage.getItem('token');
@@ -183,9 +186,16 @@ export class AppointmentsComponent {
 
   addAppointment() {
     const now = new Date();
+    const date = new Date(this.newAppointment.date);
+    const day = date.getDay();
+
+    if (day === 0 || day === 6) {
+      this.toast.show('Hétvégére nem lehet rendelést felvenni!', 'warning');
+      return;
+    }
 
     if (!this.newAppointment.date || !this.newAppointment.from || !this.newAppointment.to) {
-      this.showCustomToast('Hiányos időpont adat!', 'warning');
+      this.toast.show('Hiányos időpont adat!', 'warning');
       return;
     }
 
@@ -194,23 +204,23 @@ export class AppointmentsComponent {
     const toDateTime = new Date(`${onlyDate}T${this.newAppointment.to}`);
 
     if (fromDateTime > toDateTime || fromDateTime.getTime() > toDateTime.getTime()) {
-      this.showCustomToast('A befejezési időpontnak a kezdés után kell lennie.', 'danger');
+      this.toast.show('A befejezési időpontnak a kezdés után kell lennie.', 'danger');
       return;
     }
 
     if (fromDateTime < now || fromDateTime.getTime() === toDateTime.getTime()) {
-      this.showCustomToast('A kezdési időpont nem lehet múltbeli.', 'danger');
+      this.toast.show('A kezdési időpont nem lehet múltbeli.', 'danger');
       return;
     }
 
     if (fromDateTime.getTime() === toDateTime.getTime()) {
-      this.showCustomToast('A kezdési és befejezési időpont nem lehet azonos!', 'danger');
+      this.toast.show('A kezdési és befejezési időpont nem lehet azonos!', 'danger');
       return;
     }
 
     const diffInMinutes = Math.abs((toDateTime.getTime() - fromDateTime.getTime()) / (1000 * 60));
     if (diffInMinutes !== 30) {
-      this.showCustomToast('Az időpontok közötti különbségnek pontosan 30 percnek kell lennie!', 'danger');
+      this.toast.show('Az időpontok közötti különbségnek pontosan 30 percnek kell lennie!', 'danger');
       return;
     }
 
@@ -225,7 +235,7 @@ export class AppointmentsComponent {
     });
 
     if (conflict) {
-      this.showCustomToast('Már létezik ilyen időpont!', 'danger');
+      this.toast.show('Már létezik ilyen időpont!', 'danger');
       return;
     }
 
@@ -241,10 +251,10 @@ export class AppointmentsComponent {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: () => {
-        this.showCustomToast('Sikeres időpontkiírás!', 'success');
+        this.toast.show('Sikeres időpontkiírás!', 'success');
       },
       error: () => {
-        this.showCustomToast('Szerver oldali hiba!!', 'danger');
+        this.toast.show('Szerver oldali hiba!!', 'danger');
       }
     });
   }
@@ -261,25 +271,13 @@ export class AppointmentsComponent {
   async onAppointmentAction(appt: any) {
     this.appointmentToDelete = appt;
 
-    const alert = await this.alertController.create({
-      header: 'Megerősítés',
-      message: `Biztosan törölni szeretnéd az időpontot?`,
-      buttons: [
-        {
-          text: 'Mégsem',
-          role: 'cancel',
-          cssClass: 'cancel-button'
-        },
-        {
-          text: 'Igen',
-          cssClass: 'confirm-button',
-          handler: () => {
-            this.confirmDeleteAppointment();
-          }
-        }
-      ]
-    });
-    await alert.present();
+    await this.alert.show(
+      'Megerősítés',
+      'Biztosan szeretnél időpontot foglalni?',
+      () => {
+        this.confirmDeleteAppointment();
+      }
+    );
   }
 
   confirmDeleteAppointment() {
@@ -292,22 +290,11 @@ export class AppointmentsComponent {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: () => {
-        this.showCustomToast('Sikeres törlés!', 'success');
+        this.toast.show('Sikeres törlés!', 'success');
         this.loadAppointments();
         this.appointmentToDelete = null;
       },
       error: (err) => console.error('❌ Törlés hiba:', err)
     });
-  }
-
-  showCustomToast(message: string, type: 'success' | 'warning' | 'danger') {
-    const toastRef: ComponentRef<CustomToastComponent> = this.viewContainerRef.createComponent(CustomToastComponent, {
-      injector: this.injector
-    });
-
-    toastRef.instance.message = message;
-    toastRef.instance.type = type;
-
-    setTimeout(() => toastRef.destroy(), 4000);
   }
 }

@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ToastController } from '@ionic/angular';
 import {CustomToastComponent} from '../../../../../../shared/toast/toast.component';
+import {ToastService} from '../../../../../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-patient-regist',
@@ -37,15 +38,14 @@ export class PatientRegistComponent {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private viewContainerRef: ViewContainerRef,
-    private injector: Injector
+    private toast: ToastService
   ) {}
 
   onPatientRegister() {
 
     // Üres mezők ellenőrzése
     if (!this.fullName || !this.email || !this.password || !this.password_again || !this.phoneNumber || !this.address ||! this.birthDate) {
-      this.showCustomToast('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
+      this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
       return;
     } else {
 
@@ -53,7 +53,7 @@ export class PatientRegistComponent {
       if (!this.email.includes('@')) {
         this.invalidEmail = true;
         this.validEmail = false;
-        this.showCustomToast('Hibás e-mail cím!', 'danger');
+        this.toast.show('Hibás e-mail cím!', 'danger');
         return;
       } else {
         this.invalidEmail = false;
@@ -62,7 +62,7 @@ export class PatientRegistComponent {
 
       // Jelszavak egyezősége
       if (this.password !== this.password_again) {
-        this.showCustomToast('A jelszavak nem egyeznek!', 'warning');
+        this.toast.show('A jelszavak nem egyeznek!', 'warning');
         return;
       }
     }
@@ -93,7 +93,7 @@ export class PatientRegistComponent {
         },
         error: err => {
           console.error(err);
-          this.showCustomToast('Hiba történt a páciens regisztráció során.', 'danger');
+          this.toast.show('Hiba történt a páciens regisztráció során.', 'danger');
         }
       });
   }
@@ -104,16 +104,5 @@ export class PatientRegistComponent {
 
   backToDash() {
     void this.router.navigate(['/']);
-  }
-
-  showCustomToast(message: string, type: 'success' | 'warning' | 'danger') {
-    const toastRef: ComponentRef<CustomToastComponent> = this.viewContainerRef.createComponent(CustomToastComponent, {
-      injector: this.injector
-    });
-
-    toastRef.instance.message = message;
-    toastRef.instance.type = type;
-
-    setTimeout(() => toastRef.destroy(), 4000);
   }
 }
