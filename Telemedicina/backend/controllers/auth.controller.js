@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const registerPatient = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber, taj, address, birthDate, height, weight, homePhone } = req.body;
+    const { name, email, password, phoneNumber, taj, address, birthDate, height, weight, homePhone, gender } = req.body;
     const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-profilePictures%2Fpatient.png?alt=media&token=cd37f41f-37cf-4a6e-a8f5-091327113834';
 
     // Ellenőrizzük, hogy van-e már ilyen e-mail
@@ -35,6 +35,8 @@ const registerPatient = async (req, res) => {
       weight,
       taj,
       homePhone,
+      gender: gender,
+
       registDate: new Date()
     });
 

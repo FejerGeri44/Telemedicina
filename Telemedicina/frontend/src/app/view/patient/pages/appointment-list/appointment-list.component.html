@@ -9,52 +9,45 @@
       <ion-button [routerLink]="'/doctor-search'" class="btn-primary appointment">Időpont foglalása</ion-button>
     </div>
 
-    <table class="appointment-table" *ngIf="!isLoading && appointments.length > 0">
-      <thead>
-      <tr>
-        <th>Orvos</th>
-        <th>Specialitás</th>
-        <th class="sort" (click)="sortAppointments('date')">
-          Dátum
-          <ion-icon
-            [name]="sortColumn === 'date'
-              ? (sortDirection === 'asc' ? 'chevron-up-outline' : 'chevron-down-outline')
-              : 'swap-vertical-outline'">
-          </ion-icon>
-        </th>
-        <th class="sort" (click)="sortAppointments('time')">
-          Időpont
-          <ion-icon
-            [name]="sortColumn === 'time'
-              ? (sortDirection === 'asc' ? 'chevron-up-outline' : 'chevron-down-outline')
-              : 'swap-vertical-outline'">
-          </ion-icon>
-        </th>
-        <th>Cím</th>
-        <th>Telefonszám</th>
-        <th>Email</th>
-        <th></th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let appointment of appointments">
-        <td>
-          <div class="doctor-info">
-            <img [src]="appointment.pictureUrl" class="doctor-avatar" alt="Profilkép" draggable="false"/>
-            <span>Dr. {{ appointment.doctor }}</span>
-          </div>
-        </td>
-        <td>{{ appointment.speciality }}</td>
-        <td>{{ appointment.date | date: 'yyyy. MMM d.' }}</td>
-        <td>{{ appointment.time }}</td>
-        <td>{{ appointment.address }}</td>
-        <td>{{ appointment.phoneNumber }}</td>
-        <td>{{ appointment.email }}</td>
-        <td>
-          <ion-button class="delete-appointment" (click)="confirmDelete(appointment)">Törlés</ion-button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+    <div class="table-wrapper"  *ngIf="!isLoading && appointments.length > 0">
+      <table class="appointment-table">
+        <thead>
+        <tr>
+          <th>Orvos</th>
+          <th>Specialitás</th>
+          <th class="sort" (click)="sortAppointments('datetime')">
+            Időpont
+            <ion-icon
+              [name]="sortColumn === 'datetime'
+            ? (sortDirection === 'asc' ? 'chevron-up-outline' : 'chevron-down-outline')
+            : 'swap-vertical-outline'">
+            </ion-icon>
+          </th>
+          <th>Cím</th>
+          <th>Telefonszám</th>
+          <th>Email</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let appointment of appointments">
+          <td>
+            <div class="doctor-info">
+              <img [src]="appointment.pictureUrl" class="doctor-avatar" alt="Profilkép" draggable="false"/>
+              <span>Dr. {{ appointment.doctor }}</span>
+            </div>
+          </td>
+          <td>{{ appointment.speciality }}</td>
+          <td>{{ appointment.date | date: 'yyyy. MMM d.' }} {{ appointment.date | date: 'HH:mm' }}</td>
+          <td>{{ appointment.address }}</td>
+          <td>{{ appointment.phoneNumber }}</td>
+          <td>{{ appointment.email }}</td>
+          <td>
+            <ion-button class="delete-appointment" (click)="confirmDelete(appointment)">Törlés</ion-button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </ion-content>

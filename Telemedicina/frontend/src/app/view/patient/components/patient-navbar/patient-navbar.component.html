@@ -1,33 +1,45 @@
-<div class="sidebar" [class.open]="!isCollapsed">
-  <img src="pictures/logo.png" alt="Logo" class="logo" draggable="false">
-  <div class="top-section">
-    <div class="top-nav-links">
-      <ion-icon name="apps" (click)="toggleSidebar()"></ion-icon>
-      <span *ngIf="!isCollapsed">Menü</span>
+<header class="navbar desktop">
+  <!-- Top row -->
+  <div class="navbar-top">
+    <div class="logo-title">
+      <img src="pictures/logo.png" alt="CareLink" />
+      <span class="site-title">CareLink</span>
     </div>
-    <ion-icon name="close-outline" class="toggle-btn" *ngIf="!isCollapsed" (click)="toggleSidebar()"></ion-icon>
+    <div class="top-right">
+      <button class="icon-btn" (click)="onNotifications()" aria-label="Értesítések">
+        <ion-icon name="notifications"></ion-icon>
+      </button>
+      <div class="profile-block" (click)="toggleProfileMenu($event)">
+        <img [src]="user?.user.pictureUrl" alt="Profil" draggable="false"/>
+        <div class="profile-info">
+          <span class="name">{{ user?.user.name }}</span>
+          <span class="role">{{ user?.user.role }}</span>
+        </div>
+        <ion-icon class="chevron" name="chevron-down" [class.open]="profileOpen"></ion-icon>
+        <div class="profile-menu" *ngIf="profileOpen">
+          <button routerLink="/dashboard/patient">
+            <ion-icon name="person-circle"></ion-icon>
+            <span>Profil</span>
+          </button>
+          <button (click)="confirmLogout()">
+            <ion-icon name="log-out"></ion-icon>
+            <span>Kijelentkezés</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <ul class="nav-links">
-    <li
-      *ngFor="let item of menuItems.slice(0, menuItems.length - 2)"
-      [routerLink]="item.route"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-    >
-      <ion-icon [name]="item.icon"></ion-icon>
-      <span *ngIf="!isCollapsed">{{ item.label }}</span>
-    </li>
-  </ul>
-
-  <ul class="nav-links bottom-nav-links">
-    <li
-      *ngFor="let item of menuItems.slice(-2)"
-      (click)="item.label === 'Kijelentkezés' ? confirmLogout() : navigateTo(item.route)"
-      [class.active]="isActiveRoute(item.route)"
-    >
-      <ion-icon [name]="item.icon"></ion-icon>
-      <span *ngIf="!isCollapsed">{{ item.label }}</span>
-    </li>
-  </ul>
-</div>
+  <!-- Bottom row -->
+  <div class="navbar-bottom">
+    <ul>
+      <li *ngFor="let item of menuItems"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon [name]="item.icon"></ion-icon>
+        <span>{{ item.label }}</span>
+      </li>
+    </ul>
+  </div>
+</header>

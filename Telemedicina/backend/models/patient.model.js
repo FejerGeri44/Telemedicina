@@ -10,25 +10,12 @@ module.exports = (sequelize) => {
         key: 'id'
       }
     },
-    height: {
-      type: DataTypes.FLOAT,
-      allowNull: true
-    },
-    weight: {
-      type: DataTypes.FLOAT,
-      allowNull: true
-    },
-    taj: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    homePhone: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    registDate: {
-      type: DataTypes.DATEONLY
-    }
+    gender: { type: DataTypes.ENUM('Férfi', 'Nő'), allowNull: false },
+    height: { type: DataTypes.FLOAT, allowNull: true },
+    weight: { type: DataTypes.FLOAT, allowNull: true },
+    taj: { type: DataTypes.INTEGER,  allowNull: false },
+    homePhone: { type: DataTypes.STRING, allowNull: true},
+    registDate: { type: DataTypes.DATEONLY }
   }, {
     tableName: 'patients',
     timestamps: false

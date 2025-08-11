@@ -1,70 +1,55 @@
-<app-patient-navbar></app-patient-navbar>
-
 <ion-content class="page-container">
+  <app-patient-navbar></app-patient-navbar>
   <div class="grid">
     <ion-card class="profile-card">
-      <ion-grid>
-        <ion-row>
-          <ion-col size="12" size-md="6">
-            <ion-card-header>
-              <ion-avatar class="profile-picture">
-                <img [src]="user?.user?.pictureUrl" alt="Profilkép" draggable="false"/>
-              </ion-avatar>
-              <ion-card-title *ngIf="user">
-                <h2>{{ user?.user?.name }}</h2>
-              </ion-card-title>
-            </ion-card-header>
+      <div class="pc-header">
+        <div class="pc-left">
+          <div class="pc-avatar">
+            <img [src]="user?.user?.pictureUrl" alt="Profilkép" draggable="false" />
+          </div>
+          <div class="pc-name">
+            <div class="pc-fullname">{{ user?.user?.name }}</div>
+            <div class="pc-role">{{ user?.user?.role }}</div>
+          </div>
+        </div>
 
-            <ion-card-content>
-              <div class="user-grid">
-                <div class="user-info main-info">
-                  <div class="title">Kor</div>
-                  <div class="value">{{ getAge(user?.user?.birthDate) }} év</div>
-                </div>
-                <div class="user-info main-info">
-                  <div class="title">Magasság</div>
-                  <div class="value">{{ user?.patient?.height }} cm</div>
-                </div>
-                <div class="user-info main-info">
-                  <div class="title">Cím</div>
-                  <div class="value">{{ user?.user?.address }}</div>
-                </div>
-                <div class="user-info main-info">
-                  <div class="title">Súly</div>
-                  <div class="value">{{ user?.patient?.weight }} kg</div>
-                </div>
-              </div>
-            </ion-card-content>
-          </ion-col>
+        <ion-button class="btn-accent" (click)="openEditModal()">
+          Profil módosítása
+        </ion-button>
+      </div>
 
-          <ion-col size="12" size-md="6" class="data-right">
-            <ion-card-content>
-              <ion-list class="user-data">
-                <div class="user-info">
-                  <div class="title">Email</div>
-                  <div class="value">{{ user?.user?.email }}</div>
-                </div>
-                <div class="user-info">
-                  <div class="title">Születési dátum</div>
-                  <div class="value">{{ user?.user?.birthDate }}</div>
-                </div>
-                <div class="user-info">
-                  <div class="title">Mobil</div>
-                  <div class="value">{{ formatPhoneNumber(user?.user?.phoneNumber) }}</div>
-                </div>
-                <div class="user-info">
-                  <div class="title">Otthoni</div>
-                  <div class="value">{{ formatPhoneNumber(user?.patient?.homePhone) }}</div>
-                </div>
+      <div class="pc-details">
+        <div class="pc-item"><span class="label">Születési idő:</span><span class="value">{{ user?.user?.birthDate }} ({{ getAge(user?.user?.birthDate) }} év)</span></div>
+        <div class="pc-item"><span class="label">Cím:</span><span class="value">{{ user?.user?.address }}</span></div>
+        <div class="pc-item"><span class="label">Súly:</span><span class="value"></span>{{ user?.patient?.weight ? (user?.patient?.weight + ' kg') : 'N/A' }}</div>
+        <div class="pc-item">
+          <span class="label">Nem:</span>
+          <span class="value">{{ user?.patient?.gender }}</span>
+          <ion-icon
+            *ngIf="user?.patient?.gender === 'Férfi'"
+            name="male">
+          </ion-icon>
+          <ion-icon
+            *ngIf="user?.patient?.gender === 'Nő'"
+            name="female">
+          </ion-icon>
+        </div>
+        <div class="pc-item"><span class="label">TAJ:</span><span class="value"></span>{{ formatTaj(user?.patient?.taj) }}</div>
+        <div class="pc-item"><span class="label">Magasság:</span><span class="value"></span>{{ user?.patient?.height ? (user.patient.height + ' cm') : 'N/A' }}</div>
+      </div>
 
-                <div class="edit-button-container">
-                  <ion-button class="btn-accent edit" (click)="openEditModal()">Módosítás</ion-button>
-                </div>
-              </ion-list>
-            </ion-card-content>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+      <div class="pc-chips" *ngIf="tags?.length">
+        <ion-chip class="chip" *ngFor="let t of tags">
+          <ion-icon [name]="iconFor(t.name)" *ngIf="iconFor(t.name)"></ion-icon>
+          <ion-label><strong>{{ t.name }}:</strong> {{ t.value }}</ion-label>
+        </ion-chip>
+      </div>
+
+      <div class="pc-stats">
+        <div class="stat"><span class="label">Email:</span><span class="value">{{ user?.user?.email }}</span></div>
+        <div class="stat"><span class="label">Mobil:</span><span class="value">{{ formatPhoneNumber(user?.user?.phoneNumber) }}</span></div>
+        <div class="stat"><span class="label">Otthoni:</span><span class="value">{{ user?.patient?.homePhone ? formatPhoneNumber(user?.patient?.homePhone) : 'N/A' }}</span></div>
+      </div>
     </ion-card>
 
     <ion-card class="appointments">

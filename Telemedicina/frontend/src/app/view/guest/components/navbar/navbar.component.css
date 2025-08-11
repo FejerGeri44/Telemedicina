@@ -16,16 +16,11 @@ ion-menu-button {
 }
 
 .navbar-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
   padding: 0 1% 0 3%;
 }
 
 .navbar-left {
   display: flex;
-  align-items: center;
 }
 
 ion-title {
@@ -43,7 +38,7 @@ ion-title {
 }
 
 .sideMenu {
-  top: 55px;
+  top: 40px;
   --width: 200px;
 }
 

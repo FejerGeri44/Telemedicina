@@ -78,7 +78,7 @@ export class AppointmentListComponent implements OnInit {
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  sortAppointments(column: 'date' | 'time'): void {
+  sortAppointments(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -87,16 +87,19 @@ export class AppointmentListComponent implements OnInit {
     }
 
     this.appointments.sort((a, b) => {
-      let aValue = a[column];
-      let bValue = b[column];
+      let valA: any;
+      let valB: any;
 
-      if (column === 'date') {
-        aValue = new Date(`${a.date} ${a.time}`);
-        bValue = new Date(`${b.date} ${b.time}`);
+      if (column === 'datetime') {
+        valA = a.date;
+        valB = b.date;
+      } else {
+        valA = a[column];
+        valB = b[column];
       }
 
-      if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
+      if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
   }

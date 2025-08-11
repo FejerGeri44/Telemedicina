@@ -30,6 +30,7 @@ export class PatientRegistComponent {
   taj: string = '';
   address: string = '';
   birthDate: string = '';
+  gender: string = '';
 
   validEmail: boolean = false;
   invalidEmail: boolean = false;
@@ -74,7 +75,8 @@ export class PatientRegistComponent {
       phoneNumber: this.phoneNumber,
       taj: this.taj,
       address: this.address,
-      birthDate: this.birthDate
+      birthDate: this.birthDate,
+      gender: this.gender
     };
 
     this.http.post('http://localhost:3000/api/auth/register/patient', patientData)

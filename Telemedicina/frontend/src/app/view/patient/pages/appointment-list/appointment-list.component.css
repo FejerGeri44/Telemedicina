@@ -7,7 +7,6 @@
 
 .appointment-container {
   margin: auto;
-  padding-left: 110px;
 }
 
 .appointment-table {
@@ -18,8 +17,8 @@
 
 .appointment-table th,
 .appointment-table td {
-  padding: 12px;
-  text-align: left;
+  padding: 10px;
+  text-align: center;
   border-bottom: 1px solid #ccc;
 }
 
@@ -27,7 +26,7 @@
   background-color: var(--primary);
   color: var(--light-text-color);
   font-weight: bold;
-  padding: 20px 10px 20px 2%;
+  padding: 20px;
 }
 
 .sort {
@@ -106,4 +105,22 @@
 .delete-appointment:active {
   transform: scale(0.98);
   box-shadow: none;
+}
+
+@media (max-width: 1000px) {
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  .appointment-table {
+    min-width: 900px;
+  }
+
+  .appointment-table th,
+  .appointment-table td {
+    font-size: 14px;
+    padding: 10px 8px;
+  }
 }

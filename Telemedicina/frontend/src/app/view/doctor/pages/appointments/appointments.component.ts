@@ -1,4 +1,4 @@
-import {Component, Injector, ViewContainerRef} from '@angular/core';
+import {Component, Injector, OnInit, ViewContainerRef} from '@angular/core';
 import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
 import {AlertController, IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
@@ -41,7 +41,7 @@ registerLocaleData(localeHu);
   styleUrl: './appointments.component.css'
 })
 
-export class AppointmentsComponent {
+export class AppointmentsComponent implements OnInit{
   appointments: prevAppointment[] = [];
   appointmentDates: string[] = [];
   newAppointment: newAppointment = {
@@ -74,7 +74,7 @@ export class AppointmentsComponent {
     this.onDateChange({ detail: { value: this.selectedDate } });
 
     const startHour = 8;
-    const endHour = 21;
+    const endHour = 20;
 
     for (let hour = startHour; hour < endHour; hour++) {
       this.timeOptions.push(`${this.pad(hour)}:00`, `${this.pad(hour)}:30`);
@@ -155,7 +155,7 @@ export class AppointmentsComponent {
     const start = 8 * 60;
     const end = 20 * 60;
 
-    for (let mins = start; mins <= end; mins += 30) {
+    for (let mins = start; mins < end; mins += 30) {
       const hour = Math.floor(mins / 60).toString().padStart(2, '0');
       const minute = (mins % 60).toString().padStart(2, '0');
       slots.push(`${hour}:${minute}`);

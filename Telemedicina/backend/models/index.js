@@ -15,6 +15,7 @@ const Doctor = require('./doctor.model')(sequelize);
 const Patient = require('./patient.model')(sequelize);
 const Admin = require('./admin.model')(sequelize);
 const Appointment = require('./appointment.model')(sequelize);
+const PatientTag = require('./patientTag.model')(sequelize);
 
 // Kapcsolatok
 User.hasOne(Doctor, { foreignKey: 'userId' });
@@ -32,11 +33,15 @@ Appointment.belongsTo(Doctor, { foreignKey: 'doctor_id' });
 Patient.hasMany(Appointment, { foreignKey: 'patient_id' });
 Appointment.belongsTo(Patient, { foreignKey: 'patient_id' });
 
+Patient.hasMany(PatientTag, { foreignKey: 'patient_id', as: 'tags', onDelete: 'CASCADE' });
+PatientTag.belongsTo(Patient, { foreignKey: 'patient_id', as: 'patient' });
+
 module.exports = {
   sequelize,
   User,
   Doctor,
   Patient,
   Admin,
-  Appointment
+  Appointment,
+  PatientTag
 };

@@ -122,6 +122,22 @@
       </ion-item>
     </div>
 
+    <div class="grid-single">
+      <ion-item>
+        <ion-label class="custom-label">Nem</ion-label>
+        <ion-radio-group [(ngModel)]="gender" required>
+          <ion-item lines="none">
+            <ion-label>Férfi</ion-label>
+            <ion-radio slot="start" value="férfi"></ion-radio>
+          </ion-item>
+          <ion-item lines="none">
+            <ion-label>Nő</ion-label>
+            <ion-radio slot="start" value="nő"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-item>
+    </div>
+
     <div class="button-row">
       <ion-button class="btn-secondary back" (click)="backToDash()">Vissza</ion-button>
       <ion-button class="btn-primary submit" (click)="onPatientRegister()">Csatlakozz</ion-button>

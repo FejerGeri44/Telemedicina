@@ -94,7 +94,6 @@ ion-button.btn-secondary:active {
 }
 
 ion-button.btn-accent {
-  width: 100%;
   border-radius: var(--ion-button-radius);
   --border-radius: var(--button-radius);
   --background: var(--accent);
@@ -193,6 +192,20 @@ ion-modal {
 .alert-button.sc-ion-alert-md.confirm-button:active {
   transform: scale(0.98);
   box-shadow: none;
+}
+
+.Profile-edit-modal {
+  --width: 80%;
+  --max-width: 1000px;
+  --height: 800px;
+  --border-radius: 12px;
+}
+
+@media (max-width: 800px) {
+  .Profile-edit-modal {
+    --width: 100%;
+    --height: 100%;
+  }
 }
 
 @media (min-width: 768px) {

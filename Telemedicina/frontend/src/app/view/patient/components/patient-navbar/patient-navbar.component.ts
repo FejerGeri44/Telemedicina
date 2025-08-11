@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {NgClass, NgForOf, NgIf} from '@angular/common';
-import { Router, RouterLinkActive, RouterModule } from '@angular/router';
+import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/router';
 import {LogoutModalComponent} from '../../../../shared/logout-modal/logout-modal.component';
+import {filter} from 'rxjs';
+import {HttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'app-patient-navbar',
@@ -18,24 +20,45 @@ import {LogoutModalComponent} from '../../../../shared/logout-modal/logout-modal
   standalone: true,
   styleUrl: './patient-navbar.component.css'
 })
-export class PatientNavbarComponent {
+export class PatientNavbarComponent implements OnInit{
   user: any;
-  isCollapsed = true;
-
-  constructor(private router: Router, private modalCtrl: ModalController) {}
+  pictureUrl: any;
+  profileOpen = false;
 
   menuItems = [
     { icon: 'home', label: 'Profil', route: '/dashboard/patient' },
-    { icon: 'fitness', label: 'Egészségügyi napló', route: '/naplo' },
     { icon: 'search', label: 'Orvos kereső', route: '/doctor-search' },
     { icon: 'calendar', label: 'Időpontjaim', route: '/appointment-list' },
+    { icon: 'fitness', label: 'Egészségügyi napló', route: '/naplo' },
     { icon: 'chatbubbles', label: 'Üzenetek', route: '/messages' },
-    { icon: 'notifications', label: 'Értesítések', route: '/ertesitesek' },
-    { icon: 'log-out-outline', label: 'Kijelentkezés', route: '/logout' }
   ];
 
-  toggleSidebar() {
-    this.isCollapsed = !this.isCollapsed;
+  constructor(private http: HttpClient, private router: Router, private modalCtrl: ModalController) {}
+
+  ngOnInit() {
+    this.getMyData();
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+      });
+  }
+
+  getMyData() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    this.http.get('http://localhost:3000/api/getPatientMe', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).subscribe({
+      next: (user: any) => {
+        this.user = user;
+      },
+      error: (err) => {
+        console.error('❌ Felhasználó lekérése sikertelen:', err);
+      }
+    });
   }
 
   async confirmLogout() {
@@ -53,11 +76,12 @@ export class PatientNavbarComponent {
     }
   }
 
-  navigateTo(route: string) {
-    void this.router.navigate([route]);
+  onNotifications() {
+    /* open notifications panel/modal */
   }
 
-  isActiveRoute(route: string): boolean {
-    return location.pathname === route;
+  toggleProfileMenu(ev?: Event) {
+    ev?.stopPropagation();
+    this.profileOpen = !this.profileOpen;
   }
 }

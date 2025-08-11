@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {NgForOf, NgIf} from '@angular/common';
 import {PatientNavbarComponent} from '../components/patient-navbar/patient-navbar.component';
 import {IonicModule, ModalController} from '@ionic/angular';
@@ -16,6 +16,8 @@ export interface Appointment {
   status: 'free' | 'accepted' | 'rejected';
 }
 
+interface PatientTag { name: string; value: string; }
+
 @Component({
   selector: 'app-patient-dashboard',
   imports: [
@@ -31,9 +33,10 @@ export interface Appointment {
   styleUrl: './patient-dashboard.component.css'
 })
 
-export class PatientDashboardComponent {
+export class PatientDashboardComponent implements OnInit {
   user: any;
   pictureUrl: any;
+  tags: PatientTag[] = [];
   appointments: Appointment[] = [];
   upcomingAppointments: Awaited<{
     date: string;
@@ -49,6 +52,7 @@ export class PatientDashboardComponent {
 
   ngOnInit() {
     this.getMyData();
+    this.loadMyTags();
     this.loadMyAppointments();
   }
 
@@ -64,12 +68,39 @@ export class PatientDashboardComponent {
       next: (user: any) => {
         this.user = user;
         this.pictureUrl = this.user.pictureUrl;
-        console.log(this.pictureUrl)
       },
       error: (err) => {
         console.error('❌ Felhasználó lekérése sikertelen:', err);
       }
     });
+  }
+
+  loadMyTags() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    this.http.get('http://localhost:3000/api/getPatientMeTags', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).subscribe({
+      next: (res: any) => {
+        this.tags = res?.tags ?? [];
+      },
+      error: (err) => {
+        console.error('❌ Felhasználó lekérése sikertelen:', err);
+      }
+    });
+  }
+
+  iconFor(name: string): string | null {
+    const n = (name || '').toLowerCase();
+    if (n.includes('vér') || n.includes('vértípus')) return 'water-outline';
+    if (n.includes('allergia')) return 'alert-circle-outline';
+    if (n.includes('krónikus') || n.includes('betegség')) return 'medkit-outline';
+    if (n.includes('gyógyszer')) return 'bandage-outline';
+    if (n.includes('diéta')) return 'fast-food-outline';
+    return null;
   }
 
   getAge(birthDateString: string): number {
@@ -90,9 +121,16 @@ export class PatientDashboardComponent {
     return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
   }
 
+  formatTaj(taj: string | number): string {
+    if (!taj) return '';
+    const clean = String(taj).replace(/\D/g, '');
+    return clean.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+  }
+
   async openEditModal() {
     const modal = await this.modalCtrl.create({
       component: EditProfileModalComponent as any,
+      cssClass: 'Profile-edit-modal',
       componentProps: {
         user: this.user
       }
@@ -104,6 +142,7 @@ export class PatientDashboardComponent {
 
     if (role === 'updated') {
       this.getMyData();
+      this.loadMyTags();
     }
   }
 

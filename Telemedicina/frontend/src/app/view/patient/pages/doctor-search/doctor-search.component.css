@@ -6,7 +6,7 @@
 }
 
 .doctor-container {
-  width: 75%;
+  width: 85%;
   margin: auto;
   padding: 20px;
 }
@@ -220,5 +220,20 @@ ion-item {
   ion-col.custom-col {
     flex: 0 0 100%;
     max-width: 100%;
+  }
+}
+
+@media (max-width: 1000px) {
+  .doctor-container {
+    width: 90%;
+  }
+
+  .filter-panel {
+    right: 0;
+    left: -150px;
+    top: 60px;
+    margin: 0 auto;
+    border-radius: 10px;
+    box-sizing: border-box;
   }
 }
