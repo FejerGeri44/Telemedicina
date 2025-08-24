@@ -2,52 +2,13 @@
 
 <ion-content class="page-container">
   <div class="grid">
-    <ion-card class="profile-card">
-      <ion-grid>
-        <ion-row>
-          <ion-col size="12" size-md="6">
-            <ion-card-header>
-              <ion-avatar class="profile-picture">
-                <img *ngIf="user" [src]="user?.user.pictureUrl" alt="Profilkép" draggable="false" />
-              </ion-avatar>
-              <ion-card-title *ngIf="user">
-                <h2>Dr. {{ user?.user.name }}</h2>
-              </ion-card-title>
-            </ion-card-header>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </ion-card>
-
-    <ion-card class="profile-data">
-      <ion-card-content>
-        <div class="profile-data-wrapper">
-          <div class="profile-info">
-            <div class="title">Bemutatkozás</div>
-            <div class="value">{{ user?.doctor?.introduction }}</div>
-          </div>
-
-          <div class="profile-fields">
-            <div class="user-info">
-              <div class="title">Cím</div>
-              <div class="value">{{ user?.user?.address }}</div>
-            </div>
-            <div class="user-info">
-              <div class="title">Email</div>
-              <div class="value">{{ user?.user?.email }}</div>
-            </div>
-            <div class="user-info">
-              <div class="title">Telefonszám</div>
-              <div class="value">{{ formatPhoneNumber(user?.user?.phoneNumber) }}</div>
-            </div>
-
-            <div class="edit-button-container">
-              <ion-button class="btn-accent edit">Módosítás</ion-button>
-            </div>
-          </div>
-        </div>
-      </ion-card-content>
-    </ion-card>
+    <app-doctor-profile-card
+      class="profile-card"
+      [user]="user?.user"
+      [doctor]="user?.doctor"
+      [editable]="true"
+      (edit)="openEditModal()">>
+    </app-doctor-profile-card>
 
     <ion-card class="patients">
       <div class="card-header">

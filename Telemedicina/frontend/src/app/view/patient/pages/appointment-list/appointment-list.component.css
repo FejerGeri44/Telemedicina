@@ -1,5 +1,5 @@
 .page-container {
-  min-height: 100vh;
+  min-height: calc(100vh - 110px);
   --background: var(--dashboard-background-color);
   display: flex;
   flex-direction: column;

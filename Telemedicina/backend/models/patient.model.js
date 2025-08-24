@@ -13,7 +13,7 @@ module.exports = (sequelize) => {
     gender: { type: DataTypes.ENUM('Férfi', 'Nő'), allowNull: false },
     height: { type: DataTypes.FLOAT, allowNull: true },
     weight: { type: DataTypes.FLOAT, allowNull: true },
-    taj: { type: DataTypes.INTEGER,  allowNull: false },
+    taj: { type: DataTypes.STRING,  allowNull: false, unique: true },
     homePhone: { type: DataTypes.STRING, allowNull: true},
     registDate: { type: DataTypes.DATEONLY }
   }, {

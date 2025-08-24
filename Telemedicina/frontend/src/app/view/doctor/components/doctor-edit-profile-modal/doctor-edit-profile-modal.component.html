@@ -1,0 +1,105 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Profil módosítása</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="epm-content">
+  <!-- Fejléc: avatar + név -->
+  <section class="epm-header">
+    <div class="epm-avatar">
+      <img
+        [src]="user?.user?.pictureUrl"
+        alt="Profilkép"
+        class="avatar-img"
+      />
+      <label class="avatar-edit">
+        <ion-icon name="camera"></ion-icon>
+        <input type="file" hidden (change)="onFileSelected($event)" accept="image/*" />
+      </label>
+    </div>
+    <div class="epm-headline">
+      <h2>Dr. {{ user?.user?.name }}</h2>
+      <p class="muted">{{ user?.user?.email }}</p>
+    </div>
+  </section>
+
+  <!-- Törzs: 2 oszlop nagy kijelzőn -->
+  <section class="epm-grid">
+    <div class="col">
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Név</ion-label>
+        <ion-input
+          class="custom-input"
+          type="text"
+          [(ngModel)]="editForm.name"
+          [placeholder]="user?.user?.name"
+          fill="outline"
+          clearInput>
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Cím</ion-label>
+        <ion-input
+          class="custom-input"
+          type="text"
+          [(ngModel)]="editForm.address"
+          [placeholder]="user?.user?.address || 'N/A'"
+          fill="outline"
+          clearInput>
+        </ion-input>
+      </ion-item>
+    </div>
+
+    <div class="col">
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Mobil</ion-label>
+        <ion-input
+          class="custom-input"
+          type="tel"
+          [(ngModel)]="editForm.phoneNumber"
+          [placeholder]="formatPhoneNumber(user?.user?.phoneNumber)"
+          fill="outline"
+          clearInput>
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Specialitás</ion-label>
+        <ion-input
+          class="custom-input"
+          type="text"
+          [(ngModel)]="editForm.speciality"
+          [placeholder]="user?.doctor?.speciality"
+          fill="outline"
+          clearInput>
+        </ion-input>
+      </ion-item>
+    </div>
+
+    <div class="row">
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Bemutatkozás</ion-label>
+        <ion-textarea
+          class="custom-textarea"
+          autoGrow="true"
+          [rows]="6"
+          [(ngModel)]="editForm.introduction"
+          [placeholder]="user?.doctor?.introduction || 'Részletes bemutatkozás...'"
+          fill="outline">
+        </ion-textarea>
+      </ion-item>
+    </div>
+  </section>
+
+  <!-- Sticky action sáv -->
+  <div class="epm-actions">
+    <ion-button class="btn-accent" (click)="save()">Mentés</ion-button>
+  </div>
+</ion-content>

@@ -20,11 +20,15 @@
       />
       <label class="avatar-edit">
         <ion-icon name="camera"></ion-icon>
-        <input type="file" hidden (change)="onFileSelected($event)" accept="image/*" />
+        <input
+          type="file"
+          hidden
+          (change)="onFileSelected($event)"
+          accept="image/*" />
       </label>
     </div>
     <div class="epm-headline">
-      <h2>{{ editForm?.name || user?.user?.name }}</h2>
+      <h2>{{ user?.user?.name }}</h2>
       <p class="muted">{{ user?.user?.email }}</p>
     </div>
   </section>
@@ -83,35 +87,32 @@
       </ion-item>
     </div>
 
-    <!-- Alsó sor: magasság / súly -->
-    <div class="col span-2">
-      <div class="two-up">
-        <ion-item>
-          <ion-label class="custom-label" position="stacked">Magasság (cm)</ion-label>
-          <ion-input
-            class="custom-input"
-            type="number"
-            inputmode="numeric"
-            [(ngModel)]="editForm.height"
-            [placeholder]="user?.patient?.height"
-            fill="outline"
-            clearInput>
-          </ion-input>
-        </ion-item>
+    <div class="row">
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Magasság (cm)</ion-label>
+        <ion-input
+          class="custom-input"
+          type="number"
+          inputmode="numeric"
+          [(ngModel)]="editForm.height"
+          [placeholder]="user?.patient?.height"
+          fill="outline"
+          clearInput>
+        </ion-input>
+      </ion-item>
 
-        <ion-item>
-          <ion-label class="custom-label" position="stacked">Testsúly (kg)</ion-label>
-          <ion-input
-            class="custom-input"
-            type="number"
-            inputmode="numeric"
-            [(ngModel)]="editForm.weight"
-            [placeholder]="user?.patient?.weight"
-            fill="outline"
-            clearInput>
-          </ion-input>
-        </ion-item>
-      </div>
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Testsúly (kg)</ion-label>
+        <ion-input
+          class="custom-input"
+          type="number"
+          inputmode="numeric"
+          [(ngModel)]="editForm.weight"
+          [placeholder]="user?.patient?.weight"
+          fill="outline"
+          clearInput>
+        </ion-input>
+      </ion-item>
     </div>
   </section>
 
@@ -123,10 +124,11 @@
       <!-- Tag típusa -->
       <ion-item class="tag-item">
         <ion-label position="stacked">Adattípus</ion-label>
-        <ion-select interface="popover"
-                    placeholder="Válassz típust"
-                    [(ngModel)]="newTag.key"
-                    (ionChange)="onTagTypeChange()">
+        <ion-select
+          interface="popover"
+          placeholder="Válassz típust"
+          [(ngModel)]="newTag.key"
+          (ionChange)="onTagTypeChange()">
           <ion-select-option *ngFor="let opt of tagOptions" [value]="opt.key">
             {{ opt.label }}
           </ion-select-option>
@@ -170,7 +172,6 @@
 
   <!-- Sticky action sáv -->
   <div class="epm-actions">
-    <ion-button class="btn-secondary" (click)="close()">Mégse</ion-button>
     <ion-button class="btn-accent" (click)="save()">Mentés</ion-button>
   </div>
 </ion-content>

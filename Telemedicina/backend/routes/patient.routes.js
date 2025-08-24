@@ -4,7 +4,7 @@ const patientController = require('../controllers/patient.controller');
 const authenticateToken = require('../middleware/auth.middleware');
 
 router.get('/doctors', patientController.getAllDoctors);
-router.patch('/profile/update', patientController.updateProfile);
+router.patch('/patient/profile/update', patientController.updateProfile);
 router.get('/getPatientMe', authenticateToken, patientController.getCurrentUser);
 router.get('/getPatientMeTags', authenticateToken, patientController.getPatientMeTags);
 router.post('/getDoctorsAppointments', authenticateToken, patientController.getDoctorsAppointments);
@@ -13,5 +13,6 @@ router.get('/loadMyAppointments', authenticateToken, patientController.loadMyApp
 router.post('/getDoctorCardData', authenticateToken, patientController.getDoctorCardData);
 router.get('/loadMyRegisteredAppointments', authenticateToken, patientController.loadMyRegisteredAppointments);
 router.delete('/deleteAppointment', authenticateToken, patientController.deleteAppointment);
+router.post('/doctorsRating', authenticateToken, patientController.rateDoctor);
 
 module.exports = router;

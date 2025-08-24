@@ -28,17 +28,32 @@
       <ion-button class="btn-primary search" (click)="onSearchChange()">Keresés</ion-button>
     </div>
 
-    <div class="pagination">
-      <ion-icon name="chevron-back-outline" (click)="prevPageSet()" [class.disabled]="currentPage === 1"></ion-icon>
+    <div class="pagination" *ngIf="!isLoading && paginatedDoctors.length > 0">
+      <div class="pag-left">
+        Találatok: {{ totalCount }} db
+      </div>
 
-      <span
-        *ngFor="let page of visiblePages"
-        (click)="goToPage(page)"
-        [class.active]="page === currentPage">
-        {{ page }}
-      </span>
+      <div class="pag-controls">
+        <ion-icon name="chevron-back-outline"
+                  (click)="prevPageSet()"
+                  [class.disabled]="currentPage === 1"></ion-icon>
 
-      <ion-icon name="chevron-forward-outline" (click)="nextPageSet()" [class.disabled]="currentPage === totalPages"></ion-icon>
+        <span *ngFor="let page of visiblePages"
+              (click)="goToPage(page)"
+              [class.active]="page === currentPage">
+      {{ page }}
+    </span>
+
+        <ion-icon name="chevron-forward-outline"
+                  (click)="nextPageSet()"
+                  [class.disabled]="currentPage === totalPages"></ion-icon>
+      </div>
+    </div>
+
+    <!-- HA NINCS ORVOS -->
+    <div *ngIf="!isLoading && paginatedDoctors.length === 0" class="no-data">
+      Nincs találat
+      <span class="no-data-text">N/A</span>
     </div>
 
     <!-- SKELETON ÁLLAPOT -->
@@ -91,16 +106,18 @@
               </div>
             </ion-card-header>
 
-            <ion-card-content>
-              <p><strong>Email:</strong> {{ doctor.User.email }}</p>
-              <p><strong>Telefon:</strong> {{ doctor.User.phoneNumber }}</p>
-              <p><strong>Cím:</strong> {{ doctor.User.address }}</p>
-              <p><strong>Bemutatkozás:</strong> {{ doctor.introduction }}</p>
+            <ion-card-content class="doctor-rating">
+              <ng-container *ngFor="let star of [1,2,3,4,5]">
+                <ion-icon
+                  [name]="doctor.avgRating >= star ? 'star' :
+                      (doctor.avgRating >= star - 0.5 ? 'star-half' : 'star-outline')">
+                </ion-icon>
+              </ng-container>
             </ion-card-content>
 
             <div class="button-row">
               <ion-button class="btn-primary" (click)="openAppointmentModal(doctor)">Időpontfoglalás</ion-button>
-              <ion-button class="btn-secondary">Csevegés</ion-button>
+              <ion-button class="btn-secondary" (click)="openDoctorProfileModal(doctor)">Profil megtekintése</ion-button>
             </div>
           </ion-card>
         </ion-col>

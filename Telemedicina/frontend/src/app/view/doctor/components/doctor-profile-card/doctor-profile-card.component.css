@@ -1,0 +1,187 @@
+.dpc {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 20px;
+}
+
+/* Bal blokk */
+.dpc-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 240px;
+}
+.dpc-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #e6f4ff;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.dpc-avatar img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+
+.dpc-head {
+  display: flex;
+  flex-direction:
+    column; gap: 2px;
+}
+.dpc-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.dpc-spec {
+  color: #7a8aa0;
+  font-size: 0.95rem;
+}
+
+.dpc-stars {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+}
+.dpc-stars ion-icon {
+  color: #FFD700;
+  font-size: 2rem;
+}
+
+/* Közép */
+.dpc-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+  align-items: start;
+}
+
+.first {
+  margin-left: 20%;
+}
+
+.dpc-info .row {
+  display: flex;
+  gap: 6px;
+  line-height: 1.4;
+}
+.lbl {
+  color: #7a8aa0;
+  min-width: max-content;
+}
+.val {
+  color: #1e2a3a;
+  overflow-wrap: anywhere;
+}
+
+/* Jobb */
+.dpc-right {
+  justify-self: end;
+}
+.btn-edit {
+  --border-radius: 999px;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  height: 32px;
+}
+
+.dpc-intro {
+  width: 100%;
+  grid-column: 1 / -1;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  color: #1e2a3a;
+}
+
+.dpc-intro h4 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.dpc-intro p {
+  margin: 0;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+.dpc-stars.editable {
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.star-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+}
+.star-btn ion-icon {
+  font-size: 20px;
+}
+
+.btn-rate {
+  margin-left: 8px;
+}
+.dpc-stars.editable {
+  gap: 5px;
+}
+.rate-editor {
+  display: flex;
+}
+.star-wrap {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.star-wrap ion-icon { font-size: 2rem; }
+.rate-actions {
+  display: flex;
+  flex-direction: row;
+  margin-top: 10px;
+  margin-left: 20px;
+  gap: 10px;
+}
+
+.dpc.patient-mode .dpc-left {
+  grid-column: 1 / -1;
+}
+.dpc.patient-mode .first {
+  margin-left: 0;
+}
+.btn-accent {
+  font-size: 0.75rem;
+  line-height: 1;
+  border: none;
+  margin-left: 20px;
+}
+.btn-primary {
+  min-width: 100px;
+  font-size: 0.75rem;
+  line-height: 1;
+  border: none;
+}
+.btn-secondary {
+  min-width: 100px;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+@media (max-width: 1000px) {
+  .first { margin-left: 0 }
+  .dpc { grid-template-columns: 1fr; gap: 12px; }
+  .dpc-right { justify-self: start; }
+  .dpc-info { grid-template-columns: 1fr; }
+}

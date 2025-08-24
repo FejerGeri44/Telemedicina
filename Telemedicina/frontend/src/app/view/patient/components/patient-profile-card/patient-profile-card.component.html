@@ -1,0 +1,58 @@
+<div class="card">
+  <div class="pc-header">
+    <div class="pc-left">
+      <div class="pc-avatar">
+        <img [src]="user?.pictureUrl" alt="Profilkép" draggable="false" />
+      </div>
+      <div class="pc-name">
+        <div class="pc-fullname">{{ user?.name }}</div>
+        <div class="pc-role">{{ user?.role }}</div>
+      </div>
+    </div>
+
+    <ion-button *ngIf="editable" class="btn-accent" (click)="edit.emit()">
+      Profil módosítása
+    </ion-button>
+  </div>
+
+  <div class="pc-details">
+    <div class="pc-item"><span class="label">Születési idő:</span>
+      <span class="value">{{ user?.birthDate }} <ng-container *ngIf="getAge(user?.birthDate) as age">({{ age }} év)</ng-container></span>
+    </div>
+    <div class="pc-item"><span class="label">Cím:</span><span class="value">{{ user?.address }}</span></div>
+
+    <div class="pc-item">
+      <span class="label">Súly:</span>
+      <span class="value">{{ patient?.weight ? (patient?.weight + ' kg') : 'N/A' }}</span>
+    </div>
+
+    <div class="pc-item">
+      <span class="label">Nem:</span>
+      <span class="value">
+        {{ patient?.gender || 'N/A' }}
+        <ion-icon *ngIf="patient?.gender === 'Férfi'" name="male"></ion-icon>
+        <ion-icon *ngIf="patient?.gender === 'Nő'"   name="female"></ion-icon>
+      </span>
+    </div>
+
+    <div class="pc-item"><span class="label">TAJ:</span><span class="value">{{ formatTaj(patient?.taj) }}</span></div>
+
+    <div class="pc-item">
+      <span class="label">Magasság:</span>
+      <span class="value">{{ patient?.height ? (patient?.height + ' cm') : 'N/A' }}</span>
+    </div>
+  </div>
+
+  <div class="pc-chips" *ngIf="tags?.length">
+    <ion-chip class="chip" *ngFor="let t of tags">
+      <ion-icon [name]="iconFor(t.name)" *ngIf="iconFor(t.name)"></ion-icon>
+      <ion-label><strong>{{ t.name }}:</strong> {{ t.value }}</ion-label>
+    </ion-chip>
+  </div>
+
+  <div class="pc-stats">
+    <div class="stat"><span class="label">Email:</span><span class="value">{{ user?.email }}</span></div>
+    <div class="stat"><span class="label">Mobil:</span><span class="value">{{ formatPhoneNumber(user?.phoneNumber) }}</span></div>
+    <div class="stat"><span class="label">Otthoni:</span><span class="value">{{ patient?.homePhone ? formatPhoneNumber(patient?.homePhone) : 'N/A' }}</span></div>
+  </div>
+</div>

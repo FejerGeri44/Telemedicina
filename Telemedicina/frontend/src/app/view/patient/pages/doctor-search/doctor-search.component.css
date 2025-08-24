@@ -21,6 +21,20 @@
   margin: 0 auto 20px;
 }
 
+.no-data {
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--smoke-color);
+  margin-top: 25%;
+}
+
+.no-data-text {
+  display: block;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--secondary);
+}
+
 .header {
   font-size: 30px;
 }
@@ -36,7 +50,7 @@ ion-icon {
 
 .pagination {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 10px;
   margin-top: 15px;
@@ -104,7 +118,7 @@ ion-card {
 
 .doctor-card-header {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
 }
@@ -120,6 +134,7 @@ ion-card {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
 }
 
 ion-card-title, ion-card-subtitle {
@@ -128,7 +143,9 @@ ion-card-title, ion-card-subtitle {
 }
 
 ion-avatar {
-  margin-bottom: 10px;
+  width: 100px;
+  height: 100px;
+  margin-top: 20px;
 }
 
 ion-row {
@@ -146,11 +163,33 @@ ion-avatar img {
   object-fit: cover;
 }
 
+.doctor-rating {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+  gap: 10px;
+}
+
+.doctor-rating ion-icon {
+  color: #FFD700;
+  font-size: 2rem;
+}
+
 .button-row {
   display: flex;
-  width: 95%;
+  flex-direction: column;
+  width: 100%;
   gap: 10px;
-  margin: 15px auto 10px;
+}
+
+.btn-primary {
+  width: 90%;
+  margin: 15px auto 5px;
+}
+
+.btn-secondary {
+  width: 90%;
+  margin: 5px auto 15px;
 }
 
 .button-row ion-button {

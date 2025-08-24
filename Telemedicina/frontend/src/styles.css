@@ -14,7 +14,6 @@
   --ion-button-radius: 15px;
   --button-radius: 10px;
   --button-border: 2px solid var(--primary);
-  --accent-button-border: 2px solid var(--accent);
 }
 
 html, body {
@@ -98,7 +97,6 @@ ion-button.btn-accent {
   --border-radius: var(--button-radius);
   --background: var(--accent);
   --box-shadow: none;
-  border: var(--accent-button-border);
   color: var(--light-text-color);
   font-weight: bold;
   transition: all 0.3s ease;
@@ -197,8 +195,16 @@ ion-modal {
 .Profile-edit-modal {
   --width: 80%;
   --max-width: 1000px;
-  --height: 800px;
+  --height: 700px;
   --border-radius: 12px;
+}
+
+.profile-view-modal {
+  --width: 80%;
+  --max-width: 900px;
+  --height: auto;
+  --min-height: 250px;
+  --border-radius: 20px;
 }
 
 @media (max-width: 800px) {
@@ -212,5 +218,21 @@ ion-modal {
   ion-modal.registerTo-appointment-modal::part(content) {
     width: 80% !important;
     max-width: 1000px !important;
+  }
+}
+
+@media print {
+  body.overlay-print > :not(#printOverlay) {
+    display: none !important;
+  }
+
+  #printOverlay {
+    display: block !important;
+    width: 100%;
+    background: #fff !important;
+  }
+
+  @page {
+    margin: 12mm;
   }
 }

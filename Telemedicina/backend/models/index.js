@@ -16,6 +16,8 @@ const Patient = require('./patient.model')(sequelize);
 const Admin = require('./admin.model')(sequelize);
 const Appointment = require('./appointment.model')(sequelize);
 const PatientTag = require('./patientTag.model')(sequelize);
+const DoctorRating = require('./doctorRating.model')(sequelize);
+const Diagnosis = require('./diagnosis.model')(sequelize);
 
 // Kapcsolatok
 User.hasOne(Doctor, { foreignKey: 'userId' });
@@ -36,6 +38,21 @@ Appointment.belongsTo(Patient, { foreignKey: 'patient_id' });
 Patient.hasMany(PatientTag, { foreignKey: 'patient_id', as: 'tags', onDelete: 'CASCADE' });
 PatientTag.belongsTo(Patient, { foreignKey: 'patient_id', as: 'patient' });
 
+Doctor.hasMany(DoctorRating, { foreignKey: 'doctor_id', as: 'ratings', onDelete: 'CASCADE' });
+DoctorRating.belongsTo(Doctor, { foreignKey: 'doctor_id', as: 'doctor' });
+
+Patient.hasMany(DoctorRating, { foreignKey: 'patient_id', as: 'doctorRatings', onDelete: 'CASCADE' });
+DoctorRating.belongsTo(Patient, { foreignKey: 'patient_id', as: 'patient' });
+
+Doctor.hasMany(Diagnosis, {foreignKey: 'doctor_id', as: 'diagnoses', onDelete: 'SET NULL', onUpdate: 'CASCADE'});
+Diagnosis.belongsTo(Doctor, {foreignKey: 'doctor_id', as: 'doctor'});
+
+Patient.hasMany(Diagnosis, {foreignKey: 'patient_id', as: 'diagnoses', onDelete: 'CASCADE', onUpdate: 'CASCADE'});
+Diagnosis.belongsTo(Patient, {foreignKey: 'patient_id', as: 'patient'});
+
+Appointment.hasOne(Diagnosis, {foreignKey: 'appointment_id', as: 'diagnosis', onDelete: 'SET NULL', onUpdate: 'CASCADE'});
+Diagnosis.belongsTo(Appointment, {foreignKey: 'appointment_id', as: 'appointment'});
+
 module.exports = {
   sequelize,
   User,
@@ -43,5 +60,7 @@ module.exports = {
   Patient,
   Admin,
   Appointment,
-  PatientTag
+  PatientTag,
+  DoctorRating,
+  Diagnosis,
 };

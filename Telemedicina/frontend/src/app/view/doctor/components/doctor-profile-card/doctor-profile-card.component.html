@@ -1,0 +1,56 @@
+<div class="dpc" [ngClass]="{ 'patient-mode': !editable }">
+  <div class="dpc-left">
+    <div class="dpc-avatar">
+      <img [src]="user?.pictureUrl" alt="Profilkép" draggable="false" />
+    </div>
+    <div class="dpc-head">
+      <div class="dpc-name">Dr. {{ user?.name }}</div>
+      <div class="dpc-spec">Értékelés</div>
+
+      <div *ngIf="!editingRating" class="dpc-stars" aria-label="Átlagos értékelés">
+        <ion-icon *ngFor="let s of [1,2,3,4,5]" [name]="starIcon(s)"></ion-icon>
+
+        <ion-button
+          *ngIf="canRate && !editable"
+          class="btn-accent"
+          (click)="startEditRating()">
+          Értékelés módosítása
+        </ion-button>
+      </div>
+
+      <!-- Szerkesztő mód: 5 csillag, félcsillagos kattintás -->
+      <div *ngIf="editingRating" class="rate-editor">
+        <div class="dpc-stars editable" aria-label="Új értékelés kiválasztása">
+          <button type="button" class="star-wrap"
+                  *ngFor="let s of [1,2,3,4,5]"
+                  (click)="onStarClick(s)"
+                  [attr.aria-label]="'Csillag ' + s">
+            <ion-icon [name]="starIcon(s)"></ion-icon>
+          </button>
+        </div>
+        <div class="rate-actions">
+          <ion-button class="btn-primary" (click)="saveRating()">Mentés</ion-button>
+          <ion-button class="btn-secondary" (click)="cancelRating()">Mégse</ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dpc-info">
+    <div class="col first">
+      <div class="row"><span class="lbl">Specialitás:</span> <span class="val">{{ doctor?.speciality }}</span></div>
+      <div class="row"><span class="lbl">Cím:</span> <span class="val">{{ user?.address || 'N/A' }}</span></div>
+    </div>
+    <div class="col">
+      <div class="row"><span class="lbl">Mobil telefonszám:</span> <span class="val">{{ formatPhoneNumber(user?.phoneNumber) || 'N/A' }}</span></div>
+      <div class="row"><span class="lbl">Email:</span> <span class="val">{{ user?.email }}</span></div>
+    </div>
+  </div>
+
+  <ion-button *ngIf="editable" class="btn-accent" (click)="edit.emit()">Profil módosítása</ion-button>
+
+  <div class="dpc-intro" *ngIf="doctor?.introduction">
+    <h4>Bemutatkozás</h4>
+    <p>{{ doctor?.introduction?.trim() || "Rövid bemutatkozás..." }}</p>
+  </div>
+</div>

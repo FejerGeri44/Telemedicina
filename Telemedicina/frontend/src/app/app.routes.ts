@@ -7,6 +7,8 @@ import { AdminDashboardComponent } from './view/admin/admin-dashboard/admin-dash
 import { DoctorSearchComponent } from './view/patient/pages/doctor-search/doctor-search.component';
 import { AppointmentsComponent } from './view/doctor/pages/appointments/appointments.component';
 import { AppointmentListComponent } from './view/patient/pages/appointment-list/appointment-list.component';
+import {MyPatientsComponent} from './view/doctor/pages/my-patients/my-patients.component';
+import {NewDiagnosisComponent} from './view/doctor/pages/new-diagnosis/new-diagnosis.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -36,5 +38,7 @@ export const routes: Routes = [
   { path: 'dashboard/admin', component: AdminDashboardComponent },
   { path: 'doctor-search', component: DoctorSearchComponent },
   { path: 'appointments', component: AppointmentsComponent },
-  { path: 'appointment-list', component: AppointmentListComponent }
+  { path: 'appointment-list', component: AppointmentListComponent },
+  { path: 'my-patients', component: MyPatientsComponent },
+  { path: 'new-diagnosis', component: NewDiagnosisComponent }
 ];

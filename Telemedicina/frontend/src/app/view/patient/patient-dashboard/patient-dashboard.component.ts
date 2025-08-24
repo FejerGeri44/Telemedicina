@@ -4,8 +4,9 @@ import {PatientNavbarComponent} from '../components/patient-navbar/patient-navba
 import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
-import {EditProfileModalComponent} from '../components/edit-profile-modal/edit-profile-modal.component';
+import {PatientEditProfileModalComponent} from '../components/patient-edit-profile-modal/patient-edit-profile-modal.component';
 import {RouterLink} from '@angular/router';
+import {PatientProfileCardComponent} from '../components/patient-profile-card/patient-profile-card.component';
 
 export interface Appointment {
   id: number;
@@ -26,7 +27,8 @@ interface PatientTag { name: string; value: string; }
     IonicModule,
     FormsModule,
     RouterLink,
-    NgForOf
+    NgForOf,
+    PatientProfileCardComponent
   ],
   templateUrl: './patient-dashboard.component.html',
   standalone: true,
@@ -93,43 +95,9 @@ export class PatientDashboardComponent implements OnInit {
     });
   }
 
-  iconFor(name: string): string | null {
-    const n = (name || '').toLowerCase();
-    if (n.includes('vér') || n.includes('vértípus')) return 'water-outline';
-    if (n.includes('allergia')) return 'alert-circle-outline';
-    if (n.includes('krónikus') || n.includes('betegség')) return 'medkit-outline';
-    if (n.includes('gyógyszer')) return 'bandage-outline';
-    if (n.includes('diéta')) return 'fast-food-outline';
-    return null;
-  }
-
-  getAge(birthDateString: string): number {
-    const today = new Date();
-    const birthDate = new Date(birthDateString);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-
-    return age;
-  }
-
-  formatPhoneNumber(phone: string | undefined): string {
-    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
-  }
-
-  formatTaj(taj: string | number): string {
-    if (!taj) return '';
-    const clean = String(taj).replace(/\D/g, '');
-    return clean.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
-  }
-
   async openEditModal() {
     const modal = await this.modalCtrl.create({
-      component: EditProfileModalComponent as any,
+      component: PatientEditProfileModalComponent as any,
       cssClass: 'Profile-edit-modal',
       componentProps: {
         user: this.user

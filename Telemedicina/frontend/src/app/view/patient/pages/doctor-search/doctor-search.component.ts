@@ -7,6 +7,10 @@ import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {CustomToastComponent} from '../../../../shared/toast/toast.component';
 import { ModalController } from '@ionic/angular';
 import { AppointmentModalComponent } from '../../components/appointment-modal/appointment-modal.component';
+import {
+  DoctorEditProfileModalComponent
+} from '../../../doctor/components/doctor-edit-profile-modal/doctor-edit-profile-modal.component';
+import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
 
 @Component({
   selector: 'app-doctor-search',
@@ -34,6 +38,7 @@ export class DoctorSearchComponent implements OnInit{
   filteredDoctors: any[] = [];
   visiblePages: number[] = [];
   isLoading: boolean = true;
+  totalCount = 0;
 
   constructor(
     private http: HttpClient,
@@ -120,6 +125,8 @@ export class DoctorSearchComponent implements OnInit{
       return nameMatch && specialtyMatch;
     });
 
+    this.totalCount = this.filteredDoctors.length;
+
     if (this.filteredDoctors.length === 0) {
       this.showCustomToast('Nincs ilyen Orvos a rendszerben!', 'danger');
     }
@@ -140,12 +147,23 @@ export class DoctorSearchComponent implements OnInit{
     });
 
     await modal.present();
+    await modal.onDidDismiss();
+  }
 
-    const { data } = await modal.onDidDismiss();
-    if (data) {
-      console.log('Felvett időpont:', data);
-      // Backend hívás ide
-    }
+  async openDoctorProfileModal(doctor: any) {
+    const modal = await this.modalCtrl.create({
+      component: DoctorProfileCardComponent,
+      componentProps: {
+        user: doctor?.User ?? null,
+        doctor,
+        editable: false,
+        canRate: true
+      },
+      cssClass: 'profile-view-modal'
+    });
+
+    await modal.present();
+    await modal.onDidDismiss();
   }
 
   showCustomToast(message: string, type: 'success' | 'warning' | 'danger') {

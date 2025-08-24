@@ -1,10 +1,12 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {DoctorNavbarComponent} from '../components/doctor-navbar/doctor-navbar.component';
-import {IonicModule} from '@ionic/angular';
+import {IonicModule, ModalController} from '@ionic/angular';
 import {NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {RouterLink} from '@angular/router';
+import {DoctorProfileCardComponent} from '../components/doctor-profile-card/doctor-profile-card.component';
+import {DoctorEditProfileModalComponent} from '../components/doctor-edit-profile-modal/doctor-edit-profile-modal.component';
 
 interface prevAppointment {
   id: number;
@@ -23,19 +25,20 @@ interface prevAppointment {
     NgIf,
     FormsModule,
     ReactiveFormsModule,
-    RouterLink
+    RouterLink,
+    DoctorProfileCardComponent
   ],
   templateUrl: './doctor-dashboard.component.html',
   standalone: true,
   styleUrl: './doctor-dashboard.component.css'
 })
 
-export class DoctorDashboardComponent {
+export class DoctorDashboardComponent implements OnInit{
   user: any;
   appointments: prevAppointment[] = [];
   todaysAppointments: number = 0;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private modalCtrl: ModalController) {}
 
   ngOnInit() {
     this.loadMyData();
@@ -61,11 +64,6 @@ export class DoctorDashboardComponent {
     });
   }
 
-  formatPhoneNumber(phone: string | undefined): string {
-    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
-  }
-
   loadAppointments() {
     const token = localStorage.getItem('token');
     this.http.get<any[]>('http://localhost:3000/api/myAppointments', {
@@ -82,5 +80,23 @@ export class DoctorDashboardComponent {
       },
       error: (err) => console.error('❌ Hiba az időpontok lekérésekor:', err)
     });
+  }
+
+  async openEditModal() {
+    const modal = await this.modalCtrl.create({
+      component: DoctorEditProfileModalComponent as any,
+      cssClass: 'Profile-edit-modal',
+      componentProps: {
+        user: this.user
+      }
+    });
+
+    await modal.present();
+
+    const { role } = await modal.onDidDismiss();
+
+    if (role === 'updated') {
+      this.loadMyData();
+    }
   }
 }

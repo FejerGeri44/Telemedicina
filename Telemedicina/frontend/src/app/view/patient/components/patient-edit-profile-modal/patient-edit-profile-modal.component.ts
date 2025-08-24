@@ -7,7 +7,7 @@ import {NgForOf, NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-edit-profile-modal',
-  templateUrl: './edit-profile-modal.component.html',
+  templateUrl: './patient-edit-profile-modal.component.html',
   standalone: true,
   imports: [
     IonicModule,
@@ -15,9 +15,9 @@ import {NgForOf, NgIf} from '@angular/common';
     NgIf,
     NgForOf
   ],
-  styleUrls: ['./edit-profile-modal.component.css']
+  styleUrls: ['./patient-edit-profile-modal.component.css']
 })
-export class EditProfileModalComponent implements OnInit{
+export class PatientEditProfileModalComponent implements OnInit{
   user: any;
   editForm = {
     name: '',
@@ -138,7 +138,7 @@ export class EditProfileModalComponent implements OnInit{
       return;
     }
 
-    this.http.patch('http://localhost:3000/api/profile/update', payload).subscribe({
+    this.http.patch('http://localhost:3000/api/patient/profile/update', payload).subscribe({
       next: (res) => {
         console.log('✅ Sikeres mentés:', res);
         this.getMyData();
@@ -153,22 +153,23 @@ export class EditProfileModalComponent implements OnInit{
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const selectedFile = input?.files[0];
-      const fileType = selectedFile.type;
+    const file = input.files?.[0];
 
-      if (fileType === 'image/svg+xml') {
-        this.toast.show('Az SVG formátum nem engedélyezett!', 'danger');
-        return;
-      }
+    if (!file) return;
 
-      if (fileType === 'image/gif') {
-        this.toast.show('A GIF formátum nem engedélyezett!', 'danger');
-        return;
-      }
-
-      this.file = selectedFile;
+    if (file.type === 'image/svg+xml') {
+      this.toast.show('Az SVG formátum nem engedélyezett!', 'danger');
+      input.value = ''; // reset
+      return;
     }
+    if (file.type === 'image/gif') {
+      this.toast.show('A GIF formátum nem engedélyezett!', 'danger');
+      input.value = ''; // reset
+      return;
+    }
+
+    this.file = file;
+    input.value = '';
   }
 
   getModifiedFields() {
@@ -198,6 +199,11 @@ export class EditProfileModalComponent implements OnInit{
         modified[key as Exclude<keyof typeof this.editForm, 'tagsDraft'>] = newValue as any;
       }
     }
+
+    if (this.file) {
+      (modified as any).picture = this.file;
+    }
+
     return modified;
   }
 }

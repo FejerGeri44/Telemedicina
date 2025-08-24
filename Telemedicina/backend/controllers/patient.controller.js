@@ -1,4 +1,4 @@
-const { Doctor, User, Patient, Appointment, PatientTag, sequelize} = require('../models');
+const { Doctor, User, Patient, Appointment, PatientTag, sequelize, DoctorRating} = require('../models');
 
 exports.getCurrentUser = async (req, res) => {
   try {
@@ -68,7 +68,21 @@ exports.getPatientMeTags = async (req, res) => {
         ['tag_name', 'name'],
         ['tag_value', 'value']
       ],
-      order: [['tag_name', 'ASC']]
+      order: [
+        [
+          sequelize.literal(`
+        CASE tag_name
+          WHEN 'bloodType' THEN 1
+          WHEN 'allergy' THEN 2
+          WHEN 'chronic' THEN 3
+          WHEN 'medication' THEN 4
+          WHEN 'diet' THEN 5
+          ELSE 6
+        END
+      `),
+          'ASC'
+        ]
+      ]
     });
 
     return res.json({
@@ -147,15 +161,26 @@ exports.getAllDoctors = async (req, res) => {
   try {
     console.log('🔍 Lekérdezés indul...');
     const doctors = await Doctor.findAll({
+      attributes: [
+        'id',
+        'userId',
+        'speciality',
+        'introduction',
+        'avgRating',
+        'registDate'
+      ],
       include: [{
         model: User,
-        attributes: ['name', 'email', 'phoneNumber', 'address', 'pictureUrl']
+        attributes: ['id','name','email','phoneNumber','address','pictureUrl']
       }]
     });
     res.status(200).json(doctors);
   } catch (err) {
     console.error('❌ Lekérdezési hiba:', err);
-    res.status(500).json({ message: 'Hiba történt az orvosok lekérdezésekor.', error: err });
+    res.status(500).json({
+      message: 'Hiba történt az orvosok lekérdezésekor.',
+      error: err
+    });
   }
 };
 
@@ -339,5 +364,58 @@ exports.deleteAppointment = async (req, res) => {
   } catch (err) {
     console.error('❌ Hiba törlés közben:', err);
     return res.status(500).json({ error: 'Szerverhiba.' });
+  }
+};
+
+exports.rateDoctor = async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    const { doctorId, value } = req.body;
+
+    const doctor_id = parseInt(doctorId, 10);
+    const val = Number(value);
+    if (!Number.isInteger(doctor_id) || !Number.isInteger(val) || val < 1 || val > 5) {
+      await t.rollback();
+      return res.status(400).json({ message: 'Érvénytelen kérés: doctorId egész szám, value 1..5 egész.' });
+    }
+
+    const userId = req.user?.id;
+
+    const patient = await Patient.findOne({ where: { userId }, transaction: t });
+    if (!patient) {
+      await t.rollback();
+      return res.status(403).json({ message: 'Csak páciens értékelhet.' });
+    }
+
+    const doctor = await Doctor.findByPk(doctor_id, { transaction: t });
+    if (!doctor) {
+      await t.rollback();
+      return res.status(404).json({ message: 'Orvos nem található.' });
+    }
+
+    await DoctorRating.upsert({
+      doctor_id,
+      patient_id: patient.id,
+      value: val
+    }, { transaction: t });
+
+    const row = await DoctorRating.findOne({
+      where: { doctor_id },
+      attributes: [
+        [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.col('value')), 2), 'avg']
+      ],
+      raw: true,
+      transaction: t
+    });
+    const avg = row?.avg != null ? Number(row.avg) : null;
+
+    await Doctor.update({ avgRating: avg }, { where: { id: doctor_id }, transaction: t });
+
+    await t.commit();
+    return res.json({ ok: true, avg });
+  } catch (err) {
+    await t.rollback();
+    console.error('❌ Értékelés mentési hiba:', err);
+    return res.status(500).json({ message: 'Szerverhiba az értékelés mentésekor.' });
   }
 };

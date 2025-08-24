@@ -1,0 +1,110 @@
+.card {
+  padding: 20px 20px;
+}
+
+.pc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.pc-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pc-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #e6f4ff;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.pc-avatar img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+
+.pc-name .pc-fullname {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+.pc-name .pc-role {
+  font-size: 1rem;
+  color: #7a8aa0;
+}
+
+.pc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 20px 20px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #cfe6ee;
+  padding: 5px 15px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  background: #f7fcff;
+  color: #2b4b5c;
+  cursor: default;
+  transition: all 0.3s ease-in-out;
+}
+
+.chip:hover {
+  background-color: var(--secondary);
+  color: white;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+ion-icon {
+  transition: all 0.3s ease-in-out;
+}
+
+.chip:hover ion-icon {
+  color: white;
+}
+
+.pc-details {
+  display: grid;
+  max-width: 800px;
+  padding: 15px 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 20px;
+}
+.pc-item {
+  display: flex;
+  gap: 6px;
+  align-items: start;
+}
+.pc-item .label {
+  color: #6b7785;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pc-item .value {
+  color: #1e2a3a;
+  overflow-wrap: anywhere;
+}
+
+.pc-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 15px;
+  padding: 10px 20px 0;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+.pc-stats .stat { display: flex; gap: 5px; justify-content: center;}
+.pc-stats .label { color: #6b7785; font-weight: 600; }
+.pc-stats .value { color: #1e2a3a; }

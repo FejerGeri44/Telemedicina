@@ -1,0 +1,655 @@
+<ion-content class="page-container">
+  <app-doctor-navbar></app-doctor-navbar>
+
+  <div class="container">
+    <!-- Szegmens navigáció (ikon + label) -->
+    <ion-segment
+      [value]="currentStep.toString()"
+      (ionChange)="goTo($event.detail.value)"
+      class="wizard-segment"
+      scrollable="true"
+    >
+      <ion-segment-button *ngFor="let s of steps; let i = index" [value]="i.toString()">
+        <ion-icon [name]="s.icon" aria-hidden="true"></ion-icon>
+        <ion-label>{{ s.label }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <ion-progress-bar class="wizard-progress" [value]="progressValue"></ion-progress-bar>
+
+    <ng-container [ngSwitch]="currentStep">
+
+      <div class="slider-viewport">
+        <div class="slides" [style.transform]="slideTransform">
+          <div class="slide">
+            <!-- 0. Alapok -->
+            <ion-card *ngSwitchCase="0">
+              <ion-card-header>
+                <ion-card-title>Alapok</ion-card-title>
+              </ion-card-header>
+
+              <ion-card-content>
+                <ion-list lines="full">
+                  <!-- LENYÍLÓ: időpont (from HH:mm) — felhasználónév -->
+                  <ion-item class="required">
+                    <ion-label position="stacked">Időpontok</ion-label>
+                    <ion-select placeholder="Válassz pácienst (kezdés – név)"
+                                (ionChange)="onSelectAppointment($event.detail.value)">
+                      <ion-select-option
+                        *ngFor="let a of appointments; trackBy: trackByAppointmentId"
+                        [value]="a.id">
+                        {{ formatTime(a.from) }} — {{ getUserNameByPatientId(a.patient_id) }}
+                      </ion-select-option>
+                    </ion-select>
+                  </ion-item>
+
+                  <!-- TAJ (szerkeszthető, memóriába megy) -->
+                  <ion-item class="required">
+                    <ion-label position="stacked">TAJ</ion-label>
+                    <ion-input [value]="formatTaj(draft.patient.taj)" readonly></ion-input>
+                  </ion-item>
+
+                  <!-- Páciens előnézet (autokitöltve, csak megjelenítés) -->
+                  <ion-list-header>
+                    <ion-label>Páciens adatok (előnézet)</ion-label>
+                  </ion-list-header>
+
+                  <ion-grid>
+                    <ion-row>
+                      <ion-col size="12" size-md="6">
+                        <ion-item class="required">
+                          <ion-label position="stacked">Név</ion-label>
+                          <ion-input [value]="draft.patient.name" readonly></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" size-md="6">
+                        <ion-item class="required">
+                          <ion-label position="stacked">Nem</ion-label>
+                          <ion-input [value]="draft.patient.gender" readonly></ion-input>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+
+                    <ion-row>
+                      <ion-col size="12" size-md="6">
+                        <ion-item class="required">
+                          <ion-label position="stacked">Telefon</ion-label>
+                          <ion-input [value]="formatPhoneNumber(draft.patient.phone)" readonly></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" size-md="6">
+                        <ion-item class="required">
+                          <ion-label position="stacked">Otthoni telefon</ion-label>
+                          <ion-input [value]="formatPhoneNumber(draft.patient.homePhone)" readonly></ion-input>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+
+                    <ion-row>
+                      <ion-col size="12" size-md="6">
+                        <ion-item class="required">
+                          <ion-label position="stacked">E-mail</ion-label>
+                          <ion-input [value]="draft.patient.email" readonly></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" size-md="6">
+                        <ion-item class="required">
+                          <ion-label position="stacked">Cím</ion-label>
+                          <ion-input [value]="draft.patient.address" readonly></ion-input>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+                </ion-list>
+              </ion-card-content>
+
+              <!-- Navigáció a kártya alján (változatlanul működik) -->
+              <div class="card-footer">
+                <ion-button class="btn-secondary" fill="clear" (click)="back()" [disabled]="currentStep === 0">
+                  <ion-icon name="chevron-back-outline"></ion-icon>
+                  Vissza
+                </ion-button>
+                <span class="spacer"></span>
+                <ion-button class="btn-primary" (click)="next()">
+                  Tovább
+                  <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-card>
+          </div>
+          <div class="slide">
+            <!-- 0. Vizsgálat -->
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Vizsgálat</ion-card-title>
+              </ion-card-header>
+
+              <ion-card-content>
+                <!-- Tünetek blokk -->
+                <ion-grid>
+                  <ion-row>
+                    <ion-col size="12" size-md="6">
+                      <ion-item class="required">
+                        <ion-label position="stacked">Fő panasz</ion-label>
+                        <ion-input
+                          placeholder="pl. Láz és torokfájás"
+                          [(ngModel)]="draft.symptoms.chiefComplaint"
+                          [ngModelOptions]="{standalone: true}">
+                        </ion-input>
+                      </ion-item>
+                    </ion-col>
+
+                    <ion-col size="12" size-md="6">
+                      <!-- toggle a vitálokra -->
+                      <ion-item lines="full" style="margin-top: 20px">
+                        <ion-label>Vitáljelek rögzítése</ion-label>
+                        <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
+                        <ion-toggle
+                          slot="end"
+                          class="animated-toggle"
+                          [(ngModel)]="showExam"
+                          [ngModelOptions]="{standalone:true}">
+                        </ion-toggle>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+
+                  <ion-row class="ion-margin-top">
+                    <!-- Bal: naptár -->
+                    <ion-col size="12" size-md="6">
+                      <ion-item class="custom-item">
+                        <ion-label position="stacked">Kezdet dátuma</ion-label>
+                        <ion-datetime
+                          presentation="date"
+                          [(ngModel)]="draft.symptoms.onsetDate"
+                          [ngModelOptions]="{standalone: true}"
+                          (ionChange)="onDateChange($event)"
+                          [value]="selectedDate"
+                          [locale]="locale"
+                          [firstDayOfWeek]="1">
+                        </ion-datetime>
+                      </ion-item>
+                    </ion-col>
+
+                    <!-- Jobb: toggle + vitálok -->
+                    <ion-col size="12" size-md="6">
+
+
+                      <!-- vitálok tartalom -->
+                      <div *ngIf="showExam" class="ion-margin-top">
+                        <ion-grid>
+                          <ion-row>
+                            <ion-col size="6">
+                              <ion-item>
+                                <ion-label position="stacked">Vérnyomás (SYS)</ion-label>
+                                <ion-input type="number" inputmode="numeric" placeholder="mmHg"
+                                           min="80" max="240"
+                                           [(ngModel)]="draft.exam.bpSys" [ngModelOptions]="{standalone: true}">
+                                </ion-input>
+                                <ion-note slot="end">mmHg</ion-note>
+                              </ion-item>
+                            </ion-col>
+
+                            <ion-col size="6">
+                              <ion-item>
+                                <ion-label position="stacked">Vérnyomás (DIA)</ion-label>
+                                <ion-input type="number" inputmode="numeric" placeholder="mmHg"
+                                           min="40" max="140"
+                                           [(ngModel)]="draft.exam.bpDia" [ngModelOptions]="{standalone: true}">
+                                </ion-input>
+                                <ion-note slot="end">mmHg</ion-note>
+                              </ion-item>
+                            </ion-col>
+
+                            <ion-col size="6">
+                              <ion-item>
+                                <ion-label position="stacked">Pulzus</ion-label>
+                                <ion-input type="number" inputmode="numeric" placeholder="bpm"
+                                           min="30" max="220"
+                                           [(ngModel)]="draft.exam.heartRate" [ngModelOptions]="{standalone: true}">
+                                </ion-input>
+                                <ion-note slot="end">bpm</ion-note>
+                              </ion-item>
+                            </ion-col>
+
+                            <ion-col size="6">
+                              <ion-item>
+                                <ion-label position="stacked">Testhő</ion-label>
+                                <ion-input type="number" step="0.1" inputmode="decimal" placeholder="°C"
+                                           min="34" max="42"
+                                           [(ngModel)]="draft.exam.tempC" [ngModelOptions]="{standalone: true}">
+                                </ion-input>
+                                <ion-note slot="end">°C</ion-note>
+                              </ion-item>
+                            </ion-col>
+
+                            <ion-col size="6">
+                              <ion-item>
+                                <ion-label position="stacked">SpO₂</ion-label>
+                                <ion-input type="number" inputmode="numeric" placeholder="%"
+                                           min="50" max="100"
+                                           [(ngModel)]="draft.exam.spo2" [ngModelOptions]="{standalone: true}">
+                                </ion-input>
+                                <ion-note slot="end">%</ion-note>
+                              </ion-item>
+                            </ion-col>
+
+                            <ion-col size="6">
+                              <ion-item>
+                                <ion-label position="stacked">Súly</ion-label>
+                                <ion-input type="number" step="0.1" inputmode="decimal" placeholder="kg"
+                                           min="2" max="500"
+                                           [(ngModel)]="draft.exam.weightKg" [ngModelOptions]="{standalone: true}"
+                                           (ionChange)="recomputeBmi()">
+                                </ion-input>
+                                <ion-note slot="end">kg</ion-note>
+                              </ion-item>
+                            </ion-col>
+
+                            <ion-col size="6">
+                              <ion-item>
+                                <ion-label position="stacked">Magasság</ion-label>
+                                <ion-input type="number" step="0.1" inputmode="decimal" placeholder="cm"
+                                           min="30" max="250"
+                                           [(ngModel)]="draft.exam.heightCm" [ngModelOptions]="{standalone: true}"
+                                           (ionChange)="recomputeBmi()">
+                                </ion-input>
+                                <ion-note slot="end">cm</ion-note>
+                              </ion-item>
+                            </ion-col>
+
+                            <ion-col size="6">
+                              <ion-item>
+                                <ion-label position="stacked">BMI</ion-label>
+                                <ion-input [value]="draft.exam.bmi ?? '—'" readonly></ion-input>
+                              </ion-item>
+                            </ion-col>
+                          </ion-row>
+                        </ion-grid>
+                      </div>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </ion-card-content>
+
+              <div class="card-footer">
+                <ion-button class="btn-secondary" fill="clear" (click)="back()">
+                  <ion-icon name="chevron-back-outline"></ion-icon>
+                  Vissza
+                </ion-button>
+                <span class="spacer"></span>
+                <ion-button class="btn-primary" (click)="next()">
+                  Tovább
+                  <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-card>
+          </div>
+          <div class="slide">
+            <!-- 3. Diagnózis -->
+            <ion-card *ngSwitchCase="2">
+              <ion-card-header>
+                <ion-card-title>Diagnózis</ion-card-title>
+              </ion-card-header>
+
+              <ion-card-content>
+                <ion-list lines="full">
+                  <ion-item class="required">
+                    <ion-label position="stacked">Fő diagnózis (szöveg)</ion-label>
+                    <ion-input placeholder="pl. Akut pharyngitis"
+                               [(ngModel)]="draft.diagnosis.primaryText" [ngModelOptions]="{standalone: true}">
+                    </ion-input>
+                  </ion-item>
+
+                  <ion-grid>
+                    <ion-row>
+                      <ion-col size="12" size-md="6">
+                        <ion-item>
+                          <ion-label position="stacked">Kódrendszer</ion-label>
+                          <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
+                          <ion-select placeholder="ICD-10"
+                                      [(ngModel)]="draft.diagnosis.codeSystem" [ngModelOptions]="{standalone: true}">
+                            <ion-select-option value="ICD-10">ICD-10</ion-select-option>
+                            <ion-select-option value="BNO-10">BNO-10</ion-select-option>
+                          </ion-select>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" size-md="6">
+                        <ion-item>
+                          <ion-label position="stacked">Kód</ion-label>
+                          <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
+                          <ion-input placeholder="pl. J02.9"
+                                     [(ngModel)]="draft.diagnosis.code" [ngModelOptions]="{standalone: true}">
+                          </ion-input>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+
+                  <ion-item>
+                    <ion-label position="stacked">Bizonyosság (%)</ion-label>
+                    <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
+                    <ion-range min="0" max="100" step="1" snaps="true" ticks="true"
+                               [(ngModel)]="draft.diagnosis.certaintyPct" [ngModelOptions]="{standalone: true}">
+                      <ion-label slot="start">0</ion-label>
+                      <ion-label slot="end">100</ion-label>
+                    </ion-range>
+                  </ion-item>
+
+                  <ion-item>
+                    <ion-label position="stacked">Súlyosság</ion-label>
+                    <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
+                    <ion-select placeholder="Válassz"
+                                [(ngModel)]="draft.diagnosis.severity" [ngModelOptions]="{standalone: true}">
+                      <ion-select-option value="mild">Enyhe</ion-select-option>
+                      <ion-select-option value="moderate">Középsúlyos</ion-select-option>
+                      <ion-select-option value="severe">Súlyos</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+
+                  <ion-item>
+                    <ion-label position="stacked">Differenciáldiagnózis(ok)</ion-label>
+                    <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
+                    <ion-textarea rows="4" placeholder="Vesszővel elválasztva: Influenza, COVID-19, …"
+                                  [(ngModel)]="draft.diagnosis.differentials" [ngModelOptions]="{standalone: true}">
+                    </ion-textarea>
+                  </ion-item>
+
+                  <ion-item>
+                    <ion-label position="stacked">Plan (terápia/utasítások)</ion-label>
+                    <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
+                    <ion-textarea rows="6"
+                                  placeholder="Terápia, beavatkozások, életmód…"
+                                  [(ngModel)]="draft.plan.planText"
+                                  [ngModelOptions]="{standalone: true}">
+                    </ion-textarea>
+                  </ion-item>
+
+                  <ion-item class="required">
+                    <ion-label>Vörös zászlók megbeszélve</ion-label>
+                    <ion-checkbox slot="end"
+                                  [(ngModel)]="draft.plan.redFlags"
+                                  [ngModelOptions]="{standalone: true}">
+                    </ion-checkbox>
+                  </ion-item>
+
+                  <ion-item class="required">
+                    <ion-label>Beteg tájékoztatása megtörtént</ion-label>
+                    <ion-checkbox slot="end"
+                                  [(ngModel)]="draft.plan.informed"
+                                  [ngModelOptions]="{standalone: true}">
+                    </ion-checkbox>
+                  </ion-item>
+                </ion-list>
+              </ion-card-content>
+
+              <div class="card-footer">
+                <ion-button class="btn-secondary" fill="clear" (click)="back()">
+                  <ion-icon name="chevron-back-outline"></ion-icon>
+                  Vissza
+                </ion-button>
+                <span class="spacer"></span>
+                <ion-button class="btn-primary" (click)="next()">
+                  Tovább
+                  <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-card>
+          </div>
+          <div class="slide">
+            <!-- 4. Terv / Összegzés -->
+            <ion-card *ngSwitchCase="3" id="summaryPrint">
+              <ion-card-header>
+                <ion-card-title>Összegzés</ion-card-title>
+              </ion-card-header>
+
+              <ion-card-content>
+                <ion-list lines="full" class="summary-list">
+
+                  <!-- Páciens / Időpont -->
+                  <ion-item class="section-header">
+                    <ion-label>Páciens és időpont</ion-label>
+                  </ion-item>
+                  <ion-grid class="section-body">
+                    <ion-row>
+                      <ion-col size="12" size-md="6">
+                        <ion-item>
+                          <ion-label position="stacked">Páciens</ion-label>
+                          <ion-text>{{ vm.patientName || '—' }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" size-md="3">
+                        <ion-item>
+                          <ion-label position="stacked">TAJ</ion-label>
+                          <ion-text>{{ vm.taj || '—' }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" size-md="3">
+                        <ion-item>
+                          <ion-label position="stacked">Időpont</ion-label>
+                          <ion-text>{{ vm.appointmentTime || '—' }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col size="12" size-md="6">
+                        <ion-item>
+                          <ion-label position="stacked">Telefon</ion-label>
+                          <ion-text>{{ vm.phone || '—' }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" size-md="6">
+                        <ion-item>
+                          <ion-label position="stacked">E-mail</ion-label>
+                          <ion-text>{{ vm.email || '—' }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+
+                  <!-- Tünetek -->
+                  <ion-item class="section-header">
+                    <ion-label>Tünetek</ion-label>
+                  </ion-item>
+                  <ion-grid class="section-body">
+                    <ion-row>
+                      <ion-col size="12" size-md="4">
+                        <ion-item>
+                          <ion-label position="stacked">Kezdet dátuma</ion-label>
+                          <ion-text>{{ vm.onsetDate || '—' }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" size-md="8">
+                        <ion-item>
+                          <ion-label position="stacked">Fő panasz</ion-label>
+                          <ion-text>{{ vm.chiefComplaint || '—' }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                    <ion-row *ngIf="vm.history">
+                      <ion-col size="12">
+                        <ion-item>
+                          <ion-label position="stacked">Releváns anamnézis</ion-label>
+                          <ion-text>{{ vm.history }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+
+                  <!-- Vitáljelek -->
+                  <ion-item class="section-header">
+                    <ion-label>Vitáljelek</ion-label>
+                  </ion-item>
+                  <ion-grid class="section-body">
+                    <ion-row>
+                      <ion-col size="6" size-md="3" *ngIf="vm.bp">
+                        <ion-item>
+                          <ion-label position="stacked">Vérnyomás</ion-label>
+                          <ion-text>{{ vm.bp }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="6" size-md="3" *ngIf="vm.hr">
+                        <ion-item>
+                          <ion-label position="stacked">Pulzus</ion-label>
+                          <ion-text>{{ vm.hr }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="6" size-md="3" *ngIf="vm.temp">
+                        <ion-item>
+                          <ion-label position="stacked">Testhő</ion-label>
+                          <ion-text>{{ vm.temp }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="6" size-md="3" *ngIf="vm.spo2">
+                        <ion-item>
+                          <ion-label position="stacked">SpO₂</ion-label>
+                          <ion-text>{{ vm.spo2 }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col size="6" size-md="3" *ngIf="vm.weight">
+                        <ion-item>
+                          <ion-label position="stacked">Súly</ion-label>
+                          <ion-text>{{ vm.weight }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="6" size-md="3" *ngIf="vm.height">
+                        <ion-item>
+                          <ion-label position="stacked">Magasság</ion-label>
+                          <ion-text>{{ vm.height }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="6" size-md="3" *ngIf="vm.bmi">
+                        <ion-item>
+                          <ion-label position="stacked">BMI</ion-label>
+                          <ion-text>{{ vm.bmi }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                    <ion-row *ngIf="vm.examSummary">
+                      <ion-col size="12">
+                        <ion-item>
+                          <ion-label position="stacked">Objektív lelet összefoglaló</ion-label>
+                          <ion-text>{{ vm.examSummary }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+
+                  <!-- Diagnózis -->
+                  <ion-item class="section-header">
+                    <ion-label>Diagnózis</ion-label>
+                  </ion-item>
+                  <ion-grid class="section-body">
+                    <ion-row>
+                      <ion-col size="12">
+                        <ion-item>
+                          <ion-label position="stacked">Fő diagnózis</ion-label>
+                          <ion-text>{{ vm.diagnosisMain || '—' }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col size="6" *ngIf="vm.diagnosisCodeSystem">
+                        <ion-item>
+                          <ion-label position="stacked">Kódrendszer</ion-label>
+                          <ion-text>{{ vm.diagnosisCodeSystem }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="6" *ngIf="vm.diagnosisCode">
+                        <ion-item>
+                          <ion-label position="stacked">Kód</ion-label>
+                          <ion-text>{{ vm.diagnosisCode }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col size="6" *ngIf="vm.certainty">
+                        <ion-item>
+                          <ion-label position="stacked">Bizonyosság</ion-label>
+                          <ion-text>{{ vm.certainty }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="6" *ngIf="vm.severity">
+                        <ion-item>
+                          <ion-label position="stacked">Súlyosság</ion-label>
+                          <ion-text>{{ vm.severity }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                    <ion-row *ngIf="vm.differentials">
+                      <ion-col size="12">
+                        <ion-item>
+                          <ion-label position="stacked">Differenciáldiagnózis(ok)</ion-label>
+                          <ion-text>{{ vm.differentials }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+
+                  <!-- Plan / státuszok -->
+                  <ion-item class="section-header">
+                    <ion-label>Plan</ion-label>
+                  </ion-item>
+                  <ion-grid class="section-body">
+                    <ion-row *ngIf="vm.planText">
+                      <ion-col size="12">
+                        <ion-item>
+                          <ion-label position="stacked">Terápia / utasítások</ion-label>
+                          <ion-text>{{ vm.planText }}</ion-text>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                    <ion-row>
+                      <ion-col size="12" size-md="6">
+                        <ion-item>
+                          <ion-label>Vörös zászlók megbeszélve</ion-label>
+                          <ion-badge [color]="vm.redFlags ? 'success' : 'medium'">
+                            {{ vm.redFlags ? 'Igen' : 'Nem' }}
+                          </ion-badge>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" size-md="6">
+                        <ion-item>
+                          <ion-label>Beteg tájékoztatása megtörtént</ion-label>
+                          <ion-badge [color]="vm.informed ? 'success' : 'medium'">
+                            {{ vm.informed ? 'Igen' : 'Nem' }}
+                          </ion-badge>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+                </ion-list>
+
+                <!-- (opcionális) gyors gombok -->
+                <div class="summary-actions">
+                  <ion-button size="small" fill="outline" (click)="printSummary()">
+                    <ion-icon name="download-outline" slot="start"></ion-icon>
+                    Mentés PDF-be
+                  </ion-button>
+                  <ion-button size="small" fill="outline" (click)="printSummary()">
+                    <ion-icon name="print-outline" slot="start"></ion-icon>
+                    Nyomtatás
+                  </ion-button>
+                </div>
+              </ion-card-content>
+
+              <div class="card-footer">
+                <ion-button class="btn-secondary" fill="clear" (click)="back()">
+                  <ion-icon name="chevron-back-outline"></ion-icon>
+                  Vissza
+                </ion-button>
+                <span class="spacer"></span>
+                <ion-button class="btn-primary" (click)="save()" [disabled]="!isFormValid()">
+                  Befejezés
+                  <ion-icon name="checkmark-outline" slot="end"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-card>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>

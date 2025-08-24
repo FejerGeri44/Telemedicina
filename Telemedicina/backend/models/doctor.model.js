@@ -18,6 +18,11 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    avgRating: {
+      type: DataTypes.DECIMAL(3,2),
+      allowNull: true,
+      defaultValue: null
+    },
     registDate: {
       type: DataTypes.DATEONLY
     }
