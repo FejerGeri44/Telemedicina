@@ -9,27 +9,21 @@ module.exports = (sequelize) => {
     },
     appointmentId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'appointments',
-        key: 'id'
-      }
+      allowNull: true,
+      field: 'appointment_id',
+      references: { model: 'appointments', key: 'id' }
     },
     patientId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: 'patients',
-        key: 'id'
-      }
+      field: 'patient_id',
+      references: { model: 'patients', key: 'id' }
     },
     doctorId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'doctors',
-        key: 'id'
-      }
+      allowNull: true,
+      field: 'doctor_id',
+      references: { model: 'doctors', key: 'id' }
     },
 
     // Symptoms
@@ -63,6 +57,7 @@ module.exports = (sequelize) => {
     informed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   }, {
     tableName: 'diagnoses',
+    timestamps: false,
   });
 
   return Diagnosis;

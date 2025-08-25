@@ -1,0 +1,116 @@
+<ion-content class="page-container">
+  <app-doctor-navbar></app-doctor-navbar>
+
+  <div class="chat-layout">
+
+    <!-- bal oszlop: beszélgetések / orvosok -->
+    <aside class="sidebar" [class.mobile-hidden]="isSmall && showChatOnMobile">
+      <div class="sidebar-header">
+        <div class="left">
+          <ion-icon name="chatbubbles-outline"></ion-icon>
+          <span>Üzenetek</span>
+        </div>
+
+        <!-- kereső ikonból kinyíló mező -->
+        <div class="search-container" [class.active]="searchOpen">
+          <ion-icon name="search" class="search-icon" (click)="toggleSearch()"></ion-icon>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Keresés orvos névre…"
+            [(ngModel)]="patientQuery"
+            (input)="applyDoctorFilter()"/>
+        </div>
+      </div>
+
+      <div *ngIf="patients?.length; else noPatients" class="doctor-list">
+        <button
+          class="doctor-profile"
+          *ngFor="let patient of patients; trackBy: trackByDoctorId"
+          (click)="selectPatient(patient)"
+          [class.active]="patient.id === selectedPatient?.id">
+
+          <div class="avatar-wrap">
+            <img class="avatar" [src]="patient.User?.pictureUrl" alt="avatar" />
+          </div>
+
+          <div class="info">
+            <div class="name">{{ patient.User?.name }}</div>
+          </div>
+        </button>
+      </div>
+
+      <ng-template #noPatients>
+        <div class="sidebar empty">
+          <ion-icon name="people-outline"></ion-icon>
+          <p>Nincs elérhető Páciens.</p>
+        </div>
+      </ng-template>
+    </aside>
+
+    <!-- jobb oszlop: aktuális beszélgetés -->
+    <section class="chat-pane" *ngIf="selectedPatient" [class.mobile-hidden]="isSmall && !showChatOnMobile">
+      <header class="chat-header">
+        <div class="peer">
+          <ion-button fill="clear" class="back-btn" (click)="backToList()" aria-label="Vissza a listához">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </ion-button>
+
+          <div class="peer">
+            <ion-avatar class="avatar-wrap">
+              <img class="avatar" [src]="selectedPatient?.User?.pictureUrl" alt="profil"/>
+            </ion-avatar>
+            <div class="meta">
+              <h2>{{ selectedPatient?.User?.name }}</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <ion-button fill="clear" size="small" (click)="confirmDelete()">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" size="small" (click)="moreActions($event)">
+            <ion-icon name="ellipsis-horizontal"></ion-icon>
+          </ion-button>
+        </div>
+      </header>
+
+      <div class="messages" #messageScroll>
+        <ng-container *ngFor="let m of allMessages; trackBy: trackByMsgId">
+          <div class="msg-row" [class.mine]="isMine(m)" [class.theirs]="!isMine(m)">
+            <ion-avatar class="bubble-avatar" [style.width.px]="36" [style.height.px]="36">
+              <img [src]="isMine(m) ? (user.user.pictureUrl) : (selectedPatient?.User?.pictureUrl)" />
+            </ion-avatar>
+
+            <div class="bubble">
+              <div class="text">{{ m.text }}</div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+
+      <footer class="composer">
+        <ion-item lines="none" class="input-wrap">
+          <ion-textarea
+            autoGrow="true"
+            rows="1"
+            placeholder="Írj üzenetet…"
+            [(ngModel)]="draftText"
+            [ngModelOptions]="{standalone:true}"
+            (keydown.enter)="trySend($any($event))"
+            enterkeyhint="send">
+          </ion-textarea>
+        </ion-item>
+
+        <ion-button
+          class="send-btn"
+          [disabled]="!draftText?.trim()"
+          (click)="send()">
+          <ion-icon name="send" slot="end"></ion-icon>
+        </ion-button>
+      </footer>
+    </section>
+  </div>
+</ion-content>

@@ -30,7 +30,7 @@ export class PatientNavbarComponent implements OnInit{
     { icon: 'search', label: 'Orvos kereső', route: '/doctor-search' },
     { icon: 'calendar', label: 'Időpontjaim', route: '/appointment-list' },
     { icon: 'fitness', label: 'Egészségügyi napló', route: '/naplo' },
-    { icon: 'chatbubbles', label: 'Üzenetek', route: '/messages' },
+    { icon: 'chatbubbles', label: 'Üzenetek', route: '/patient-messages' },
   ];
 
   constructor(private http: HttpClient, private router: Router, private modalCtrl: ModalController) {}

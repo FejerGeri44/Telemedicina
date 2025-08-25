@@ -31,7 +31,7 @@ export class DoctorNavbarComponent implements OnInit{
     { icon: 'clipboard', label: 'Új diagnózis', route: '/new-diagnosis' },
     { icon: 'document-attach', label: 'Dokumentum feltöltés', route: '/orvos-kereso' },
     { icon: 'calendar', label: 'Rendelési időpontjaim', route: '/appointments' },
-    { icon: 'chatbubbles', label: 'Üzenetek', route: '/messages' }
+    { icon: 'chatbubbles', label: 'Üzenetek', route: '/doctor-messages' }
   ];
 
   constructor(private http: HttpClient, private router: Router, private modalCtrl: ModalController) {}

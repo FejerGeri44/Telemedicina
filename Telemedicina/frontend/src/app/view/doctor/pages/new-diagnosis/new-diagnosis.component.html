@@ -31,7 +31,8 @@
               <ion-card-content>
                 <ion-list lines="full">
                   <!-- LENYÍLÓ: időpont (from HH:mm) — felhasználónév -->
-                  <ion-item class="required">
+                  <!-- Ha van appointment -->
+                  <ion-item class="required" *ngIf="appointments && appointments.length > 0">
                     <ion-label position="stacked">Időpontok</ion-label>
                     <ion-select placeholder="Válassz pácienst (kezdés – név)"
                                 (ionChange)="onSelectAppointment($event.detail.value)">
@@ -42,6 +43,12 @@
                       </ion-select-option>
                     </ion-select>
                   </ion-item>
+
+                  <!-- Ha nincs appointment -->
+                  <div *ngIf="appointments && appointments.length === 0" class="empty-state">
+                    <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
+                    <p class="empty-text">Nincs a mai napra időpont foglalva</p>
+                  </div>
 
                   <!-- TAJ (szerkeszthető, memóriába megy) -->
                   <ion-item class="required">
@@ -625,12 +632,12 @@
                 <!-- (opcionális) gyors gombok -->
                 <div class="summary-actions">
                   <ion-button size="small" fill="outline" (click)="printSummary()">
-                    <ion-icon name="download-outline" slot="start"></ion-icon>
-                    Mentés PDF-be
-                  </ion-button>
-                  <ion-button size="small" fill="outline" (click)="printSummary()">
                     <ion-icon name="print-outline" slot="start"></ion-icon>
                     Nyomtatás
+                  </ion-button>
+                  <ion-button size="small" fill="outline" (click)="printSummary()">
+                    <ion-icon name="download-outline" slot="start"></ion-icon>
+                    Mentés
                   </ion-button>
                 </div>
               </ion-card-content>
@@ -641,7 +648,7 @@
                   Vissza
                 </ion-button>
                 <span class="spacer"></span>
-                <ion-button class="btn-primary" (click)="save()" [disabled]="!isFormValid()">
+                <ion-button class="btn-primary" (click)="confirmSave()" [disabled]="!isFormValid()">
                   Befejezés
                   <ion-icon name="checkmark-outline" slot="end"></ion-icon>
                 </ion-button>

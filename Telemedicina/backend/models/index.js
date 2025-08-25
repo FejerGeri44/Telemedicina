@@ -18,6 +18,7 @@ const Appointment = require('./appointment.model')(sequelize);
 const PatientTag = require('./patientTag.model')(sequelize);
 const DoctorRating = require('./doctorRating.model')(sequelize);
 const Diagnosis = require('./diagnosis.model')(sequelize);
+const Message = require('./message.model')(sequelize);
 
 // Kapcsolatok
 User.hasOne(Doctor, { foreignKey: 'userId' });
@@ -53,6 +54,9 @@ Diagnosis.belongsTo(Patient, {foreignKey: 'patient_id', as: 'patient'});
 Appointment.hasOne(Diagnosis, {foreignKey: 'appointment_id', as: 'diagnosis', onDelete: 'SET NULL', onUpdate: 'CASCADE'});
 Diagnosis.belongsTo(Appointment, {foreignKey: 'appointment_id', as: 'appointment'});
 
+Message.belongsTo(User, { foreignKey: 'senderUserId',   as: 'sender' });
+Message.belongsTo(User, { foreignKey: 'receiverUserId', as: 'receiver' });
+
 module.exports = {
   sequelize,
   User,
@@ -63,4 +67,5 @@ module.exports = {
   PatientTag,
   DoctorRating,
   Diagnosis,
+  Message
 };

@@ -9,6 +9,8 @@ import { AppointmentsComponent } from './view/doctor/pages/appointments/appointm
 import { AppointmentListComponent } from './view/patient/pages/appointment-list/appointment-list.component';
 import {MyPatientsComponent} from './view/doctor/pages/my-patients/my-patients.component';
 import {NewDiagnosisComponent} from './view/doctor/pages/new-diagnosis/new-diagnosis.component';
+import {PatientMessagesComponent} from './view/patient/pages/patient-messages/patient-messages.component';
+import {DoctorMessagesComponent} from './view/doctor/pages/doctor-messages/doctor-messages.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -40,5 +42,7 @@ export const routes: Routes = [
   { path: 'appointments', component: AppointmentsComponent },
   { path: 'appointment-list', component: AppointmentListComponent },
   { path: 'my-patients', component: MyPatientsComponent },
-  { path: 'new-diagnosis', component: NewDiagnosisComponent }
+  { path: 'new-diagnosis', component: NewDiagnosisComponent },
+  { path: 'patient-messages', component: PatientMessagesComponent },
+  { path: 'doctor-messages', component: DoctorMessagesComponent }
 ];

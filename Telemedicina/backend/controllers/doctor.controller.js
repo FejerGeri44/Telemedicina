@@ -285,6 +285,36 @@ exports.getMyPatients = async (req, res) => {
   }
 };
 
+exports.getAllPatients = async (req, res) => {
+  try {
+    console.log('🔍 Páciensek lekérdezése indul...');
+    const patients = await Patient.findAll({
+      attributes: [
+        'id',
+        'userId',
+        'homePhone',
+        'height',
+        'weight',
+        'gender',
+        'taj'
+      ],
+      include: [{
+        model: User,
+        attributes: ['id','name','email','phoneNumber','address','birthDate','pictureUrl']
+      }],
+      order: [[{ model: User }, 'name', 'ASC']]
+    });
+
+    res.status(200).json(patients);
+  } catch (err) {
+    console.error('❌ Páciensek lekérdezési hiba:', err);
+    res.status(500).json({
+      message: 'Hiba történt a páciensek lekérdezésekor.',
+      error: err
+    });
+  }
+};
+
 exports.getUserDataForDiagnosis = async (req, res) => {
   try {
     const { patientIds } = req.body;
@@ -365,47 +395,72 @@ exports.getUserDataForDiagnosis = async (req, res) => {
 
 exports.newDiagnosis = async (req, res) => {
   try {
-    const body = req.body;
-    const doctor = await Doctor.findOne({ where: { userId: req.user.id }, attributes: ['id'] }); // ha nincs req.user.doctorId
-    const record = await Diagnosis.create({
-      doctorId: doctor?.id ?? req.user.doctorId ?? null,
-      patientId: body.patient?.id,
-      appointmentId: body.appointmentId,
+    const patientId = req.body?.patient;
+    const chiefComplaint = req.body?.symptoms?.chiefComplaint?.trim();
+    const primaryText    = req.body?.diagnosis?.primaryText?.trim();
+    const appointmentId  = req.body?.appointmentId;
 
-      // Symptoms
-      chiefComplaint: body.symptoms?.chiefComplaint,
-      onsetDate: body.symptoms?.onsetDate,
-      history: body.symptoms?.history,
+    if (!patientId || !appointmentId || !chiefComplaint || !primaryText) {
+      return res.status(400).json({
+        error: 'Hiányzó kötelező mezők (patientId, appointmentId, chiefComplaint, primaryText).'
+      });
+    }
 
-      // Exam
-      bpSys: body.exam?.bpSys,
-      bpDia: body.exam?.bpDia,
-      heartRate: body.exam?.heartRate,
-      tempC: body.exam?.tempC,
-      spo2: body.exam?.spo2,
-      weightKg: body.exam?.weightKg,
-      heightCm: body.exam?.heightCm,
-      bmi: body.exam?.bmi,
-      examSummary: body.exam?.summary,
-
-      // Diagnosis
-      primaryText: body.diagnosis?.primaryText,
-      codeSystem: body.diagnosis?.codeSystem,
-      code: body.diagnosis?.code,
-      certaintyPct: body.diagnosis?.certaintyPct,
-      severity: body.diagnosis?.severity,
-      differentials: body.diagnosis?.differentials,
-
-      // Plan
-      assessment: body.plan?.assessment,
-      planText: body.plan?.planText,
-      redFlags: !!body.plan?.redFlags,
-      informed: !!body.plan?.informed
+    const doctor = await Doctor.findOne({
+      where: { userId: req.user.id },
+      attributes: ['id']
     });
 
-    res.status(201).json(record);
+    const appt = await Appointment.findByPk(appointmentId, { attributes: ['id', 'doctor_id', 'patient_id'] });
+    if (!appt || (doctor && appt.doctor_id !== doctor.id)) {
+      return res.status(403).json({ error: 'Az időpont nem ehhez az orvoshoz tartozik.' });
+    }
+
+    // 5) Mentés
+    const record = await Diagnosis.create({
+      doctorId: doctor?.id ?? req.user.doctorId ?? null,
+      patientId,
+      appointmentId,
+
+      // Symptoms
+      chiefComplaint,
+      onsetDate: req.body?.symptoms?.onsetDate ?? null,
+      history: req.body?.symptoms?.history ?? null,
+
+      // Exam
+      bpSys: req.body?.exam?.bpSys ?? null,
+      bpDia: req.body?.exam?.bpDia ?? null,
+      heartRate: req.body?.exam?.heartRate ?? null,
+      tempC: req.body?.exam?.tempC ?? null,
+      spo2: req.body?.exam?.spo2 ?? null,
+      weightKg: req.body?.exam?.weightKg ?? null,
+      heightCm: req.body?.exam?.heightCm ?? null,
+      bmi: req.body?.exam?.bmi ?? null,
+      examSummary: req.body?.exam?.summary ?? null,
+
+      // Diagnosis
+      primaryText,
+      codeSystem: req.body?.diagnosis?.codeSystem ?? null,
+      code: req.body?.diagnosis?.code ?? null,
+      certaintyPct: req.body?.diagnosis?.certaintyPct ?? null,
+      severity: req.body?.diagnosis?.severity ?? null,
+      differentials: req.body?.diagnosis?.differentials ?? null,
+
+      // Plan
+      assessment: req.body?.plan?.assessment ?? null,
+      planText: req.body?.plan?.planText ?? null,
+      redFlags: req.body?.plan?.redFlags,
+      informed: req.body?.plan?.informed
+    });
+
+    await Appointment.update(
+      { status: 'done' },
+      { where: { id: appointmentId }}
+    );
+
+    return res.status(201).json(record);
   } catch (err) {
     console.error('❌ Hiba diagnózis mentésekor:', err);
-    res.status(500).json({ error: 'Nem sikerült elmenteni a diagnózist' });
+    return res.status(500).json({ error: 'Nem sikerült elmenteni a diagnózist' });
   }
 };

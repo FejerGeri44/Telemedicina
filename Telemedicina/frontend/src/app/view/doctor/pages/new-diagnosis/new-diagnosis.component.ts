@@ -5,6 +5,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
+import {AlertService} from '../../../../shared/alert/alert.service.component';
 
 @Component({
   selector: 'app-new-diagnosis',
@@ -89,14 +90,10 @@ export class NewDiagnosisComponent implements OnInit{
     }
   };
 
-  constructor(private http: HttpClient, private toast: ToastService) {}
+  constructor(private http: HttpClient, private toast: ToastService, private alert: AlertService) {}
 
   ngOnInit() {
     this.loadAppointments();
-    this.buildSummaryVM();
-  }
-
-  ionViewDidEnter() {
     this.buildSummaryVM();
   }
 
@@ -106,7 +103,13 @@ export class NewDiagnosisComponent implements OnInit{
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (appointments) => {
-        this.appointments = appointments;
+        const today = new Date().toISOString().split('T')[0];
+
+        this.appointments = appointments.filter(appt => {
+          const apptDate = new Date(appt.from).toISOString().split('T')[0];
+          return apptDate === today && appt.status !== 'done';
+        });
+
         this.loadUsersForDiagnosis(this.appointments);
       },
       error: (err) => console.error('❌ Hiba az időpontok lekérésekor:', err)
@@ -299,42 +302,94 @@ export class NewDiagnosisComponent implements OnInit{
     this.buildSummaryVM();
   }
 
+  confirmSave() {
+    void this.alert.show(
+      'Diagnózis mentése',
+      'Biztosan el akarod menteni a diagnózist?',
+      () => this.save()
+    )
+  }
+
   save() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    // robusztus patientId felderítés
     const appt = (this.appointments || []).find(a => a.id === this.draft.appointmentId);
-    const patientId =
-      this.draft?.patient?.id ??
-      appt?.patient_id ?? null;
 
-    if (!patientId) {
+    if (!appt?.patient_id) {
       console.error('Hiányzik a patientId a mentéshez');
       return;
     }
 
-    const payload = {
-      appointmentId: this.draft.appointmentId,
-      patientId,
-      diagnosis: this.draft.diagnosis,
-      plan: this.draft.plan,
-      exam: this.draft.exam,
-      symptoms: this.draft.symptoms,
+    const chiefComplaint = this.draft?.symptoms?.chiefComplaint?.trim();
+    const primaryText    = this.draft?.diagnosis?.primaryText?.trim();
+
+    const body = {
+      patient: appt?.patient_id,
+      appointmentId: this.selectedAppointmentId,
+
+      symptoms: {
+        chiefComplaint: chiefComplaint,
+        onsetDate: this.draft?.symptoms?.onsetDate ?? null,
+        history: this.draft?.symptoms?.history ?? null
+      },
+
+      exam: {
+        bpSys: this.draft?.exam?.bpSys ?? null,
+        bpDia: this.draft?.exam?.bpDia ?? null,
+        heartRate: this.draft?.exam?.heartRate ?? null,
+        tempC: this.draft?.exam?.tempC ?? null,
+        spo2: this.draft?.exam?.spo2 ?? null,
+        weightKg: this.draft?.exam?.weightKg ?? null,
+        heightCm: this.draft?.exam?.heightCm ?? null,
+        bmi: this.draft?.exam?.bmi ?? null,
+        summary: this.draft?.exam?.summary ?? null
+      },
+
+      diagnosis: {
+        primaryText: primaryText,
+        codeSystem: this.draft?.diagnosis?.codeSystem ?? null,
+        code: this.draft?.diagnosis?.code ?? null,
+        certaintyPct: this.draft?.diagnosis?.certaintyPct ?? null,
+        severity: this.draft?.diagnosis?.severity ?? null,
+        differentials: this.draft?.diagnosis?.differentials ?? null
+      },
+
+      plan: {
+        assessment: this.draft?.plan?.assessment ?? null,
+        planText: this.draft?.plan?.planText ?? null,
+        redFlags: !!this.draft?.plan?.redFlags,
+        informed: !!this.draft?.plan?.informed
+      }
     };
 
-    this.http.post('http://localhost:3000/api/newDiagnosis', payload, {
+    console.log(body)
+
+    this.http.post('http://localhost:3000/api/newDiagnosis', body, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res) => {
         console.log('✅ Diagnózis mentve:', res);
-        // TODO: siker toast + esetleg navigáció
-      },
+        this.toast.show("Sikeres adat felvitel!", "success");
+        setTimeout(() => this.reset(), 100);
+        },
       error: (err) => {
         console.error('❌ Hiba diagnózis mentésekor:', err);
-        // TODO: error toast
+        this.toast.show("Sikertelen adat felvitel!", "danger");
       }
     });
+  }
+
+  reset() {
+    this.draft = {
+      patient: null,
+      appointmentId: null,
+      symptoms: { chiefComplaint: '', onsetDate: null, history: '' },
+      exam: { bpSys: null, bpDia: null, heartRate: null, tempC: null, spo2: null, weightKg: null, heightCm: null, bmi: null, summary: '' },
+      diagnosis: { primaryText: '', codeSystem: '', code: '', certaintyPct: null, severity: '', differentials: '' },
+      plan: { assessment: '', planText: '', redFlags: false, informed: false }
+    };
+    this.goTo(0);
   }
 
   public isFormValid(): boolean {

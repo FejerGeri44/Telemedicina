@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {DatePipe, NgForOf, NgIf} from '@angular/common';
@@ -29,7 +29,7 @@ interface prevAppointment {
   styleUrl: './appointment-modal.component.css'
 })
 
-export class AppointmentModalComponent {
+export class AppointmentModalComponent implements OnInit{
   @Input() doctor: any;
   user: any;
 

@@ -120,6 +120,30 @@ ion-note.optional-hint {
   opacity: 0.75;
 }
 
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 15px;
+  background: var(--ion-color-light, #f4f5f8);
+  border-radius: 12px;
+  margin: 12px 0;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: var(--ion-color-medium);
+  margin-bottom: 12px;
+}
+
+.empty-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--ion-color-medium);
+}
+
 @media print {
   body.overlay-print > :not(#printOverlay) { display: none !important; }
   #printOverlay { display: block !important; width: 100%; background: #fff !important; }

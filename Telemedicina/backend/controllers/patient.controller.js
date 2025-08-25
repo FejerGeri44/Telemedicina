@@ -1,4 +1,13 @@
-const { Doctor, User, Patient, Appointment, PatientTag, sequelize, DoctorRating} = require('../models');
+const {
+  Doctor,
+  User,
+  Patient,
+  Appointment,
+  PatientTag,
+  DoctorRating,
+  Message,
+  sequelize
+} = require('../models');
 
 exports.getCurrentUser = async (req, res) => {
   try {

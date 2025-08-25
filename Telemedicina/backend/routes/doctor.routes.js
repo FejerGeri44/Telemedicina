@@ -14,5 +14,6 @@ router.post('/deleteAppointment', authenticateToken, doctorController.deleteAppo
 router.get('/getMyPatients', authenticateToken, doctorController.getMyPatients);
 router.post('/getUserDataForDiagnosis', authenticateToken, doctorController.getUserDataForDiagnosis);
 router.post('/newDiagnosis', authenticateToken, doctorController.newDiagnosis);
+router.get('/getAllPatients', authenticateToken, doctorController.getAllPatients);
 
 module.exports = router;
