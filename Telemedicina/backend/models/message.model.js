@@ -1,4 +1,4 @@
-const {DataTypes} = require("sequelize");
+const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   const Message = sequelize.define('Message', {
@@ -7,8 +7,7 @@ module.exports = (sequelize) => {
       primaryKey: true,
       autoIncrement: true
     },
-
-    senderUserId:   {
+    senderUserId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       field: 'sender_user_id'
@@ -18,23 +17,43 @@ module.exports = (sequelize) => {
       allowNull: false,
       field: 'receiver_user_id'
     },
-
-    content:  {
+    content: {
       type: DataTypes.TEXT,
       allowNull: false
     },
     sendDate: {
-      type: DataTypes.DATE, allowNull: false,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
+      field: 'sendDate'
     },
-    isRead:   {
+    isReadPatient: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false
+      defaultValue: false,
+      field: 'isRead_patient'
+    },
+    isReadDoctor: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: 'isRead_doctor'
+    },
+    isDeletedPatient: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: 'isDeleted_patient'
+    },
+    isDeletedDoctor: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: 'isDeleted_doctor'
     }
   }, {
     tableName: 'messages',
-    timestamps: false
+    timestamps: false,
   });
 
   return Message;

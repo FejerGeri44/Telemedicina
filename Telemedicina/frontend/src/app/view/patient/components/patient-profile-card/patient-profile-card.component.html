@@ -10,8 +10,8 @@
       </div>
     </div>
 
-    <ion-button *ngIf="editable" class="btn-accent" (click)="edit.emit()">
-      Profil módosítása
+    <ion-button class="btn-accent pc-edit-top" (click)="edit.emit()" *ngIf="editable">
+      PROFIL MÓDOSÍTÁSA
     </ion-button>
   </div>
 
@@ -54,5 +54,11 @@
     <div class="stat"><span class="label">Email:</span><span class="value">{{ user?.email }}</span></div>
     <div class="stat"><span class="label">Mobil:</span><span class="value">{{ formatPhoneNumber(user?.phoneNumber) }}</span></div>
     <div class="stat"><span class="label">Otthoni:</span><span class="value">{{ patient?.homePhone ? formatPhoneNumber(patient?.homePhone) : 'N/A' }}</span></div>
+  </div>
+
+  <div class="pc-edit-bottom-wrap" *ngIf="editable">
+    <ion-button class="btn-accent pc-edit-bottom" (click)="edit.emit()">
+      PROFIL MÓDOSÍTÁSA
+    </ion-button>
   </div>
 </div>

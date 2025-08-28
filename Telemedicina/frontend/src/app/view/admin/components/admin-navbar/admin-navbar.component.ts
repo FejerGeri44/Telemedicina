@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {IonicModule} from '@ionic/angular';
 import {NgClass, NgForOf, NgIf} from '@angular/common';
 import { Router, RouterLinkActive, RouterModule } from '@angular/router';
-import {LogoutModalComponent} from '../../../../shared/logout-modal/logout-modal.component';
+import {AlertService} from '../../../../shared/alert/alert.service.component';
 
 @Component({
   selector: 'app-admin-navbar',
@@ -22,7 +22,10 @@ export class AdminNavbarComponent {
   user: any;
   isCollapsed = true;
 
-  constructor(private router: Router, private modalCtrl: ModalController) {}
+  constructor(
+    private router: Router,
+    private alert: AlertService
+  ) {}
 
   menuItems = [
     { icon: 'home', label: 'Profil', route: '/dashboard/admin' },
@@ -38,19 +41,20 @@ export class AdminNavbarComponent {
     this.isCollapsed = !this.isCollapsed;
   }
 
-  async confirmLogout() {
-    const modal = await this.modalCtrl.create({
-      component: LogoutModalComponent,
-      cssClass: 'custom-logout-modal',
-    });
+  confirmLogout() {
+    void this.alert.show(
+      'Kijelentkezés',
+      'Biztosan ki szeretnél jelentkezni?',
+      () => this.logout()
+    )
+  }
 
-    await modal.present();
-
-    const { data } = await modal.onDidDismiss();
-    if (data === true) {
-      localStorage.clear();
-      void this.router.navigate(['/regist-login'], { queryParams: { tab: 'login' } });
-    }
+  logout() {
+    localStorage.removeItem('token');
+    void this.router.navigate(
+      ['/regist-login'],
+      { queryParams: { tab: 'login' } }
+    );
   }
 
   navigateTo(route: string) {

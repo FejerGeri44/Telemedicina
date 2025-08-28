@@ -1,187 +1,71 @@
+/* KÁRTYA mint a páciensnél */
 .dpc {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  padding: 20px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 20px;
+  grid-template-columns: 1fr auto;         /* header: bal + jobb sarok */
+  grid-template-areas:
+    "left right"                           /* avatar+név | gomb */
+    "info info"                            /* részletek */
+    "intro intro"                          /* bemutatkozás */
+    "editb editb";                         /* alsó gomb mobilon */
+  gap: 12px 16px;
 }
 
-/* Bal blokk */
-.dpc-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 240px;
-}
-.dpc-avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: #e6f4ff;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-.dpc-avatar img {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #fff;
+/* HEADER bal oldal (avatar + név + rating) */
+.dpc-left { grid-area: left; display: flex; align-items: center; gap: 12px; min-width: 0; }
+.dpc-avatar { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background: #e6f4ff; flex: 0 0 auto; }
+.dpc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.dpc-head { min-width: 0; }
+.dpc-name { font-weight: 700; font-size: 1.125rem; line-height: 1.2; }
+.dpc-spec { font-size: .9rem; color: #7a8aa0; margin-bottom: 4px; }
+.dpc-stars ion-icon { font-size: 18px; color: #f5b301; }
+
+/* HEADER jobb felső sarok – a gomb itt */
+.dpc-right { grid-area: right; align-self: start; justify-self: end; }
+.dpc-edit-top { display: inline-flex; }
+
+/* INFO rács (spec, cím, email, tel stb.) */
+.dpc-info { grid-area: info; display: grid; grid-template-columns: 1fr; gap: 10px 16px; }
+.dpc-info .row { display: flex; gap: 6px; min-width: 0; }
+.dpc-info .lbl { color: #6b7785; font-weight: 600; white-space: nowrap; }
+.dpc-info .val { color: #1e2a3a; overflow-wrap: anywhere; }
+
+/* ALSÓ gomb wrap – mobilon látszik */
+.dpc-edit-bottom-wrap { grid-area: editb; display: none; }
+
+/* BEMUTATKOZÁS */
+.dpc-intro { grid-area: intro; border-top: 1px solid rgba(0,0,0,.08); padding-top: 12px; }
+.dpc-intro h4 { margin: 0 0 6px; font-weight: 700; }
+
+/* --- BREAKPOINTOK --- */
+@media (min-width: 600px) {
+  .dpc-info { grid-template-columns: repeat(2, 1fr); }
 }
 
-.dpc-head {
-  display: flex;
-  flex-direction:
-    column; gap: 2px;
-}
-.dpc-name {
-  font-weight: 700;
-  font-size: 1.05rem;
-}
-.dpc-spec {
-  color: #7a8aa0;
-  font-size: 0.95rem;
+@media (min-width: 1000px) {
+  /* tablet/desktop – nagyobb avatar, 3 oszlopos info */
+  .dpc-avatar { width: 96px; height: 96px; }
+  .dpc-name { font-size: 1.35rem; }
+  .dpc-info { grid-template-columns: repeat(3, 1fr); }
+  .dpc-edit-bottom-wrap { display: none !important; } /* biztosan csak felül legyen */
 }
 
-.dpc-stars {
-  display: flex;
-  gap: 5px;
-  margin-top: 6px;
-}
-.dpc-stars ion-icon {
-  color: #FFD700;
-  font-size: 2rem;
-}
-
-/* Közép */
-.dpc-info {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 24px;
-  align-items: start;
-}
-
-.first {
-  margin-left: 20%;
-}
-
-.dpc-info .row {
-  display: flex;
-  gap: 6px;
-  line-height: 1.4;
-}
-.lbl {
-  color: #7a8aa0;
-  min-width: max-content;
-}
-.val {
-  color: #1e2a3a;
-  overflow-wrap: anywhere;
-}
-
-/* Jobb */
-.dpc-right {
-  justify-self: end;
-}
-.btn-edit {
-  --border-radius: 999px;
-  --padding-start: 14px;
-  --padding-end: 14px;
-  height: 32px;
-}
-
-.dpc-intro {
-  width: 100%;
-  grid-column: 1 / -1;
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(0,0,0,0.1);
-  color: #1e2a3a;
-}
-
-.dpc-intro h4 {
-  margin: 0 0 6px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.dpc-intro p {
-  margin: 0;
-  line-height: 1.4;
-  white-space: pre-line;
-}
-
-.dpc-stars.editable {
-  gap: 2px;
-  flex-wrap: wrap;
-}
-.star-btn {
-  appearance: none;
-  background: transparent;
-  border: none;
-  padding: 2px;
-  cursor: pointer;
-}
-.star-btn ion-icon {
-  font-size: 20px;
-}
-
-.btn-rate {
-  margin-left: 8px;
-}
-.dpc-stars.editable {
-  gap: 5px;
-}
-.rate-editor {
-  display: flex;
-}
-.star-wrap {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-.star-wrap ion-icon { font-size: 2rem; }
-.rate-actions {
-  display: flex;
-  flex-direction: row;
-  margin-top: 10px;
-  margin-left: 20px;
-  gap: 10px;
-}
-
-.dpc.patient-mode .dpc-left {
-  grid-column: 1 / -1;
-}
-.dpc.patient-mode .first {
-  margin-left: 0;
-}
-.btn-accent {
-  font-size: 0.75rem;
-  line-height: 1;
-  border: none;
-  margin-left: 20px;
-}
-.btn-primary {
-  min-width: 100px;
-  font-size: 0.75rem;
-  line-height: 1;
-  border: none;
-}
-.btn-secondary {
-  min-width: 100px;
-  font-size: 0.75rem;
-  line-height: 1;
-}
-
-@media (max-width: 1000px) {
-  .first { margin-left: 0 }
-  .dpc { grid-template-columns: 1fr; gap: 12px; }
-  .dpc-right { justify-self: start; }
-  .dpc-info { grid-template-columns: 1fr; }
+/* MOBIL (<1000px): felső gomb rejtve, alsó gomb megjelenik */
+@media (max-width: 999px) {
+  .dpc {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "left"
+      "info"
+      "intro"
+      "editb";
+  }
+  .dpc-edit-top { display: none !important; }
+  .dpc-edit-bottom-wrap { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .dpc-edit-bottom {
+    width: 100%;
+  }
 }

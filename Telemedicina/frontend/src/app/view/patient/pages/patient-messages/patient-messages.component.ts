@@ -2,10 +2,11 @@ import {Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from 
 import {IonicModule} from '@ionic/angular';
 import {PatientNavbarComponent} from '../../components/patient-navbar/patient-navbar.component';
 import {FormsModule} from '@angular/forms';
-import {DatePipe, NgForOf, NgIf} from '@angular/common';
+import {DatePipe, NgForOf, NgIf, SlicePipe} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
+import {doc} from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-patient-messages',
@@ -15,7 +16,8 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
     FormsModule,
     NgIf,
     NgForOf,
-    DatePipe
+    DatePipe,
+    SlicePipe
   ],
   templateUrl: './patient-messages.component.html',
   standalone: true,
@@ -28,8 +30,10 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
   filteredDoctors: any[] = [];
   doctorQuery = '';
   searchOpen = false;
+
   allMessages: any[] = [];
   messages: any[] = [];
+  unreadMessages: any[] = [];
 
   selectedDoctor: any = null;
   draftText = '';
@@ -86,6 +90,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     this.selectedDoctor = doctor;
     if (this.isSmall) this.showChatOnMobile = true;
     this.applyConversationFilter();
+    this.markConversationReadAsPatient(this.selectedDoctor?.User?.id);
   }
 
   applyConversationFilter() {
@@ -110,6 +115,28 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     }));
 
     setTimeout(() => this.scrollToBottom?.(), 0);
+  }
+
+  markConversationReadAsPatient(doctorUserId: number) {
+    const myUserId = this.user?.user.id;
+    const token = localStorage.getItem('token');
+    if (!token || !myUserId || !doctorUserId) return;
+
+    this.http.post<void>('http://localhost:3000/api/mark-conversation-as-read',
+      {
+        myUserId: myUserId,
+        withUserId: doctorUserId,
+        role: 'patient'
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    ).subscribe({
+      next: () => {},
+      error: (e) => console.error('markConversationReadAsDoctor error', e)
+    });
   }
 
   backToList() {
@@ -143,7 +170,11 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
 
     this.http.post<any[]>(
       'http://localhost:3000/api/getMyMessages',
-      { userId: myUserId, limit: 200 },
+      {
+        userId: myUserId,
+        role: 'patient',
+        limit: 200
+      },
       { headers: { Authorization: `Bearer ${token}` } }
     ).subscribe({
       next: (rows) => {
@@ -213,7 +244,8 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
 
     this.http.post<any>('http://localhost:3000/api/sendMessage', {
       toUserId: this.selectedDoctor.User.id,
-      content: text
+      content: text,
+      role: 'patient'
     }, { headers: { Authorization: `Bearer ${token}` }})
       .subscribe({
         next: (saved) => {
@@ -251,7 +283,8 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
 
     this.http.post<any>('http://localhost:3000/api/deleteConversation', {
       meUserId: meUserId,
-      otherUserId: otherId
+      otherUserId: otherId,
+      role: 'patient'
     }, { headers: { Authorization: `Bearer ${token}` }})
       .subscribe({
         next: (res) => {
@@ -269,5 +302,31 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
   moreActions(ev?: any) {
     // TODO: action sheet / popover (pl. némítás, archiválás, profil megnyitása)
     console.log('további műveletek', ev);
+  }
+
+  getUnreadMessages() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const userId = this.user?.user?.id;
+    if (!userId) return;
+
+    this.http.post<{unread:any[], count:number}>(
+      'http://localhost:3000/api/getUnreadMessages',
+      {
+        userId,
+        role: 'patient',
+        limit: 200
+      },
+      {
+        headers:
+          { Authorization: `Bearer ${token}` }
+      }
+    ).subscribe({
+      next: (res) => {
+        this.unreadMessages = res.unread ?? [];
+      },
+      error: (e) => console.error('getUnreadMessages error', e)
+    });
   }
 }

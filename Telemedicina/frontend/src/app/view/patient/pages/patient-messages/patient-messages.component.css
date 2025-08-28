@@ -243,20 +243,20 @@
 }
 
 @media (max-width: 1024px) {
+  .chat-layout {
+    min-height: calc(100vh - 50px);
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
   .sidebar {
     border-radius: 0;
-    height: 85vh;
   }
   .chat-pane {
+    height: 100%;
     border-radius: 0;
-    height: 87.75vh;
   }
   .mobile-hidden {
     display: none;
-  }
-  .chat-layout {
-    grid-template-columns: 1fr;
-    padding: 0;
   }
   .peer {
     display: flex;

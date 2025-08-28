@@ -36,6 +36,12 @@
     </div>
   </div>
 
+  <div class="dpc-right" *ngIf="editable">
+    <ion-button class="btn-accent dpc-edit-top" (click)="edit.emit()">
+      Profil módosítása
+    </ion-button>
+  </div>
+
   <div class="dpc-info">
     <div class="col first">
       <div class="row"><span class="lbl">Specialitás:</span> <span class="val">{{ doctor?.speciality }}</span></div>
@@ -47,7 +53,11 @@
     </div>
   </div>
 
-  <ion-button *ngIf="editable" class="btn-accent" (click)="edit.emit()">Profil módosítása</ion-button>
+  <div class="dpc-edit-bottom-wrap" *ngIf="editable">
+    <ion-button class="btn-accent dpc-edit-bottom" (click)="edit.emit()">
+      Profil módosítása
+    </ion-button>
+  </div>
 
   <div class="dpc-intro" *ngIf="doctor?.introduction">
     <h4>Bemutatkozás</h4>

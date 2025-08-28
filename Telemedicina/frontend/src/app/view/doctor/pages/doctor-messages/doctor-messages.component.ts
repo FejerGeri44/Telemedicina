@@ -92,6 +92,7 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
     this.selectedPatient = patient;
     if (this.isSmall) this.showChatOnMobile = true;
     this.applyConversationFilter();
+    this.markConversationReadAsDoctor(this.selectedPatient?.User?.id);
   }
 
   applyConversationFilter() {
@@ -114,6 +115,28 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
     }));
 
     setTimeout(() => this.scrollToBottom?.(), 0);
+  }
+
+  markConversationReadAsDoctor(patientUserId: number) {
+    const myUserId = this.user?.user.id;
+    const token = localStorage.getItem('token');
+    if (!token || !myUserId || !patientUserId) return;
+
+    this.http.post<void>('http://localhost:3000/api/mark-conversation-as-read',
+      {
+        myUserId: myUserId,
+        withUserId: patientUserId,
+        role: 'doctor'
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    ).subscribe({
+      next: () => {},
+      error: (e) => console.error('markConversationReadAsDoctor error', e)
+    });
   }
 
   backToList() {
@@ -147,7 +170,11 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
 
     this.http.post<any[]>(
       'http://localhost:3000/api/getMyMessages',
-      { userId: myUserId, limit: 200 },
+      {
+        userId: myUserId,
+        role: 'doctor',
+        limit: 200
+      },
       { headers: { Authorization: `Bearer ${token}` } }
     ).subscribe({
       next: (rows) => {
@@ -218,7 +245,8 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
 
     this.http.post<any>('http://localhost:3000/api/sendMessage', {
       toUserId: this.selectedPatient.User.id,
-      content: text
+      content: text,
+      role: 'doctor'
     }, { headers: { Authorization: `Bearer ${token}` }})
       .subscribe({
         next: (saved) => {
@@ -256,7 +284,8 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
 
     this.http.post<any>('http://localhost:3000/api/deleteConversation', {
       meUserId: meUserId,
-      otherUserId: otherId
+      otherUserId: otherId,
+      role: 'doctor'
     }, { headers: { Authorization: `Bearer ${token}` }})
       .subscribe({
         next: (res) => {

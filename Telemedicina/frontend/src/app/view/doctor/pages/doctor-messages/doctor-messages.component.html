@@ -77,14 +77,14 @@
       </header>
 
       <div class="messages" #messageScroll>
-        <ng-container *ngFor="let m of allMessages; trackBy: trackByMsgId">
-          <div class="msg-row" [class.mine]="isMine(m)" [class.theirs]="!isMine(m)">
+        <ng-container *ngFor="let m of messages; trackBy: trackByMsgId">
+        <div class="msg-row" [class.mine]="isMine(m)" [class.theirs]="!isMine(m)">
             <ion-avatar class="bubble-avatar" [style.width.px]="36" [style.height.px]="36">
-              <img [src]="isMine(m) ? (user.user.pictureUrl) : (selectedPatient?.User?.pictureUrl)" />
+              <img [src]="isMine(m) ? (user.user.pictureUrl) : (selectedPatient?.User?.pictureUrl)"  alt="profile"/>
             </ion-avatar>
 
             <div class="bubble">
-              <div class="text">{{ m.text }}</div>
+              <div class="text">{{ m.text || m.content }}</div>
             </div>
           </div>
         </ng-container>
