@@ -29,11 +29,6 @@ export class CustomToastComponent implements OnInit {
       case 'warning': this.iconName = 'alert-circle'; break;
       case 'danger': this.iconName = 'close-circle'; break;
     }
-
-    setTimeout(() => {
-      const el = document.querySelector('.toast-wrapper');
-      el?.classList.add('fade-out');
-    }, 3000);
   }
 }
 

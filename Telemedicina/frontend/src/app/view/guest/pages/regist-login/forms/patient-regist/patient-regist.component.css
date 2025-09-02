@@ -92,6 +92,17 @@ ion-item {
   z-index: 10;
 }
 
+.grid-single {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+ion-radio-group {
+  margin-left: 20px;
+}
+
 @media (max-width: 600px) {
   .button-row {
     flex-direction: column;

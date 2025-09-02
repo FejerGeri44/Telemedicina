@@ -228,9 +228,6 @@ exports.getUnreadMessages = async (req, res) => {
       return res.status(400).json({ error: 'Érvénytelen role (patient | doctor)' });
     }
 
-    // az adott userhez tartozó üzenetek
-    // + csak a saját szerep szerinti NINCS olvasva
-    // + (ajánlott) ne listázzuk a user által töröltet
     const unreadFlag   = role === 'patient' ? { isReadPatient: false } : { isReadDoctor: false };
     const notDeletedBy = role === 'patient' ? { isDeletedPatient: false } : { isDeletedDoctor: false };
 
@@ -245,9 +242,6 @@ exports.getUnreadMessages = async (req, res) => {
       order: [['sendDate', 'DESC'], ['id', 'DESC']],
       limit
     });
-
-    // ha csak a darabszámot is szeretnéd:
-    // const count = await Message.count({ where });
 
     return res.json({
       unread: rows,

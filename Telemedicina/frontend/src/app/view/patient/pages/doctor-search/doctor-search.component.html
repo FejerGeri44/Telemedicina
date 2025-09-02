@@ -1,5 +1,6 @@
 <ion-content class="page-container">
   <app-patient-navbar></app-patient-navbar>
+
   <div class="doctor-container">
     <div class="header">
       <div class="upper-section">
@@ -41,8 +42,8 @@
         <span *ngFor="let page of visiblePages"
               (click)="goToPage(page)"
               [class.active]="page === currentPage">
-      {{ page }}
-    </span>
+              {{ page }}
+        </span>
 
         <ion-icon name="chevron-forward-outline"
                   (click)="nextPageSet()"

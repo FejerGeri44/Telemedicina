@@ -85,6 +85,7 @@
 .doctor-profile {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   width: 100%;
   background: #fff;
@@ -115,6 +116,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.info {
+  flex: 1;
+  margin-left: 10px;
+  overflow: hidden;
 }
 
 .info .name {
@@ -236,6 +243,65 @@
   word-break: break-word;
 }
 
+.empty-chat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  margin-top: 200px;
+  height: 100%;
+  color: var(--ion-color-medium);
+}
+
+.empty-chat ion-icon {
+  font-size: 44px;
+  opacity: .6;
+}
+
+.empty-chat h3 {
+  margin: 0;
+  color: #1f2937;
+}
+
+.last-message {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 13px;
+  color: #4b5563;
+  max-width: 40%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.last-message .preview {
+  display: inline-block;
+  max-width: 70px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.badge {
+  height: 22px;
+  width: 15px;
+  background: #e53935;
+  color: #fff;
+  padding: 0 4px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
 @media (min-width: 1025px) {
   .back-btn {
     display: none;
@@ -252,7 +318,7 @@
     border-radius: 0;
   }
   .chat-pane {
-    height: 100%;
+    height: calc(100vh - 50px);
     border-radius: 0;
   }
   .mobile-hidden {

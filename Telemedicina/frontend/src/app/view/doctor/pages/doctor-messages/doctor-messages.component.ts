@@ -6,6 +6,7 @@ import {IonicModule} from '@ionic/angular';
 import {NgForOf, NgIf} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
+import {PatientNavbarComponent} from '../../../patient/components/patient-navbar/patient-navbar.component';
 
 @Component({
   selector: 'app-doctor-messages',
@@ -27,8 +28,11 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
   filteredPatients: any[] = [];
   patientQuery = '';
   searchOpen = false;
+
   allMessages: any[] = [];
   messages: any[] = [];
+  unreadMessages: any[] = [];
+  unreadByPatient: any[] = [];
 
   selectedPatient: any = null;
   draftText = '';
@@ -50,11 +54,6 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
       next: (data) => {
         this.patients = data;
         this.isLoading = false;
-        if (this.patients.length > 0) {
-          this.selectedPatient = this.patients[0];
-        } else {
-          this.selectedPatient = null;
-        }
       },
       error: (err) =>
         console.error('getAllPatients error', err)
@@ -62,6 +61,8 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
 
     this.isOnline = true;
   }
+
+  @ViewChild('navbar') navbar!: PatientNavbarComponent;
 
   @ViewChild('messageScroll') messageScroll: any;
   private scrollToBottom() {
@@ -93,6 +94,10 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
     if (this.isSmall) this.showChatOnMobile = true;
     this.applyConversationFilter();
     this.markConversationReadAsDoctor(this.selectedPatient?.User?.id);
+    setTimeout(() => {
+      this.navbar?.getUnreadMessages();
+      this.getUnreadMessages();
+    }, 0);
   }
 
   applyConversationFilter() {
@@ -180,6 +185,8 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
       next: (rows) => {
         this.allMessages = rows;
         this.applyConversationFilter();
+        this.getUnreadMessages();
+        console.log(this.unreadMessages)
       },
       error: (e) => console.error('messages-byUser error', e)
     });
@@ -303,5 +310,62 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
   moreActions(ev?: any) {
     // TODO: action sheet / popover (pl. némítás, archiválás, profil megnyitása)
     console.log('további műveletek', ev);
+  }
+
+  getUnreadMessages() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const userId = this.user?.user?.id;
+    if (!userId) return;
+
+    this.http.post<{unread:any[], count:number}>(
+      'http://localhost:3000/api/getUnreadMessages',
+      {
+        userId,
+        role: 'doctor',
+        limit: 200
+      },
+      {
+        headers:
+          { Authorization: `Bearer ${token}` }
+      }
+    ).subscribe({
+      next: (res) => {
+        this.unreadMessages = res.unread ?? [];
+        this.unreadByPatient = this.computeUnreadByPatient(this.unreadMessages);
+      },
+      error: (e) => console.error('getUnreadMessages error', e)
+    });
+  }
+
+  computeUnreadByPatient(unreadMessages: any[]): any[] {
+    const map = new Map<number, { patientId: number; latest: any; count: number }>();
+
+    for (const msg of unreadMessages) {
+      const patientId = msg.senderUserId;
+      const existing = map.get(patientId);
+
+      if (!existing) {
+        map.set(patientId, { patientId, latest: msg, count: 1 });
+        continue;
+      }
+
+      existing.count += 1;
+
+      const currTime = new Date(existing.latest.sendDate).getTime();
+      const newTime = new Date(msg.sendDate).getTime();
+      if (newTime > currTime) {
+        existing.latest = msg;
+      }
+    }
+
+    return Array.from(map.values()).sort(
+      (a, b) => new Date(b.latest.sendDate).getTime() - new Date(a.latest.sendDate).getTime()
+    );
+  }
+
+  getUnreadSummary(patientUserId: number | undefined): any | null {
+    return this.unreadByPatient.find(u => u.patientId === patientUserId) ?? null;
   }
 }

@@ -34,6 +34,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
   allMessages: any[] = [];
   messages: any[] = [];
   unreadMessages: any[] = [];
+  unreadByDoctor: any[] = [];
 
   selectedDoctor: any = null;
   draftText = '';
@@ -51,15 +52,12 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     this.http.get<any[]>('http://localhost:3000/api/doctors').subscribe(data => {
       this.doctors = data;
       this.isLoading = false;
-      if (this.doctors.length > 0) {
-        this.selectedDoctor = this.doctors[0];
-      } else {
-        this.selectedDoctor = null;
-      }
     });
 
     this.isOnline = true;
   }
+
+  @ViewChild('navbar') navbar!: PatientNavbarComponent;
 
   @ViewChild('messageScroll') messageScroll: any;
   private scrollToBottom() {
@@ -91,6 +89,10 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     if (this.isSmall) this.showChatOnMobile = true;
     this.applyConversationFilter();
     this.markConversationReadAsPatient(this.selectedDoctor?.User?.id);
+    setTimeout(() => {
+      this.navbar?.getUnreadMessages();
+      this.getUnreadMessages();
+    }, 0);
   }
 
   applyConversationFilter() {
@@ -180,6 +182,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
       next: (rows) => {
         this.allMessages = rows;
         this.applyConversationFilter();
+        this.getUnreadMessages();
       },
       error: (e) => console.error('messages-byUser error', e)
     });
@@ -216,6 +219,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
       this.applyDoctorFilter();
     }
   }
+
   trySend(ev: Event) {
     const e = ev as KeyboardEvent;
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -325,8 +329,39 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     ).subscribe({
       next: (res) => {
         this.unreadMessages = res.unread ?? [];
+        this.unreadByDoctor = this.computeUnreadByDoctor(this.unreadMessages);
       },
       error: (e) => console.error('getUnreadMessages error', e)
     });
+  }
+
+  computeUnreadByDoctor(unreadMessages: any[]): any[] {
+    const map = new Map<number, { doctorId: number; latest: any; count: number }>();
+
+    for (const msg of unreadMessages) {
+      const doctorId = msg.senderUserId;
+      const existing = map.get(doctorId);
+
+      if (!existing) {
+        map.set(doctorId, { doctorId, latest: msg, count: 1 });
+        continue;
+      }
+
+      existing.count += 1;
+
+      const currTime = new Date(existing.latest.sendDate).getTime();
+      const newTime = new Date(msg.sendDate).getTime();
+      if (newTime > currTime) {
+        existing.latest = msg;
+      }
+    }
+
+    return Array.from(map.values()).sort(
+      (a, b) => new Date(b.latest.sendDate).getTime() - new Date(a.latest.sendDate).getTime()
+    );
+  }
+
+  getUnreadSummary(doctorUserId: number | undefined): any | null {
+    return this.unreadByDoctor.find(u => u.doctorId === doctorUserId) ?? null;
   }
 }

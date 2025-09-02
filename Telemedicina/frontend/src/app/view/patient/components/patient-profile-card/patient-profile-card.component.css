@@ -26,13 +26,11 @@
 
 /* Avatar – mobilon kompaktabb */
 .pc-avatar {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background: #e6f4ff;
-  display: grid;
-  place-items: center;
   overflow: hidden;
+  background: #e6f4ff;
   flex: 0 0 auto;
 }
 .pc-avatar img {

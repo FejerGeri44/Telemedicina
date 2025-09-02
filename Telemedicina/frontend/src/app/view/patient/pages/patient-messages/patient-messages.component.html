@@ -1,5 +1,5 @@
 <ion-content class="page-container">
-  <app-patient-navbar></app-patient-navbar>
+  <app-patient-navbar #navbar></app-patient-navbar>
 
   <div class="chat-layout">
 
@@ -38,6 +38,11 @@
             <div class="name">Dr. {{ doctor.User?.name }}</div>
             <div class="specialty">{{ doctor.speciality }}</div>
           </div>
+
+          <div class="last-message" *ngIf="getUnreadSummary(doctor.User?.id) as summary">
+            <span class="preview">{{ summary.latest?.content }}</span>
+            <span class="badge" *ngIf="summary.count > 0">{{ summary.count }}</span>
+          </div>
         </button>
       </div>
 
@@ -50,68 +55,77 @@
     </aside>
 
     <!-- jobb oszlop: aktuális beszélgetés -->
-    <section class="chat-pane" *ngIf="selectedDoctor" [class.mobile-hidden]="isSmall && !showChatOnMobile">
-      <header class="chat-header">
-        <div class="peer">
-          <ion-button fill="clear" class="back-btn" (click)="backToList()" aria-label="Vissza a listához">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </ion-button>
-
+    <section class="chat-pane" [class.mobile-hidden]="isSmall && !showChatOnMobile">
+      <ng-container *ngIf="selectedDoctor; else emptyState">
+        <header class="chat-header">
           <div class="peer">
-            <ion-avatar class="avatar-wrap">
-              <img class="avatar" [src]="selectedDoctor?.User?.pictureUrl" alt="profil"/>
-            </ion-avatar>
-            <div class="meta">
-              <h2>{{ selectedDoctor?.User?.name }}</h2>
-              <small>{{ selectedDoctor?.speciality }}</small>
+            <ion-button fill="clear" class="back-btn" (click)="backToList()" aria-label="Vissza a listához">
+              <ion-icon name="chevron-back-outline"></ion-icon>
+            </ion-button>
+
+            <div class="peer">
+              <ion-avatar class="avatar-wrap">
+                <img class="avatar" [src]="selectedDoctor?.User?.pictureUrl" alt="profil"/>
+              </ion-avatar>
+              <div class="meta">
+                <h2>{{ selectedDoctor?.User?.name }}</h2>
+                <small>{{ selectedDoctor?.speciality }}</small>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="header-actions">
-          <ion-button fill="clear" size="small" (click)="confirmDelete()">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-button>
-          <ion-button fill="clear" size="small" (click)="moreActions($event)">
-            <ion-icon name="ellipsis-horizontal"></ion-icon>
-          </ion-button>
-        </div>
-      </header>
-
-      <div class="messages" #messageScroll>
-        <ng-container *ngFor="let m of messages; trackBy: trackByMsgId">
-          <div class="msg-row" [class.mine]="isMine(m)" [class.theirs]="!isMine(m)">
-            <ion-avatar class="bubble-avatar" [style.width.px]="36" [style.height.px]="36">
-              <img [src]="isMine(m) ? (user.user.pictureUrl) : (selectedDoctor?.User?.pictureUrl)" />
-            </ion-avatar>
-
-            <div class="bubble">
-              <div class="text">{{ m.text }}</div>
-            </div>
+          <div class="header-actions">
+            <ion-button fill="clear" size="small" (click)="confirmDelete()">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" size="small" (click)="moreActions($event)">
+              <ion-icon name="ellipsis-horizontal"></ion-icon>
+            </ion-button>
           </div>
-        </ng-container>
-      </div>
+        </header>
 
-      <footer class="composer">
-        <ion-item lines="none" class="input-wrap">
-          <ion-textarea
-            autoGrow="true"
-            rows="1"
-            placeholder="Írj üzenetet…"
-            [(ngModel)]="draftText"
-            [ngModelOptions]="{standalone:true}"
-            (keydown.enter)="trySend($any($event))"
-            enterkeyhint="send">
-          </ion-textarea>
-        </ion-item>
+        <div class="messages" #messageScroll>
+          <ng-container *ngFor="let m of messages; trackBy: trackByMsgId">
+            <div class="msg-row" [class.mine]="isMine(m)" [class.theirs]="!isMine(m)">
+              <ion-avatar class="bubble-avatar" [style.width.px]="36" [style.height.px]="36">
+                <img [src]="isMine(m) ? (user.user.pictureUrl) : (selectedDoctor?.User?.pictureUrl)" />
+              </ion-avatar>
 
-        <ion-button
-          class="send-btn"
-          [disabled]="!draftText?.trim()"
-          (click)="send()">
-          <ion-icon name="send" slot="end"></ion-icon>
-        </ion-button>
-      </footer>
+              <div class="bubble">
+                <div class="text">{{ m.text }}</div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+        <footer class="composer">
+          <ion-item lines="none" class="input-wrap">
+            <ion-textarea
+              autoGrow="true"
+              rows="1"
+              placeholder="Írj üzenetet…"
+              [(ngModel)]="draftText"
+              [ngModelOptions]="{standalone:true}"
+              (keydown.enter)="trySend($any($event))"
+              enterkeyhint="send">
+            </ion-textarea>
+          </ion-item>
+
+          <ion-button
+            class="send-btn"
+            [disabled]="!draftText?.trim()"
+            (click)="send()">
+            <ion-icon name="send" slot="end"></ion-icon>
+          </ion-button>
+        </footer>
+      </ng-container>
+      <ng-template #emptyState>
+        <div class="empty-chat">
+          <ion-icon name="chatbubbles-outline"></ion-icon>
+          <h3>Válassz egy orvost</h3>
+          <p>A beszélgetés itt fog megjelenni, miután a bal oldali listából kiválasztod az orvost.</p>
+        </div>
+      </ng-template>
     </section>
   </div>
 </ion-content>

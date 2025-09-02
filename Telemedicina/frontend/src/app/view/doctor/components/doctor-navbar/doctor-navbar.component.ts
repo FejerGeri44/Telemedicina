@@ -91,7 +91,7 @@ export class DoctorNavbarComponent implements OnInit{
     );
   }
 
-  getUnreadMessages() {
+  public getUnreadMessages() {
     const token = localStorage.getItem('token');
     if (!token) return;
 

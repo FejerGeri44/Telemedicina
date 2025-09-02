@@ -16,7 +16,7 @@
 
 /* HEADER bal oldal (avatar + név + rating) */
 .dpc-left { grid-area: left; display: flex; align-items: center; gap: 12px; min-width: 0; }
-.dpc-avatar { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background: #e6f4ff; flex: 0 0 auto; }
+.dpc-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; background: #e6f4ff; flex: 0 0 auto; }
 .dpc-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .dpc-head { min-width: 0; }
 .dpc-name { font-weight: 700; font-size: 1.125rem; line-height: 1.2; }

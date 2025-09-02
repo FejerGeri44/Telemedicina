@@ -90,7 +90,7 @@ export class PatientNavbarComponent implements OnInit{
     );
   }
 
-  getUnreadMessages() {
+  public getUnreadMessages() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -112,7 +112,6 @@ export class PatientNavbarComponent implements OnInit{
       next: (res) => {
         this.unreadMessages = res.unread ?? [];
         this.unreadCount = res.count ?? this.unreadMessages.length;
-        console.log(this.unreadMessages)
       },
       error: (e) => console.error('getUnreadMessages error', e)
     });

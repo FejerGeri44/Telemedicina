@@ -11,6 +11,10 @@
   padding: 20px;
 }
 
+ion-card {
+  max-width: 600px;
+}
+
 .header {
   display: flex;
   flex-direction: column;
