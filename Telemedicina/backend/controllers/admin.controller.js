@@ -364,3 +364,45 @@ exports.deleteUsers = async (req, res) => {
     res.status(500).json({ message: 'Szerverhiba.' });
   }
 };
+
+exports.getPendingDoctors = async (req, res) => {
+  try {
+    const doctors = await Doctor.findAll({
+      where: { status: 'pending' },
+      attributes: ['id','userId','speciality','introduction','registDate','avgRating','status'],
+      include: [{
+        model: User,
+        attributes: ['id','name','email','role','phoneNumber','address','birthDate','pictureUrl']
+      }],
+      order: [[{ model: User }, 'name', 'ASC']]
+    });
+
+    return res.status(200).json(doctors);
+  } catch (err) {
+    console.error('❌ Pending orvosok lekérési hiba:', err);
+    return res.status(500).json({ message: 'Szerverhiba.' });
+  }
+};
+
+exports.approveDoctor = async (req, res) => {
+  try {
+    const { doctorId } = req.body;
+    if (!doctorId) {
+      return res.status(400).json({ message: 'Hiányzik a doctorId.' });
+    }
+
+    const [count] = await Doctor.update(
+      { status: 'approved' },
+      { where: { id: doctorId } }
+    );
+
+    if (count === 0) {
+      return res.status(404).json({ message: 'Doctor nem található.' });
+    }
+
+    return res.json({ message: 'Orvos jóváhagyva.', doctorId });
+  } catch (e) {
+    console.error('Approve doctor hiba:', e);
+    return res.status(500).json({ message: 'Szerverhiba.' });
+  }
+};

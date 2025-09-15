@@ -13,5 +13,7 @@ router.post('/admin/registerPatient', authenticateToken, adminController.registe
 router.post('/admin/registerDoctor', authenticateToken, adminController.registerDoctor);
 router.post('/admin/registerAdmin', authenticateToken, adminController.registerAdmin);
 router.delete('/admin/deleteUsers', authenticateToken, adminController.deleteUsers);
+router.get('/admin/pendingDoctors', authenticateToken, adminController.getPendingDoctors);
+router.patch('/admin/approveDoctor', authenticateToken, adminController.approveDoctor);
 
 module.exports = router;

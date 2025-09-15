@@ -29,7 +29,7 @@ export class AdminNavbarComponent implements OnInit{
   menuItems = [
     { icon: 'home', label: 'Profil', route: '/dashboard/admin' },
     { icon: 'people', label: 'Felhasználók', route: '/all-users' },
-    { icon: 'id-card', label: 'Orvosi jelenzkezések', route: '' },
+    { icon: 'id-card', label: 'Orvosi jelenzkezések', route: '/doctor-approvals' },
     { icon: 'paper-plane', label: 'Rendszerüzenet', route: '' },
     { icon: 'hardware-chip', label: 'MI asszisztens', route: '' }
   ];
