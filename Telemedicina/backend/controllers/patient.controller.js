@@ -5,7 +5,6 @@ const {
   Appointment,
   PatientTag,
   DoctorRating,
-  Message,
   sequelize
 } = require('../models');
 
@@ -138,10 +137,6 @@ exports.updateProfile = async (req, res) => {
     }
 
     if (Array.isArray(tags)) {
-      if (!PatientTag) {
-        throw new Error('PatientTag model is undefined (model import/init hiba).');
-      }
-
       await PatientTag.destroy({ where: { patient_id: patient.id }, transaction: t });
 
       const toCreate = tags
@@ -180,7 +175,7 @@ exports.getAllDoctors = async (req, res) => {
       ],
       include: [{
         model: User,
-        attributes: ['id','name','email','phoneNumber','address','pictureUrl']
+        attributes: ['id','name','email','phoneNumber', 'role','address','pictureUrl']
       }]
     });
     res.status(200).json(doctors);

@@ -4,6 +4,10 @@ ion-card {
   user-select: none;
 }
 
+ion-card.admin-extra {
+  padding-bottom: 50px;
+}
+
 ion-card-header {
   padding-bottom: 0;
   text-align: center;
@@ -80,6 +84,10 @@ ion-item {
   gap: 20px;
   width: 100%;
   margin-top: 15px;
+}
+
+.full-width {
+  width: 100%;
 }
 
 .password-toggle-icon {

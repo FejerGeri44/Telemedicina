@@ -3,13 +3,10 @@ import {PatientNavbarComponent} from '../../components/patient-navbar/patient-na
 import {IonicModule, ToastController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
-import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
+import {NgForOf, NgIf} from '@angular/common';
 import {CustomToastComponent} from '../../../../shared/toast/toast.component';
 import { ModalController } from '@ionic/angular';
 import { AppointmentModalComponent } from '../../components/appointment-modal/appointment-modal.component';
-import {
-  DoctorEditProfileModalComponent
-} from '../../../doctor/components/doctor-edit-profile-modal/doctor-edit-profile-modal.component';
 import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
 
 @Component({
@@ -19,7 +16,6 @@ import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-prof
     IonicModule,
     FormsModule,
     NgForOf,
-    NgOptimizedImage,
     NgIf
   ],
   templateUrl: './doctor-search.component.html',

@@ -1,12 +1,11 @@
-import {Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {PatientNavbarComponent} from '../../components/patient-navbar/patient-navbar.component';
 import {FormsModule} from '@angular/forms';
-import {DatePipe, NgForOf, NgIf, SlicePipe} from '@angular/common';
+import {NgForOf, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {doc} from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-patient-messages',
@@ -15,9 +14,7 @@ import {doc} from '@angular/fire/firestore';
     PatientNavbarComponent,
     FormsModule,
     NgIf,
-    NgForOf,
-    DatePipe,
-    SlicePipe
+    NgForOf
   ],
   templateUrl: './patient-messages.component.html',
   standalone: true,

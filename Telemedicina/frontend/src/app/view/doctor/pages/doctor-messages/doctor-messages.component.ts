@@ -7,6 +7,7 @@ import {NgForOf, NgIf} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
 import {PatientNavbarComponent} from '../../../patient/components/patient-navbar/patient-navbar.component';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-doctor-messages',
@@ -43,23 +44,40 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
 
   private pollTimer: any = null;
 
-  constructor(private http: HttpClient, private toast: ToastService, private alert: AlertService) {}
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private toast: ToastService,
+    private alert: AlertService
+  ) {}
 
   ngOnInit(): void {
     this.getMyData();
+    this.getAllPatients();
+    this.isOnline = true;
+
+    const patientFromState = history.state?.selectedPatient;
+    if (patientFromState) {
+      console.log(patientFromState);
+      this.selectPatient(patientFromState);
+    }
+  }
+
+  getAllPatients() {
     const token = localStorage.getItem('token');
     this.http.get<any[]>('http://localhost:3000/api/getAllPatients', {
-      headers: token ? { Authorization: `Bearer ${token}` } as any : undefined
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     }).subscribe({
       next: (data) => {
         this.patients = data;
         this.isLoading = false;
+        console.log(data);
       },
       error: (err) =>
         console.error('getAllPatients error', err)
     });
-
-    this.isOnline = true;
   }
 
   @ViewChild('navbar') navbar!: PatientNavbarComponent;
@@ -186,7 +204,6 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
         this.allMessages = rows;
         this.applyConversationFilter();
         this.getUnreadMessages();
-        console.log(this.unreadMessages)
       },
       error: (e) => console.error('messages-byUser error', e)
     });

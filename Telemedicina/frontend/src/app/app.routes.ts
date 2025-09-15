@@ -11,6 +11,7 @@ import {MyPatientsComponent} from './view/doctor/pages/my-patients/my-patients.c
 import {NewDiagnosisComponent} from './view/doctor/pages/new-diagnosis/new-diagnosis.component';
 import {PatientMessagesComponent} from './view/patient/pages/patient-messages/patient-messages.component';
 import {DoctorMessagesComponent} from './view/doctor/pages/doctor-messages/doctor-messages.component';
+import {AllUsersComponent} from './view/admin/pages/all-users/all-users.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -44,5 +45,6 @@ export const routes: Routes = [
   { path: 'my-patients', component: MyPatientsComponent },
   { path: 'new-diagnosis', component: NewDiagnosisComponent },
   { path: 'patient-messages', component: PatientMessagesComponent },
-  { path: 'doctor-messages', component: DoctorMessagesComponent }
+  { path: 'doctor-messages', component: DoctorMessagesComponent },
+  { path: 'all-users', component: AllUsersComponent }
 ];

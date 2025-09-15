@@ -6,12 +6,14 @@ import {NgForOf, NgIf} from '@angular/common';
 import {
   PatientProfileCardComponent
 } from '../../../patient/components/patient-profile-card/patient-profile-card.component';
+import {Router} from '@angular/router';
 
 interface PatientUser {
   id: number;
   name: string;
   email: string;
   phoneNumber: string;
+  role: string;
   address: string;
   birthDate: string;
   pictureUrl?: string;
@@ -53,7 +55,11 @@ export class MyPatientsComponent implements OnInit{
   isLoading = false;
   patients: MyPatientCard[] = [];
 
-  constructor(private http: HttpClient, private modalCtrl: ModalController) {}
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private modalCtrl: ModalController
+  ) {}
 
   ngOnInit() {
     this.loadMyPatients();
@@ -91,12 +97,34 @@ export class MyPatientsComponent implements OnInit{
         user: p.user,
         patient: p.patient,
         tags: p.tags,
-        viewMode: 'doctor',
         editable: false
       },
       cssClass: 'profile-view-modal',
       backdropDismiss: true
     });
     await modal.present();
+  }
+  goToMessages(raw: any) {
+    const normalized = this.normalizePatientForMessages(raw);
+    void this.router.navigate(['/doctor-messages'], {
+      state: { selectedPatient: normalized }
+    });
+  }
+
+  private normalizePatientForMessages(src: any) {
+    if (src?.patient && src?.user) {
+      const { patient, user } = src;
+      const merged = {
+        ...patient,
+        User: user
+      };
+
+      if (merged.userId == null && user?.id != null) {
+        (merged as any).userId = user.id;
+      }
+
+      return merged;
+    }
+    return src;
   }
 }

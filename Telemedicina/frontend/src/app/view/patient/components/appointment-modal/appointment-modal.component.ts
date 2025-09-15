@@ -1,7 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
-import {DatePipe, NgForOf, NgIf} from '@angular/common';
+import {DatePipe, NgForOf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
@@ -21,8 +21,7 @@ interface prevAppointment {
     IonicModule,
     FormsModule,
     NgForOf,
-    DatePipe,
-    NgIf
+    DatePipe
   ],
   templateUrl: './appointment-modal.component.html',
   standalone: true,

@@ -1,10 +1,9 @@
-import {Component, ComponentRef, Injector, OnDestroy, OnInit, ViewContainerRef} from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import {Component, Input} from '@angular/core';
+import {IonicModule, ModalController} from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import {CustomToastComponent} from '../../../../../../shared/toast/toast.component';
 import {ToastService} from '../../../../../../shared/toast/toast.service';
 
 @Component({
@@ -19,6 +18,9 @@ import {ToastService} from '../../../../../../shared/toast/toast.service';
   styleUrls: ['./doctor-regist.component.css']
 })
 export class DoctorRegistComponent {
+  @Input() title: string = 'Orvosi jelentkezés';
+  @Input() calledByAdmin: boolean = false;
+  @Input() adminUser: any;
 
   fullName: string = '';
   email: string = '';
@@ -34,14 +36,16 @@ export class DoctorRegistComponent {
   invalidEmail: boolean = false;
   showPassword: boolean = false;
 
+  buttonText: string = this.calledByAdmin ? 'jelentkezek' : 'Mentés';
+
   constructor(
     private http: HttpClient,
+    private modalCtrl: ModalController,
     private router: Router,
     private toast: ToastService
   ) {}
 
   onDoctorRegister() {
-
     // Üres mezők ellenőrzése
     if (!this.fullName || !this.email || !this.password || !this.password_again || !this.phoneNumber || !this.speciality) {
       this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
@@ -74,25 +78,59 @@ export class DoctorRegistComponent {
       speciality: this.speciality,
     };
 
-    this.http.post('http://localhost:3000/api/auth/register/doctor', doctorData)
-      .subscribe({
-        next: () => {
-          setTimeout(() => {
-            void this.router.navigate(['/regist-login'], {
-              queryParams: {
-                tab: 'login',
-                toast: 'Sikeres orvos regisztráció!',
-                type: 'success',
-                successfulRegist: true
-              }
-            });
-          }, 500);
-        },
-        error: err => {
-          console.error(err);
-          this.toast.show('Hiba történt a regisztráció során!', 'danger');
+    if (!this.calledByAdmin) {
+      this.http.post('http://localhost:3000/api/auth/register/doctor', doctorData)
+        .subscribe({
+          next: () => {
+            setTimeout(() => {
+              void this.router.navigate(['/regist-login'], {
+                queryParams: {
+                  tab: 'login',
+                  toast: 'Sikeres orvos regisztráció!',
+                  type: 'success',
+                  successfulRegist: true
+                }
+              });
+            }, 500);
+          },
+          error: err => {
+            console.error(err);
+            this.toast.show('Hiba történt a regisztráció során!', 'danger');
+          }
+        });
+    }else {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const UserId  = this.adminUser.user.id;
+      const AdminId = this.adminUser.admin.id;
+
+      const payload = {
+        name: this.fullName,
+        email: this.email,
+        password: this.password,
+        phoneNumber: this.phoneNumber,
+        speciality: this.speciality,
+        adminUserId: UserId,
+        adminId: AdminId
+      };
+
+      this.http.post('http://localhost:3000/api/admin/registerDoctor', payload, {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      });
+      })
+        .subscribe({
+          next: () => {
+            this.toast.show("Sikeres Orvos felvitel!", "success");
+            void this.modalCtrl.dismiss(true);
+          },
+          error: err => {
+            console.error(err);
+            this.toast.show('Hiba történt a regisztráció során!', 'danger');
+          }
+        });
+    }
   }
 
   togglePasswordVisibility() {

@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Router, RouterLink, RouterOutlet} from '@angular/router';
+import {Router} from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
@@ -12,11 +12,9 @@ import { FooterComponent } from '../../../../shared/footer/footer.component';
   templateUrl: './home.component.html',
   imports: [
     CommonModule,
-    RouterLink,
     IonicModule,
     NavbarComponent,
-    FooterComponent,
-    RouterOutlet
+    FooterComponent
   ],
   styleUrls: ['./home.component.css']
 })

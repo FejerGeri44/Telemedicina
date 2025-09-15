@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
+import {NgForOf, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
@@ -17,7 +17,6 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
     NgForOf,
     NgSwitchCase,
     NgSwitch,
-    DatePipe,
     FormsModule
   ],
   templateUrl: './new-diagnosis.component.html',

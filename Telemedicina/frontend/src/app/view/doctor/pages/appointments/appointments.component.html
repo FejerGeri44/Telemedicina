@@ -1,69 +1,115 @@
 <ion-content class="page-container">
   <app-doctor-navbar></app-doctor-navbar>
 
-  <div class="view-toggle">
-    <button
-      [class.active]="activeView === 'calendar'"
-      (click)="switchView('calendar')">
-    </button>
+  <ion-segment [(ngModel)]="activeTab" (ionChange)="onTabChange($event)" class="tabs">
+    <ion-segment-button value="week">
+      <div class="segment-button">
+        <ion-icon name="calendar"></ion-icon>
+        <ion-label>Heti nézet</ion-label>
+      </div>
+    </ion-segment-button>
+    <ion-segment-button value="new">
+      <div class="segment-button">
+        <ion-icon name="push"></ion-icon>
+        <ion-label>Új rendelés</ion-label>
+      </div>
+    </ion-segment-button>
+  </ion-segment>
 
-    <button
-      [class.active]="activeView === 'new'"
-      (click)="switchView('new')">
-    </button>
-  </div>
-
-  <div *ngIf="activeView === 'calendar'" class="view-container first-slide">
-    <ion-card class="calendar">
+  <div *ngIf="activeTab === 'week'" class="view-container">
+    <ion-card>
       <ion-card-header>
-        <ion-card-title>Rendelések naptára</ion-card-title>
+        <div class="calendar-hdr">
+          <ion-button fill="clear" size="small" (click)="prevWeek()">
+            <ion-icon name="chevron-back"></ion-icon>
+          </ion-button>
+
+          <div class="calendar-hdr__center">
+            <!-- Hónapváltó gomb: megnyit egy month-year választót -->
+            <ion-button fill="clear" (click)="openMonthPicker = true">
+              {{ weekStart | date:'yyyy. MMM' }}
+              <ion-icon name="chevron-down-outline"></ion-icon>
+            </ion-button>
+
+            <!-- (opcionális) heti tartomány infó a hónap alatt -->
+            <div class="calendar-range">
+              {{ weekStart | date:'MMM d.' }} – {{ weekEnd | date:'MMM d.' }}
+            </div>
+          </div>
+
+          <ion-button fill="clear" size="small" (click)="nextWeek()">
+            <ion-icon name="chevron-forward"></ion-icon>
+          </ion-button>
+        </div>
+
+        <!-- Hónapválasztó (month-year) modalban -->
+        <ion-modal
+          class="calendarModal"
+          [isOpen]="openMonthPicker"
+          (didDismiss)="openMonthPicker = false">
+          <ng-template>
+            <ion-datetime
+              [value]="selectedDate?.toISOString()"
+              presentation="month-year"
+              [showDefaultButtons]="true"
+              locale="hu-HU"
+              doneText="Kész"
+              cancelText="Mégse"
+              (ionChange)="onMonthPicked($event)"
+            ></ion-datetime>
+          </ng-template>
+        </ion-modal>
       </ion-card-header>
-      <ion-card-content>
-        <ion-datetime
-          presentation="date"
-          (ionChange)="onDateChange($event)"
-          [value]="selectedDate"
-          [locale]="locale"
-          [firstDayOfWeek]="1">
-        </ion-datetime>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-card class="appointmentDates">
-      <ion-card-header>
-        <ion-button class="expand-toggle" (click)="toggleExpand()">
-          {{ isExpanded ? 'Mutass kevesebbet' : 'Mutass többet' }}
-        </ion-button>
-      </ion-card-header>
 
       <ion-card-content>
-        <div class="timeslots" *ngIf="selectedDate" [class.expanded]="isExpanded">
-          <h4>Időpontok: <strong>{{ selectedDate | date: 'yyyy.MM.dd.' }}</strong></h4>
-
-          <div *ngFor="let slot of hourlySlots" class="timeslot">
-            <div class="slot-left">
-              <span class="slot-time">{{ slot }}</span>
-
-              <ng-container *ngIf="getAppointmentForSlot(slot) as appt">
-              <span class="slot-info">
-                <ng-container *ngIf="appt.patient_id && appointmentUserDataMap[appt.patient_id] as patient; else noPatient">
-                  {{ patient.name }} | {{ patient.email }} | {{ patient.phoneNumber }}
-                </ng-container>
-
-                <ng-template #noPatient>
-                  <strong>{{ appt.status }}</strong>
-                </ng-template>
-              </span>
-              </ng-container>
+        <!-- fej: napok -->
+        <div class="week-grid-wrapper">
+          <div class="week-grid">
+            <div class="week-grid__head">
+              <div class="time-col head-cell">Idő</div>
+              <div class="day-col head-cell" *ngFor="let d of weekDays">
+                <div class="day-name">{{ d | date:'EEE' }}</div>
+                <div class="day-date">{{ d | date:'MM.dd.' }}</div>
+              </div>
             </div>
 
-            <div class="slot-right" *ngIf="getAppointmentForSlot(slot)">
-              <ion-button
-                class="delete"
-                size="small"
-                (click)="onAppointmentAction(getAppointmentForSlot(slot))">
-                Törlés
-              </ion-button>
+            <!-- sorok: időpontok 08:00–20:00 -->
+            <div class="week-grid__body">
+              <div class="row" *ngFor="let t of timeSlots; trackBy: trackByTime">
+                <div class="time-col time-cell">{{ t }}</div>
+
+                <ng-container *ngFor="let d of weekDays; trackBy: trackByDate">
+                  <ng-container *ngIf="getAppt(d, t) as appt; else freeCell">
+                    <div class="day-col cell" [ngClass]="appt.patient_id != null ? 'cell--booked' : 'cell--free'">
+                      <div class="cell-title">
+                        <ng-container *ngIf="appt.patient_id != null && appointmentUserDataMap[appt.patient_id] as patient; else statusOrFree">
+                          {{ patient.name }}
+                        </ng-container>
+                        <ng-template #statusOrFree>
+                          <!-- ha van appt, de nincs patient (szabad slot létrehozva) -->
+                          {{ appt.status || 'Szabad' }}
+                        </ng-template>
+                      </div>
+
+                      <div class="cell-actions">
+                        <ion-button
+                          size="small"
+                          class="delete"
+                          (click)="onAppointmentAction(appt)"
+                          [disabled]="appt.patient_id != null">
+                          Törlés
+                        </ion-button>
+                      </div>
+                    </div>
+                  </ng-container>
+
+                  <ng-template #freeCell>
+                    <div class="day-col cell">
+                      <div class="cell-subtle">Szabad</div>
+                    </div>
+                  </ng-template>
+                </ng-container>
+              </div>
             </div>
           </div>
         </div>
@@ -71,7 +117,7 @@
     </ion-card>
   </div>
 
-  <div *ngIf="activeView === 'new'" class="view-container">
+  <div *ngIf="activeTab === 'new'" class="view-container">
     <ion-card class="newAppointment">
       <ion-card-header>
         <ion-card-title>Új rendelés felvitele</ion-card-title>
@@ -82,6 +128,7 @@
             <ion-item class="custom-item">
               <ion-label class="custom-label" position="stacked">Dátum</ion-label>
               <ion-datetime
+                size="cover"
                 [(ngModel)]="newAppointment.date"
                 presentation="date"
                 [locale]="locale"
@@ -92,15 +139,8 @@
 
           <div class="form-column">
             <ion-item class="custom-item">
-              <ion-label class="custom-label" position="stacked">Kezdés (HH:MM)</ion-label>
+              <ion-label class="custom-label" position="stacked">Kezdési időpont</ion-label>
               <ion-select interface="popover" class="custom-select" [(ngModel)]="newAppointment.from">
-                <ion-select-option *ngFor="let time of timeOptions" [value]="time">{{ time }}</ion-select-option>
-              </ion-select>
-            </ion-item>
-
-            <ion-item class="custom-item">
-              <ion-label class="custom-label" position="stacked">Befejezés (HH:MM)</ion-label>
-              <ion-select interface="popover" class="custom-select" [(ngModel)]="newAppointment.to">
                 <ion-select-option *ngFor="let time of timeOptions" [value]="time">{{ time }}</ion-select-option>
               </ion-select>
             </ion-item>

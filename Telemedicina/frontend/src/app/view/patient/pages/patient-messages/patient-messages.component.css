@@ -14,9 +14,9 @@
 
 .sidebar {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 10px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.15);
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
 }
@@ -60,7 +60,7 @@
   border: none;
   outline: none;
   background: #f1f5f9;
-  border-radius: 8px;
+  border-radius: 5px;
   margin-left: 8px;
   padding: 4px 8px;
   font-size: 14px;
@@ -90,7 +90,7 @@
   width: 100%;
   background: #fff;
   border: 1px solid rgba(0,0,0,.08);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 10px 12px;
   cursor: pointer;
   transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
@@ -140,7 +140,7 @@
 .chat-pane {
   height: 80vh;
   background: #fff;
-  border-radius: 16px;
+  border-radius: 10px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.15);
   display: grid;
   grid-template-rows: auto 1fr auto;

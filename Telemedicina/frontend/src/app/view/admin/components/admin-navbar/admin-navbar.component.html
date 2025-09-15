@@ -1,33 +1,96 @@
-<div class="sidebar" [class.open]="!isCollapsed">
-  <img src="pictures/logo.png" alt="Logo" class="logo" draggable="false">
-  <div class="top-section">
-    <div class="top-nav-links">
-      <ion-icon name="apps" (click)="toggleSidebar()"></ion-icon>
-      <span *ngIf="!isCollapsed">Menü</span>
+<header class="navbar">
+  <!-- Felső sáv -->
+  <div class="navbar-top">
+    <div class="logo-title">
+      <img src="pictures/logo.png" alt="CareLink" />
+      <span class="site-title">CareLink</span>
     </div>
-    <ion-icon name="close-outline" class="toggle-btn" *ngIf="!isCollapsed" (click)="toggleSidebar()"></ion-icon>
+
+    <div class="top-right">
+      <!-- Profil blokk: csak desktopon -->
+      <div class="profile-block desktop-only" (click)="toggleProfileMenu($event)">
+        <img [src]="user?.user?.pictureUrl" alt="Profil" draggable="false"/>
+        <div class="profile-info">
+          <span class="name">{{ user?.user.name }}</span>
+          <span class="role">{{ user?.user.role }}</span>
+        </div>
+        <ion-icon class="chevron" name="chevron-down" [class.open]="profileOpen"></ion-icon>
+        <div class="profile-menu" *ngIf="profileOpen">
+          <button routerLink="/dashboard/admin">
+            <ion-icon name="person-circle"></ion-icon>
+            <span>Profil</span>
+          </button>
+          <button (click)="confirmLogout()">
+            <ion-icon name="log-out"></ion-icon>
+            <span>Kijelentkezés</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobil menü gomb -->
+      <button class="icon-btn mobile-menu-btn"
+              (click)="openMobileMenu()"
+              aria-label="Menü"
+              aria-controls="mobile-drawer"
+              [attr.aria-expanded]="mobileMenuOpen">
+        <ion-icon name="menu"></ion-icon>
+      </button>
+    </div>
   </div>
 
-  <ul class="nav-links">
-    <li
-      *ngFor="let item of menuItems.slice(0, menuItems.length - 2)"
-      [routerLink]="item.route"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-    >
-      <ion-icon [name]="item.icon"></ion-icon>
-      <span *ngIf="!isCollapsed">{{ item.label }}</span>
-    </li>
-  </ul>
+  <!-- Alsó menüsor: csak desktopon -->
+  <div class="navbar-bottom desktop-only">
+    <ul>
+      <li *ngFor="let item of menuItems"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon [name]="item.icon"></ion-icon>
+        <span>{{ item.label }}</span>
+      </li>
+    </ul>
+  </div>
 
-  <ul class="nav-links bottom-nav-links">
-    <li
-      *ngFor="let item of menuItems.slice(-2)"
-      (click)="item.label === 'Kijelentkezés' ? confirmLogout() : navigateTo(item.route)"
-      [class.active]="isActiveRoute(item.route)"
-    >
-      <ion-icon [name]="item.icon"></ion-icon>
-      <span *ngIf="!isCollapsed">{{ item.label }}</span>
-    </li>
-  </ul>
-</div>
+  <!-- Overlay -->
+  <div class="backdrop" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()" aria-hidden="true"></div>
+
+  <!-- Off-canvas drawer -->
+  <aside id="mobile-drawer" class="drawer" [class.open]="mobileMenuOpen" role="dialog" aria-modal="true">
+    <div class="drawer-header">
+      <div class="user-inline">
+        <img [src]="user?.user.pictureUrl" alt="Profil" />
+        <div>
+          <div class="name">{{ user?.user.name }}</div>
+          <div class="role">{{ user?.user.role }}</div>
+        </div>
+      </div>
+      <button class="icon-btn" (click)="closeMobileMenu()" aria-label="Bezárás">
+        <ion-icon name="close"></ion-icon>
+      </button>
+    </div>
+
+    <nav class="drawer-nav">
+      <ul>
+        <li *ngFor="let item of menuItems"
+            (click)="closeMobileMenu()"
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }">
+          <ion-icon [name]="item.icon"></ion-icon>
+          <span>{{ item.label }}</span>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="drawer-footer">
+      <button class="drawer-action" routerLink="/dashboard/admin">
+        <ion-icon name="person-circle"></ion-icon>
+        <span>Profil</span>
+      </button>
+      <button class="drawer-action" (click)="confirmLogout()">
+        <ion-icon name="log-out"></ion-icon>
+        <span>Kijelentkezés</span>
+      </button>
+    </div>
+  </aside>
+</header>

@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {DoctorNavbarComponent} from '../components/doctor-navbar/doctor-navbar.component';
 import {IonicModule, ModalController} from '@ionic/angular';
-import {NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {RouterLink} from '@angular/router';
@@ -22,7 +21,6 @@ interface prevAppointment {
   imports: [
     DoctorNavbarComponent,
     IonicModule,
-    NgIf,
     FormsModule,
     ReactiveFormsModule,
     RouterLink,

@@ -1,0 +1,29 @@
+.appointment-modal-card {
+  margin-bottom: 70px;
+}
+
+ion-segment {
+  margin: 15px 0;
+}
+
+.form-container {
+  margin: 20px;
+}
+
+.close-button {
+  --background: var(--light-text-color);
+  border: 2px solid var(--accent);
+  --color: var(--accent);
+  border-radius: 5px;
+  --border-radius: 10px;
+  --padding-start: 15px;
+  --padding-end: 15px;
+  margin-right: 10px;
+  font-weight: bolder;
+  transition: all 0.5s ease-in-out;
+}
+
+.close-button:hover {
+  --background: var(--accent);
+  --color: var(--light-text-color);
+}

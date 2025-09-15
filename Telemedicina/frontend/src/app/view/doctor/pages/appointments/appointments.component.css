@@ -6,10 +6,24 @@
   padding: 50px 0;
 }
 
+.tabs {
+  width: 100%;
+  margin: 20px auto 10px;
+}
+
+.segment-button {
+  display: flex;
+  flex-direction: row;
+  font-size: 1.2rem;
+  justify-content: center;
+  gap: 10px;
+}
+
+
 .appointments-container {
   display: flex;
   gap: 16px;
-  width: 85%;
+  width: 90%;
   flex-direction: column;
   --background: none;
   margin: 0 auto;
@@ -20,64 +34,142 @@
 
 ion-card {
   width: 100%;
-  border-radius: 20px;
+  border-radius: 10px;
   flex: 1;
   margin: 30px auto;
 }
 
-.calendar {
-  max-width: 500px;
-  height: 400px;
-  margin: 0 auto;
+.calendar-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.appointmentDates {
-  min-height: 400px;
-  margin: 0 0 0 30px;
+.calendar-hdr__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-.newAppointment {
-  max-width: 1200px;
-  margin: 0 auto;
+.calendar-range {
+  font-size: 0.85rem;
+  color: #6b7280; /* semleges szürke */
 }
+
+
+.week-grid-wrapper {
+  width: 100%;
+  overflow-x: auto;          /* scroll, ha kilóg */
+  -webkit-overflow-scrolling: touch; /* simább görgetés mobilon */
+}
+
+/* A rács fix 1000px (nem törik össze) */
+.week-grid {
+  min-width: 1000px;
+}
+
+.week-grid__head,
+.week-grid__body .row {
+  display: grid;
+  grid-template-columns: 100px repeat(7, 1fr); /* idő + 7 nap */
+  align-items: stretch;
+}
+
+.head-cell {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 6px;
+  background: #f7f7f9;
+  border-top: 1px solid #e6e6ea;
+  border-right: 1px solid #f0f0f3;
+  border-left: 1px solid #f0f0f3;
+  border-bottom: 1px solid #e6e6ea;
+}
+
+.head-cell:first-child{
+  border-left: 1px solid #e6e6ea;
+}
+.head-cell:last-child{
+  border-right: 1px solid #e6e6ea;
+}
+
+.day-name {
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+.day-date {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.time-cell {
+  display: flex;
+  font-weight: 600;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 6px;
+  background: #fafafa;
+  border-right: 1px solid #eee;
+  border-left: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.cell {
+  background: #f9fbff;
+  min-height: 60px;
+  padding: 8px 10px;
+  border-right: 1px solid #f0f0f3;
+  border-bottom: 1px solid #f0f0f3;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cell--booked {
+  background: #fceaea;
+  border: 1px solid rgba(255, 149, 149, 0.5);
+}
+
+.cell--free {
+  background: #eafcea;
+  border: 1px solid rgba(143, 255, 143, 0.5);
+
+}
+
+.cell-title {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.cell-subtle {
+  font-size: 0.9rem;
+  color: #7a7a7a;
+}
+
+.cell-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 
 .view-container {
-  width: 85%;
+  width: 95%;
   margin: auto auto 50px;
 }
 
-.first-slide {
-  display: flex;
-  flex-direction: row;
-}
 
-.view-toggle {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 10px;
-  margin-right: 20px;
-  margin-left: 20px;
-}
-
-.view-toggle button {
-  width: 240px;
-  padding: 10px 15px;
-  border: none;
-  background-color: var(--secondary);
-  cursor: pointer;
-  margin: 30px 10px 30px 10px;
-  border-radius: 5px;
-  border: var(--button-border);
-  transition: background-color 0.3s ease-in-out;
-}
-
-.view-toggle button.active {
-  background-color: var(--primary);
-  color: white;
-}
-
-ion-datetime {
-  max-width: 500px;
+ion-datetime::part(active) {
+  border-radius: 10px;
+  padding: 10px;
 }
 
 ion-item {
@@ -87,10 +179,15 @@ ion-item {
   margin: 0;
 }
 
+.newAppointment {
+  width: 500px;
+  margin: 30px auto;
+  padding: 10px;
+}
+
 .form-row {
   display: flex;
-  flex-direction: row;
-  gap: 16px;
+  flex-direction: column;
   flex-wrap: wrap;
 }
 
@@ -111,9 +208,9 @@ ion-label.custom-label {
 }
 
 ion-select.custom-select {
-  width: 99.2%;
-  border-radius: 15px;
-  --border-radius: 15px;
+  width: 99%;
+  border-radius: 5px;
+  --border-radius: 5px;
   --padding-start: 15px;
   --padding-end: 15px;
   --background: #f4f4f4;
@@ -132,7 +229,7 @@ ion-item.custom-item {
 }
 
 .submit {
-  margin-top: 25px;
+  margin-top: 20px;
 }
 
 ion-datetime::part(active) {
@@ -159,60 +256,6 @@ ion-datetime::part(calendar-day) {
   padding-right: 1rem;
 }
 
-.expand-toggle {
-  text-transform: none;
-  width: 200px;
-  font-size: 1rem;
-  color: #007bff;
-  --background: none;
-  --border: none;
-  --box-shadow: none;
-  cursor: pointer;
-}
-
-.timeslot {
-  height: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-}
-
-.slot-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.slot-right {
-  margin-left: auto;
-}
-
-.timeslots {
-  max-height: 300px;
-  overflow: hidden;
-  transition: max-height 0.6s ease-in-out;
-}
-
-.timeslots.expanded {
-  max-height: 1000px;
-}
-
-.timeslot:nth-child(odd) {
-  background-color: #f9f9f9;
-}
-
-.slot-time {
-  font-weight: bolder;
-}
-
-.slot-info {
-  margin-left: 12px;
-  font-size: 1rem;
-  color: #333;
-}
-
 .delete {
   --background: var(--accent);
   border: var(--accent) 1px solid;
@@ -228,15 +271,65 @@ ion-datetime::part(calendar-day) {
   color: var(--accent);
 }
 
-
-@media (max-width: 1300px) {
-  .first-slide {
-    flex-direction: column;
+@media (max-width: 768px) {
+  .calendar-hdr__center {
+    gap: 2px;
   }
 
-  .appointmentDates {
-    max-width: 700px;
-    height: 400px;
-    margin: 30px auto;
+  .calendar-range {
+    font-size: 0.75rem;
+  }
+
+  .day-name {
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+  }
+
+  .day-date {
+    font-size: 0.78rem;
+  }
+
+  .time-cell,
+  .head-cell {
+    padding: 6px 4px;
+    font-size: 0.8rem;
+  }
+
+  .cell {
+    min-height: 50px;
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .cell-title {
+    font-size: 0.9rem;
+  }
+
+  .cell-subtle {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-range {
+    display: none;
+  }
+
+  .day-name {
+    font-size: 0.65rem;
+  }
+
+  .day-date {
+    font-size: 0.75rem;
+  }
+
+  .time-cell,
+  .head-cell {
+    font-size: 0.75rem;
+  }
+
+  .cell {
+    min-height: 44px;
+    padding: 4px;
   }
 }

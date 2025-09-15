@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Felhasználó hozzáadása</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="close-button" (click)="dismiss()">Bezárás</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-segment [(ngModel)]="selectedRole" value="patient">
+    <ion-segment-button value="patient">
+      <ion-label>Páciens</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="doctor">
+      <ion-label>Orvos</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="admin">
+      <ion-label>Adminisztrátor</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Komponensek váltása -->
+  <div class="form-container">
+    <app-patient-regist
+      *ngIf="selectedRole === 'patient'"
+      [title]="'Páciens felvitele'"
+      [calledByAdmin]=true
+      [adminUser]="user">
+    </app-patient-regist>
+
+    <app-doctor-regist
+      *ngIf="selectedRole === 'doctor'"
+      [title]="'Orvos felvitele'"
+      [calledByAdmin]=true
+      [adminUser]="user">
+    </app-doctor-regist>
+
+    <app-admin-regist
+      *ngIf="selectedRole === 'admin'"
+      [calledByAdmin]=true
+      [adminUser]="user">
+    </app-admin-regist>
+  </div>
+</ion-content>

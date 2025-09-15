@@ -8,6 +8,7 @@ export interface UserDto {
   id: number;
   name: string;
   email?: string | null;
+  role?: string | null;
   phoneNumber?: string | null;
   address?: string | null;
   pictureUrl?: string | null;
@@ -28,8 +29,8 @@ export interface DoctorDto {
   imports: [
     IonicModule,
     NgForOf,
-    NgIf,
-    NgClass
+    NgClass,
+    NgIf
   ],
   styleUrls: ['./doctor-profile-card.component.css']
 })

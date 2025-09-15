@@ -1,0 +1,110 @@
+<ion-card [ngClass]="{ 'admin-extra': calledByAdmin }">
+  <ion-card-header>
+    <ion-card-title>Admin felvitele</ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content class="form">
+
+    <!-- 1. sor -->
+    <div class="grid-pair">
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Teljes név</ion-label>
+        <ion-input
+          type="text"
+          class="custom-input"
+          [(ngModel)]="fullName"
+          placeholder="Teljes név"
+          fill="outline"
+          required
+          clearInput/>
+      </ion-item>
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">E-mail cím</ion-label>
+        <ion-input
+          type="email"
+          class="custom-input"
+          [(ngModel)]="email"
+          placeholder="Email cím"
+          fill="outline"
+          required
+          clearInput/>
+      </ion-item>
+    </div>
+
+    <!-- 2. sor -->
+    <div class="grid-pair">
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Jelszó</ion-label>
+        <ion-input
+          class="custom-input"
+          [type]="showPassword ? 'text' : 'password'"
+          [(ngModel)]="password"
+          placeholder="Jelszó"
+          fill="outline"
+          required
+          clearInput>
+        </ion-input>
+        <ion-icon
+          *ngIf="password"
+          [name]="showPassword ? 'eye-off' : 'eye'"
+          (click)="togglePasswordVisibility()"
+          class="password-toggle-icon">
+        </ion-icon>
+      </ion-item>
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Jelszó ismét</ion-label>
+        <ion-input
+          class="custom-input"
+          [type]="showPassword ? 'text' : 'password'"
+          [(ngModel)]="password_again"
+          placeholder="Jelszó ismét"
+          fill="outline"
+          required
+          clearInput>
+        </ion-input>
+        <ion-icon
+          *ngIf="password_again"
+          [name]="showPassword ? 'eye-off' : 'eye'"
+          (click)="togglePasswordVisibility()"
+          class="password-toggle-icon">
+        </ion-icon>
+      </ion-item>
+    </div>
+
+    <!-- 3. sor -->
+    <div class="grid-pair">
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Telefonszám</ion-label>
+        <ion-input
+          type="tel"
+          class="custom-input"
+          [(ngModel)]="phoneNumber"
+          placeholder="06XXXXXXXXX"
+          fill="outline"
+          required
+          clearInput/>
+      </ion-item>
+      <ion-item>
+        <ion-label class="custom-label" position="stacked">Cím</ion-label>
+        <ion-input
+          type="text"
+          class="custom-input"
+          [(ngModel)]="address"
+          placeholder="Cím"
+          fill="outline"
+          required
+          clearInput/>
+      </ion-item>
+    </div>
+
+    <!-- Gomb -->
+    <div class="button-row">
+      <ion-button
+        [ngClass]="{ 'full-width': calledByAdmin }"
+        class="btn-primary submit"
+        (click)="onAdminRegister()">
+        {{ buttonText }}
+      </ion-button>
+    </div>
+  </ion-card-content>
+</ion-card>

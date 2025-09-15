@@ -17,8 +17,8 @@ import {NgForOf, NgIf} from '@angular/common';
   ],
   styleUrls: ['./patient-edit-profile-modal.component.css']
 })
-export class PatientEditProfileModalComponent implements OnInit{
-  user: any;
+export class PatientEditProfileModalComponent {
+  @Input() user!: { user: any; patient?: any | null };
   editForm = {
     name: '',
     address: '',
@@ -46,23 +46,6 @@ export class PatientEditProfileModalComponent implements OnInit{
     private http: HttpClient,
     private toast: ToastService
   ) {}
-
-  ngOnInit() {
-    this.getMyData();
-  }
-
-  getMyData () {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get('http://localhost:3000/api/getPatientMe', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).subscribe((res: any) => {
-      this.user = res;
-    });
-  }
 
   close() {
     void this.modalCtrl.dismiss();
@@ -141,7 +124,6 @@ export class PatientEditProfileModalComponent implements OnInit{
     this.http.patch('http://localhost:3000/api/patient/profile/update', payload).subscribe({
       next: (res) => {
         console.log('✅ Sikeres mentés:', res);
-        this.getMyData();
         void this.modalCtrl.dismiss(res, 'updated');
       },
       error: (err) => {

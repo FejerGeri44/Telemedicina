@@ -1,6 +1,6 @@
 import {Component, HostListener, OnInit} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
-import {NgClass, NgForOf, NgIf} from '@angular/common';
+import {IonicModule} from '@ionic/angular';
+import {NgForOf, NgIf} from '@angular/common';
 import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/router';
 import {filter, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
@@ -13,7 +13,6 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
     NgIf,
     RouterLinkActive,
     RouterModule,
-    NgClass,
     NgForOf
   ],
   templateUrl: './patient-navbar.component.html',

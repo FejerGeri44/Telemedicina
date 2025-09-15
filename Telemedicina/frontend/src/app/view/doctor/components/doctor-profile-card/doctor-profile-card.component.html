@@ -3,11 +3,11 @@
     <div class="dpc-avatar">
       <img [src]="user?.pictureUrl" alt="Profilkép" draggable="false" />
     </div>
-    <div class="dpc-head">
-      <div class="dpc-name">Dr. {{ user?.name }}</div>
-      <div class="dpc-spec">Értékelés</div>
+    <div class="pc-name">
+      <div class="pc-fullname">Dr. {{ user?.name }}</div>
+      <div class="pc-role">{{ user?.role }}</div>
 
-      <div *ngIf="!editingRating" class="dpc-stars" aria-label="Átlagos értékelés">
+      <div *ngIf="editingRating" class="dpc-stars" aria-label="Átlagos értékelés">
         <ion-icon *ngFor="let s of [1,2,3,4,5]" [name]="starIcon(s)"></ion-icon>
 
         <ion-button
@@ -38,7 +38,7 @@
 
   <div class="dpc-right" *ngIf="editable">
     <ion-button class="btn-accent dpc-edit-top" (click)="edit.emit()">
-      Profil módosítása
+      Módosítás
     </ion-button>
   </div>
 
@@ -55,7 +55,7 @@
 
   <div class="dpc-edit-bottom-wrap" *ngIf="editable">
     <ion-button class="btn-accent dpc-edit-bottom" (click)="edit.emit()">
-      Profil módosítása
+      Módosítás
     </ion-button>
   </div>
 

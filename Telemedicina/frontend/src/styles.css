@@ -1,19 +1,20 @@
 :root {
-  --primary: #213A57;
+  --primary: #43648d;
   --secondary: #26c5d9;
   --accent: #B03441;
   --light-text-color: #ffffff;
   --dark-text-color: #000000;
 
-  --navbar-background-color: #213A57;
+  --navbar-background-color: #ffffff;
   --smoke-color: #444;
   --quote-author: #14919B;
   --dashboard-background-color: #E2FFFE;
 
-  --button-shadow: 0 2px 5px rgba(0, 110, 166, 0.3);
-  --ion-button-radius: 15px;
-  --button-radius: 10px;
+  --ion-button-radius: 10px;
+  --button-radius: 5px;
   --button-border: 2px solid var(--primary);
+  --button-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  --button-hover-background: rgba(0, 0, 0, 0.05);
 }
 
 html, body {
@@ -199,16 +200,32 @@ ion-modal {
   --border-radius: 12px;
 }
 
+.Admin-profile-edit-modal {
+  --width: 60%;
+  --height: 600px;
+  --max-width: 800px;
+  --border-radius: 12px;
+}
+
 .profile-view-modal {
   --width: 80%;
   --max-width: 900px;
+  --min-height: 230px;
   --height: auto;
-  --min-height: 250px;
   --border-radius: 20px;
+}
+.calendarModal {
+  --max-width: 80%;
+  --width: 350px;
+  --height: auto;
+}
+.calendarModal ion-datetime {
+  width: 100%;
+  max-width: unset;
 }
 
 @media (max-width: 800px) {
-  .Profile-edit-modal {
+  .Profile-edit-modal, .Admin-profile-edit-modal{
     --width: 100%;
     --height: 100%;
   }

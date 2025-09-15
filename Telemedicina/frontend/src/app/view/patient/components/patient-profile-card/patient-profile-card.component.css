@@ -1,6 +1,10 @@
 /* KÁRTYA ALAP */
 .card {
   padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  margin: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* HEADER – mobilon egymás alatt, tableten sorban */
@@ -51,12 +55,15 @@
   color: #7a8aa0;
 }
 
-/* „Profil módosítása” – mobilon teljes szélesség, tableten csak tartalom */
 .btn-accent {
-  align-self: stretch;
-  --padding-start: 12px;
-  --padding-end: 12px;
-  height: 38px;
+  --background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 5px;
+  color: var(--accent);
+}
+
+.btn-accent:hover {
+  border-radius: 7px;
 }
 
 /* RÉSZLETEK – mobilon 1 oszlop, 600px-től 2, 1000px-től 3 */
@@ -90,16 +97,32 @@
   gap: 10px;
   padding: 8px 0 12px;
 }
+.pc-name .pc-role {
+  display: inline-block;
+  width: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #155e75;
+  background: #e0f2fe;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #bae6fd;
+  cursor: default;
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 100%;
+}
 .chip {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #155e75;
+  background: #e0f2fe;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #bae6fd;
   display: inline-flex;
   align-items: center;
-  border: 1px solid #cfe6ee;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: .85rem;
-  cursor: unset;
-  background: #f7fcff;
-  color: #2b4b5c;
+  cursor: default;
   transition: transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
 }
 .chip:hover {
@@ -107,6 +130,10 @@
   color: #fff;
   transform: translateY(-1px);
   box-shadow: 0 6px 14px rgba(0,0,0,.12);
+}
+
+.chip:hover ion-icon {
+  color: #fff;
 }
 
 /* STATOK – mobilon 1, 600px-től 2, 1000px-től 3 oszlop */

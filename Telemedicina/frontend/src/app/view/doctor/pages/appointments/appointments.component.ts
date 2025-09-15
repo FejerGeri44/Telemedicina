@@ -2,7 +2,7 @@ import {Component, Injector, OnInit, ViewContainerRef} from '@angular/core';
 import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
 import {AlertController, IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
-import {DatePipe, NgForOf, NgIf} from '@angular/common';
+import {DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
@@ -34,7 +34,8 @@ registerLocaleData(localeHu);
     FormsModule,
     DatePipe,
     NgForOf,
-    NgIf
+    NgIf,
+    NgClass
   ],
   templateUrl: './appointments.component.html',
   standalone: true,
@@ -50,11 +51,14 @@ export class AppointmentsComponent implements OnInit{
     to: ''
   };
   user: any;
-  selectedDate: string = new Date().toISOString().split('T')[0];
-  hourlySlots: string[] = [];
+  selectedDate = new Date();
+  weekStart!: Date;
+  weekEnd!: Date;
+  weekDays: Date[] = [];
+  timeSlots: string[] = [];
+  activeTab: 'week' | 'new' = 'week';
   appointmentUserDataMap: { [key: number]: { name: string; email: string; phoneNumber: string } } = {};
-  isExpanded = false;
-  activeView: 'calendar' | 'new' = 'calendar';
+  openMonthPicker = false;
   timeOptions: string[] = [];
   locale = 'hu-HU';
   appointmentToDelete: any = null;
@@ -72,6 +76,8 @@ export class AppointmentsComponent implements OnInit{
     this.loadMyData();
     this.loadAppointments();
     this.onDateChange({ detail: { value: this.selectedDate } });
+    this.computeWeek(this.selectedDate);
+    this.timeSlots = this.buildTimeSlots('08:00', '19:30');
 
     const startHour = 8;
     const endHour = 20;
@@ -131,57 +137,131 @@ export class AppointmentsComponent implements OnInit{
     });
   }
 
-  switchView(view: 'calendar' | 'new') {
-    this.activeView = view;
-
-    if (view === 'calendar') {
+  onTabChange(ev: any) {
+    const value = ev?.detail?.value ?? ev;
+    this.activeTab = value;
+    if (value === 'week') {
       this.loadAppointments();
     }
   }
 
-  onDateChange(event: any): void {
-    const value = event.detail?.value;
-    if (!value) {
-      console.error('Nincs dátum érték.');
+  private computeWeek(pivot: Date) {
+    const d = new Date(pivot);
+    // hétfőre vissza
+    const day = d.getDay() || 7; // 1..7 (vasárnap 7)
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - (day - 1));
+    monday.setHours(0, 0, 0, 0);
+
+    this.weekStart = monday;
+
+    // 7 nap
+    this.weekDays = Array.from({ length: 7 }, (_, i) => {
+      const x = new Date(monday);
+      x.setDate(monday.getDate() + i);
+      return x;
+    });
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    this.weekEnd = sunday;
+  }
+
+  buildTimeSlots(from = '08:00', to = '20:00'): string[] {
+    const [fh, fm] = from.split(':').map(Number);
+    const [th, tm] = to.split(':').map(Number);
+    const slots: string[] = [];
+
+    const cur = new Date();
+    cur.setHours(fh, fm, 0, 0);
+
+    const end = new Date();
+    end.setHours(th, tm, 0, 0);
+
+    while (cur <= end) {
+      const hh = String(cur.getHours()).padStart(2, '0');
+      const mm = String(cur.getMinutes()).padStart(2, '0');
+      slots.push(`${hh}:${mm}`);
+      cur.setMinutes(cur.getMinutes() + 30);
+    }
+    return slots;
+  }
+
+  getAppt(day: Date, time: string) {
+    if (!this.appointments?.length) return null;
+
+    // time = "HH:mm"
+    const [hh, mm] = time.split(':').map(Number);
+
+    return this.appointments.find(appt => {
+      const start = new Date(appt.from);
+      const sameDay =
+        start.getFullYear() === day.getFullYear() &&
+        start.getMonth()    === day.getMonth() &&
+        start.getDate()     === day.getDate();
+
+      if (!sameDay) return false;
+
+      const startHH = String(start.getHours()).padStart(2, '0');
+      const startMM = String(start.getMinutes()).padStart(2, '0');
+      const startTime = `${startHH}:${startMM}`;
+
+      return startTime === time;
+    }) || null;
+  }
+
+
+  trackByTime = (_: number, t: string) => t;
+  trackByDate = (_: number, d: Date) => d.toISOString().slice(0,10);
+
+  onDateChange(value: any): void {
+    if (value && value.detail && value.detail.value != null) {
+      value = value.detail.value;
+    }
+
+    const asDate: Date =
+      value instanceof Date ? value : new Date(value);
+
+    if (isNaN(asDate.getTime())) {
       return;
     }
 
-    this.selectedDate = value.split('T')[0];
-    this.generateTimeSlots();
+    this.selectedDate = new Date(
+      asDate.getFullYear(),
+      asDate.getMonth(),
+      asDate.getDate()
+    );
+
+    this.computeWeek?.(this.selectedDate);
   }
 
-  generateTimeSlots() {
-    const slots: string[] = [];
-    const start = 8 * 60;
-    const end = 20 * 60;
 
-    for (let mins = start; mins < end; mins += 30) {
-      const hour = Math.floor(mins / 60).toString().padStart(2, '0');
-      const minute = (mins % 60).toString().padStart(2, '0');
-      slots.push(`${hour}:${minute}`);
-    }
-
-    this.hourlySlots = slots;
+  prevWeek(): void {
+    const d = new Date(this.weekStart);
+    d.setDate(d.getDate() - 7);
+    this.selectedDate = d;
+    this.computeWeek(this.selectedDate);
   }
 
-  getAppointmentForSlot(slotTime: string) {
-    if (!this.selectedDate) return null;
-
-    const slotDateTime = new Date(`${this.selectedDate}T${slotTime}`);
-    return this.appointments.find(appt => {
-      const apptDate = new Date(appt.from);
-      return (
-        apptDate.getFullYear() === slotDateTime.getFullYear() &&
-        apptDate.getMonth() === slotDateTime.getMonth() &&
-        apptDate.getDate() === slotDateTime.getDate() &&
-        apptDate.getHours() === slotDateTime.getHours() &&
-        apptDate.getMinutes() === slotDateTime.getMinutes()
-      );
-    });
+  nextWeek(): void {
+    const d = new Date(this.weekStart);
+    d.setDate(d.getDate() + 7);
+    this.selectedDate = d;
+    this.computeWeek(this.selectedDate);
   }
 
-  toggleExpand(): void {
-    this.isExpanded = !this.isExpanded;
+  onMonthPicked(ev: any): void {
+    // ion-datetime esemény normalizálása
+    const raw = ev?.detail?.value ?? ev;
+    const picked = raw instanceof Date ? raw : new Date(raw);
+    if (isNaN(picked.getTime())) { this.openMonthPicker = false; return; }
+
+    // Hónap első napjára állunk, és abból számoljuk a hetet
+    const firstOfMonth = new Date(picked.getFullYear(), picked.getMonth(), 1);
+    this.selectedDate = firstOfMonth;
+    this.computeWeek(this.selectedDate);
+    this.openMonthPicker = false;
   }
 
   addAppointment() {
@@ -194,14 +274,15 @@ export class AppointmentsComponent implements OnInit{
       return;
     }
 
-    if (!this.newAppointment.date || !this.newAppointment.from || !this.newAppointment.to) {
+    if (!this.newAppointment.date || !this.newAppointment.from) {
       this.toast.show('Hiányos időpont adat!', 'warning');
       return;
     }
 
     const onlyDate = this.newAppointment.date.split('T')[0];
     const fromDateTime = new Date(`${onlyDate}T${this.newAppointment.from}`);
-    const toDateTime = new Date(`${onlyDate}T${this.newAppointment.to}`);
+    const toDateTime = new Date(fromDateTime);
+          toDateTime.setMinutes(toDateTime.getMinutes() + 30);
 
     if (fromDateTime > toDateTime || fromDateTime.getTime() > toDateTime.getTime()) {
       this.toast.show('A befejezési időpontnak a kezdés után kell lennie.', 'danger');
@@ -273,7 +354,7 @@ export class AppointmentsComponent implements OnInit{
 
     await this.alert.show(
       'Megerősítés',
-      'Biztosan szeretnél időpontot foglalni?',
+      'Biztosan szeretnéd törölni az időpontot?',
       () => {
         this.confirmDeleteAppointment();
       }

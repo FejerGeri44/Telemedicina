@@ -1,0 +1,46 @@
+<div class="card">
+  <div class="pc-header">
+    <div class="pc-left">
+      <div class="pc-avatar">
+        <img [src]="user?.pictureUrl" alt="Profilkép" draggable="false" />
+      </div>
+      <div class="pc-name">
+        <div class="pc-fullname">{{ user?.name }}</div>
+        <div class="pc-role">{{ user?.role }}</div>
+      </div>
+    </div>
+
+    <ion-button class="btn-accent pc-edit-top" (click)="edit.emit()" *ngIf="editable">
+      Módosítás
+    </ion-button>
+  </div>
+
+  <div class="dpc-info">
+    <div class="col">
+      <div class="row"><span class="lbl">Regisztráció dátuma:</span> <span class="val">{{ admin?.registDate }}</span></div>
+    </div>
+  </div>
+
+  <div class="pc-stats">
+    <div class="stat">
+      <span class="label">Email:</span>
+      <span class="value">{{ user?.email }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="label">Mobil:</span>
+      <span class="value">{{ formatPhoneNumber(user?.phoneNumber) }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="label">Cím:</span>
+      <span class="value">{{ user?.address }}</span>
+    </div>
+  </div>
+
+  <div class="pc-edit-bottom-wrap" *ngIf="editable">
+    <ion-button class="btn-accent edit" (click)="edit.emit()">
+      Módosítás
+    </ion-button>
+  </div>
+</div>

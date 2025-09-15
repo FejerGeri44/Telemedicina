@@ -1,0 +1,170 @@
+<ion-content class="page-container">
+  <app-admin-navbar></app-admin-navbar>
+
+    <!-- STAT KÁRTYÁK -->
+  <div class="stats">
+    <!-- Összes (ALL) -->
+    <ion-card class="card-all" role="button" tabindex="0"
+              (click)="onRoleCard('')"
+              (keyup.enter)="onRoleCard('')"
+              [class.active]="role === ''">
+      <ion-card-header>
+        <ion-card-title>{{ total }}</ion-card-title>
+        <ion-card-subtitle>Összes felhasználó</ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+
+    <!-- Páciensek -->
+    <ion-card class="card-patient" role="button" tabindex="0"
+              (click)="onRoleCard('patient')"
+              (keyup.enter)="onRoleCard('patient')"
+              [class.active]="role === 'patient'">
+      <ion-card-header>
+        <ion-card-title>{{ countsByRole.patient }}</ion-card-title>
+        <ion-card-subtitle>Páciensek</ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+
+    <!-- Orvosok -->
+    <ion-card class="card-doctor" role="button" tabindex="0"
+              (click)="onRoleCard('doctor')"
+              (keyup.enter)="onRoleCard('doctor')"
+              [class.active]="role === 'doctor'">
+      <ion-card-header>
+        <ion-card-title>{{ countsByRole.doctor }}</ion-card-title>
+        <ion-card-subtitle>Orvosok</ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+
+    <!-- Adminok -->
+    <ion-card class="card-admin" role="button" tabindex="0"
+              (click)="onRoleCard('admin')"
+              (keyup.enter)="onRoleCard('admin')"
+              [class.active]="role === 'admin'">
+      <ion-card-header>
+        <ion-card-title>{{ countsByRole.admin }}</ion-card-title>
+        <ion-card-subtitle>Adminisztrátorok</ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+  </div>
+
+    <!-- FILTER SÁV (helyben szűr dummy listán) -->
+    <div class="filters">
+      <div class="filter-left">
+        <ion-searchbar
+          placeholder="Keresés..."
+          [debounce]="300"
+          [value]="query"
+          (ionInput)="onSearch($event)">
+        </ion-searchbar>
+        <ion-select interface="popover" class="pill"
+                    [value]="role" (ionChange)="onRole($event.detail.value)">
+          <ion-select-option value="">All</ion-select-option>
+          <ion-select-option value="patient">Patient</ion-select-option>
+          <ion-select-option value="doctor">Doctor</ion-select-option>
+          <ion-select-option value="admin">Admin</ion-select-option>
+        </ion-select>
+      </div>
+
+      <div class="filter-right">
+        <ion-button class="little-btn" size="small" fill="clear"
+                    (click)="editUser(); $event.stopPropagation()"
+                    [disabled]="!hasExactlyOneSelection">
+          <ion-icon name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button class="little-btn" size="small" fill="clear"
+                    (click)="firstConfirmUserDelete(); $event.stopPropagation()"
+                    [disabled]="!hasSelection">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+
+        <ion-button class="btn-secondary" (click)="exportCsv()">
+          <ion-icon name="download-outline" slot="start"></ion-icon>
+          Export
+        </ion-button>
+        <ion-button class="btn-primary" (click)="addUser()">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Add User
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- “TÁBLA” -->
+  <div class="users-table-wrap">
+    <table class="users-table">
+    <thead>
+      <tr>
+        <th class="checkbox-col">
+          <ion-checkbox
+            [checked]="areAllSelected()"
+            [indeterminate]="isIndeterminate()"
+            (ionChange)="toggleSelectAll($event.detail.checked)">
+          </ion-checkbox>
+        </th>
+        <th class="sort" (click)="sortUsers('name')">
+          Name
+          <ion-icon
+            [name]="sortColumn==='name' ?
+            (sortDirection==='asc' ? 'chevron-up-outline' : 'chevron-down-outline') :
+            'swap-vertical-outline'">
+          </ion-icon>
+        </th>
+        <th class="sort" (click)="sortUsers('role')">
+          Role
+          <ion-icon
+            [name]="sortColumn==='role' ?
+            (sortDirection==='asc' ? 'chevron-up-outline' : 'chevron-down-outline') :
+            'swap-vertical-outline'">
+          </ion-icon>
+        </th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Address</th>
+        <th class="sort" (click)="sortUsers('createdAt')">
+          Created
+          <ion-icon
+            [name]="sortColumn==='createdAt' ?
+            (sortDirection==='asc' ? 'chevron-up-outline' : 'chevron-down-outline') :
+            'swap-vertical-outline'">
+          </ion-icon>
+        </th>
+        <th>Profil</th>
+      </tr>
+    </thead>
+      <tbody>
+        <tr *ngFor="let user of filtered"
+            (click)="onRowClick(user, $event)"
+            [class.selected]="isSelected(user)">
+          <td class="checkbox-col">
+            <ion-checkbox
+              [checked]="isSelected(user)"
+              (click)="$event.stopPropagation()"
+              (ionChange)="onCheckboxChange(user, $event)">
+            </ion-checkbox>
+          </td>
+          <td>
+            <div class="user-info">
+              <ion-avatar class="user-avatar">
+                <img [src]="user.User.pictureUrl" alt="avatar">
+              </ion-avatar>
+              <div class="name-block">
+                <div class="id">#{{ user.User.id }}</div>
+                <div class="name">{{ user.User.name }}</div>
+              </div>
+            </div>
+          </td>
+          <td><ion-badge [ngClass]="roleBadgeClass(user.role)">{{ user.role }}</ion-badge></td>
+          <td>{{ user.User.email }}</td>
+          <td>{{ user.User.phoneNumber }}</td>
+          <td>{{ user.User.address || 'N/A' }}</td>
+          <td>{{ user.registDate | date:'yyyy.MM.dd' }}</td>
+          <td>
+            <ion-button class="btn-accent" (click)="onProfileClick(user, $event)">
+              Profil
+            </ion-button>
+          </td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</ion-content>

@@ -25,6 +25,12 @@ module.exports = (sequelize) => {
     },
     registDate: {
       type: DataTypes.DATEONLY
+    },
+    status: {
+      type: DataTypes.ENUM('approved', 'pending'),
+      allowNull: false,
+      defaultValue: 'pending',
+      comment: 'Admin jóváhagyási státusz'
     }
   }, {
     tableName: 'doctors',

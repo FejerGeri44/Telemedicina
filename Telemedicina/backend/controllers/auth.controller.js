@@ -50,7 +50,7 @@ const registerPatient = async (req, res) => {
 
 const registerDoctor = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber, address, birthDate, speciality, introduction } = req.body;
+    const { name, email, password, phoneNumber, address, birthDate, speciality, introduction, status } = req.body;
     const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-profilePictures%2Fdoctor.png?alt=media&token=7a578ae2-23b6-4316-b9d8-568a0ee9e310';
 
     // Ellenőrzés: van-e már ilyen felhasználó?
@@ -79,7 +79,8 @@ const registerDoctor = async (req, res) => {
       userId: user.id,
       speciality,
       introduction,
-      registDate: new Date()
+      registDate: new Date(),
+      status: 'Pending'
     });
 
     return res.status(201).json({ message: 'Orvos regisztráció sikeres.' });
@@ -96,7 +97,6 @@ const login = async (req, res) => {
 
     // Felhasználó megkeresése
     const existingUser = await User.findOne({ where: { email } });
-
     if (!existingUser) {
       return res.status(401).json({ message: 'Hibás email vagy jelszó.' });
     }
@@ -105,6 +105,25 @@ const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, existingUser.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Hibás email vagy jelszó.' });
+    }
+
+    // 3) ORVOS: státusz ellenőrzése (csak approved léphet be)
+    if (existingUser.role === 'doctor') {
+      const doc = await Doctor.findOne({
+        where: { userId: existingUser.id },
+        attributes: ['status']
+      });
+
+      const status = doc?.status?.toLowerCase();
+      if (!doc || status !== 'approved') {
+        console.warn(
+          `⛔ Doctor login blocked: userId=${existingUser.id}, email=${email}, status=${status ?? 'missing'}`
+        );
+        return res.status(403).json({
+          code: 'DOCTOR_PENDING',
+          message: 'Az orvosi fiók még nincs jóváhagyva. Bejelentkezés nem engedélyezett.'
+        });
+      }
     }
 
     // Token létrehozása

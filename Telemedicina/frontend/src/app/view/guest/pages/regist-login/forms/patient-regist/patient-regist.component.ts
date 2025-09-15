@@ -1,5 +1,5 @@
-import {Component, ComponentRef, Injector, ViewContainerRef} from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import {Component, ComponentRef, Injector, Input, ViewContainerRef} from '@angular/core';
+import {IonicModule, ModalController} from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -21,6 +21,9 @@ import {ToastService} from '../../../../../../shared/toast/toast.service';
 })
 
 export class PatientRegistComponent {
+  @Input() title: string = 'Páciens regisztráció';
+  @Input() calledByAdmin: boolean = false;
+  @Input() adminUser: any;
 
   fullName: string = '';
   email: string = '';
@@ -36,14 +39,16 @@ export class PatientRegistComponent {
   invalidEmail: boolean = false;
   showPassword: boolean = false;
 
+  buttonText: string = this.calledByAdmin ? 'jelentkezek' : 'Mentés';
+
   constructor(
     private http: HttpClient,
+    private modalCtrl: ModalController,
     private router: Router,
     private toast: ToastService
   ) {}
 
   onPatientRegister() {
-
     // Üres mezők ellenőrzése
     if (!this.fullName || !this.email || !this.password || !this.password_again || !this.phoneNumber || !this.address ||! this.birthDate) {
       this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
@@ -79,25 +84,62 @@ export class PatientRegistComponent {
       gender: this.gender
     };
 
-    this.http.post('http://localhost:3000/api/auth/register/patient', patientData)
-      .subscribe({
-        next: () => {
-          setTimeout(() => {
-            void this.router.navigate(['/regist-login'], {
-              queryParams: {
-                tab: 'login',
-                toast: 'Sikeres páciens regisztráció!',
-                type: 'success',
-                successfulRegist: true
-              }
-            });
-          }, 500);
-        },
-        error: err => {
-          console.error(err);
-          this.toast.show('Hiba történt a páciens regisztráció során.', 'danger');
+    if (!this.calledByAdmin) {
+      this.http.post('http://localhost:3000/api/auth/register/patient', patientData)
+        .subscribe({
+          next: () => {
+            setTimeout(() => {
+              void this.router.navigate(['/regist-login'], {
+                queryParams: {
+                  tab: 'login',
+                  toast: 'Sikeres páciens regisztráció!',
+                  type: 'success',
+                  successfulRegist: true
+                }
+              });
+            }, 500);
+          },
+          error: err => {
+            console.error(err);
+            this.toast.show('Hiba történt a páciens regisztráció során.', 'danger');
+          }
+        });
+    }else {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const UserId  = this.adminUser.user.id;
+      const AdminId = this.adminUser.admin.id;
+
+      const payload = {
+        name: this.fullName,
+        email: this.email,
+        password: this.password,
+        phoneNumber: this.phoneNumber,
+        taj: this.taj,
+        address: this.address,
+        birthDate: this.birthDate,
+        gender: this.gender,
+        adminUserId: UserId,
+        adminId: AdminId
+      };
+
+      this.http.post('http://localhost:3000/api/admin/registerPatient', payload, {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      });
+      })
+        .subscribe({
+          next: () => {
+            this.toast.show("Sikeres Páciens felvitel!", "success");
+            void this.modalCtrl.dismiss(true);
+          },
+          error: err => {
+            console.error(err);
+            this.toast.show('Hiba történt a regisztráció során!', 'danger');
+          }
+        });
+    }
   }
 
   togglePasswordVisibility() {

@@ -3,7 +3,6 @@ import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {NgForOf, NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -12,13 +11,11 @@ import {NgForOf, NgIf} from '@angular/common';
   imports: [
     IonicModule,
     FormsModule,
-    NgIf,
-    NgForOf
   ],
   styleUrls: ['./doctor-edit-profile-modal.component.css']
 })
-export class DoctorEditProfileModalComponent implements OnInit {
-  user: any;
+export class DoctorEditProfileModalComponent {
+  @Input() user!: { user: any; doctor?: any | null };
   editForm = {
     name: '',
     address: '',
@@ -33,23 +30,6 @@ export class DoctorEditProfileModalComponent implements OnInit {
     private http: HttpClient,
     private toast: ToastService
   ) {}
-
-  ngOnInit() {
-    this.getMyData();
-  }
-
-  getMyData () {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get('http://localhost:3000/api/getDoctorMe', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).subscribe((res: any) => {
-      this.user = res;
-    });
-  }
 
   close() {
     void this.modalCtrl.dismiss();
@@ -81,7 +61,6 @@ export class DoctorEditProfileModalComponent implements OnInit {
     this.http.patch('http://localhost:3000/api/doctor/profile/update', payload).subscribe({
       next: (res) => {
         console.log('✅ Sikeres mentés:', res);
-        this.getMyData();
         void this.modalCtrl.dismiss(res, 'updated');
       },
       error: (err) => {

@@ -234,7 +234,7 @@ exports.getMyPatients = async (req, res) => {
             {
               model: User,
               attributes: [
-                'id', 'name', 'email', 'phoneNumber', 'address', 'birthDate', 'pictureUrl'
+                'id', 'name', 'email', 'phoneNumber', 'role', 'address', 'birthDate', 'pictureUrl'
               ]
             }
           ]
@@ -292,15 +292,16 @@ exports.getAllPatients = async (req, res) => {
       attributes: [
         'id',
         'userId',
-        'homePhone',
         'height',
         'weight',
-        'gender',
-        'taj'
+        'taj',
+        'homePhone',
+        'registDate',
+        'gender'
       ],
       include: [{
         model: User,
-        attributes: ['id','name','email','phoneNumber','address','birthDate','pictureUrl']
+        attributes: ['id','name','email','role', 'phoneNumber','address','birthDate','pictureUrl']
       }],
       order: [[{ model: User }, 'name', 'ASC']]
     });

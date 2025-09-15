@@ -1,4 +1,4 @@
-import {Component, ComponentRef, Injector, ViewContainerRef} from '@angular/core';
+import {Component, Injector, ViewContainerRef} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -109,7 +109,10 @@ export class LoginFormComponent {
           }
         },
         error: err => {
-          console.error(err);
+          if (err?.error?.code === 'DOCTOR_PENDING') {
+            this.toast.show("A regisztráció még nincs jóváhagyva!", 'warning');
+            return;
+          }
           this.toast.show('Hibás email cím vagy jelszó!', 'danger');
         }
       });

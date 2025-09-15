@@ -22,7 +22,7 @@
 
       <!-- Profil blokk: desktop-only -->
       <div class="profile-block desktop-only" (click)="toggleProfileMenu($event)">
-        <img [src]="user?.user.pictureUrl" alt="Profil" draggable="false" />
+        <img [src]="user?.user.pictureUrl" class="profile-picture" alt="Profil" draggable="false" />
         <div class="profile-info">
           <span class="name">{{ user?.user.name }}</span>
           <span class="role">{{ user?.user.role }}</span>
@@ -63,11 +63,12 @@
   <!-- Overlay -->
   <div class="backdrop" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()" aria-hidden="true"></div>
 
+
   <!-- Off-canvas drawer -->
   <aside id="mobile-drawer" class="drawer" [class.open]="mobileMenuOpen" role="dialog" aria-modal="true">
     <div class="drawer-header">
       <div class="user-inline">
-        <img [src]="user?.user.pictureUrl" alt="Profil" />
+        <img [src]="user?.user.pictureUrl" class="profile-picture" alt="Profil" draggable="false"/>
         <div>
           <div class="name">{{ user?.user.name }}</div>
           <div class="role">{{ user?.user.role }}</div>
