@@ -5,8 +5,6 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {IonicModule} from '@ionic/angular';
 import {NgForOf, NgIf} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
-import {PatientNavbarComponent} from '../../../patient/components/patient-navbar/patient-navbar.component';
 import {Router} from '@angular/router';
 
 @Component({
@@ -15,8 +13,7 @@ import {Router} from '@angular/router';
     IonicModule,
     NgForOf,
     FormsModule,
-    NgIf,
-    DoctorNavbarComponent
+    NgIf
   ],
   templateUrl: './doctor-messages.component.html',
   standalone: true,
@@ -80,7 +77,6 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
     });
   }
 
-  @ViewChild('navbar') navbar!: PatientNavbarComponent;
 
   @ViewChild('messageScroll') messageScroll: any;
   private scrollToBottom() {
@@ -113,7 +109,6 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
     this.applyConversationFilter();
     this.markConversationReadAsDoctor(this.selectedPatient?.User?.id);
     setTimeout(() => {
-      this.navbar?.getUnreadMessages();
       this.getUnreadMessages();
     }, 0);
   }

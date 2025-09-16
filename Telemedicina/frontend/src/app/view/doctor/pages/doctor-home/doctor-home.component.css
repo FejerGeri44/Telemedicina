@@ -1,0 +1,278 @@
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto auto auto;
+  width: 90%;
+  flex-direction: column;
+  --background: none;
+  margin: 0 auto;
+  justify-content: center;
+  align-content: center;
+  padding: 3%;
+}
+
+.profile-data,
+.patients,
+.messages,
+.review,
+.today-appointments,
+.new-appointments,
+.declined-appointments {
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1rem;
+  background-color: #ffffff;
+}
+
+.profile-card {
+  grid-column: 1 / 4;
+  grid-row: 1 / 2;
+  padding: 0;
+}
+
+.profile-data {
+  grid-column: 2 / 4;
+  grid-row: 1 / 2;
+}
+
+.patients {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+}
+
+.messages {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+}
+
+.review {
+  grid-column: 3 / 4;
+  grid-row: 2 / 3;
+}
+
+.today-appointments {
+  grid-column: 1 / 2;
+  grid-row: 3 / 4;
+  padding: 15px;
+  position: relative;
+  height: 100px;
+}
+
+.new-appointments {
+  grid-column: 2 / 3;
+  grid-row: 3 / 4;
+}
+
+.declined-appointments {
+  grid-column: 3 / 4;
+  grid-row: 3 / 4;
+}
+
+ion-row {
+  display: block;
+}
+
+.profile-picture {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 30px auto 0;
+}
+
+.profile-picture img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+}
+
+ion-card-title {
+  text-align: center;
+  --margin-bottom: 0;
+}
+
+.user-info {
+  padding: 5px;
+}
+
+h2 {
+  margin-bottom: 0;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.value {
+  font-size: 0.9rem;
+  color: #555;
+  word-break: break-word;
+}
+
+.edit-button-container {
+  margin-top: 20px;
+}
+
+.edit {
+  width: 100%;
+}
+
+.profile-data-wrapper {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+}
+
+.profile-info,
+.profile-fields {
+  width: 50%;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  font-size: 1rem;
+  color: #444;
+}
+
+.profile-fields {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.profile-fields::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20px;
+  width: 2px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 30px;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.expand-btn {
+  --background: transparent;
+  --box-shadow: none;
+  --padding-start: 0;
+  --padding-end: 0;
+  --color: var(--secondary);
+  font-size: 1.5rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.expand-btn:hover {
+  scale: 1.1;
+}
+
+.appointment-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 40px);
+}
+
+.appointment-count span {
+  font-size: 3rem;
+  color: var(--secondary);
+  font-weight: bold;
+}
+
+@media (max-width: 1400px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto auto auto auto;
+  }
+
+  .profile-card {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .profile-data {
+    grid-column: 2 / 3;
+    grid-row: 1;
+  }
+
+  .patients {
+    grid-column: 1 / 2;
+    grid-row: 2;
+  }
+
+  .messages {
+    grid-column: 2 / 3;
+    grid-row: 2;
+  }
+
+  .review {
+    grid-column: 1 / 2;
+    grid-row: 3;
+  }
+
+  .today-appointments {
+    grid-column: 2 / 3;
+    grid-row: 3;
+  }
+
+  .new-appointments {
+    grid-column: 1 / 2;
+    grid-row: 4;
+  }
+
+  .declined-appointments {
+    grid-column: 2 / 3;
+    grid-row: 4;
+  }
+}
+
+@media (max-width: 800px) {
+  .grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .profile-card,
+  .profile-data,
+  .patients,
+  .messages,
+  .review,
+  .today-appointments,
+  .new-appointments,
+  .declined-appointments {
+    grid-column: 1 / 2;
+    grid-row: auto;
+  }
+
+  .profile-data-wrapper {
+    flex-direction: column;
+  }
+
+  .profile-info,
+  .profile-fields {
+    width: 100%;
+  }
+
+  .profile-fields::before {
+    display: none;
+  }
+}

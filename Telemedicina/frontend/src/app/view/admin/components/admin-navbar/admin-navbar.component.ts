@@ -27,10 +27,10 @@ export class AdminNavbarComponent implements OnInit{
   private navSub?: Subscription;
 
   menuItems = [
-    { icon: 'home', label: 'Profil', route: '/dashboard/admin' },
-    { icon: 'people', label: 'Felhasználók', route: '/all-users' },
-    { icon: 'id-card', label: 'Orvosi jelenzkezések', route: '/doctor-approvals' },
-    { icon: 'paper-plane', label: 'Rendszerüzenet', route: '' },
+    { icon: 'home', label: 'Profil', route: 'admin-home' },
+    { icon: 'people', label: 'Felhasználók', route: 'all-users' },
+    { icon: 'id-card', label: 'Orvosi jelenzkezések', route: 'doctor-approvals' },
+    { icon: 'paper-plane', label: 'Rendszerüzenet', route: 'system-messages' },
     { icon: 'hardware-chip', label: 'MI asszisztens', route: '' }
   ];
 

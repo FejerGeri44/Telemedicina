@@ -1,0 +1,45 @@
+<div class="grid">
+  <app-patient-profile-card
+    class="profile-card"
+    [user]="user?.user"
+    [patient]="user?.patient"
+    [tags]="tags"
+    [editable]="true"
+    (edit)="openEditModal()">
+  </app-patient-profile-card>
+
+
+  <ion-card class="appointments">
+    <div class="card-header">
+      <h2 class="header-title">Időpontjaim</h2>
+      <ion-button class="expand-btn" [routerLink]="['/appointment-list']">
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div *ngIf="upcomingAppointments.length > 0" class="appointments-wrapper">
+      <div *ngFor="let app of upcomingAppointments" class="appointment-card">
+        <div class="appointment-left">
+          <img [src]="app.pictureUrl" alt="Doktor" class="doctor-image" draggable="false"/>
+          <div class="doctor-info">
+            <div class="doctor-name">{{ app.name }}</div>
+            <div class="doctor-speciality">{{ app.speciality }}</div>
+          </div>
+        </div>
+        <div class="appointment-date">
+          <div>{{ app.date }}</div>
+          <div>
+            {{ app.from }} - {{ app.to }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="upcomingAppointments.length === 0" class="appointment-count">
+      <span>N/A</span>
+    </div>
+  </ion-card>
+
+  <ion-card class="results"></ion-card>
+  <ion-card class="prescriptions"></ion-card>
+</div>

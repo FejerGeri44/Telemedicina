@@ -1,128 +1,124 @@
-<ion-content class="page-container">
-  <app-patient-navbar></app-patient-navbar>
+<div class="doctor-container">
+  <div class="header">
+    <div class="upper-section">
+      <ion-searchbar
+        placeholder="Keresés orvosra..."
+        [(ngModel)]="searchTerm"
+        (keydown.enter)="onSearchChange()">
+      </ion-searchbar>
 
-  <div class="doctor-container">
-    <div class="header">
-      <div class="upper-section">
-        <ion-searchbar
-          placeholder="Keresés orvosra..."
-          [(ngModel)]="searchTerm"
-          (keydown.enter)="onSearchChange()">
-        </ion-searchbar>
+      <!-- Filter -->
+      <div class="filter-container">
+        <ion-icon name="options" (click)="toggleFilters()"></ion-icon>
 
-        <!-- Filter -->
-        <div class="filter-container">
-          <ion-icon name="options" (click)="toggleFilters()"></ion-icon>
-
-          <ion-list *ngIf="showFilters" class="filter-panel">
-            <ion-item *ngFor="let specialty of specialties" lines="none" (click)="toggleSpecialty(specialty)" button>
-              <ion-checkbox
-                slot="start"
-                [checked]="selectedSpecialties.includes(specialty)">
-              </ion-checkbox>
-              <ion-label>{{ specialty }}</ion-label>
-            </ion-item>
-          </ion-list>
-        </div>
+        <ion-list *ngIf="showFilters" class="filter-panel">
+          <ion-item *ngFor="let specialty of specialties" lines="none" (click)="toggleSpecialty(specialty)" button>
+            <ion-checkbox
+              slot="start"
+              [checked]="selectedSpecialties.includes(specialty)">
+            </ion-checkbox>
+            <ion-label>{{ specialty }}</ion-label>
+          </ion-item>
+        </ion-list>
       </div>
-
-      <ion-button class="btn-primary search" (click)="onSearchChange()">Keresés</ion-button>
     </div>
 
-    <div class="pagination" *ngIf="!isLoading && paginatedDoctors.length > 0">
-      <div class="pag-left">
-        Találatok: {{ totalCount }} db
-      </div>
+    <ion-button class="btn-primary search" (click)="onSearchChange()">Keresés</ion-button>
+  </div>
 
-      <div class="pag-controls">
-        <ion-icon name="chevron-back-outline"
-                  (click)="prevPageSet()"
-                  [class.disabled]="currentPage === 1"></ion-icon>
+  <div class="pagination" *ngIf="!isLoading && paginatedDoctors.length > 0">
+    <div class="pag-left">
+      Találatok: {{ totalCount }} db
+    </div>
 
-        <span *ngFor="let page of visiblePages"
-              (click)="goToPage(page)"
-              [class.active]="page === currentPage">
+    <div class="pag-controls">
+      <ion-icon name="chevron-back-outline"
+                (click)="prevPageSet()"
+                [class.disabled]="currentPage === 1"></ion-icon>
+
+      <span *ngFor="let page of visiblePages"
+            (click)="goToPage(page)"
+            [class.active]="page === currentPage">
               {{ page }}
         </span>
 
-        <ion-icon name="chevron-forward-outline"
-                  (click)="nextPageSet()"
-                  [class.disabled]="currentPage === totalPages"></ion-icon>
-      </div>
+      <ion-icon name="chevron-forward-outline"
+                (click)="nextPageSet()"
+                [class.disabled]="currentPage === totalPages"></ion-icon>
     </div>
-
-    <!-- HA NINCS ORVOS -->
-    <div *ngIf="!isLoading && paginatedDoctors.length === 0" class="no-data">
-      Nincs találat
-      <span class="no-data-text">N/A</span>
-    </div>
-
-    <!-- SKELETON ÁLLAPOT -->
-    <ion-grid *ngIf="isLoading">
-      <ion-row>
-        <ion-col class="custom-col" *ngFor="let s of [1, 2, 3, 4, 5, 6]">
-          <ion-card>
-            <ion-card-header class="doctor-card-header">
-              <div class="doctor-avatar">
-                <ion-skeleton-text animated class="skeleton-avatar"></ion-skeleton-text>
-              </div>
-              <div class="doctor-header-info">
-                <ion-card-title>
-                  <ion-skeleton-text animated class="skeleton-title"></ion-skeleton-text>
-                </ion-card-title>
-                <ion-card-subtitle>
-                  <ion-skeleton-text animated class="skeleton-subtitle"></ion-skeleton-text>
-                </ion-card-subtitle>
-              </div>
-            </ion-card-header>
-
-            <ion-card-content>
-              <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
-              <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
-              <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
-              <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
-            </ion-card-content>
-
-            <div class="button-row">
-              <ion-skeleton-text animated class="skeleton-button"></ion-skeleton-text>
-              <ion-skeleton-text animated class="skeleton-button"></ion-skeleton-text>
-            </div>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-
-    <!-- VALÓDI TARTALOM -->
-    <ion-grid *ngIf="!isLoading">
-      <ion-row>
-        <ion-col class="custom-col" *ngFor="let doctor of paginatedDoctors">
-          <ion-card>
-            <ion-card-header class="doctor-card-header">
-              <ion-avatar>
-                <img [src]="doctor.User.pictureUrl" class="doctor-avatar" alt="Profilkép" draggable="false"/>
-              </ion-avatar>
-              <div class="doctor-header-info">
-                <ion-card-title>Dr. {{ doctor.User.name }}</ion-card-title>
-                <ion-card-subtitle>{{ doctor.speciality }}</ion-card-subtitle>
-              </div>
-            </ion-card-header>
-
-            <ion-card-content class="doctor-rating">
-              <ng-container *ngFor="let star of [1,2,3,4,5]">
-                <ion-icon
-                  [name]="doctor.avgRating >= star ? 'star' :
-                      (doctor.avgRating >= star - 0.5 ? 'star-half' : 'star-outline')">
-                </ion-icon>
-              </ng-container>
-            </ion-card-content>
-
-            <div class="button-row">
-              <ion-button class="btn-primary" (click)="openAppointmentModal(doctor)">Időpontfoglalás</ion-button>
-              <ion-button class="btn-secondary" (click)="openDoctorProfileModal(doctor)">Profil megtekintése</ion-button>
-            </div>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
   </div>
-</ion-content>
+
+  <!-- HA NINCS ORVOS -->
+  <div *ngIf="!isLoading && paginatedDoctors.length === 0" class="no-data">
+    Nincs találat
+    <span class="no-data-text">N/A</span>
+  </div>
+
+  <!-- SKELETON ÁLLAPOT -->
+  <ion-grid *ngIf="isLoading">
+    <ion-row>
+      <ion-col class="custom-col" *ngFor="let s of [1, 2, 3, 4, 5, 6]">
+        <ion-card>
+          <ion-card-header class="doctor-card-header">
+            <div class="doctor-avatar">
+              <ion-skeleton-text animated class="skeleton-avatar"></ion-skeleton-text>
+            </div>
+            <div class="doctor-header-info">
+              <ion-card-title>
+                <ion-skeleton-text animated class="skeleton-title"></ion-skeleton-text>
+              </ion-card-title>
+              <ion-card-subtitle>
+                <ion-skeleton-text animated class="skeleton-subtitle"></ion-skeleton-text>
+              </ion-card-subtitle>
+            </div>
+          </ion-card-header>
+
+          <ion-card-content>
+            <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
+            <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
+            <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
+            <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
+          </ion-card-content>
+
+          <div class="button-row">
+            <ion-skeleton-text animated class="skeleton-button"></ion-skeleton-text>
+            <ion-skeleton-text animated class="skeleton-button"></ion-skeleton-text>
+          </div>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- VALÓDI TARTALOM -->
+  <ion-grid *ngIf="!isLoading">
+    <ion-row>
+      <ion-col class="custom-col" *ngFor="let doctor of paginatedDoctors">
+        <ion-card>
+          <ion-card-header class="doctor-card-header">
+            <ion-avatar>
+              <img [src]="doctor.User.pictureUrl" class="doctor-avatar" alt="Profilkép" draggable="false"/>
+            </ion-avatar>
+            <div class="doctor-header-info">
+              <ion-card-title>Dr. {{ doctor.User.name }}</ion-card-title>
+              <ion-card-subtitle>{{ doctor.speciality }}</ion-card-subtitle>
+            </div>
+          </ion-card-header>
+
+          <ion-card-content class="doctor-rating">
+            <ng-container *ngFor="let star of [1,2,3,4,5]">
+              <ion-icon
+                [name]="doctor.avgRating >= star ? 'star' :
+                      (doctor.avgRating >= star - 0.5 ? 'star-half' : 'star-outline')">
+              </ion-icon>
+            </ng-container>
+          </ion-card-content>
+
+          <div class="button-row">
+            <ion-button class="btn-primary" (click)="openAppointmentModal(doctor)">Időpontfoglalás</ion-button>
+            <ion-button class="btn-secondary" (click)="openDoctorProfileModal(doctor)">Profil megtekintése</ion-button>
+          </div>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</div>

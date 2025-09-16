@@ -4,7 +4,7 @@ import {DatePipe, NgForOf, NgIf} from '@angular/common';
 import {PatientNavbarComponent} from '../../components/patient-navbar/patient-navbar.component';
 import {HttpClient} from '@angular/common/http';
 import {RouterLink} from '@angular/router';
-import {Appointment} from '../../patient-dashboard/patient-dashboard.component';
+import {Appointment} from '../patient-home/patient-home.component';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 

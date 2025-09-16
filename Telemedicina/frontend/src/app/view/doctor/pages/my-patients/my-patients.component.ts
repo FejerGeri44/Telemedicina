@@ -1,5 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {HttpClient} from '@angular/common/http';
 import {NgForOf, NgIf} from '@angular/common';
@@ -42,7 +41,6 @@ interface MyPatientCard {
 @Component({
   selector: 'app-my-patients',
   imports: [
-    DoctorNavbarComponent,
     IonicModule,
     NgIf,
     NgForOf

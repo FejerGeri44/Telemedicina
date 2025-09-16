@@ -1,6 +1,5 @@
 import {Component, OnInit} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
-import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgForOf, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
@@ -11,7 +10,6 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
   selector: 'app-new-diagnosis',
   imports: [
     IonicModule,
-    DoctorNavbarComponent,
     ReactiveFormsModule,
     NgIf,
     NgForOf,

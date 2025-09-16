@@ -1,5 +1,4 @@
 import {Component, Injector, OnInit, ViewContainerRef} from '@angular/core';
-import {DoctorNavbarComponent} from '../../components/doctor-navbar/doctor-navbar.component';
 import {AlertController, IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
@@ -29,7 +28,6 @@ registerLocaleData(localeHu);
 @Component({
   selector: 'app-appointments',
   imports: [
-    DoctorNavbarComponent,
     IonicModule,
     FormsModule,
     DatePipe,

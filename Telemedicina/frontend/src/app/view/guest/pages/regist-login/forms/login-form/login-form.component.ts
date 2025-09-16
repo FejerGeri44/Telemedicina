@@ -98,13 +98,13 @@ export class LoginFormComponent {
           // Iranyitas szerepkor szerint
           switch (res.user.role) {
             case 'doctor':
-              void this.router.navigate(['/dashboard/doctor']);
+              void this.router.navigate(['/doctor/doctor-home']);
               break;
             case 'patient':
-              void this.router.navigate(['/dashboard/patient']);
+              void this.router.navigate(['/patient/patient-home']);
               break;
             case 'admin':
-              void this.router.navigate(['/dashboard/admin']);
+              void this.router.navigate(['/admin/admin-home']);
               break;
           }
         },

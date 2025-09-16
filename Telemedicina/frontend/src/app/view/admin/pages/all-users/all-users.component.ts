@@ -1,5 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {AdminNavbarComponent} from '../../components/admin-navbar/admin-navbar.component';
 import {AdminProfileCardComponent} from '../../components/admin-profile-card/admin-profile-card.component';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {DatePipe, NgClass, NgForOf} from '@angular/common';
@@ -28,7 +27,6 @@ type UserSortKey = 'name' | 'role' | 'createdAt';
 @Component({
   selector: 'app-all-users',
   imports: [
-    AdminNavbarComponent,
     IonicModule,
     NgForOf,
     DatePipe,

@@ -1,10 +1,3 @@
-.page-container {
-  min-height: 100vh;
-  --background: var(--dashboard-background-color);
-  display: flex;
-  flex-direction: column;
-}
-
 .chat-layout {
   display: grid;
   grid-template-columns: 350px 1fr;

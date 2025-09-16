@@ -1,5 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {AdminNavbarComponent} from '../../components/admin-navbar/admin-navbar.component';
 import {DatePipe, NgForOf, NgIf} from '@angular/common';
 import {IonicModule} from '@ionic/angular';
 import {HttpClient} from '@angular/common/http';
@@ -9,7 +8,6 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 @Component({
   selector: 'app-doctor-approvals',
   imports: [
-    AdminNavbarComponent,
     DatePipe,
     IonicModule,
     NgForOf,

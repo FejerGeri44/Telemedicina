@@ -1,61 +1,57 @@
-<ion-content class="page-container">
-  <app-doctor-navbar></app-doctor-navbar>
-
-  <div class="container">
-    <!-- SKELETON -->
-    <ion-grid *ngIf="isLoading">
-      <ion-row>
-        <ion-col size="12" size-md="6" size-lg="4" *ngFor="let s of [1,2,3,4,5,6]">
-          <ion-card>
-            <ion-card-header class="card-header">
-              <ion-skeleton-text animated style="width:60px;height:60px;border-radius:50%;"></ion-skeleton-text>
-              <div class="header-text">
-                <ion-skeleton-text animated style="width:120px;height:16px;"></ion-skeleton-text>
-                <ion-skeleton-text animated style="width:80px;height:12px;margin-top:6px;"></ion-skeleton-text>
-              </div>
-            </ion-card-header>
-            <ion-card-content>
-              <ion-skeleton-text animated style="width:90%;height:12px;"></ion-skeleton-text>
-              <ion-skeleton-text animated style="width:70%;height:12px;margin-top:6px;"></ion-skeleton-text>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-
-    <!-- ÜRES ÁLLAPOT -->
-    <div *ngIf="!isLoading && patients.length === 0" class="no-data">
-      <span class="no-data-text">(N/A)</span>
-      <span class="no-data-sub">Jelenleg nincs foglalt időponttal rendelkező páciens.</span>
-    </div>
-
-    <!-- GRID -->
-    <ion-grid *ngIf="!isLoading && patients.length > 0">
-      <ion-row>
-        <ion-col size="12" size-md="6" size-lg="4" *ngFor="let patient of patients">
-          <ion-card>
-            <ion-card-header class="card-header">
-              <div class="avatar">
-                <img [src]="patient.user.pictureUrl" alt="avatar" />
-              </div>
-              <div class="header-text">
-                <ion-card-title>{{ patient.user.name }}</ion-card-title>
-              </div>
-            </ion-card-header>
-
-            <ion-card-content>
-              <p><strong>Telefon:</strong> {{ formatPhoneNumber(patient.user?.phoneNumber) }}</p>
-              <p><strong>Cím:</strong> {{ patient.user?.address }}</p>
-              <p><strong>Email:</strong> {{ patient.user?.email }}</p>
-            </ion-card-content>
-
-            <div class="button-row">
-              <ion-button class="btn-primary profile" (click)="openPatientModal(patient)">Profil megtekintése</ion-button>
-              <ion-button class="btn-secondary chat" (click)="goToMessages(patient)">Üzenet</ion-button>
+<div class="container">
+  <!-- SKELETON -->
+  <ion-grid *ngIf="isLoading">
+    <ion-row>
+      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let s of [1,2,3,4,5,6]">
+        <ion-card>
+          <ion-card-header class="card-header">
+            <ion-skeleton-text animated style="width:60px;height:60px;border-radius:50%;"></ion-skeleton-text>
+            <div class="header-text">
+              <ion-skeleton-text animated style="width:120px;height:16px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width:80px;height:12px;margin-top:6px;"></ion-skeleton-text>
             </div>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-skeleton-text animated style="width:90%;height:12px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width:70%;height:12px;margin-top:6px;"></ion-skeleton-text>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- ÜRES ÁLLAPOT -->
+  <div *ngIf="!isLoading && patients.length === 0" class="no-data">
+    <span class="no-data-text">(N/A)</span>
+    <span class="no-data-sub">Jelenleg nincs foglalt időponttal rendelkező páciens.</span>
   </div>
-</ion-content>
+
+  <!-- GRID -->
+  <ion-grid *ngIf="!isLoading && patients.length > 0">
+    <ion-row>
+      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let patient of patients">
+        <ion-card>
+          <ion-card-header class="card-header">
+            <div class="avatar">
+              <img [src]="patient.user.pictureUrl" alt="avatar" />
+            </div>
+            <div class="header-text">
+              <ion-card-title>{{ patient.user.name }}</ion-card-title>
+            </div>
+          </ion-card-header>
+
+          <ion-card-content>
+            <p><strong>Telefon:</strong> {{ formatPhoneNumber(patient.user?.phoneNumber) }}</p>
+            <p><strong>Cím:</strong> {{ patient.user?.address }}</p>
+            <p><strong>Email:</strong> {{ patient.user?.email }}</p>
+          </ion-card-content>
+
+          <div class="button-row">
+            <ion-button class="btn-primary profile" (click)="openPatientModal(patient)">Profil megtekintése</ion-button>
+            <ion-button class="btn-secondary chat" (click)="goToMessages(patient)">Üzenet</ion-button>
+          </div>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</div>

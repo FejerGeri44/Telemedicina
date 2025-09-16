@@ -1,6 +1,5 @@
 import {Component, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
-import {PatientNavbarComponent} from '../../components/patient-navbar/patient-navbar.component';
 import {FormsModule} from '@angular/forms';
 import {NgForOf, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
@@ -11,7 +10,6 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
   selector: 'app-patient-messages',
   imports: [
     IonicModule,
-    PatientNavbarComponent,
     FormsModule,
     NgIf,
     NgForOf
@@ -54,8 +52,6 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     this.isOnline = true;
   }
 
-  @ViewChild('navbar') navbar!: PatientNavbarComponent;
-
   @ViewChild('messageScroll') messageScroll: any;
   private scrollToBottom() {
     setTimeout(() => {
@@ -87,7 +83,6 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     this.applyConversationFilter();
     this.markConversationReadAsPatient(this.selectedDoctor?.User?.id);
     setTimeout(() => {
-      this.navbar?.getUnreadMessages();
       this.getUnreadMessages();
     }, 0);
   }

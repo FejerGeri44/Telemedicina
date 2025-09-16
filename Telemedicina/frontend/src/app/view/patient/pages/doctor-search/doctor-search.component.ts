@@ -1,5 +1,4 @@
 import {Component, ComponentRef, Injector, OnInit, ViewContainerRef} from '@angular/core';
-import {PatientNavbarComponent} from '../../components/patient-navbar/patient-navbar.component';
 import {IonicModule, ToastController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
@@ -12,7 +11,6 @@ import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-prof
 @Component({
   selector: 'app-doctor-search',
   imports: [
-    PatientNavbarComponent,
     IonicModule,
     FormsModule,
     NgForOf,

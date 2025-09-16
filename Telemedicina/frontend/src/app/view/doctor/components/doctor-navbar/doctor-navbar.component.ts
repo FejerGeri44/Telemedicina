@@ -30,12 +30,12 @@ export class DoctorNavbarComponent implements OnInit{
   unreadCount = 0;
 
   menuItems = [
-    { icon: 'home', label: 'Profil', route: '/dashboard/doctor' },
-    { icon: 'people', label: 'Pácienseim', route: '/my-patients' },
-    { icon: 'clipboard', label: 'Új diagnózis', route: '/new-diagnosis' },
-    { icon: 'document-attach', label: 'Dokumentum feltöltés', route: '/orvos-kereso' },
-    { icon: 'calendar', label: 'Rendelési időpontjaim', route: '/appointments' },
-    { icon: 'chatbubbles', label: 'Üzenetek', route: '/doctor-messages' }
+    { icon: 'home', label: 'Profil', route: 'doctor-home' },
+    { icon: 'people', label: 'Pácienseim', route: 'my-patients' },
+    { icon: 'clipboard', label: 'Új diagnózis', route: 'new-diagnosis' },
+    { icon: 'document-attach', label: 'Dokumentum feltöltés', route: 'orvos-kereso' },
+    { icon: 'calendar', label: 'Rendelési időpontjaim', route: 'appointments' },
+    { icon: 'chatbubbles', label: 'Üzenetek', route: 'doctor-messages' }
   ];
 
   constructor(
@@ -118,7 +118,7 @@ export class DoctorNavbarComponent implements OnInit{
   }
 
   onNotifications() {
-    void this.router.navigate(['/doctor-messages']);
+    void this.router.navigate(['doctor/doctor-messages']);
   }
 
   openMobileMenu() {

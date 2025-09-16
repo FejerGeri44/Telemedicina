@@ -30,11 +30,11 @@ export class PatientNavbarComponent implements OnInit{
   unreadCount = 0;
 
   menuItems = [
-    { icon: 'home', label: 'Profil', route: '/dashboard/patient' },
-    { icon: 'search', label: 'Orvos kereső', route: '/doctor-search' },
-    { icon: 'calendar', label: 'Időpontjaim', route: '/appointment-list' },
-    { icon: 'fitness', label: 'Egészségügyi napló', route: '/naplo' },
-    { icon: 'chatbubbles', label: 'Üzenetek', route: '/patient-messages' },
+    { icon: 'home', label: 'Profil', route: 'patient-home' },
+    { icon: 'search', label: 'Orvos kereső', route: 'doctor-search' },
+    { icon: 'calendar', label: 'Időpontjaim', route: 'appointment-list' },
+    { icon: 'fitness', label: 'Egészségügyi napló', route: 'naplo' },
+    { icon: 'chatbubbles', label: 'Üzenetek', route: 'patient-messages' },
   ];
 
   constructor(
@@ -117,7 +117,7 @@ export class PatientNavbarComponent implements OnInit{
   }
 
   onNotifications() {
-    void this.router.navigate(['/patient-messages']);
+    void this.router.navigate(['patient/patient-messages']);
   }
 
   toggleMobileMenu() {

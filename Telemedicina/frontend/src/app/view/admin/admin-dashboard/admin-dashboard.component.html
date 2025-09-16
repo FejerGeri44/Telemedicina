@@ -1,60 +1,7 @@
 <ion-content class="page-container">
   <app-admin-navbar></app-admin-navbar>
 
-  <div class="grid">
-    <app-admin-profile-card
-      class="profile-card"
-      [user]="user?.user"
-      [admin]="user?.admin"
-      [editable]="true"
-      (edit)="openEditModal()">
-    </app-admin-profile-card>
-
-    <ion-card class="patients">
-      <div class="card-header">
-        <h2 class="header-title">Páciensek</h2>
-        <ion-button class="expand-btn" [routerLink]="['/all-users']" [queryParams]="{ role: 'patient' }">
-          <ion-icon name="chevron-forward-outline"></ion-icon>
-        </ion-button>
-      </div>
-
-      <div class="count">
-        <span>{{ patientsCount }}</span>
-      </div>
-    </ion-card>
-
-    <ion-card class="doctors">
-      <div class="card-header">
-        <h2 class="header-title">Orvosok</h2>
-        <ion-button class="expand-btn" [routerLink]="['/all-users']" [queryParams]="{ role: 'doctor' }">
-          <ion-icon name="chevron-forward-outline"></ion-icon>
-        </ion-button>
-      </div>
-
-      <div class="count">
-        <span>{{ doctorsCount }}</span>
-      </div>
-    </ion-card>
-
-    <ion-card class="admins">
-      <div class="card-header">
-        <h2 class="header-title">Adminisztrátorok</h2>
-        <ion-button class="expand-btn" [routerLink]="['/all-users']" [queryParams]="{ role: 'admin' }">
-          <ion-icon name="chevron-forward-outline"></ion-icon>
-        </ion-button>
-      </div>
-
-      <div class="count">
-        <span>{{ adminsCount }}</span>
-      </div>
-    </ion-card>
-
-    <ion-card class="doctor-applications">
-      <p>Orvosi jelentkezések</p>
-    </ion-card>
-
-    <ion-card class="messages">
-      <p>Rendszerüzenetek</p>
-    </ion-card>
-  </div>
+  <main class="main-container">
+    <router-outlet></router-outlet>
+  </main>
 </ion-content>
