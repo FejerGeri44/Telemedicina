@@ -1,26 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {IonicModule} from '@ionic/angular';
 import {NgClass, NgForOf, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
-
-export interface UserDto {
-  id: number;
-  name: string;
-  email?: string | null;
-  role?: string | null;
-  phoneNumber?: string | null;
-  address?: string | null;
-  pictureUrl?: string | null;
-}
-export interface DoctorDto {
-  id: number;
-  userId: number;
-  speciality: string;
-  introduction?: string | null;
-  registDate?: string | null;
-  avgRating?: number | null;
-}
+import {formatPhoneNumber} from '../../../../utils/formatProfileData';
+import {DoctorItem} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-doctor-profile-card',
@@ -35,8 +19,7 @@ export interface DoctorDto {
   styleUrls: ['./doctor-profile-card.component.css']
 })
 export class DoctorProfileCardComponent {
-  @Input() user!: UserDto | null | undefined;
-  @Input() doctor!: DoctorDto | null | undefined;
+  @Input() user!: DoctorItem;
   @Input() editable = false;
   @Input() myRating: number | null = null;
   @Input() canRate = false;
@@ -44,18 +27,18 @@ export class DoctorProfileCardComponent {
   @Output() rate = new EventEmitter<{ doctorId: number, value: number }>();
   @Output() edit = new EventEmitter<void>();
 
-  constructor(private http: HttpClient, private modalCtrl: ModalController) {}
-
   editingRating = false;
   draftRating: number | null = null;
 
-  formatPhoneNumber(phone?: string | null | undefined): string {
-    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
+  constructor(
+    private http: HttpClient
+  ) {}
+  get fullName(): string {
+    return this.user?.user?.name || '';
   }
 
   starIcon(i: number): string {
-    const avg = Number(this.doctor?.avgRating ?? 0);
+    const avg = Number(this.user?.doctor?.avgRating ?? 0);
     const v = this.editingRating
       ? (this.draftRating ?? avg)
       : avg;
@@ -80,13 +63,13 @@ export class DoctorProfileCardComponent {
   }
 
   async saveRating() {
-    if (!this.draftRating || !this.doctor?.id) return;
+    if (!this.draftRating || !this.user?.doctor?.id) return;
 
     const token = localStorage.getItem('token');
     if (!token) return;
 
     const val = Math.max(1, Math.min(5, Math.round(this.draftRating)));
-    const doctorId = this.doctor.id;
+    const doctorId = this.user.doctor.id;
 
     try {
       const res = await firstValueFrom(
@@ -98,11 +81,13 @@ export class DoctorProfileCardComponent {
       );
 
       this.editingRating = false;
-      if (res?.avg != null) this.doctor.avgRating = res.avg;
+      if (res?.avg != null) this.user.doctor.avgRating = res.avg;
 
       console.log('✅ Értékelés elmentve', res);
     } catch (err) {
       console.error('❌ Hiba az értékelés mentésekor:', err);
     }
   }
+
+  protected readonly formatPhoneNumber = formatPhoneNumber;
 }

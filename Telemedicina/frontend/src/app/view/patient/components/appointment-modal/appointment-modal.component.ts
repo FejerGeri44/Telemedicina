@@ -5,15 +5,7 @@ import {DatePipe, NgForOf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-
-interface prevAppointment {
-  id: number;
-  doctor_id: number;
-  patient_id: number | null;
-  from: string;
-  to: string;
-  status: string;
-}
+import {Appointment, PatientItem, prevAppointment, User} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-appointment-modal',
@@ -29,9 +21,8 @@ interface prevAppointment {
 })
 
 export class AppointmentModalComponent implements OnInit{
-  @Input() doctor: any;
-  user: any;
-
+  @Input() doctorData!: User;
+  patientData!: PatientItem;
   appointments: prevAppointment[] = [];
   days: { date: Date, weekday: string }[] = [];
   timeSlots: string[] = [];
@@ -51,16 +42,21 @@ export class AppointmentModalComponent implements OnInit{
     this.getDoctorsAppointments();
   }
 
-  getMyData () {
+  getMyData() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getPatientMe', {
+    this.http.get<PatientItem>('http://localhost:3000/api/getPatientMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }
-    }).subscribe((res: any) => {
-      this.user = res;
+    }).subscribe({
+      next: (res) => {
+        this.patientData = { user: res.user, patient: res.patient };
+      },
+      error: (err) => {
+        console.error('❌ Felhasználó lekérése sikertelen:', err);
+      }
     });
   }
 
@@ -139,39 +135,42 @@ export class AppointmentModalComponent implements OnInit{
   }
 
   getButtonClass(day: any, time: string): string {
-    const match = this.appointments.find(app => {
+    const list = Array.isArray(this.appointments)
+      ? this.appointments
+      : (this.appointments && (this as any).appointments.appointments) || [];
+
+    if (!list.length) return 'btn-date';
+
+    const match = list.find(app => {
       const from = new Date(app.from);
 
       const buttonDate = new Date(day.date);
-      const hours = Number(time.split(':')[0]) ;
-      const minutes = Number(time.split(':')[1]);
-      buttonDate.setHours(hours, minutes, 0, 0);
+      const [h, m] = time.split(':').map(Number);
+      buttonDate.setHours(h || 0, m || 0, 0, 0);
 
       return from.getTime() === buttonDate.getTime();
     });
 
     if (!match) return 'btn-date';
-
     if (match.status === 'free') return 'btn-date btn-free';
     if (match.status === 'accepted') return 'btn-date btn-accepted';
-
     return 'btn-date';
   }
 
   getDoctorsAppointments() {
-    const doctorId = this.doctor?.id;
+    const doctorId = this.doctorData.id;
     const token = localStorage.getItem('token');
 
     if (!doctorId || !token) return;
 
-    this.http.post<any[]>('http://localhost:3000/api/getDoctorsAppointments',
+    this.http.post<Appointment[]>('http://localhost:3000/api/getDoctorsAppointments',
       { doctorId },
       {headers: {
           Authorization: `Bearer ${token}`
         }
       }).subscribe({
-      next: (data) => {
-        this.appointments = data;
+      next: (res) => {
+        this.appointments = res;
       },
       error: (err) => {
         console.error('API hiba:', err);
@@ -180,8 +179,8 @@ export class AppointmentModalComponent implements OnInit{
   }
 
   handleAppointmentSaving(from: Date, to: Date) {
-    const doctorId = this.doctor?.id;
-    const patientId = this.user?.patient?.id;
+    const doctorId = this.doctorData.id;
+    const patientId = this.patientData.user.id;
     const token = localStorage.getItem('token');
 
     const payload = {
@@ -195,10 +194,10 @@ export class AppointmentModalComponent implements OnInit{
       return;
     }
 
-    this.http.post<any[]>('http://localhost:3000/api/registerToAppointment', payload, {
+    this.http.post('http://localhost:3000/api/patient/registerToAppointment', payload, {
       headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
-      next: (data) => {
+      next: () => {
         this.toast.show('Sikeres foglalás!', 'success');
         this.getDoctorsAppointments();
       },

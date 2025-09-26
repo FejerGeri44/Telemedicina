@@ -5,6 +5,7 @@ import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/ro
 import {filter, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
+import {PatientItem, UnreadMessage} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-patient-navbar',
@@ -20,13 +21,12 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
   styleUrl: './patient-navbar.component.css'
 })
 export class PatientNavbarComponent implements OnInit{
-  user: any;
-  pictureUrl: any;
+  user!: PatientItem;
   profileOpen = false;
   mobileMenuOpen = false;
   private navSub?: Subscription;
 
-  unreadMessages: any[] = [];
+  unreadMessages: UnreadMessage[] = [];
   unreadCount = 0;
 
   menuItems = [
@@ -47,8 +47,7 @@ export class PatientNavbarComponent implements OnInit{
     this.getMyData();
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-      });
+      .subscribe(() => {});
     this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => this.closeMobileMenu());
@@ -58,13 +57,13 @@ export class PatientNavbarComponent implements OnInit{
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getPatientMe', {
+    this.http.get<PatientItem>('http://localhost:3000/api/getPatientMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (user: any) => {
-        this.user = user;
+      next: (res) => {
+        this.user = { user: res.user, patient: res.patient };
         this.getUnreadMessages();
       },
       error: (err) => {
@@ -83,6 +82,7 @@ export class PatientNavbarComponent implements OnInit{
 
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('System-Messages');
     void this.router.navigate(
       ['/regist-login'],
       { queryParams: { tab: 'login' } }
@@ -147,7 +147,7 @@ export class PatientNavbarComponent implements OnInit{
   }
 
   toggleProfileMenu(event?: MouseEvent) {
-    event?.stopPropagation?.();
+    event?.stopPropagation();
     this.profileOpen = !this.profileOpen;
   }
 }

@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller');
 const authenticateToken = require('../middleware/auth.middleware');
-const doctorController = require("../controllers/doctor.controller");
 
 router.get('/getAdminMe', authenticateToken, adminController.getCurrentUser);
 router.patch('/admin/profile/update', adminController.updateProfile);
@@ -15,5 +14,8 @@ router.post('/admin/registerAdmin', authenticateToken, adminController.registerA
 router.delete('/admin/deleteUsers', authenticateToken, adminController.deleteUsers);
 router.get('/admin/pendingDoctors', authenticateToken, adminController.getPendingDoctors);
 router.patch('/admin/approveDoctor', authenticateToken, adminController.approveDoctor);
+router.post('/admin/system-messages', authenticateToken, adminController.createSystemMessage);
+router.get('/admin/getAllSystemMessage', authenticateToken, adminController.listSystemMessages);
+router.delete('/admin/delete-system-message', authenticateToken, adminController.deleteSystemMessage);
 
 module.exports = router;

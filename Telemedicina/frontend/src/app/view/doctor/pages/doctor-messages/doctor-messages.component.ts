@@ -6,6 +6,12 @@ import {IonicModule} from '@ionic/angular';
 import {NgForOf, NgIf} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {Router} from '@angular/router';
+import {
+  DoctorItem,
+  PatientItem,
+  UnreadMessage,
+  PatientUnreadSummary
+} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-doctor-messages',
@@ -20,19 +26,18 @@ import {Router} from '@angular/router';
   styleUrl: './doctor-messages.component.css'
 })
 export class DoctorMessagesComponent implements OnInit, OnDestroy{
-  user: any;
-  pictureUrl: any;
-  patients: any[] = [];
-  filteredPatients: any[] = [];
+  user!: DoctorItem;
+  patients!: PatientItem[];
+  filteredPatients: PatientItem[] = [];
   patientQuery = '';
   searchOpen = false;
 
   allMessages: any[] = [];
   messages: any[] = [];
-  unreadMessages: any[] = [];
-  unreadByPatient: any[] = [];
+  unreadMessages: UnreadMessage[] = [];
+  unreadByPatient: PatientUnreadSummary[] = [];
 
-  selectedPatient: any = null;
+  selectedPatient!: PatientItem;
   draftText = '';
   isOnline = false;
   isLoading= true;
@@ -62,21 +67,21 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
 
   getAllPatients() {
     const token = localStorage.getItem('token');
-    this.http.get<any[]>('http://localhost:3000/api/getAllPatients', {
+    this.http.get<PatientItem[]>('http://localhost:3000/api/getAllPatients', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (data) => {
-        this.patients = data;
+      next: (res) => {
+        console.log(res);
+        this.patients = res;
         this.isLoading = false;
-        console.log(data);
+        console.log(res);
       },
       error: (err) =>
         console.error('getAllPatients error', err)
     });
   }
-
 
   @ViewChild('messageScroll') messageScroll: any;
   private scrollToBottom() {
@@ -103,18 +108,18 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
     return s === this.user.user.id;
   }
 
-  selectPatient(patient: any) {
+  selectPatient(patient: PatientItem) {
     this.selectedPatient = patient;
     if (this.isSmall) this.showChatOnMobile = true;
     this.applyConversationFilter();
-    this.markConversationReadAsDoctor(this.selectedPatient?.User?.id);
+    this.markConversationReadAsDoctor(this.selectedPatient?.user?.id);
     setTimeout(() => {
       this.getUnreadMessages();
     }, 0);
   }
 
   applyConversationFilter() {
-    const otherId = this.selectedPatient?.User?.id;
+    const otherId = this.selectedPatient?.user?.id;
     if (!this.user.user.id || !otherId) { this.messages = []; return; }
 
     const rows = (this.allMessages || []).filter((m: any) => {
@@ -135,7 +140,7 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
     setTimeout(() => this.scrollToBottom?.(), 0);
   }
 
-  markConversationReadAsDoctor(patientUserId: number) {
+  markConversationReadAsDoctor(patientUserId: number | undefined) {
     const myUserId = this.user?.user.id;
     const token = localStorage.getItem('token');
     if (!token || !myUserId || !patientUserId) return;
@@ -165,14 +170,13 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getPatientMe', {
+    this.http.get<DoctorItem>('http://localhost:3000/api/getPatientMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (user: any) => {
-        this.user = user;
-        this.pictureUrl = this.user.pictureUrl;
+      next: (res) => {
+        this.user = { user: res.user, doctor: res.doctor };
         this.loadAllMyMessages();
       },
       error: (err) => {
@@ -246,7 +250,7 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
 
   send() {
     const text = this.draftText.trim();
-    if (!text || !this.selectedPatient?.User?.id) return;
+    if (!text || !this.selectedPatient?.user?.id) return;
 
     const token = localStorage.getItem('token');
 
@@ -263,7 +267,7 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
     this.draftText = '';
 
     this.http.post<any>('http://localhost:3000/api/sendMessage', {
-      toUserId: this.selectedPatient.User.id,
+      toUserId: this.selectedPatient.user.id,
       content: text,
       role: 'doctor'
     }, { headers: { Authorization: `Bearer ${token}` }})
@@ -298,7 +302,7 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
   deleteConversation() {
     const token = localStorage.getItem('token');
     const meUserId = this.user.user.id;
-    const otherId = this.selectedPatient?.User?.id;
+    const otherId = this.selectedPatient?.user?.id;
     if (!token || !meUserId || !otherId) return;
 
     this.http.post<any>('http://localhost:3000/api/deleteConversation', {
@@ -307,7 +311,7 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
       role: 'doctor'
     }, { headers: { Authorization: `Bearer ${token}` }})
       .subscribe({
-        next: (res) => {
+        next: () => {
           this.allMessages = [];
           this.loadAllMyMessages();
           this.toast.show("Sikeres törlés!", "success");
@@ -344,14 +348,14 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
       }
     ).subscribe({
       next: (res) => {
-        this.unreadMessages = res.unread ?? [];
+        this.unreadMessages = res.unread;
         this.unreadByPatient = this.computeUnreadByPatient(this.unreadMessages);
       },
       error: (e) => console.error('getUnreadMessages error', e)
     });
   }
 
-  computeUnreadByPatient(unreadMessages: any[]): any[] {
+  computeUnreadByPatient(unreadMessages: UnreadMessage[]): PatientUnreadSummary[] {
     const map = new Map<number, { patientId: number; latest: any; count: number }>();
 
     for (const msg of unreadMessages) {
@@ -377,7 +381,8 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy{
     );
   }
 
-  getUnreadSummary(patientUserId: number | undefined): any | null {
+  getUnreadSummary(patientUserId: number | undefined): PatientUnreadSummary | null {
+    if (!patientUserId) return null;
     return this.unreadByPatient.find(u => u.patientId === patientUserId) ?? null;
   }
 }

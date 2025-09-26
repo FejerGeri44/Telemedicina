@@ -8,6 +8,7 @@ import {FormsModule} from '@angular/forms';
 import {PatientRegistComponent} from '../../../guest/pages/regist-login/forms/patient-regist/patient-regist.component';
 import {DoctorRegistComponent} from '../../../guest/pages/regist-login/forms/doctor-regist/doctor-regist.component';
 import {AdminRegistComponent} from '../../../guest/pages/regist-login/forms/admin-regist/admin-regist.component';
+import {AdminItem} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-add-user',
@@ -24,14 +25,12 @@ import {AdminRegistComponent} from '../../../guest/pages/regist-login/forms/admi
   styleUrl: './add-user.component.css'
 })
 export class AddUserComponent implements OnInit{
-  user: any;
+  user!: AdminItem;
   selectedRole: 'patient' | 'doctor' | 'admin' = 'patient';
 
   constructor(
     private modalCtrl: ModalController,
     private http: HttpClient,
-    private toast: ToastService,
-    private alert: AlertService
   ) {}
 
   ngOnInit() {
@@ -43,7 +42,7 @@ export class AddUserComponent implements OnInit{
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getAdminMe', {
+    this.http.get<AdminItem>('http://localhost:3000/api/getAdminMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }

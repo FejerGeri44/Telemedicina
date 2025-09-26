@@ -1,27 +1,12 @@
 import {Component, Injector, OnInit, ViewContainerRef} from '@angular/core';
 import {AlertController, IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
-import {DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
+import {DatePipe, NgClass, NgForOf, NgIf, registerLocaleData} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
-import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
-
-interface newAppointment {
-  date: string;
-  from: string;
-  to: string;
-}
-
-interface prevAppointment {
-  id: number;
-  doctor_id: number;
-  patient_id: number | null;
-  from: string;
-  to: string;
-  status: string;
-}
+import {DoctorItem, newAppointment, prevAppointment} from '../../../../utils/interfaces';
 
 registerLocaleData(localeHu);
 
@@ -48,7 +33,7 @@ export class AppointmentsComponent implements OnInit{
     from: '',
     to: ''
   };
-  user: any;
+  user!: DoctorItem;
   selectedDate = new Date();
   weekStart!: Date;
   weekEnd!: Date;
@@ -89,13 +74,13 @@ export class AppointmentsComponent implements OnInit{
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getDoctorMe', {
+    this.http.get<DoctorItem>('http://localhost:3000/api/getDoctorMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (user: any) => {
-        this.user = user;
+      next: (res) => {
+        this.user = { user: res.user, doctor: res.doctor };
       },
       error: (err) => {
         console.error('❌ Doctor user lekérése sikertelen:', err);
@@ -190,7 +175,7 @@ export class AppointmentsComponent implements OnInit{
     if (!this.appointments?.length) return null;
 
     // time = "HH:mm"
-    const [hh, mm] = time.split(':').map(Number);
+    const [] = time.split(':').map(Number);
 
     return this.appointments.find(appt => {
       const start = new Date(appt.from);
@@ -256,8 +241,7 @@ export class AppointmentsComponent implements OnInit{
     if (isNaN(picked.getTime())) { this.openMonthPicker = false; return; }
 
     // Hónap első napjára állunk, és abból számoljuk a hetet
-    const firstOfMonth = new Date(picked.getFullYear(), picked.getMonth(), 1);
-    this.selectedDate = firstOfMonth;
+    this.selectedDate = new Date(picked.getFullYear(), picked.getMonth(), 1);
     this.computeWeek(this.selectedDate);
     this.openMonthPicker = false;
   }

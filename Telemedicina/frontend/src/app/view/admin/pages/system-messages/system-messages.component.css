@@ -1,5 +1,131 @@
+.tabs {
+  width: 100%;
+  margin: 20px auto;
+}
+
+.segment-button {
+  display: flex;
+  flex-direction: row;
+  font-size: 1.2rem;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.message-table-scroll{
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.message-table {
+  min-width: 1200px;
+  border-collapse: collapse;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(16, 24, 40, 0.08);
+  border: 1px solid #eef2f7;
+}
+
+/* sticky fejléc, finom háttér */
+.message-table .table-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  backdrop-filter: blur(6px);
+  background: linear-gradient(180deg, #f7f9fc 0%, #f2f6fb 100%);
+  border-bottom: 1px solid #e6edf5;
+}
+.message-table .th {
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 13px;
+}
+
+/* sorok */
+.message-table .table-row {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background .18s ease, box-shadow .18s ease;
+}
+.message-table .table-row:hover {
+  background: #f9fbff;
+}
+
+/* cellák */
+.message-table ion-col {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+}
+
+.message-column {
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.chips-col {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  background: #eef2ff;
+  color: #334155;
+  border: 1px solid #e6ecff;
+}
+.type-chip ion-icon { font-size: 0.8rem; }
+
+.type-chip.info    { background:#e6f0ff; color:#1d4ed8; border-color:#cfe0ff; }
+.type-chip.warning { background:#fff6db; color:#b45309; border-color:#ffe9b0; }
+.type-chip.error   { background:#ffe6e8; color:#b91c1c; border-color:#ffc9cd; }
+
+.aud-chip, .date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 15px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color:#475569;
+  border:1px dashed #e5e7eb;
+  background:#f8fafc;
+}
+
+/* címoszlop: egy sor, ellipszis */
+.title-td {
+  font-weight: 600; color:#0f172a;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.message-td {
+  color: #334155;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-y: auto;
+}
+
+/* akció gomb */
+.actions .ghost-btn {
+  --padding-start: 6px; --padding-end: 6px;
+  --border-radius: 10px;
+  --background: transparent;
+  --ripple-color: rgba(220,38,38,.15);
+}
+.actions .ghost-btn:hover {
+  background: #fff1f2;
+}
+
+/* középre igazítás util */
+.text-center { justify-content: center; }
+
 .form-wrap {
-  width: 90%;
+  width: 85%;
   max-width: 1000px;
   margin: 40px auto;
   background: #fff;
@@ -8,12 +134,15 @@
   padding: 20px;
 }
 
-/* Fejléc */
 .form-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 8px 8px 4px;
+  margin: 10px;
+}
+ion-icon {
+  width: 30px;
+  height: 30px;
 }
 .form-head h2 {
   margin: 0;
@@ -48,13 +177,20 @@ ion-item {
   border: 1px solid rgba(0,0,0,0.06);
 }
 
+ion-item.required ion-label::after {
+  content: " *";
+  font-size: 1.2rem;
+  color: var(--ion-color-danger, #eb445a);
+  font-weight: 600;
+}
+
 ion-datetime {
   max-width: unset;
 }
 
 /* Szövegmező kényelmes magasság */
 ion-textarea {
-  min-height: 255px;
+  min-height: 250px;
 }
 
 /* Select placeholder szín finom */
@@ -67,37 +203,62 @@ ion-datetime {
   width: 100%;
 }
 
+ion-datetime::part(active) {
+  background: #007bff;
+  color: white;
+  font-size: 1.25rem;
+  border-radius: 50%;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: 1;
+}
+
+ion-datetime::part(active):hover {
+  transform: scale(1.1);
+}
+
+ion-item.custom-item {
+  --background: transparent;
+  --background-hover: transparent;
+}
+
 /* Gomb sáv */
 .btn-row {
   width: 100%;
   display: flex;
   justify-content: space-between;
+}
+
+.right {
+  display: flex;
+  justify-content: right;
+  width: 50%;
   gap: 10px;
 }
 
 .btn-primary {
-  width: 50%;
+  width: 100%;
   max-width: 200px;
 }
 .btn-secondary {
-  width: 50%;
+  width: 100%;
   max-width: 200px;
 }
 
-/* Típus szerinti előnézet-badge (ha kiraksz ilyet a template-ben) */
-.type-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.85rem;
+.no-data {
+  text-align: center;
+  margin-top: 24px;
 }
-.type-info    { background: #e0f2fe; color: #075985; }
-.type-warning { background: #fef3c7; color: #92400e; }
-.type-error   { background: #fee2e2; color: #991b1b; }
-.type-success { background: #dcfce7; color: #166534; }
+.no-data-text {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #8b5cf6;
+}
+.no-data-sub {
+  display: block;
+  margin-top: 8px;
+  color: #6b7280;
+}
 
 @media (max-width: 800px) {
   .columns {
@@ -109,20 +270,35 @@ ion-datetime {
   .btn-row {
     flex-direction: column;
   }
+  .right {
+    width: 100%;
+    margin: 10px 0;
+    flex-direction: row-reverse;
+  }
   .btn-primary {
     width: 100%;
     max-width: unset;
     order: 1;
   }
-  }
   .btn-secondary {
     width: 100%;
     max-width: unset;
     order: 2;
+  }
 }
 @media (max-width: 1000px) {
+  .message-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .message-table {
+    border-collapse: collapse;
+    background-color: white;
+  }
   .form-wrap {
-    margin: 40px auto;
+    margin: 20px auto;
     padding: 12px;
     border-radius: 12px;
   }

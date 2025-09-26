@@ -24,18 +24,18 @@
         class="doctor-profile"
         *ngFor="let doctor of doctors; trackBy: trackByDoctorId"
         (click)="selectDoctor(doctor)"
-        [class.active]="doctor.id === selectedDoctor?.id">
+        [class.active]="doctor.user?.id === selectedDoctor?.user?.id">
 
         <div class="avatar-wrap">
-          <img class="avatar" [src]="doctor.User?.pictureUrl" alt="Dr. avatar" />
+          <img class="avatar" [src]="doctor.user?.pictureUrl" alt="Dr. avatar" />
         </div>
 
         <div class="info">
-          <div class="name">Dr. {{ doctor.User?.name }}</div>
-          <div class="specialty">{{ doctor.speciality }}</div>
+          <div class="name">Dr. {{ doctor.user?.name }}</div>
+          <div class="specialty">{{ doctor.doctor.speciality }}</div>
         </div>
 
-        <div class="last-message" *ngIf="getUnreadSummary(doctor.User?.id) as summary">
+        <div class="last-message" *ngIf="getUnreadSummary(doctor.user.id) as summary">
           <span class="preview">{{ summary.latest?.content }}</span>
           <span class="badge" *ngIf="summary.count > 0">{{ summary.count }}</span>
         </div>
@@ -61,11 +61,11 @@
 
           <div class="peer">
             <ion-avatar class="avatar-wrap">
-              <img class="avatar" [src]="selectedDoctor?.User?.pictureUrl" alt="profil"/>
+              <img class="avatar" [src]="selectedDoctor.user.pictureUrl" alt="profil"/>
             </ion-avatar>
             <div class="meta">
-              <h2>{{ selectedDoctor?.User?.name }}</h2>
-              <small>{{ selectedDoctor?.speciality }}</small>
+              <h2>{{ selectedDoctor.user.name }}</h2>
+              <small>{{ selectedDoctor.doctor.speciality }}</small>
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@
         <ng-container *ngFor="let m of messages; trackBy: trackByMsgId">
           <div class="msg-row" [class.mine]="isMine(m)" [class.theirs]="!isMine(m)">
             <ion-avatar class="bubble-avatar" [style.width.px]="36" [style.height.px]="36">
-              <img [src]="isMine(m) ? (user.user.pictureUrl) : (selectedDoctor?.User?.pictureUrl)" />
+              <img [src]="isMine(m) ? (user.user.pictureUrl) : (selectedDoctor.user.pictureUrl)"  alt="profile"/>
             </ion-avatar>
 
             <div class="bubble">

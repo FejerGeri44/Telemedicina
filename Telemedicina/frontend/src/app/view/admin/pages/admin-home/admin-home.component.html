@@ -1,8 +1,7 @@
 <div class="grid">
   <app-admin-profile-card
     class="profile-card"
-    [user]="user?.user"
-    [admin]="user?.admin"
+    [user]="user"
     [editable]="true"
     (edit)="openEditModal()">
   </app-admin-profile-card>
@@ -10,7 +9,7 @@
   <ion-card class="patients">
     <div class="card-header">
       <h2 class="header-title">Páciensek</h2>
-      <ion-button class="expand-btn" [routerLink]="['/all-users']" [queryParams]="{ role: 'patient' }">
+      <ion-button class="expand-btn" [routerLink]="['/admin/all-users']" [queryParams]="{ role: 'patient' }">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
     </div>
@@ -23,7 +22,7 @@
   <ion-card class="doctors">
     <div class="card-header">
       <h2 class="header-title">Orvosok</h2>
-      <ion-button class="expand-btn" [routerLink]="['/all-users']" [queryParams]="{ role: 'doctor' }">
+      <ion-button class="expand-btn" [routerLink]="['/admin/all-users']" [queryParams]="{ role: 'doctor' }">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
     </div>
@@ -36,7 +35,7 @@
   <ion-card class="admins">
     <div class="card-header">
       <h2 class="header-title">Adminisztrátorok</h2>
-      <ion-button class="expand-btn" [routerLink]="['/all-users']" [queryParams]="{ role: 'admin' }">
+      <ion-button class="expand-btn" [routerLink]="['/admin/all-users']" [queryParams]="{ role: 'admin' }">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
     </div>
@@ -47,10 +46,55 @@
   </ion-card>
 
   <ion-card class="doctor-applications">
-    <p>Orvosi jelentkezések</p>
+    <div class="card-header">
+      <h2 class="header-title">Orvosi jelentkezések</h2>
+      <ion-button class="expand-btn" [routerLink]="['/admin/doctor-approvals']" [queryParams]="{ role: 'admin' }">
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div class="count">
+      <span>{{ this.pendingDoctors.length }}</span>
+    </div>
   </ion-card>
 
   <ion-card class="messages">
-    <p>Rendszerüzenetek</p>
+    <div class="card-header">
+      <h2 class="header-title">Rendszerüzenetek</h2>
+      <ion-button class="expand-btn" [routerLink]="['/admin/system-messages']" [queryParams]="{ role: 'admin' }">
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div *ngIf="systemMessages.length !== 0" class="message-table-scroll">
+      <ion-grid class="message-table">
+        <ion-row class="table-header">
+          <ion-col size="3"><span class="th">Típus / Közönség</span></ion-col>
+          <ion-col size="6" class="hide-sm"><span class="th">Cím</span></ion-col>
+          <ion-col size="3"><span class="th">Érvényesség</span></ion-col>
+        </ion-row>
+
+        <ion-row *ngFor="let message of systemMessages" class="table-row">
+          <ion-col size="3" class="chips-col">
+            <div class="aud-chip">
+              {{ message.audience }}
+            </div>
+          </ion-col>
+
+          <ion-col size="6" class="hide-sm">
+            <div class="title-td" [title]="message.title">{{ message.title }}</div>
+          </ion-col>
+
+          <ion-col size="3">
+            <div class="date-chip" *ngIf="message.validUntil">{{ message.validUntil }}</div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+
+    <div *ngIf="systemMessages.length === 0" class="no-data">
+      <span class="no-data-text">(N/A)</span>
+      <span class="no-data-sub">Jelenleg nincs elmentett rendszerüzenet.</span>
+    </div>
   </ion-card>
 </div>

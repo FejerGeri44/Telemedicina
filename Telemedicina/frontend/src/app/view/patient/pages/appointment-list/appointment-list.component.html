@@ -1,49 +1,61 @@
-<div class="appointment-container">
-  <!-- ÜRES ÁLLAPOT KIJELZÉSE -->
-  <div *ngIf="!isLoading && appointments.length === 0" class="empty-state">
-    <ion-icon name="calendar"></ion-icon>
-    <p>Nincs rögzített időpontod.</p>
-    <ion-button [routerLink]="'/doctor-search'" class="btn-primary appointment">Időpont foglalása</ion-button>
-  </div>
-
-  <div class="table-wrapper" *ngIf="!isLoading && appointments.length > 0">
-    <table class="appointment-table">
-      <thead>
-      <tr>
-        <th>Orvos</th>
-        <th>Specialitás</th>
-        <th class="sort" (click)="sortAppointments('datetime')">
-          Időpont
-          <ion-icon
-            [name]="sortColumn === 'datetime'
+<div *ngIf="!isLoading && myAppointments.length > 0" class="message-table-scroll">
+  <ion-grid class="message-table">
+    <ion-row class="table-header">
+      <ion-col size="1.5"><span class="th">Orvos</span></ion-col>
+      <ion-col size="1.5"><span class="th">Specialitás</span></ion-col>
+      <ion-col size="2" class="sort" (click)="sortAppointments()">
+        <span class="th">Időpont</span>
+        <ion-icon
+          [name]="sortColumn === 'datetime'
             ? (sortDirection === 'asc' ? 'chevron-up-outline' : 'chevron-down-outline')
             : 'swap-vertical-outline'">
-          </ion-icon>
-        </th>
-        <th>Cím</th>
-        <th>Telefonszám</th>
-        <th>Email</th>
-        <th></th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let appointment of appointments">
-        <td>
-          <div class="doctor-info">
-            <img [src]="appointment.pictureUrl" class="doctor-avatar" alt="Profilkép" draggable="false"/>
-            <span>Dr. {{ appointment.doctor }}</span>
-          </div>
-        </td>
-        <td>{{ appointment.speciality }}</td>
-        <td>{{ appointment.date | date: 'yyyy. MMM d.' }} {{ appointment.date | date: 'HH:mm' }}</td>
-        <td>{{ appointment.address }}</td>
-        <td>{{ appointment.phoneNumber }}</td>
-        <td>{{ appointment.email }}</td>
-        <td>
-          <ion-button class="delete-appointment" (click)="confirmDelete(appointment)">Törlés</ion-button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+        </ion-icon>
+      </ion-col>
+      <ion-col size="2"><span class="th">Cím</span></ion-col>
+      <ion-col size="2"><span class="th">Telefonszám</span></ion-col>
+      <ion-col size="2" class="text-center"><span class="th">Email</span></ion-col>
+      <ion-col size="1" class="text-center"><span class="th"></span></ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let appointment of myAppointments" class="table-row">
+      <ion-col size="1.5">
+        <div class="doctor-info">
+          <img [src]="appointment?.doctor?.user?.pictureUrl" class="doctor-avatar" alt="Profilkép" draggable="false"/>
+          <span>Dr. {{ appointment?.doctor?.user?.name }}</span>
+        </div>
+      </ion-col>
+
+      <ion-col size="1.5" class="chips-col">
+        {{ appointment?.doctor?.doctor?.speciality }}
+      </ion-col>
+
+      <ion-col size="2" class="hide-sm">
+        {{ appointment.from | date: 'yyyy. MMM d.' }} {{ appointment.from | date: 'HH:mm' }}
+      </ion-col>
+
+      <ion-col size="2" class="message-column">
+        {{ appointment?.doctor?.user?.address }}
+      </ion-col>
+
+      <ion-col size="2">
+        {{ appointment?.doctor?.user?.phoneNumber }}
+      </ion-col>
+
+      <ion-col size="2">
+        {{ appointment?.doctor?.user?.email }}
+      </ion-col>
+
+      <ion-col size="1" class="text-center actions">
+        <ion-button size="small" color="danger" fill="clear"
+                    (click)="confirmDelete(appointment)" class="ghost-btn">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</div>
+
+<div *ngIf="myAppointments.length === 0" class="no-data">
+  <span class="no-data-text">(N/A)</span>
+  <span class="no-data-sub">Jelenleg nincs elmentett rendszerüzenet.</span>
 </div>

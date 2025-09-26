@@ -1,6 +1,81 @@
-<div class="form-wrap">
+<ion-segment [(ngModel)]="activeTab" (ngModelChange)="onTabChange($event)" class="tabs">
+  <ion-segment-button value="list">
+    <div class="segment-button">
+      <ion-icon name="list-circle"></ion-icon>
+      <ion-label>Listázás</ion-label>
+    </div>
+  </ion-segment-button>
+  <ion-segment-button value="create">
+    <div class="segment-button">
+      <ion-icon name="create"></ion-icon>
+      <ion-label>Új rendszerüzenet</ion-label>
+    </div>
+  </ion-segment-button>
+</ion-segment>
+
+
+<div *ngIf="activeTab === 'list'">
+  <div *ngIf="messages.length !== 0" class="message-table-scroll">
+    <ion-grid class="message-table">
+      <ion-row class="table-header">
+        <ion-col size="1"><span class="th">Admin ID</span></ion-col>
+        <ion-col size="2"><span class="th">Típus / Közönség</span></ion-col>
+        <ion-col size="2" class="hide-sm"><span class="th">Cím</span></ion-col>
+        <ion-col size="4"><span class="th">Üzenet</span></ion-col>
+        <ion-col size="2"><span class="th">Érvényesség</span></ion-col>
+        <ion-col size="1" class="text-center"><span class="th"></span></ion-col>
+      </ion-row>
+
+      <ion-row *ngFor="let message of messages" class="table-row">
+        <ion-col size="1">
+          <div class="admin-id">{{ message.adminId }}</div>
+        </ion-col>
+
+        <ion-col size="2" class="chips-col">
+          <div class="type-chip" [class.info]="message.type==='info'"
+               [class.warning]="message.type==='warning'"
+               [class.error]="message.type==='error'">
+            <ion-icon [name]="message.type==='info' ? 'information-circle'
+                         : message.type==='warning' ? 'alert'
+                         : 'close-circle'"></ion-icon>
+            <span>{{ message.type }}</span>
+          </div>
+          <div class="aud-chip">
+            {{ message.audience }}
+          </div>
+        </ion-col>
+
+        <ion-col size="2" class="hide-sm">
+          <div class="title-td" [title]="message.title">{{ message.title }}</div>
+        </ion-col>
+
+        <ion-col size="4" class="message-column">
+          <div class="message-td" [title]="message.message"><br>{{ message.message }}</div>
+        </ion-col>
+
+        <ion-col size="2">
+          <div class="date-chip" *ngIf="message.validUntil">{{ message.validUntil }}</div>
+        </ion-col>
+
+        <ion-col size="1" class="text-center actions">
+          <ion-button size="small" color="danger" fill="clear"
+                      (click)="confirmDelete(message)" class="ghost-btn">
+            <ion-icon name="trash" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <div *ngIf="messages.length === 0" class="no-data">
+    <span class="no-data-text">(N/A)</span>
+    <span class="no-data-sub">Jelenleg nincs elmentett rendszerüzenet.</span>
+  </div>
+</div>
+
+<div class="form-wrap" *ngIf="activeTab === 'create'">
   <div class="form-head">
-    <ion-icon name="alert-circle-outline"></ion-icon>
+    <ion-icon name="notifications-circle"></ion-icon>
     <h2>Rendszerüzenet létrehozása</h2>
   </div>
 
@@ -8,27 +83,26 @@
     <div class="columns">
       <div class="col-1">
         <div class="field">
-          <ion-item>
+          <ion-item class="required" lines="none">
             <ion-label position="stacked">Cím</ion-label>
-            <ion-input name="title" [(ngModel)]="formData.title" required></ion-input>
+            <ion-input name="title" [(ngModel)]="formData.title" placeholder="A rendszerüzenet címe..." required></ion-input>
           </ion-item>
         </div>
 
         <div class="field">
-          <ion-item>
+          <ion-item class="required" lines="none">
             <ion-label position="stacked">Üzenet</ion-label>
-            <ion-textarea name="message" [(ngModel)]="formData.message" required></ion-textarea>
+            <ion-textarea name="message" [(ngModel)]="formData.message" placeholder="A rendszerüzenet tartalma..." required></ion-textarea>
           </ion-item>
         </div>
 
         <div class="field">
-          <ion-item>
+          <ion-item class="required" lines="none">
             <ion-label position="stacked">Típus</ion-label>
             <ion-select name="type" [(ngModel)]="formData.type" required>
-              <ion-select-option value="info">Info</ion-select-option>
+              <ion-select-option value="info">Információ</ion-select-option>
               <ion-select-option value="warning">Figyelmeztetés</ion-select-option>
               <ion-select-option value="error">Hiba</ion-select-option>
-              <ion-select-option value="success">Siker</ion-select-option>
             </ion-select>
           </ion-item>
         </div>
@@ -36,7 +110,7 @@
 
       <div class="col-2">
         <div class="field">
-          <ion-item>
+          <ion-item class="required" lines="none">
             <ion-label position="stacked">Célcsoport</ion-label>
             <ion-select name="audience" [(ngModel)]="formData.audience" required>
               <ion-select-option value="all">Mindenki</ion-select-option>
@@ -48,16 +122,24 @@
         </div>
 
         <div class="field">
-          <ion-item>
+          <ion-item class="custom-item required" lines="none">
             <ion-label position="stacked">Érvényes eddig</ion-label>
-            <ion-datetime name="validUntil" presentation="date" [(ngModel)]="formData.validUntil"></ion-datetime>
+            <ion-datetime
+              name="validUntil"
+              presentation="date"
+              [(ngModel)]="formData.validUntil"
+              required>
+            </ion-datetime>
           </ion-item>
         </div>
       </div>
     </div>
     <div class="btn-row">
       <ion-button class="btn-secondary" type="button" (click)="resetForm()">Mégse</ion-button>
-      <ion-button class="btn-primary" type="submit" [disabled]="!messageForm.form.valid">Mentés</ion-button>
+      <div class="right">
+        <ion-button class="btn-secondary preview" type="button" (click)="showPreview()" [disabled]="!messageForm.form.valid">Előnézet</ion-button>
+        <ion-button class="btn-primary save" type="submit" [disabled]="!messageForm.form.valid">Mentés</ion-button>
+      </div>
     </div>
   </form>
 </div>

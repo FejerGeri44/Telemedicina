@@ -1,8 +1,8 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {NgForOf, NgIf} from '@angular/common';
-
-export interface PatientTag { name: string; value: string; }
+import {formatPhoneNumber, formatTaj, getAge} from '../../../../utils/formatProfileData';
+import {User, Patient, PatientTag, PatientItem} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-patient-profile-card',
@@ -16,12 +16,22 @@ export interface PatientTag { name: string; value: string; }
   styleUrl: './patient-profile-card.component.css'
 })
 export class PatientProfileCardComponent {
-  @Input() user: any | null = null;
-  @Input() patient: any | null = null;
+  @Input() user!: PatientItem;
   @Input() tags: PatientTag[] = [];
   @Input() editable = false;
   @Output() edit = new EventEmitter<void>();
-
+  get patientAge(): number | null {
+    return getAge(this.user?.user.birthDate);
+  }
+  get patientTaj(): string {
+    return formatTaj(this.user?.patient?.taj);
+  }
+  get patientPhoneNumber(): string {
+    return formatPhoneNumber(this.user?.user.phoneNumber);
+  }
+  get patientHomePhone(): string {
+    return formatPhoneNumber(this.user?.patient.homePhone);
+  }
   iconFor(name: string): string | null {
     const n = (name || '').toLowerCase();
     if (n.includes('vér')) return 'water-outline';
@@ -30,26 +40,5 @@ export class PatientProfileCardComponent {
     if (n.includes('gyógyszer')) return 'bandage-outline';
     if (n.includes('diéta')) return 'leaf-outline';
     return null;
-  }
-
-  getAge(birthDateString?: string): number | null {
-    if (!birthDateString) return null;
-    const today = new Date();
-    const birth = new Date(birthDateString);
-    let age = today.getFullYear() - birth.getFullYear();
-    const md = today.getMonth() - birth.getMonth();
-    if (md < 0 || (md === 0 && today.getDate() < birth.getDate())) age--;
-    return age;
-  }
-
-  formatPhoneNumber(phone?: string): string {
-    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
-  }
-
-  formatTaj(taj?: string | number): string {
-    if (!taj) return 'N/A';
-    const clean = String(taj).replace(/\D/g, '');
-    return clean.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
   }
 }

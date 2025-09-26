@@ -24,8 +24,8 @@
       </label>
     </div>
     <div class="epm-headline">
-      <h2>Dr. {{ user?.user?.name }}</h2>
-      <p class="muted">{{ user?.user?.email }}</p>
+      <h2>Dr. {{ getUser()?.name }}</h2>
+      <p class="muted">{{ getUser()?.email }}</p>
     </div>
   </section>
 
@@ -38,7 +38,7 @@
           class="custom-input"
           type="text"
           [(ngModel)]="editForm.name"
-          [placeholder]="user?.user?.name"
+          [placeholder]="getUser()?.name"
           fill="outline"
           clearInput>
         </ion-input>
@@ -50,7 +50,7 @@
           class="custom-input"
           type="text"
           [(ngModel)]="editForm.address"
-          [placeholder]="user?.user?.address || 'N/A'"
+          [placeholder]="getUser()?.address || 'N/A'"
           fill="outline"
           clearInput>
         </ion-input>
@@ -64,7 +64,7 @@
           class="custom-input"
           type="tel"
           [(ngModel)]="editForm.phoneNumber"
-          [placeholder]="formatPhoneNumber(user?.user?.phoneNumber)"
+          [placeholder]="formatPhoneNumber(getUser()?.phoneNumber)"
           fill="outline"
           clearInput>
         </ion-input>
@@ -76,7 +76,7 @@
           class="custom-input"
           type="text"
           [(ngModel)]="editForm.speciality"
-          [placeholder]="user?.doctor?.speciality"
+          [placeholder]="getDoctor()?.speciality"
           fill="outline"
           clearInput>
         </ion-input>
@@ -91,7 +91,7 @@
           autoGrow="true"
           [rows]="6"
           [(ngModel)]="editForm.introduction"
-          [placeholder]="user?.doctor?.introduction || 'Részletes bemutatkozás...'"
+          [placeholder]="getDoctor()?.introduction || 'Részletes bemutatkozás...'"
           fill="outline">
         </ion-textarea>
       </ion-item>

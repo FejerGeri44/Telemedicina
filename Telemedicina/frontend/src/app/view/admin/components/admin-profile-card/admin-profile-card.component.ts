@@ -1,6 +1,8 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {NgIf} from '@angular/common';
+import {formatPhoneNumber} from '../../../../utils/formatProfileData';
+import {AdminItem} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-admin-profile-card',
@@ -13,13 +15,11 @@ import {NgIf} from '@angular/common';
   styleUrl: './admin-profile-card.component.css'
 })
 export class AdminProfileCardComponent {
-  @Input() user: any | null = null;
-  @Input() admin: any | null = null;
+  @Input() user!: AdminItem;
   @Input() editable = false;
   @Output() edit = new EventEmitter<void>();
 
-  formatPhoneNumber(phone?: string): string {
-    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
+  get adminPhoneNumber(): string {
+    return formatPhoneNumber(this.user?.user?.phoneNumber ?? '');
   }
 }

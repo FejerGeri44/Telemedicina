@@ -31,6 +31,12 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/system-messages/system-messages.component')
             .then(m => m.SystemMessagesComponent),
+      },
+      {
+        path: 'ai-assistants',
+        loadComponent: () =>
+          import('./pages/ai-assistants/ai-assistants.component')
+            .then(m => m.AiAssistantsComponent),
       }
     ],
   },

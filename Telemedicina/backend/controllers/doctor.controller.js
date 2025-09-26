@@ -5,41 +5,36 @@ exports.getCurrentUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
       attributes: ['id', 'pictureUrl', 'name', 'email', 'role', 'phoneNumber', 'address', 'birthDate'],
-      include: [
-        {
-          model: Doctor,
-          attributes: ['id', 'speciality', 'introduction', 'avgRating', 'registDate']
-        }
-      ]
+      include: [{
+        model: Doctor,
+        attributes: ['id', 'speciality', 'introduction', 'avgRating', 'registDate']
+      }]
     });
 
     if (!user) {
       return res.status(404).json({ message: 'Felhasználó nem található.' });
     }
 
-    const response = {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        phoneNumber: user.phoneNumber,
-        address: user.address,
-        birthDate: user.birthDate,
-        pictureUrl: user.pictureUrl
-      },
-      doctor: user.Doctor
-        ? {
-          id: user.Doctor.id,
-          speciality: user.Doctor.speciality,
-          introduction: user.Doctor.introduction,
-          avgRating: user.Doctor.avgRating,
-          registDate: user.Doctor.registDate
-        }
-        : null
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      phoneNumber: user.phoneNumber,
+      address: user.address,
+      birthDate: user.birthDate,
+      pictureUrl: user.pictureUrl
     };
 
-    res.status(200).json(response);
+    const doctorData = user.Doctor ? {
+      id: user.Doctor.id,
+      speciality: user.Doctor.speciality,
+      introduction: user.Doctor.introduction,
+      avgRating: user.Doctor.avgRating,
+      registDate: user.Doctor.registDate
+    } : null;
+
+    return res.status(200).json({ user: userData, doctor: doctorData });
   } catch (err) {
     console.error('Hiba a /me route-nál:', err);
     res.status(500).json({ message: 'Szerverhiba.' });
@@ -273,11 +268,7 @@ exports.getMyPatients = async (req, res) => {
       }
     }
 
-    return res.json({
-      doctorId: doctor.id,
-      count: byPatient.size,
-      patients: Array.from(byPatient.values())
-    });
+    return res.json( Array.from(byPatient.values()) );
 
   } catch (err) {
     console.error('❌ getMyPatients error:', err);
@@ -287,32 +278,21 @@ exports.getMyPatients = async (req, res) => {
 
 exports.getAllPatients = async (req, res) => {
   try {
-    console.log('🔍 Páciensek lekérdezése indul...');
-    const patients = await Patient.findAll({
-      attributes: [
-        'id',
-        'userId',
-        'height',
-        'weight',
-        'taj',
-        'homePhone',
-        'registDate',
-        'gender'
-      ],
+    const rows = await Patient.findAll({
+      attributes: ['id','userId','height','weight','taj','homePhone','registDate','gender'],
       include: [{
         model: User,
-        attributes: ['id','name','email','role', 'phoneNumber','address','birthDate','pictureUrl']
+        attributes: ['id','name','email','role','phoneNumber','address','birthDate','pictureUrl']
       }],
-      order: [[{ model: User }, 'name', 'ASC']]
+      raw: true,
+      nest: true
     });
 
-    res.status(200).json(patients);
+    const data = rows.map(({ User, ...patient }) => ({ user: User, patient }));
+    return res.status(200).json(data);
   } catch (err) {
     console.error('❌ Páciensek lekérdezési hiba:', err);
-    res.status(500).json({
-      message: 'Hiba történt a páciensek lekérdezésekor.',
-      error: err
-    });
+    return res.status(500).json({ message: 'Hiba történt a páciensek lekérdezésekor.', error: err });
   }
 };
 
@@ -361,10 +341,10 @@ exports.getUserDataForDiagnosis = async (req, res) => {
       }]
     });
 
-    const out = {};
+    const response = {};
     for (const p of patients) {
       const u = p.User || null;
-      out[p.id] = {
+      response[p.id] = {
         user: u ? {
           id: u.id,
           name: u.name,
@@ -387,7 +367,7 @@ exports.getUserDataForDiagnosis = async (req, res) => {
       };
     }
 
-    return res.status(200).json(out);
+    return res.status(200).json(response);
   } catch (err) {
     console.error('❌ Hiba a beteg/user adatok lekérésekor:', err);
     return res.status(500).json({ message: 'Szerverhiba a beteg/user adatok lekérésekor.' });
@@ -464,4 +444,4 @@ exports.newDiagnosis = async (req, res) => {
     console.error('❌ Hiba diagnózis mentésekor:', err);
     return res.status(500).json({ error: 'Nem sikerült elmenteni a diagnózist' });
   }
-};
+}

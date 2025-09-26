@@ -1,7 +1,7 @@
 const {
   User,
   Message,
-  sequelize
+  sequelize, SystemMessage
 } = require('../models');
 const {Op} = require("sequelize");
 
@@ -252,3 +252,37 @@ exports.getUnreadMessages = async (req, res) => {
     return res.status(500).json({ error: 'Nem sikerült lekérni az olvasatlan üzeneteket.' });
   }
 };
+
+exports.getSystemMessagesForMe = async (req, res) => {
+  try {
+    let { audiences } = req.body || {};
+    if (!Array.isArray(audiences)) audiences = [];
+
+    const normalized = [...new Set(audiences.map(a => String(a).trim().toLowerCase()))];
+    const effectiveAudiences = normalized.length ? [...new Set([...normalized, 'all'])] : ['all'];
+
+    const rows = await SystemMessage.findAll({
+      where: { audience: { [Op.in]: effectiveAudiences } },
+      attributes: ['id','adminId','title','message','audience','type','createdAt','validUntil'],
+      order: [['createdAt', 'DESC']],
+      raw: true
+    });
+
+    const messages = rows.map(row => ({
+      id: row.id,
+      adminId: row.adminId,
+      title: row.title,
+      message: row.message,
+      audience: row.audience,
+      type: row.type,
+      createdAt: new Date(row.createdAt).toISOString(),
+      validUntil: row.validUntil ? new Date(row.validUntil).toISOString() : null
+    }));
+
+    return res.status(200).json(messages)
+  } catch (err) {
+    console.error('❌ getSystemMessagesForMe hiba:', err);
+    return res.status(500).json({ message: 'Szerverhiba.' });
+  }
+};
+

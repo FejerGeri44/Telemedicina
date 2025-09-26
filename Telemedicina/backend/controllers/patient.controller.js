@@ -12,45 +12,40 @@ exports.getCurrentUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
       attributes: ['id', 'pictureUrl', 'name', 'email', 'role', 'phoneNumber', 'address', 'birthDate'],
-      include: [
-        {
-          model: Patient,
-          attributes: ['id', 'height', 'weight', 'homePhone', 'taj', 'registDate', 'gender']
-        }
-      ]
+      include: [{
+        model: Patient,
+        attributes: ['id', 'height', 'weight', 'homePhone', 'taj', 'registDate', 'gender']
+      }]
     });
 
     if (!user) {
       return res.status(404).json({ message: 'Felhasználó nem található.' });
     }
 
-    const response = {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        phoneNumber: user.phoneNumber,
-        address: user.address,
-        birthDate: user.birthDate,
-        pictureUrl: user.pictureUrl
-      },
-      patient: user.Patient
-        ? {
-          id: user.Patient.id,
-          height: user.Patient.height,
-          weight: user.Patient.weight,
-          homePhone: user.Patient.homePhone,
-          taj: user.Patient.taj,
-          registDate: user.Patient.registDate,
-          gender: user.Patient.gender
-        }
-        : null
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      phoneNumber: user.phoneNumber,
+      address: user.address,
+      birthDate: user.birthDate,
+      pictureUrl: user.pictureUrl
     };
 
-    res.status(200).json(response);
+    const patientData = user.Patient ? {
+      id: user.Patient.id,
+      height: user.Patient.height,
+      weight: user.Patient.weight,
+      homePhone: user.Patient.homePhone,
+      taj: user.Patient.taj,
+      registDate: user.Patient.registDate,
+      gender: user.Patient.gender
+    } : null;
+
+    return res.status(200).json({ user: userData, patient: patientData });
   } catch (err) {
-    console.error('Hiba a route-nál:', err);
+    console.error('Hiba a /me route-nál:', err);
     res.status(500).json({ message: 'Szerverhiba.' });
   }
 };
@@ -164,21 +159,45 @@ exports.updateProfile = async (req, res) => {
 exports.getAllDoctors = async (req, res) => {
   try {
     console.log('🔍 Lekérdezés indul...');
-    const doctors = await Doctor.findAll({
-      attributes: [
-        'id',
-        'userId',
-        'speciality',
-        'introduction',
-        'avgRating',
-        'registDate'
-      ],
+    const rows = await Doctor.findAll({
+      attributes: ['id','speciality','introduction','avgRating','registDate'],
       include: [{
         model: User,
-        attributes: ['id','name','email','phoneNumber', 'role','address','pictureUrl']
+        as: 'User',
+        attributes: ['id','name','email','role','phoneNumber','address','birthDate','pictureUrl']
       }]
     });
-    res.status(200).json(doctors);
+
+    const items = rows.map(r => {
+      const j = r.toJSON();
+
+      const doctor = {
+        id: j.id,
+        speciality: j.speciality,
+        introduction: j.introduction ?? null,
+        avgRating: j.avgRating ?? null,
+        registDate: j.registDate
+          ? (j.registDate instanceof Date ? j.registDate.toISOString() : String(j.registDate))
+          : null,
+      };
+
+      const user = j.User ? {
+        id: j.User.id,
+        name: j.User.name,
+        email: j.User.email,
+        role: j.User.role,
+        phoneNumber: j.User.phoneNumber,
+        address: j.User.address ?? undefined,
+        birthDate: j.User.birthDate
+          ? (j.User.birthDate instanceof Date ? j.User.birthDate.toISOString() : String(j.User.birthDate))
+          : undefined,
+        pictureUrl: j.User.pictureUrl,
+      } : null;
+
+      return { user, doctor };
+    });
+
+    return res.status(200).json(items);
   } catch (err) {
     console.error('❌ Lekérdezési hiba:', err);
     res.status(500).json({
@@ -188,7 +207,7 @@ exports.getAllDoctors = async (req, res) => {
   }
 };
 
-exports.getDoctorsAppointments = async  (req, res) => {
+exports.getDoctorsAppointments = async (req, res) => {
   const { doctorId } = req.body;
 
   if (!doctorId) {
@@ -196,29 +215,34 @@ exports.getDoctorsAppointments = async  (req, res) => {
   }
 
   try {
-    const appointments = await Appointment.findAll({
-      where: { doctor_id: doctorId }
+    const doctor = await Doctor.findOne({ where: { userId: doctorId } });
+    if (!doctor) {
+      return res.status(404).json({ error: 'Nincs ilyen doctor a megadott userId alapján.' });
+    }
+
+    const rows = await Appointment.findAll({
+      where: { doctor_id: doctor.id },
+      attributes: ['id', 'doctor_id', 'patient_id', 'from', 'to', 'status'],
+      order: [['from', 'ASC']]
     });
 
-    const Appointments = appointments.map(appt => {
-      const From = new Date(appt.from);
-      const To = new Date(appt.to);
+    const appointments = rows.map(r => ({
+      id: r.id,
+      doctor_id: r.doctor_id,
+      patient_id: r.patient_id ?? null,
+      from: new Date(r.from).toISOString(),
+      to: new Date(r.to).toISOString(),
+      status: r.status
+    }));
 
-      return {
-        ...appt.toJSON(),
-        from: From,
-        to: To
-      };
-    });
-
-    return res.status(200).json(Appointments);
+    return res.status(200).json({ appointments });
   } catch (err) {
     console.error('❌ Lekérdezési hiba:', err);
     return res.status(500).json({ error: 'Szerverhiba.' });
   }
 };
 
-exports.registerToAppointment = async  (req, res) => {
+exports.registerToAppointment = async (req, res) => {
   const { doctorId, patientId, from, to } = req.body;
 
   if (!doctorId || !patientId || !from || !to) {
@@ -226,23 +250,30 @@ exports.registerToAppointment = async  (req, res) => {
   }
 
   try {
-    const appointment = await Appointment.findOne({
-      where: {
-        doctor_id: doctorId,
-        from: new Date(from),
-        to: new Date(to),
-        status: 'free'
-      }
-    });
-
-    if (!appointment) {
-      return res.status(404).json({ error: 'Nem található szabad időpont.' });
+    const doctor = await Doctor.findOne({ where: { userId: doctorId } });
+    if (!doctor) {
+      return res.status(404).json({ error: 'Nincs ilyen orvos a megadott userId alapján.' });
     }
 
-    appointment.patient_id = patientId;
-    appointment.status = 'accepted';
+    const affected = await Appointment.update(
+      {
+        patient_id: patientId,
+        status: 'accepted'
+      },
+      {
+        where: {
+          doctor_id: doctor.id,
+          from: new Date(from),
+          to: new Date(to),
+          status: 'free'
+        },
+        limit: 1
+      }
+    );
 
-    await appointment.save();
+    if (affected === 0) {
+      return res.status(404).json({ error: 'Nem található szabad időpont (lehet, hogy időközben lefoglalták).' });
+    }
 
     return res.status(200).json({ message: 'Foglalás sikeres.' });
   } catch (err) {
@@ -302,71 +333,81 @@ exports.getDoctorCardData = async (req, res) => {
 
 exports.loadMyRegisteredAppointments = async (req, res) => {
   try {
-    const patient = await Patient.findOne({
-      where: { userId: req.user.id }
-    });
-
+    const patient = await Patient.findOne({ where: { userId: req.user.id } });
     if (!patient) {
       return res.status(404).json({ message: 'Páciens nem található.' });
     }
 
-    const appointments = await Appointment.findAll({
+    const rows = await Appointment.findAll({
       where: { patient_id: patient.id },
-      attributes: ['id', 'patient_id', 'doctor_id', 'from', 'to', 'status'],
-      include: [
-        {
-          model: Doctor,
-          attributes: ['speciality'],
-          include: [
-            {
-              model: User,
-              attributes: ['name', 'phoneNumber', 'address', 'email', 'pictureUrl']
-            }
-          ]
-        }
-      ]
+      order: [['from', 'ASC']],
+      attributes: ['id', 'from', 'to', 'status'],
+      include: [{
+        model: Doctor,
+        attributes: ['id', 'speciality', 'introduction', 'avgRating', 'registDate', 'userId'],
+        include: [{
+          model: User,
+          attributes: ['id', 'name', 'email', 'role', 'phoneNumber', 'address', 'birthDate', 'pictureUrl']
+        }]
+      }]
     });
 
-    const formatted = appointments.map((appt) => ({
+    const result = rows.map(appt => ({
       id: appt.id,
-      patient_id: appt.patient_id,
-      doctor_id: appt.doctor_id,
-      from: appt.from,
-      to: appt.to,
+      from: new Date(appt.from).toISOString(),
+      to: new Date(appt.to).toISOString(),
       status: appt.status,
-      speciality: appt.Doctor?.speciality || null,
-      doctor: appt.Doctor?.User
-        ? {
-          name: appt.Doctor.User.name,
-          phoneNumber: appt.Doctor.User.phoneNumber,
-          address: appt.Doctor.User.address,
-          email: appt.Doctor.User.email,
-          pictureUrl: appt.Doctor.User.pictureUrl
+      doctor: {
+        user: {
+          id: appt.Doctor?.User?.id,
+          name: appt.Doctor?.User?.name,
+          email: appt.Doctor?.User?.email,
+          role: appt.Doctor?.User?.role,
+          phoneNumber: appt.Doctor?.User?.phoneNumber,
+          address: appt.Doctor?.User?.address,
+          birthDate: appt.Doctor?.User?.birthDate,
+          pictureUrl: appt.Doctor?.User?.pictureUrl
+        },
+        doctor: {
+          id: appt.Doctor?.id,
+          speciality: appt.Doctor?.speciality,
+          introduction: appt.Doctor?.introduction ?? null,
+          avgRating: appt.Doctor?.avgRating ?? null,
+          registDate: appt.Doctor?.registDate ?? null
         }
-        : null
+      }
     }));
 
-    return res.status(200).json(formatted);
+    return res.status(200).json(result);
   } catch (err) {
     console.error('❌ Hiba az időpontok lekérésekor:', err);
     return res.status(500).json({ message: 'Szerverhiba.' });
   }
 };
 
-exports.deleteAppointment = async (req, res) => {
-  const appointmentId = req.body.id;
-  if (!appointmentId) {
-    return res.status(400).json({ error: 'Hiányzik az appointment ID.' });
-  }
+exports.cancelAppointment = async (req, res) => {
+  const id = req.body.id ?? req.params?.id;
+  if (!id) return res.status(400).json({ error: 'Hiányzik az appointment ID.' });
 
   try {
-    const appt = await Appointment.findByPk(appointmentId);
-    if (!appt) return res.status(404).json({ error: 'Időpont nem található.' });
+    const patient = await Patient.findOne({ where: { userId: req.user.id } });
+    if (!patient) return res.status(404).json({ error: 'Páciens nem található.' });
 
-    await appt.destroy();
-    return res.status(200).json({ message: 'Időpont törölve.' });
+    const affected = await Appointment.update(
+      { patient_id: null, status: 'free' },
+      {
+        where: { id, patient_id: patient.id, status: 'accepted' },
+        limit: 1
+      }
+    );
+
+    if (affected === 0) {
+      return res.status(404).json({ error: 'Nem található lemondható (accepted) időpont.' });
+    }
+
+    return res.status(200).json({ message: 'Időpont lemondva.' });
   } catch (err) {
-    console.error('❌ Hiba törlés közben:', err);
+    console.error('❌ Lemondási hiba:', err);
     return res.status(500).json({ error: 'Szerverhiba.' });
   }
 };

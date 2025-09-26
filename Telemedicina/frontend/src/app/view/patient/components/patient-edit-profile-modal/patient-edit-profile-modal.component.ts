@@ -1,9 +1,10 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {NgForOf, NgIf} from '@angular/common';
+import {Patient, PatientItem, User} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -18,7 +19,7 @@ import {NgForOf, NgIf} from '@angular/common';
   styleUrls: ['./patient-edit-profile-modal.component.css']
 })
 export class PatientEditProfileModalComponent {
-  @Input() user!: { user: any; patient?: any | null };
+  @Input() user!: PatientItem;
   editForm = {
     name: '',
     address: '',
@@ -30,7 +31,15 @@ export class PatientEditProfileModalComponent {
     tagsDraft: [] as { key: string; label: string; value: string }[]
   };
   currentTagDef: any = null;
-  newTag: { key: string; label: string; value: string } = { key: '', label: '', value: '' };
+  newTag: {
+    key: string;
+    label: string;
+    value: string
+  } = {
+    key: '',
+    label: '',
+    value: ''
+  };
   file: File | null = null;
 
   tagOptions = [
@@ -47,10 +56,6 @@ export class PatientEditProfileModalComponent {
     private toast: ToastService
   ) {}
 
-  close() {
-    void this.modalCtrl.dismiss();
-  }
-
   onTagTypeChange() {
     this.currentTagDef = this.tagOptions.find(o => o.key === this.newTag.key) || null;
     this.newTag.label = this.currentTagDef?.label || '';
@@ -62,11 +67,7 @@ export class PatientEditProfileModalComponent {
     if (!this.newTag.key || !this.newTag.value) return false;
 
     // pl. vértípus csak egyszer legyen
-    if (this.newTag.key === 'bloodType' &&
-      this.editForm.tagsDraft.some(t => t.key === 'bloodType')) {
-      return false;
-    }
-    return true;
+    return !(this.newTag.key === 'bloodType' && this.editForm.tagsDraft.some(t => t.key === 'bloodType'));
   }
 
   // új tag hozzáadása a draft listához
@@ -93,7 +94,6 @@ export class PatientEditProfileModalComponent {
     this.newTag = { key: '', label: '', value: '' };
     this.currentTagDef = null;
   }
-
 
   async save() {
     const modifiedFields = this.getModifiedFields();
@@ -168,13 +168,12 @@ export class PatientEditProfileModalComponent {
       const raw = this.editForm[key];
       const newValue = typeof raw === 'string' ? raw.trim() : raw;
 
-      const originalFromUser   = this.user?.user?.[key as any];
-      const originalFromPatient= this.user?.patient?.[key as any];
+      const originalFromUser    = this.user?.user?.[key as keyof User];
+      const originalFromPatient = this.user?.patient?.[key as keyof Patient];
       const originalValue = originalFromUser ?? originalFromPatient;
 
       if (
         newValue !== null &&
-        newValue !== undefined &&
         newValue !== '' &&
         newValue !== originalValue
       ) {
@@ -187,5 +186,8 @@ export class PatientEditProfileModalComponent {
     }
 
     return modified;
+  }
+  close() {
+    void this.modalCtrl.dismiss();
   }
 }

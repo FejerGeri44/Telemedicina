@@ -1,9 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {AdminProfileCardComponent} from '../../components/admin-profile-card/admin-profile-card.component';
 import {IonicModule, ModalController} from '@ionic/angular';
-import {DatePipe, NgClass, NgForOf} from '@angular/common';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {forkJoin} from 'rxjs';
+import {DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
+import {HttpClient} from '@angular/common/http';
 import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
 import {AddUserComponent} from '../../components/add-user/add-user.component';
 import {
@@ -21,6 +20,7 @@ import {
 import {
   PatientEditProfileModalComponent
 } from '../../../patient/components/patient-edit-profile-modal/patient-edit-profile-modal.component';
+import {AdminItem, DoctorItem, PatientItem, PatientTag} from '../../../../utils/interfaces';
 
 type UserSortKey = 'name' | 'role' | 'createdAt';
 
@@ -30,18 +30,18 @@ type UserSortKey = 'name' | 'role' | 'createdAt';
     IonicModule,
     NgForOf,
     DatePipe,
-    NgClass
+    NgClass,
+    NgIf
   ],
   templateUrl: './all-users.component.html',
   standalone: true,
   styleUrl: './all-users.component.css'
 })
 export class AllUsersComponent implements OnInit{
-  patients: any = [];
-  doctors: any = [];
-  admins: any = [];
+  patients: PatientItem[] = [];
+  doctors: DoctorItem[] = [];
+  admins: AdminItem[] = [];
   users: any[] = [];
-  total: number = 0;
   countsByRole: { patient: number; doctor: number; admin: number } = {
     patient: 0,
     doctor: 0,
@@ -66,7 +66,7 @@ export class AllUsersComponent implements OnInit{
   ) {}
 
   ngOnInit() {
-    this.fetchAll();
+    this.loadAll();
     this.applyFilters();
     this.route.queryParamMap.subscribe(params => {
       const role = (params.get('role') ?? '') as '' | 'patient' | 'doctor' | 'admin';
@@ -74,47 +74,73 @@ export class AllUsersComponent implements OnInit{
     });
   }
 
-  getAllPatients(headers: HttpHeaders) {
-    return this.http.get<any[]>('http://localhost:3000/api/admin/getAllPatients', { headers });
-  }
-  getAllDoctors(headers: HttpHeaders) {
-    return this.http.get<any[]>('http://localhost:3000/api/admin/getAllDoctors', { headers });
-  }
-  getAllAdmins(headers: HttpHeaders) {
-    return this.http.get<any[]>('http://localhost:3000/api/admin/getAllAdmins', { headers });
-  }
-  fetchAll() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-
-    forkJoin([
-      this.getAllPatients(headers),
-      this.getAllDoctors(headers),
-      this.getAllAdmins(headers),
-    ]).subscribe({
-      next: ([patients, doctors, admins]) => {
-        this.patients = patients;
-        this.doctors  = doctors;
-        this.admins   = admins;
-
-        this.users = [
-          ...patients.map(p => ({ ...p, role: 'patient' })),
-          ...doctors.map(d  => ({ ...d, role: 'doctor'  })),
-          ...admins.map(a   => ({ ...a, role: 'admin'   })),
-        ];
-
-        this.total = this.users.length;
-        this.countsByRole = {
-          patient: patients.length,
-          doctor:  doctors.length,
-          admin:   admins.length,
-        };
+  loadPatients(): void {
+    const token = localStorage.getItem('token') ?? '';
+    this.http.get<PatientItem[]>('http://localhost:3000/api/admin/getAllPatients', {
+      headers: { Authorization: `Bearer ${token}` }
+    }).subscribe({
+      next: (res) => {
+        this.patients = res;
+        this.countsByRole.patient = this.patients.length;
+        this.buildUsers();
         this.applyFilters();
       },
-      error: err => console.error('❌ Összes user lekérése sikertelen:', err),
+      error: (err) => {
+        console.error('Páciensek lekérési hiba:', err);
+      }
     });
   }
+
+  loadDoctors(): void {
+    const token = localStorage.getItem('token') ?? '';
+    this.http.get<DoctorItem[]>('http://localhost:3000/api/admin/getAllDoctors', {
+      headers: { Authorization: `Bearer ${token}` }
+    }).subscribe({
+      next: (res) => {
+        this.doctors = res;
+        this.countsByRole.doctor = this.doctors.length;
+        this.buildUsers();
+        this.applyFilters();
+      },
+      error: (err) => {
+        console.error('Orvosok lekérési hiba:', err);
+      }
+    });
+  }
+
+  loadAdmins(): void {
+    const token = localStorage.getItem('token') ?? '';
+    this.http.get<AdminItem[]>('http://localhost:3000/api/admin/getAllAdmins', {
+      headers: { Authorization: `Bearer ${token}` }
+    }).subscribe({
+      next: (res) => {
+        this.admins = res;
+        this.countsByRole.admin = this.admins.length;
+        this.buildUsers();
+        this.applyFilters();
+      },
+      error: (err) => {
+        console.error('Adminok lekérési hiba:', err);
+      }
+    });
+  }
+
+  loadAll(): void {
+    this.loadPatients();
+    this.loadDoctors();
+    this.loadAdmins();
+  }
+
+  private buildUsers(): void {
+    const mapUserKey = (x: any) => ({ ...x, user: x.user ?? x.User });
+
+    this.users = [
+      ...this.patients.map((p: any) => ({ ...mapUserKey(p), role: 'patient' })),
+      ...this.doctors.map((d: any)  => ({ ...mapUserKey(d), role: 'doctor'  })),
+      ...this.admins.map((a: any)   => ({ ...mapUserKey(a), role: 'admin'   })),
+    ];
+  }
+
   private normalize(s: any): string {
     return (s ?? '')
       .toString()
@@ -223,8 +249,7 @@ export class AllUsersComponent implements OnInit{
       const modal = await this.modalCtrl.create({
         component: PatientProfileCardComponent as any,
         componentProps: {
-          user: user.User,
-          patient: user,
+          user: user,
           tags: user.tags,
           editable: false
         },
@@ -236,8 +261,7 @@ export class AllUsersComponent implements OnInit{
       const modal = await this.modalCtrl.create({
         component: DoctorProfileCardComponent as any,
         componentProps: {
-          user: user.User,
-          doctor: user,
+          user: user,
           editable: false
         },
         cssClass: 'profile-view-modal',
@@ -248,8 +272,7 @@ export class AllUsersComponent implements OnInit{
       const modal = await this.modalCtrl.create({
         component: AdminProfileCardComponent as any,
         componentProps: {
-          user: user.User,
-          admin: user,
+          user: user,
           editable: false
         },
         cssClass: 'profile-view-modal',
@@ -327,8 +350,8 @@ export class AllUsersComponent implements OnInit{
     const componentProps = this.mapToModalProps(selected);
 
     const modal = await this.modalCtrl.create({
-      component,
-      componentProps,
+      component: component as any,
+      componentProps: componentProps,
       backdropDismiss: false
     });
 
@@ -336,7 +359,7 @@ export class AllUsersComponent implements OnInit{
 
     const { role: modalRole } = await modal.onWillDismiss();
     if (modalRole === 'saved' || modalRole === 'updated') {
-      this.fetchAll();
+      this.loadAll();
     }
   }
   private getModalComponentByRole(role: string) {
@@ -374,42 +397,52 @@ export class AllUsersComponent implements OnInit{
     )
   }
   deleteUser() {
-    if (this.selectedIds.size === 0) {
-      return;
-    }
+    if (this.selectedIds.size === 0) return;
 
-    const payload = {
-      userIds: Array.from(this.selectedIds)
-    };
-
+    const payload = { userIds: Array.from(this.selectedIds) };
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.delete('http://localhost:3000/api/admin/deleteUsers', {
+    type DeleteResponse = {
+      message?: string;
+      deletedCount?: number;
+      roles?: string[];
+    };
+
+    this.http.delete<DeleteResponse>('http://localhost:3000/api/admin/deleteUsers', {
       body: payload,
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res) => {
-        this.toast.show("Sikeres felhasználó törlés!", "success");
+        this.toast.show('Sikeres felhasználó törlés!', 'success');
         this.selectedIds.clear();
-        setTimeout(() => window.location.reload(), 0);
+
+        const roles = (res?.roles ?? []).map(r => r?.toLowerCase?.()).filter(Boolean);
+        const set = new Set(roles);
+
+        if (set.size > 0) {
+          if (set.has('patient')) this.loadPatients();
+          if (set.has('doctor'))  this.loadDoctors();
+          if (set.has('admin'))   this.loadAdmins();
+        } else if ((res?.deletedCount ?? 0) > 0) {
+          this.loadAll();
+        }
       },
       error: (err) => {
         console.error('Hiba a törlés közben:', err);
       }
     });
   }
+
   async addUser() {
     const modal = await this.modalCtrl.create({
-      component: AddUserComponent,
+      component: AddUserComponent as any,
     });
 
     await modal.present();
     const { data } = await modal.onDidDismiss();
     if (data) {
-      this.fetchAll();
+      this.loadAll();
     }
   }
   exportCsv() {

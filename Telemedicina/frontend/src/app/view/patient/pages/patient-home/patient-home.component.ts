@@ -7,20 +7,8 @@ import {
 import {PatientProfileCardComponent} from '../../components/patient-profile-card/patient-profile-card.component';
 import {RouterLink} from '@angular/router';
 import {NgForOf, NgIf} from '@angular/common';
-
-export interface Appointment {
-  id: number;
-  doctor_id: number;
-  patient_id: number;
-  from: Date;
-  to: Date;
-  status: 'free' | 'accepted' | 'rejected';
-}
-
-interface PatientTag {
-  name: string;
-  value: string;
-}
+import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
+import {Appointment, PatientItem, PatientTag, SystemMessage} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-patient-home',
@@ -36,8 +24,7 @@ interface PatientTag {
   styleUrl: './patient-home.component.css'
 })
 export class PatientHomeComponent implements OnInit {
-  user: any;
-  pictureUrl: any;
+  user!: PatientItem;
   tags: PatientTag[] = [];
   appointments: Appointment[] = [];
   upcomingAppointments: Awaited<{
@@ -48,28 +35,82 @@ export class PatientHomeComponent implements OnInit {
     from: string;
     to: string
   }>[] = [];
+  systemMessages: SystemMessage[] = [];
 
-  constructor(private http: HttpClient, private modalCtrl: ModalController) {
-  }
+  constructor(
+    private http: HttpClient,
+    private modalCtrl: ModalController
+  ) {}
 
   ngOnInit() {
+    this.loadSystemMessagesOnceAfterLogin();
     this.getMyData();
     this.loadMyTags();
     this.loadMyAppointments();
+  }
+
+  loadSystemMessagesOnceAfterLogin(): void {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const key = `System-Messages`;
+    const alreadyShown = localStorage.getItem(key) === '1';
+    if (alreadyShown) return;
+
+    const payload = { audiences: ['all', 'patient'] };
+    this.http.post<SystemMessage[]>(
+      'http://localhost:3000/api/system-messages-for-me',
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    ).subscribe({
+      next: (res) => {
+        this.systemMessages = res;
+        void this.presentSystemMessagesModalsOnce();
+        localStorage.setItem(key, '1');
+      },
+      error: (err) => console.error('❌ Rendszerüzenetek lekérése sikertelen:', err)
+    });
+  }
+
+  async presentSystemMessagesModalsOnce(): Promise<void> {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const messages = this.systemMessages ?? [];
+    if (!messages.length) return;
+
+    const unseen = messages.filter(m => !localStorage.getItem(`System-Messages`));
+    if (!unseen.length) return;
+
+    for (const message of unseen) {
+      const modal = await this.modalCtrl.create({
+        component: SystemMessageModalComponent as any,
+        componentProps: {
+          messages: [message],
+        },
+        cssClass: 'system-message-modal',
+        canDismiss: true,
+        backdropDismiss: true,
+      });
+
+      await modal.present();
+      await modal.onDidDismiss();
+
+      localStorage.setItem(`System-Messages`, '1');
+    }
   }
 
   getMyData() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getPatientMe', {
+    this.http.get<PatientItem>('http://localhost:3000/api/getPatientMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (user: any) => {
-        this.user = user;
-        this.pictureUrl = this.user.pictureUrl;
+      next: (res) => {
+        this.user = { user: res.user, patient: res.patient };
       },
       error: (err) => {
         console.error('❌ Felhasználó lekérése sikertelen:', err);
@@ -81,13 +122,13 @@ export class PatientHomeComponent implements OnInit {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getPatientMeTags', {
+    this.http.get<PatientTag[]>('http://localhost:3000/api/getPatientMeTags', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (res: any) => {
-        this.tags = res?.tags ?? [];
+      next: (res) => {
+        this.tags = res;
       },
       error: (err) => {
         console.error('❌ Felhasználó lekérése sikertelen:', err);
@@ -134,7 +175,6 @@ export class PatientHomeComponent implements OnInit {
         this.upcomingAppointments = await Promise.all(
           upcoming.map(app => this.formatAppointmentWithPicture(app))
         );
-        console.log(this.upcomingAppointments);
       },
       error: (err) => {
         console.error('❌ Nem sikerült lekérni az időpontokat:', err);

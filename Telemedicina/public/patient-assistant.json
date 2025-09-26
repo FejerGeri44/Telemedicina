@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "audience": "patient",
+    "locale": "hu-HU"
+  },
+  "greeting": {
+    "text": "Szia! Miben segíthetek? Válassz a lehetőségek közül, vagy írj üzenetet.",
+    "quickStarts": [
+      { "label": "Navigáció", "prompt": "Hogyan jutok el hozzátok?", "icon": "navigate" },
+      { "label": "Orvos keresés", "prompt": "Szeretnék orvost választani", "icon": "medkit" },
+      { "label": "Gyógyszer", "prompt": "Információ egy gyógyszerről", "icon": "flask" }
+    ]
+  },
+  "intents": [
+    {
+      "id": "triage.emergency",
+      "patterns": [
+        { "list": ["mellkasi fájdalom","bénulás","légszomj","erős vérzés"] }
+      ],
+      "response": "Ez sürgős lehet. Kérlek, azonnal hívd a 112-t vagy menj az ügyeletre."
+    },
+    {
+      "id": "nav.opening_hours",
+      "patterns": [
+        { "list": ["nyitvatartás","nyitva","meddig vagytok"] }
+      ],
+      "response": { "text": "Nyitvatartás: H–P 08:00–16:00. Időpontért írj vagy foglalj online." }
+    }
+  ],
+  "fallback": {
+    "text": "Ebben nem vagyok biztos. Javaslom, hogy vedd fel a kapcsolatot szakemberrel.",
+    "suggestions": [
+      { "icon": "calendar", "label": "Időpontfoglalás" },
+      { "icon": "chatbubble-ellipses", "label": "Üzenet az asszisztensnek" }
+    ]
+  }
+}

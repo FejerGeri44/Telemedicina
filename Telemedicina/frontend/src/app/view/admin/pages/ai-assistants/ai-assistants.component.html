@@ -1,0 +1,496 @@
+<ion-segment [(ngModel)]="mainTab" class="tabs">
+  <ion-segment-button value="patient">
+    <div class="segment-button">
+      <ion-icon name="person"></ion-icon>
+      <ion-label>Páciensi M.I.</ion-label>
+    </div>
+  </ion-segment-button>
+  <ion-segment-button value="doctor">
+    <div class="segment-button">
+      <ion-icon name="medkit"></ion-icon>
+      <ion-label>Orvosi M.I.</ion-label>
+    </div>
+  </ion-segment-button>
+</ion-segment>
+
+<ion-card class="panel" *ngIf="mainTab==='patient'">
+  <ion-segment [(ngModel)]="patientSubTab">
+    <ion-segment-button value="rules">
+      <ion-icon name="list-outline"></ion-icon>
+      <ion-label>Szabályok</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="demo">
+      <ion-icon name="chatbubbles-outline"></ion-icon>
+      <ion-label>Demo</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <div *ngIf="patientSubTab==='rules'">
+    <ion-grid>
+      <ion-row class="rules-row">
+        <ion-col size="12" sizeMd="6" sizeLg="5">
+          <div class="rules-card">
+            <ion-card-header>
+              <ion-card-title>Páciensi M.I. Szabályok</ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <div class="filter-container">
+                <ion-item class="filter-input" lines="none">
+                  <ion-label position="stacked">Keresés név alapján</ion-label>
+                  <ion-input
+                    placeholder="Írj be egy nevet vagy részletet…"
+                    [(ngModel)]="searchText"
+                    (ionInput)="applyFilter()"
+                    clear-input>
+                  </ion-input>
+                </ion-item>
+                <ion-item class="filter-input" lines="none">
+                  <ion-label position="stacked">Válassz típust</ion-label>
+                  <ion-select
+                    interface="popover"
+                    [value]="selectedType"
+                    (ionChange)="onSelectType($event.detail.value)">
+                    <ion-select-option value="all">Összes</ion-select-option>
+                    <ion-select-option value="greeting">Greeting</ion-select-option>
+                    <ion-select-option value="intents">Intent</ion-select-option>
+                    <ion-select-option value="fallback">Fallback</ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </div>
+
+              <ng-container [ngSwitch]="selectedType">
+                <div class="table-wrap">
+                  <ion-grid class="table">
+                    <!-- FEJLÉC -->
+                    <ion-row class="table-header">
+                      <!-- all -->
+                      <ng-container *ngIf="selectedType==='all'">
+                        <ion-col size="12"><span class="th">Válassz típust</span></ion-col>
+                      </ng-container>
+
+                      <!-- greeting -->
+                      <ng-container *ngIf="selectedType==='greeting'">
+                        <ion-col size="1"><span class="th">Icon</span></ion-col>
+                        <ion-col size="3"><span class="th">Label</span></ion-col>
+                        <ion-col size="6"><span class="th">Prompt</span></ion-col>
+                        <ion-col size="2"><span class="th"></span></ion-col>
+                      </ng-container>
+
+                      <!-- intents -->
+                      <ng-container *ngIf="selectedType==='intents'">
+                        <ion-col size="3"><span class="th">ID</span></ion-col>
+                        <ion-col size="5"><span class="th">Patterns</span></ion-col>
+                        <ion-col size="2"><span class="th">Response</span></ion-col>
+                        <ion-col size="2"><span class="th"></span></ion-col>
+                      </ng-container>
+
+                      <!-- fallback -->
+                      <ng-container *ngIf="selectedType==='fallback'">
+                        <ion-col size="1"><span class="th">Icon</span></ion-col>
+                        <ion-col size="9"><span class="th">Label</span></ion-col>
+                        <ion-col size="2"><span class="th"></span></ion-col>
+                      </ng-container>
+                    </ion-row>
+
+                    <!-- TÖRZS: GREETING -->
+                    <ng-container *ngIf="selectedType==='greeting'">
+                      <ion-row class="table-row"
+                               *ngFor="let qs of aiGreetingFiltered">
+                        <ion-col size="1" class="ellipsis">
+                          <ion-icon class="id-icons" name="{{ qs.icon }}"></ion-icon>
+                        </ion-col>
+                        <ion-col size="3" class="ellipsis">
+                          {{ qs.label }}
+                        </ion-col>
+                        <ion-col size="6" class="ellipsis">
+                          {{ qs.prompt }}
+                        </ion-col>
+                        <ion-col size="2" class="actions">
+                          <ion-button size="small" fill="clear" (click)="onEditGreeting(qs)">
+                            <ion-icon name="create-outline"></ion-icon>
+                          </ion-button>
+                          <ion-button size="small" color="danger" fill="clear" (click)="onDeleteGreeting(qs)">
+                            <ion-icon name="trash-outline"></ion-icon>
+                          </ion-button>
+                        </ion-col>
+                      </ion-row>
+                    </ng-container>
+
+                    <!-- TÖRZS: INTENTS (lapozható) -->
+                    <ng-container *ngIf="selectedType === 'intents'">
+                      <ion-row class="table-row" *ngFor="let intent of currentPageIntents">
+                        <ion-col size="3" class="muted ellipsis">
+                          {{ intent.id }}
+                        </ion-col>
+
+                        <ion-col size="5" class="ellipsis">
+                          <ng-container *ngIf="intent.patterns?.length">
+                          <span *ngFor="let p of intent.patterns; let last = last">
+                            {{ (p || '').trim() }}<ng-container *ngIf="!last">&nbsp;-&nbsp;</ng-container>
+                          </span>
+                          </ng-container>
+                        </ion-col>
+
+                        <ion-col size="2" class="ellipsis">
+                          {{ intent.response }}
+                        </ion-col>
+
+                        <ion-col size="2" class="actions">
+                          <ion-button size="small" fill="clear" (click)="$event.stopPropagation(); onEdit(intent)">
+                            <ion-icon name="create-outline"></ion-icon>
+                          </ion-button>
+                          <ion-button size="small" color="danger" fill="clear" (click)="$event.stopPropagation(); onDelete(intent)">
+                            <ion-icon name="trash-outline"></ion-icon>
+                          </ion-button>
+                        </ion-col>
+                      </ion-row>
+                    </ng-container>
+
+                    <!-- TÖRZS: FALLBACK -->
+                    <ng-container *ngIf="selectedType==='fallback' && aiFallback">
+                      <ion-row class="table-row"
+                               *ngFor="let fb of aiFallbackFiltered">
+                        <ion-col size="1" class="ellipsis">
+                          <ion-icon class="id-icons" name="{{ fb.icon }}"></ion-icon>
+                        </ion-col>
+                        <ion-col size="9" class="ellipsis">
+                          {{ fb.label }}
+                        </ion-col>
+                        <ion-col size="2" class="actions">
+                          <ion-button size="small" fill="clear" (click)="onEditFallback(fb)">
+                            <ion-icon name="create-outline"></ion-icon>
+                          </ion-button>
+                          <ion-button size="small" color="danger" fill="clear" (click)="onDeleteFallback(fb)">
+                            <ion-icon name="trash-outline"></ion-icon>
+                          </ion-button>
+                        </ion-col>
+                      </ion-row>
+                    </ng-container>
+                  </ion-grid>
+                </div>
+              </ng-container>
+
+              <!-- Lapozó -->
+              <div class="pager" *ngIf="totalPages > 1">
+                <ion-button fill="clear" [disabled]="pageIndex===0" (click)="goToPage(0)">
+                  <ion-icon name="play-back-outline"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" [disabled]="pageIndex===0" (click)="prevPage()">
+                  <ion-icon name="chevron-back-outline"></ion-icon>
+                </ion-button>
+
+                <div class="page-indicators" aria-label="Oldalak">
+                  <button *ngFor="let p of pagesArray; let i = index"
+                          class="page-dot"
+                          [class.active]="i===pageIndex"
+                          (click)="goToPage(i)"
+                          [attr.aria-current]="i===pageIndex ? 'page' : null">
+                    {{ i + 1 }}
+                  </button>
+                </div>
+
+                <ion-button fill="clear" [disabled]="pageIndex>=totalPages-1" (click)="nextPage()">
+                  <ion-icon name="chevron-forward-outline"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" [disabled]="pageIndex>=totalPages-1" (click)="goToPage(totalPages-1)">
+                  <ion-icon name="play-forward-outline"></ion-icon>
+                </ion-button>
+              </div>
+
+              <!-- Új felvitel gomb -->
+              <ion-button class="btn-primary" (click)="onCreate()">
+                Új query–response
+              </ion-button>
+            </ion-card-content>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <div *ngIf="patientSubTab==='demo'">
+    <div>
+      <ion-card-header>
+        <ion-card-title>Páciensi MI – Chat demó</ion-card-title>
+        <ion-card-subtitle>Próbáld ki a páciensi MI válaszait</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+
+        <!-- Input mező -->
+        <ion-item>
+          <ion-textarea
+            placeholder="Írd be a kérdésedet..."
+            autoGrow
+            [(ngModel)]="demoInputPatient">
+          </ion-textarea>
+        </ion-item>
+
+        <!-- Gomb -->
+        <ion-button expand="block" class="ion-margin-top" (click)="send()">
+          Küldés
+        </ion-button>
+
+        <!-- Chat lista -->
+        <ion-list class="ion-margin-top">
+          <!-- TODO: chat üzenetek iteráció -->
+          <ion-item>
+            <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+            <ion-label>
+              <div><strong>Te</strong></div>
+              <div>Kérdés minta…</div>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="sparkles-outline" slot="start"></ion-icon>
+            <ion-label>
+              <div><strong>Asszisztens</strong></div>
+              <div>Válasz minta…</div>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+      </ion-card-content>
+    </div>
+  </div>
+</ion-card>
+
+<ion-card class="panel" *ngIf="mainTab==='doctor'">
+  <ion-segment [(ngModel)]="doctorSubTab">
+    <ion-segment-button value="rules">
+      <ion-icon name="list-outline"></ion-icon>
+      <ion-label>Szabályok</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="demo">
+      <ion-icon name="chatbubbles-outline"></ion-icon>
+      <ion-label>Demo</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <div *ngIf="patientSubTab==='rules'">
+    <ion-grid>
+      <ion-row class="rules-row">
+        <ion-col size="12" sizeMd="6" sizeLg="5">
+          <div class="rules-card">
+            <ion-card-header>
+              <ion-card-title>Orvosi M.I. Szabályok</ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <div class="filter-container">
+                <ion-item class="filter-input" lines="none">
+                  <ion-label position="stacked">Keresés név alapján</ion-label>
+                  <ion-input
+                    placeholder="Írj be egy nevet vagy részletet…"
+                    [(ngModel)]="searchText"
+                    (ionInput)="applyFilter()"
+                    clear-input>
+                  </ion-input>
+                </ion-item>
+                <ion-item class="filter-input" lines="none">
+                  <ion-label position="stacked">Válassz típust</ion-label>
+                  <ion-select
+                    interface="popover"
+                    [value]="selectedType"
+                    (ionChange)="onSelectType($event.detail.value)">
+                    <ion-select-option value="all">Összes</ion-select-option>
+                    <ion-select-option value="greeting">Greeting</ion-select-option>
+                    <ion-select-option value="intents">Intent</ion-select-option>
+                    <ion-select-option value="fallback">Fallback</ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </div>
+
+              <ng-container [ngSwitch]="selectedType">
+                <ion-grid class="table">
+                  <!-- FEJLÉC -->
+                  <ion-row class="table-header">
+                    <!-- all -->
+                    <ng-container *ngIf="selectedType==='all'">
+                      <ion-col size="12"><span class="th">Válassz típust</span></ion-col>
+                    </ng-container>
+
+                    <!-- greeting -->
+                    <ng-container *ngIf="selectedType==='greeting'">
+                      <ion-col size="1"><span class="th">Icon</span></ion-col>
+                      <ion-col size="3"><span class="th">Label</span></ion-col>
+                      <ion-col size="6"><span class="th">Prompt</span></ion-col>
+                      <ion-col size="2"><span class="th"></span></ion-col>
+                    </ng-container>
+
+                    <!-- intents -->
+                    <ng-container *ngIf="selectedType==='intents'">
+                      <ion-col size="3"><span class="th">ID</span></ion-col>
+                      <ion-col size="5"><span class="th">Patterns</span></ion-col>
+                      <ion-col size="2"><span class="th">Response</span></ion-col>
+                      <ion-col size="2"><span class="th"></span></ion-col>
+                    </ng-container>
+
+                    <!-- fallback -->
+                    <ng-container *ngIf="selectedType==='fallback'">
+                      <ion-col size="1"><span class="th">Icon</span></ion-col>
+                      <ion-col size="9"><span class="th">Label</span></ion-col>
+                      <ion-col size="2"><span class="th"></span></ion-col>
+                    </ng-container>
+                  </ion-row>
+
+                  <!-- TÖRZS: GREETING -->
+                  <ng-container *ngIf="selectedType==='greeting' && aiGreeting as greeting">
+                    <ion-row class="table-row"
+                             *ngFor="let qs of greeting.quickStarts">
+                      <ion-col size="1" class="ellipsis">
+                        <ion-icon class="id-icons" name="{{ qs.icon }}"></ion-icon>
+                      </ion-col>
+                      <ion-col size="3" class="ellipsis">
+                        {{ qs.label }}
+                      </ion-col>
+                      <ion-col size="6" class="ellipsis">
+                        {{ qs.prompt }}
+                      </ion-col>
+                      <ion-col size="2" class="actions">
+                        <ion-button size="small" fill="clear" (click)="onEditGreeting(qs)">
+                          <ion-icon name="create-outline"></ion-icon>
+                        </ion-button>
+                        <ion-button size="small" color="danger" fill="clear" (click)="onDeleteGreeting(qs)">
+                          <ion-icon name="trash-outline"></ion-icon>
+                        </ion-button>
+                      </ion-col>
+                    </ion-row>
+                  </ng-container>
+
+                  <!-- TÖRZS: INTENTS (lapozható) -->
+                  <ng-container *ngIf="selectedType === 'intents'">
+                    <ion-row class="table-row" *ngFor="let intent of aiIntents">
+                      <ion-col size="3" class="muted ellipsis">
+                        {{ intent.id }}
+                      </ion-col>
+
+                      <ion-col size="5" class="ellipsis">
+                        <ng-container *ngIf="intent.patterns?.length">
+                          <span *ngFor="let p of intent.patterns; let last = last">
+                            {{ (p || '').trim() }}<ng-container *ngIf="!last">&nbsp;-&nbsp;</ng-container>
+                          </span>
+                        </ng-container>
+                      </ion-col>
+
+                      <ion-col size="2" class="ellipsis">
+                        {{ intent.response }}
+                      </ion-col>
+
+                      <ion-col size="2" class="actions">
+                        <ion-button size="small" fill="clear" (click)="$event.stopPropagation(); onEdit(intent)">
+                          <ion-icon name="create-outline"></ion-icon>
+                        </ion-button>
+                        <ion-button size="small" color="danger" fill="clear" (click)="$event.stopPropagation(); onDelete(intent)">
+                          <ion-icon name="trash-outline"></ion-icon>
+                        </ion-button>
+                      </ion-col>
+                    </ion-row>
+                  </ng-container>
+
+                  <!-- TÖRZS: FALLBACK -->
+                  <ng-container *ngIf="selectedType==='fallback' && aiFallback as fallback">
+                    <ion-row class="table-row"
+                             *ngFor="let fb of fallback.suggestions">
+                      <ion-col size="1" class="ellipsis">
+                        <ion-icon class="id-icons" name="{{ fb.icon }}"></ion-icon>
+                      </ion-col>
+                      <ion-col size="9" class="ellipsis">
+                        {{ fb.label }}
+                      </ion-col>
+                      <ion-col size="2" class="actions">
+                        <ion-button size="small" fill="clear" (click)="onEditFallback(fb)">
+                          <ion-icon name="create-outline"></ion-icon>
+                        </ion-button>
+                        <ion-button size="small" color="danger" fill="clear" (click)="onDeleteFallback(fb)">
+                          <ion-icon name="trash-outline"></ion-icon>
+                        </ion-button>
+                      </ion-col>
+                    </ion-row>
+                  </ng-container>
+                </ion-grid>
+              </ng-container>
+
+              <!-- Lapozó -->
+              <div class="pager" *ngIf="totalPages > 1">
+                <ion-button fill="clear" [disabled]="pageIndex===0" (click)="goToPage(0)">
+                  <ion-icon name="play-back-outline"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" [disabled]="pageIndex===0" (click)="prevPage()">
+                  <ion-icon name="chevron-back-outline"></ion-icon>
+                </ion-button>
+
+                <div class="page-indicators" aria-label="Oldalak">
+                  <button *ngFor="let p of pagesArray; let i = index"
+                          class="page-dot"
+                          [class.active]="i===pageIndex"
+                          (click)="goToPage(i)"
+                          [attr.aria-current]="i===pageIndex ? 'page' : null">
+                    {{ i + 1 }}
+                  </button>
+                </div>
+
+                <ion-button fill="clear" [disabled]="pageIndex>=totalPages-1" (click)="nextPage()">
+                  <ion-icon name="chevron-forward-outline"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" [disabled]="pageIndex>=totalPages-1" (click)="goToPage(totalPages-1)">
+                  <ion-icon name="play-forward-outline"></ion-icon>
+                </ion-button>
+              </div>
+
+              <!-- Új felvitel gomb -->
+              <ion-button class="btn-primary" (click)="onCreate()">
+                Új query–response
+              </ion-button>
+            </ion-card-content>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <div *ngIf="doctorSubTab==='demo'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Páciensi MI – Chat demó</ion-card-title>
+        <ion-card-subtitle>Próbáld ki a páciensi MI válaszait</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+
+        <!-- Input mező -->
+        <ion-item>
+          <ion-textarea
+            placeholder="Írd be a kérdésedet..."
+            autoGrow
+            [(ngModel)]="demoInputPatient">
+          </ion-textarea>
+        </ion-item>
+
+        <!-- Gomb -->
+        <ion-button expand="block" class="ion-margin-top" (click)="send()">
+          Küldés
+        </ion-button>
+
+        <!-- Chat lista -->
+        <ion-list class="ion-margin-top">
+          <!-- TODO: chat üzenetek iteráció -->
+          <ion-item>
+            <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+            <ion-label>
+              <div><strong>Te</strong></div>
+              <div>Kérdés minta…</div>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="sparkles-outline" slot="start"></ion-icon>
+            <ion-label>
+              <div><strong>Asszisztens</strong></div>
+              <div>Válasz minta…</div>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-card>

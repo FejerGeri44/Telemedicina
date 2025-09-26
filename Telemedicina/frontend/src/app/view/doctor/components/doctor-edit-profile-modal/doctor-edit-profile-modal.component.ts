@@ -1,8 +1,10 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
+import {Doctor, DoctorItem, User} from '../../../../utils/interfaces';
+import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -15,7 +17,7 @@ import {ToastService} from '../../../../shared/toast/toast.service';
   styleUrls: ['./doctor-edit-profile-modal.component.css']
 })
 export class DoctorEditProfileModalComponent {
-  @Input() user!: { user: any; doctor?: any | null };
+  @Input() user!: DoctorItem;
   editForm = {
     name: '',
     address: '',
@@ -31,13 +33,16 @@ export class DoctorEditProfileModalComponent {
     private toast: ToastService
   ) {}
 
-  close() {
-    void this.modalCtrl.dismiss();
+  getUser(): User {
+    return this.user.user;
   }
 
-  formatPhoneNumber(phone?: string | null | undefined): string {
-    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
+  getDoctor(): Doctor {
+    return this.user.doctor;
+  }
+
+  close() {
+    void this.modalCtrl.dismiss();
   }
 
   async save() {
@@ -97,15 +102,13 @@ export class DoctorEditProfileModalComponent {
 
     for (const key of formKeys) {
       const raw = this.editForm[key];
-      const newValue = typeof raw === 'string' ? raw.trim() : raw;
+      const newValue = raw.trim();
 
-      const originalFromUser    = this.user?.user?.[key as any];
-      const originalFromDoctor  = this.user?.doctor?.[key as any];
+      const originalFromUser    = this.user?.user?.[key as keyof User];
+      const originalFromDoctor = this.user?.doctor?.[key as keyof Doctor];
       const originalValue = originalFromUser ?? originalFromDoctor;
 
       if (
-        newValue !== null &&
-        newValue !== undefined &&
         newValue !== '' &&
         newValue !== originalValue
       ) {
@@ -115,4 +118,6 @@ export class DoctorEditProfileModalComponent {
 
     return modified;
   }
+
+  protected readonly formatPhoneNumber = formatPhoneNumber;
 }

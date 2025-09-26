@@ -5,6 +5,7 @@ import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/ro
 import {filter, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
+import {Doctor, DoctorItem, UnreadMessage, User} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-doctor-navbar',
@@ -20,13 +21,12 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
   styleUrl: './doctor-navbar.component.css'
 })
 export class DoctorNavbarComponent implements OnInit{
-  user: any;
-  pictureUrl: any;
+  user!: DoctorItem;
   profileOpen = false;
   mobileMenuOpen = false;
   private navSub?: Subscription;
 
-  unreadMessages: any[] = [];
+  unreadMessages: UnreadMessage[] = [];
   unreadCount = 0;
 
   menuItems = [
@@ -48,8 +48,7 @@ export class DoctorNavbarComponent implements OnInit{
     this.getMyData();
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-      });
+      .subscribe(() => {});
     this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => this.closeMobileMenu());
@@ -59,13 +58,13 @@ export class DoctorNavbarComponent implements OnInit{
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getDoctorMe', {
+    this.http.get<DoctorItem>('http://localhost:3000/api/getDoctorMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (user: any) => {
-        this.user = user;
+      next: (res) => {
+        this.user = { user: res.user, doctor: res.doctor };
         this.getUnreadMessages();
       },
       error: (err) => {
@@ -84,6 +83,7 @@ export class DoctorNavbarComponent implements OnInit{
 
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('System-Messages');
     void this.router.navigate(
       ['/regist-login'],
       { queryParams: { tab: 'login' } }
@@ -94,7 +94,7 @@ export class DoctorNavbarComponent implements OnInit{
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const userId = this.user?.user?.id;
+    const userId = this.user?.user.id;
     if (!userId) return;
 
     this.http.post<{unread:any[], count:number}>(
@@ -121,9 +121,8 @@ export class DoctorNavbarComponent implements OnInit{
     void this.router.navigate(['doctor/doctor-messages']);
   }
 
-  openMobileMenu() {
+  toggleMobileMenu() {
     this.mobileMenuOpen = true;
-    this.addBodyNoScroll();
   }
 
   closeMobileMenu() {
@@ -144,15 +143,12 @@ export class DoctorNavbarComponent implements OnInit{
     }
   }
 
-  private addBodyNoScroll() {
-    document.body.classList.add('no-scroll');
-  }
   private removeBodyNoScroll() {
     document.body.classList.remove('no-scroll');
   }
 
-  toggleProfileMenu(ev?: Event) {
-    ev?.stopPropagation();
+  toggleProfileMenu(event?: MouseEvent) {
+    event?.stopPropagation();
     this.profileOpen = !this.profileOpen;
   }
 }

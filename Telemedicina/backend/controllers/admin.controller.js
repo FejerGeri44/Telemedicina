@@ -1,42 +1,37 @@
-const { User, Admin, Patient, Doctor, PatientTag, sequelize} = require('../models');
+const { User, Admin, Patient, Doctor, PatientTag, sequelize, SystemMessage} = require('../models');
 const bcrypt = require("bcrypt");
 
 exports.getCurrentUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
       attributes: ['id', 'pictureUrl', 'name', 'email', 'role', 'phoneNumber', 'address', 'birthDate'],
-      include: [
-        {
-          model: Admin,
-          attributes: ['id', 'registDate']
-        }
-      ]
+      include: [{
+        model: Admin,
+        attributes: ['id', 'registDate']
+      }]
     });
 
     if (!user) {
       return res.status(404).json({ message: 'Felhasználó nem található.' });
     }
 
-    const response = {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        phoneNumber: user.phoneNumber,
-        address: user.address,
-        birthDate: user.birthDate,
-        pictureUrl: user.pictureUrl
-      },
-      admin: user.Admin
-        ? {
-          id: user.Admin.id,
-          registDate: user.Admin.registDate
-        }
-        : null
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      phoneNumber: user.phoneNumber,
+      address: user.address,
+      birthDate: user.birthDate,
+      pictureUrl: user.pictureUrl
     };
 
-    res.status(200).json(response);
+    const adminData = user.Admin ? {
+      id: user.Admin.id,
+      registDate: user.Admin.registDate
+    } : null;
+
+    return res.status(200).json({ user: userData, admin: adminData });
   } catch (err) {
     console.error('Hiba a /me route-nál:', err);
     res.status(500).json({ message: 'Szerverhiba.' });
@@ -88,7 +83,7 @@ exports.updateProfile = async (req, res) => {
 exports.getAllPatients = async (req, res) => {
   try {
     console.log('🔍 Páciensek lekérdezése indul...');
-    const patients = await Patient.findAll({
+    const rows = await Patient.findAll({
       attributes: ['id','userId','height','weight','taj','homePhone','registDate','gender'],
       include: [
         {
@@ -98,17 +93,41 @@ exports.getAllPatients = async (req, res) => {
         {
           model: PatientTag,
           as: 'tags',
-          attributes: [
-            ['tag_name', 'name'],
-            ['tag_value', 'value']
-          ],
+          attributes: ['tag_name', 'tag_value'],
           required: false
         }
       ],
       order: [[{ model: User }, 'name', 'ASC']]
     });
 
-    res.status(200).json(patients);
+    const result = rows.map(patient => ({
+      user: {
+        id: patient.User.id,
+        name: patient.User.name,
+        email: patient.User.email,
+        role: patient.User.role,
+        phoneNumber: patient.User.phoneNumber,
+        address: patient.User?.address ?? undefined,
+        birthDate: patient.User?.birthDate ?? undefined,
+        pictureUrl: patient.User?.pictureUrl
+      },
+      patient: {
+        id: patient.id,
+        userId: patient.userId,
+        height: patient.height,
+        weight: patient.weight,
+        taj: patient.taj,
+        homePhone: patient.homePhone,
+        registDate: patient.registDate,
+        gender: patient.gender
+      },
+      tags: (patient.tags ?? []).map(t => ({
+        name: t.tag_name,
+        value: t.tag_value
+      }))
+    }));
+
+    return res.status(200).json(result);
   } catch (err) {
     console.error('❌ Páciensek lekérdezési hiba:', err);
     res.status(500).json({
@@ -121,23 +140,36 @@ exports.getAllPatients = async (req, res) => {
 exports.getAllDoctors = async (req, res) => {
   try {
     console.log('🔍 Orvosok lekérdezése indul...');
-    const doctors = await Doctor.findAll({
-      attributes: [
-        'id',
-        'userId',
-        'speciality',
-        'introduction',
-        'registDate',
-        'avgRating'
-      ],
+    const rows = await Doctor.findAll({
+      attributes: ['id', 'userId', 'speciality', 'introduction', 'registDate', 'avgRating'],
       include: [{
         model: User,
         attributes: ['id','name','email','role', 'phoneNumber','address','birthDate','pictureUrl']
       }],
-      order: [[{ model: User }, 'name', 'ASC']]
     });
 
-    return res.status(200).json(doctors);
+    const result = rows.map(doctor => ({
+      user: {
+        id: doctor.User.id,
+        name: doctor.User.name,
+        email: doctor.User.email,
+        role: doctor.User.role,
+        phoneNumber: doctor.User.phoneNumber,
+        address: doctor.User?.address ?? undefined,
+        birthDate: doctor.User?.birthDate ?? undefined,
+        pictureUrl: doctor.User?.pictureUrl
+      },
+      doctor: {
+        id: doctor.id,
+        userId: doctor.userId,
+        speciality: doctor.speciality,
+        introduction: doctor.introduction,
+        registDate: doctor.registDate,
+        avgRating: doctor.avgRating
+      }
+    }));
+
+    return res.status(200).json(result);
   } catch (err) {
     console.error('❌ Hiba a /doctors lekérésnél:', err);
     res.status(500).json({ message: 'Szerverhiba.' });
@@ -147,20 +179,33 @@ exports.getAllDoctors = async (req, res) => {
 exports.getAllAdmins = async (req, res) => {
   try {
     console.log('🔍 Adminisztrátorok lekérdezése indul...');
-    const admins = await Admin.findAll({
-      attributes: [
-        'id',
-        'userId',
-        'registDate'
-      ],
+    const rows = await Admin.findAll({
+      attributes: ['id', 'userId', 'registDate'],
       include: [{
         model: User,
         attributes: ['id','name','email','role', 'phoneNumber','address','birthDate','pictureUrl']
       }],
-      order: [[{ model: User }, 'name', 'ASC']]
     });
 
-    return res.status(200).json(admins);
+    const result = rows.map(admin => ({
+      user: {
+        id: admin.User.id,
+        name: admin.User.name,
+        email: admin.User.email,
+        role: admin.User.role,
+        phoneNumber: admin.User.phoneNumber,
+        address: admin.User?.address ?? undefined,
+        birthDate: admin.User?.birthDate ?? undefined,
+        pictureUrl: admin.User?.pictureUrl
+      },
+      admin: {
+        id: admin.id,
+        userId: admin.userId,
+        registDate: admin.registDate
+      }
+    }));
+
+    return res.status(200).json(result);
   } catch (err) {
     console.error('❌ Hiba a /admins lekérésnél:', err);
     res.status(500).json({ message: 'Szerverhiba.' });
@@ -347,37 +392,75 @@ exports.deleteUsers = async (req, res) => {
       return res.status(400).json({ message: 'Nincs kiválasztott felhasználó.' });
     }
 
+    const usersToDelete = await User.findAll({
+      where: { id: userIds },
+      attributes: ['id', 'role']
+    });
+
+    if (usersToDelete.length === 0) {
+      return res.status(404).json({
+        message: 'Nem található egyetlen felhasználó sem a megadott ID-k alapján.'
+      });
+    }
+
+    const roles = [...new Set(usersToDelete.map(u => (u.role || '').toLowerCase()))]
+      .filter(Boolean)
+      .slice(0, 3);
+
     const deleted = await User.destroy({
       where: { id: userIds }
     });
 
     if (deleted === 0) {
-      return res.status(404).json({ message: 'Nem található egyetlen felhasználó sem a megadott ID-k alapján.' });
+      return res.status(404).json({
+        message: 'Nem sikerült törölni a felhasználókat (lehet, hogy időközben már nem léteznek).'
+      });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       message: 'Felhasználó(k) sikeresen törölve.',
-      deletedCount: deleted
+      deletedCount: deleted,
+      roles: roles
     });
   } catch (err) {
     console.error('Hiba a felhasználók törlése közben:', err);
-    res.status(500).json({ message: 'Szerverhiba.' });
+    return res.status(500).json({ message: 'Szerverhiba.' });
   }
 };
 
 exports.getPendingDoctors = async (req, res) => {
   try {
-    const doctors = await Doctor.findAll({
+    const rows = await Doctor.findAll({
       where: { status: 'pending' },
       attributes: ['id','userId','speciality','introduction','registDate','avgRating','status'],
       include: [{
         model: User,
         attributes: ['id','name','email','role','phoneNumber','address','birthDate','pictureUrl']
       }],
-      order: [[{ model: User }, 'name', 'ASC']]
     });
 
-    return res.status(200).json(doctors);
+    const result = rows.map(doctor => ({
+      user: {
+        id: doctor.User?.id,
+        name: doctor.User?.name,
+        email: doctor.User?.email,
+        role: doctor.User?.role,
+        phoneNumber: doctor.User?.phoneNumber,
+        address: doctor.User?.address ?? undefined,
+        birthDate: doctor.User?.birthDate ?? undefined,
+        pictureUrl: doctor.User?.pictureUrl
+      },
+      doctor: {
+        id: doctor.id,
+        speciality: doctor.speciality,
+        introduction: doctor.introduction ?? null,
+        avgRating: doctor.avgRating ?? null,
+        registDate: doctor.registDate ?? null,
+        status: doctor.status
+      }
+    }));
+
+    return res.status(200).json(result);
   } catch (err) {
     console.error('❌ Pending orvosok lekérési hiba:', err);
     return res.status(500).json({ message: 'Szerverhiba.' });
@@ -403,6 +486,76 @@ exports.approveDoctor = async (req, res) => {
     return res.json({ message: 'Orvos jóváhagyva.', doctorId });
   } catch (e) {
     console.error('Approve doctor hiba:', e);
+    return res.status(500).json({ message: 'Szerverhiba.' });
+  }
+};
+
+exports.createSystemMessage = async (req, res) => {
+  try {
+    const { adminId, title, message, type = 'info', audience = 'all', validUntil } = req.body;
+
+    if (!adminId || !title?.trim() || !message?.trim()) {
+      return res.status(400).json({ message: 'adminId, title és message kötelező.' });
+    }
+
+    const admin = await Admin.findByPk(adminId, { attributes: ['id'] });
+    if (!admin) {
+      return res.status(404).json({ message: 'A megadott admin nem található.' });
+    }
+
+    let validUntilDate = null;
+    if (validUntil) {
+      const s = String(validUntil);
+      const ymd = s.includes('T') ? s.split('T')[0] : s;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(ymd)) validUntilDate = ymd;
+    }
+
+    const created = await SystemMessage.create({
+      adminId,
+      title: title.trim(),
+      message: message.trim(),
+      type,
+      audience,
+      validUntil: validUntilDate
+    });
+
+    return res.status(201).json({ message: 'Rendszerüzenet mentve.', data: created });
+  } catch (err) {
+    console.error('Rendszerüzenet mentési hiba:', err);
+    return res.status(500).json({ message: 'Szerverhiba.' });
+  }
+};
+
+exports.listSystemMessages = async (_req, res) => {
+  try {
+    const rows = await SystemMessage.findAll({
+      order: [['createdAt', 'DESC']]
+    });
+    return res.json(rows);
+  } catch (err) {
+    console.error('Rendszerüzenetek listázási hiba:', err);
+    return res.status(500).json({ message: 'Szerverhiba.' });
+  }
+};
+
+exports.deleteSystemMessage = async (req, res) => {
+  try {
+    const { messageId } = req.body || {};
+    const id = Number(messageId);
+
+    if (!id || Number.isNaN(id) || id <= 0) {
+      return res.status(400).json({ message: 'Érvénytelen vagy hiányzó messageId.' });
+    }
+
+    const row = await SystemMessage.findByPk(id);
+    if (!row) {
+      return res.status(404).json({ message: 'Rendszerüzenet nem található.', id });
+    }
+
+    await row.destroy();
+    return res.status(200).json({ message: 'Rendszerüzenet törölve.', id });
+  } catch (err) {
+    console.error('❌ Rendszerüzenet törlési hiba:', err);
     return res.status(500).json({ message: 'Szerverhiba.' });
   }
 };

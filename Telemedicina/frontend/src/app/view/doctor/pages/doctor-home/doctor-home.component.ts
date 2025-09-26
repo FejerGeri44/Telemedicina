@@ -6,15 +6,8 @@ import {
 } from '../../components/doctor-edit-profile-modal/doctor-edit-profile-modal.component';
 import {RouterLink} from '@angular/router';
 import {DoctorProfileCardComponent} from '../../components/doctor-profile-card/doctor-profile-card.component';
-
-interface prevAppointment {
-  id: number;
-  doctor_id: number;
-  patient_id: number | null;
-  from: string;
-  to: string;
-  status: string;
-}
+import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
+import {DoctorItem, prevAppointment, SystemMessage} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-doctor-home',
@@ -28,29 +21,84 @@ interface prevAppointment {
   styleUrl: './doctor-home.component.css'
 })
 export class DoctorHomeComponent implements OnInit{
-  user: any;
+  user!: DoctorItem;
   appointments: prevAppointment[] = [];
   todaysAppointments: number = 0;
+  systemMessages: SystemMessage[] = [];
 
-  constructor(private http: HttpClient, private modalCtrl: ModalController) {}
+  constructor(
+    private http: HttpClient,
+    private modalCtrl: ModalController
+  ) {}
 
   ngOnInit() {
+    this.loadSystemMessagesOnceAfterLogin();
     this.loadMyData();
     this.loadAppointments();
+  }
+
+  loadSystemMessagesOnceAfterLogin(): void {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const key = `System-Messages`;
+    const alreadyShown = localStorage.getItem(key) === '1';
+    if (alreadyShown) return;
+
+    const payload = { audiences: ['all', 'doctor'] };
+    this.http.post<SystemMessage[]>(
+      'http://localhost:3000/api/system-messages-for-me',
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    ).subscribe({
+      next: (res) => {
+        this.systemMessages = res ?? [];
+        void this.presentSystemMessagesModalsOnce();
+        localStorage.setItem(key, '1');
+      },
+      error: (err) => console.error('❌ Rendszerüzenetek lekérése sikertelen:', err)
+    });
+  }
+
+  async presentSystemMessagesModalsOnce(): Promise<void> {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const messages = this.systemMessages ?? [];
+    if (!messages.length) return;
+
+    const unseen = messages.filter(m => !localStorage.getItem(`System-Messages`));
+    if (!unseen.length) return;
+
+    for (const message of unseen) {
+      const modal = await this.modalCtrl.create({
+        component: SystemMessageModalComponent as any,
+        componentProps: {
+          messages: [message],
+        },
+        cssClass: 'system-message-modal',
+        canDismiss: true,
+        backdropDismiss: true,
+      });
+
+      await modal.present();
+      await modal.onDidDismiss();
+
+      localStorage.setItem(`System-Messages`, '1');
+    }
   }
 
   loadMyData(){
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getDoctorMe', {
+    this.http.get<DoctorItem>('http://localhost:3000/api/getDoctorMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (user: any) => {
-        this.user = user;
-        console.log(this.user)
+      next: (res) => {
+        this.user = { user: res.user, doctor: res.doctor };
       },
       error: (err) => {
         console.error('❌ Doctor user lekérése sikertelen:', err);
@@ -81,7 +129,7 @@ export class DoctorHomeComponent implements OnInit{
       component: DoctorEditProfileModalComponent as any,
       cssClass: 'Profile-edit-modal',
       componentProps: {
-        user: this.user
+        user: this.user,
       }
     });
 

@@ -1,8 +1,10 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
+import {Admin, User, AdminItem} from '../../../../utils/interfaces';
+import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 
 @Component({
   selector: 'app-admin-edit-profile-modal',
@@ -15,7 +17,7 @@ import {ToastService} from '../../../../shared/toast/toast.service';
   styleUrl: './admin-edit-profile-modal.component.css'
 })
 export class AdminEditProfileModalComponent {
-  @Input() user!: { user: any; admin?: any | null };
+  @Input() user!: AdminItem;
   editForm = {
     name: '',
     address: '',
@@ -32,11 +34,6 @@ export class AdminEditProfileModalComponent {
 
   close() {
     void this.modalCtrl.dismiss();
-  }
-
-  formatPhoneNumber(phone?: string | null | undefined): string {
-    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
   }
 
   async save() {
@@ -98,8 +95,8 @@ export class AdminEditProfileModalComponent {
       const raw = this.editForm[key];
       const newValue = typeof raw === 'string' ? raw.trim() : raw;
 
-      const originalFromUser = this.user?.user?.[key as any];
-      const originalFromAdmin = this.user?.admin?.[key as any];
+      const originalFromUser = this.user?.user?.[key as keyof User];
+      const originalFromAdmin = this.user?.admin?.[key as keyof Admin];
       const originalValue = originalFromUser ?? originalFromAdmin;
 
       if (
@@ -114,4 +111,6 @@ export class AdminEditProfileModalComponent {
 
     return modified;
   }
+
+  protected readonly formatPhoneNumber = formatPhoneNumber;
 }

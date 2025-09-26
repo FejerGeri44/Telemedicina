@@ -24,17 +24,17 @@
         class="doctor-profile"
         *ngFor="let patient of patients; trackBy: trackByDoctorId"
         (click)="selectPatient(patient)"
-        [class.active]="patient.id === selectedPatient?.id">
+        [class.active]="patient.user?.id === selectedPatient?.user?.id">
 
         <div class="avatar-wrap">
-          <img class="avatar" [src]="patient.User?.pictureUrl" alt="avatar" />
+          <img class="avatar" [src]="patient?.user?.pictureUrl" alt="avatar" />
         </div>
 
         <div class="info">
-          <div class="name">{{ patient.User?.name }}</div>
+          <div class="name">{{ patient.user?.name }}</div>
         </div>
 
-        <div class="last-message" *ngIf="getUnreadSummary(patient.User?.id) as summary">
+        <div class="last-message" *ngIf="getUnreadSummary(patient.user.id) as summary">
           <span class="preview">{{ summary.latest?.content }}</span>
           <span class="badge" *ngIf="summary.count > 0">{{ summary.count }}</span>
         </div>
@@ -60,10 +60,10 @@
 
           <div class="peer">
             <ion-avatar class="avatar-wrap">
-              <img class="avatar" [src]="selectedPatient?.User?.pictureUrl" alt="profil"/>
+              <img class="avatar" [src]="selectedPatient?.user?.pictureUrl" alt="profil"/>
             </ion-avatar>
             <div class="meta">
-              <h2>{{ selectedPatient?.User?.name }}</h2>
+              <h2>{{ selectedPatient?.user?.name }}</h2>
             </div>
           </div>
         </div>
@@ -82,7 +82,7 @@
         <ng-container *ngFor="let m of messages; trackBy: trackByMsgId">
           <div class="msg-row" [class.mine]="isMine(m)" [class.theirs]="!isMine(m)">
             <ion-avatar class="bubble-avatar" [style.width.px]="36" [style.height.px]="36">
-              <img [src]="isMine(m) ? (user.user.pictureUrl) : (selectedPatient?.User?.pictureUrl)"  alt="profile"/>
+              <img [src]="isMine(m) ? (user?.user?.pictureUrl) : (selectedPatient?.user?.pictureUrl)" alt="profile"/>
             </ion-avatar>
 
             <div class="bubble">

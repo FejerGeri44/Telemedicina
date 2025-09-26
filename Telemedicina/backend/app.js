@@ -9,6 +9,7 @@ const patientRoutes = require('./routes/patient.routes');
 const doctorRoutes = require('./routes/doctor.routes');
 const adminRoutes = require('./routes/admin.routes');
 const sharedRoutes = require('./routes/shared.routes');
+const aiRoutes = require('./routes/aiConfig.routes');
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use('/api', patientRoutes);
 app.use('/api', doctorRoutes);
 app.use('/api', adminRoutes);
 app.use('/api', sharedRoutes);
+app.use('/api', aiRoutes);
 
 const PORT = process.env.PORT || 3000;
 

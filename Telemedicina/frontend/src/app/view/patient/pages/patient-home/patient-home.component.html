@@ -1,8 +1,7 @@
 <div class="grid">
   <app-patient-profile-card
     class="profile-card"
-    [user]="user?.user"
-    [patient]="user?.patient"
+    [user]="user"
     [tags]="tags"
     [editable]="true"
     (edit)="openEditModal()">
@@ -12,7 +11,7 @@
   <ion-card class="appointments">
     <div class="card-header">
       <h2 class="header-title">Időpontjaim</h2>
-      <ion-button class="expand-btn" [routerLink]="['/appointment-list']">
+      <ion-button class="expand-btn" [routerLink]="['/patient/appointment-list']">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
     </div>

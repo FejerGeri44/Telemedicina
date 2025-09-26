@@ -5,6 +5,8 @@ import {NgForOf, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
+import {Appointment, Draft, PatientItem} from '../../../../utils/interfaces';
+import {formatPhoneNumber, formatTaj} from '../../../../utils/formatProfileData';
 
 @Component({
   selector: 'app-new-diagnosis',
@@ -30,8 +32,8 @@ export class NewDiagnosisComponent implements OnInit{
     { key: 'plan',          label: 'Összegzés',         icon: 'checkmark-circle' },
   ];
   currentStep = 0;
-  appointments: any[] = [];
-  users: any = {};
+  appointments: Appointment[] = [];
+  patients!: PatientItem[];
   isLoadingUsers = false;
   selectedAppointmentId: any = null;
   locale = 'hu-HU';
@@ -39,11 +41,12 @@ export class NewDiagnosisComponent implements OnInit{
   showExam = false;
   vm: any = {};
 
-  draft: any = {
+  draft: Draft = {
     appointmentId: null,
     patientId: null,
     status: 'draft',
     patient: {
+      id: null,
       name: '',
       gender: '',
       phone: '',
@@ -52,13 +55,11 @@ export class NewDiagnosisComponent implements OnInit{
       address: '',
       taj: ''
     },
-    // 1) Tünetek
     symptoms: {
       chiefComplaint: '',
       onsetDate: '',
-      history: ''
+      history: null
     },
-    // 2) Vizsgálat
     exam: {
       bpSys: null,
       bpDia: null,
@@ -68,26 +69,29 @@ export class NewDiagnosisComponent implements OnInit{
       weightKg: null,
       heightCm: null,
       bmi: null,
-      summary: ''
+      examSummary: null
     },
-    // 3) Diagnózis
     diagnosis: {
       primaryText: '',
       codeSystem: 'ICD-10',
-      code: '',
+      code: null,
       certaintyPct: 50,
       severity: 'moderate',
-      differentials: ''
+      differentials: null
     },
-    // 4) Terv / Összegzés
     plan: {
-      planText: '',
+      assessment: null,
+      planText: null,
       redFlags: false,
       informed: false
     }
   };
 
-  constructor(private http: HttpClient, private toast: ToastService, private alert: AlertService) {}
+  constructor(
+    private http: HttpClient,
+    private toast: ToastService,
+    private alert: AlertService
+  ) {}
 
   ngOnInit() {
     this.loadAppointments();
@@ -113,7 +117,7 @@ export class NewDiagnosisComponent implements OnInit{
     });
   }
 
-  loadUsersForDiagnosis(appointments?: any[]) {
+  loadUsersForDiagnosis(appointments: Appointment[]) {
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -130,21 +134,20 @@ export class NewDiagnosisComponent implements OnInit{
     );
 
     if (patientIds.length === 0) {
-      this.users = {};
+      this.patients = [];
       return;
     }
 
     this.isLoadingUsers = true;
 
-    this.http.post<any>(
+    this.http.post<PatientItem[]>(
       'http://localhost:3000/api/getUserDataForDiagnosis',
       { patientIds },
       { headers: { Authorization: `Bearer ${token}` } }
     ).subscribe({
       next: (users: any) => {
-        this.users = users;
+        this.patients = users;
         this.isLoadingUsers = false;
-        console.log(this.users)
       },
       error: (err) => {
         console.error('❌ Hiba a beteg/ user adatok lekérésekor:', err);
@@ -157,8 +160,14 @@ export class NewDiagnosisComponent implements OnInit{
     return `translateX(-${this.currentStep * 100}%)`;
   }
 
-  getUserNameByPatientId(pid: any): string {
-    return this.users?.[String(pid)]?.user?.name;
+  private patientsList(): PatientItem[] {
+    return Array.isArray(this.patients) ? this.patients : Object.values(this.patients ?? {});
+  }
+
+  getUserNameByPatientId(uid: number): string {
+    const id = Number(uid);
+    if (!Number.isFinite(id)) return '';
+    return this.patientsList().find(it => it?.user?.id === id)?.user?.name ?? '';
   }
 
   formatTime(iso: any): string {
@@ -168,17 +177,6 @@ export class NewDiagnosisComponent implements OnInit{
     return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  formatPhoneNumber(phone?: string): string {
-    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
-  }
-
-  formatTaj(taj?: string | number): string {
-    if (!taj) return 'N/A';
-    const clean = String(taj).replace(/\D/g, '');
-    return clean.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
-  }
-
   recomputeBmi() {
     const w = Number(this.draft?.exam?.weightKg);
     const hCm = Number(this.draft?.exam?.heightCm);
@@ -186,7 +184,7 @@ export class NewDiagnosisComponent implements OnInit{
       const hM = hCm / 100;
       this.draft.exam.bmi = +(w / (hM * hM)).toFixed(1);
     } else {
-      this.draft.exam.bmi = undefined;
+      this.draft.exam.bmi = null;
     }
   }
 
@@ -200,33 +198,36 @@ export class NewDiagnosisComponent implements OnInit{
     this.selectedDate = value.split('T')[0];
   }
 
-  onSelectAppointment(id: any) {
-    this.selectedAppointmentId = id;
+  onSelectAppointment(id: number | string): void {
+    const selId = Number(id);
+    this.selectedAppointmentId = selId;
 
-    const appt = (this.appointments || []).find(a => a?.id === id);
+    const appt = (this.appointments ?? []).find(a => Number(a?.id) === selId);
     if (!appt) return;
 
-    const key = String(appt.patient_id);
-    const u = this.users?.[key]?.user || null;
-    const p = this.users?.[key]?.patient || null;
+    const item = this.patientsList()
+      .find(it => Number(it?.patient?.id) === Number(appt.patient_id));
 
-    this.draft.appointmentId = appt.id;
-    this.draft.patientId = appt.patient_id;
-    this.draft.patient.name = u?.name || '';
-    this.draft.patient.email = u?.email || '';
-    this.draft.patient.phone = u?.phoneNumber || '';
-    this.draft.patient.address = u?.address || '';
-    this.draft.patient.gender = p?.gender || '';
-    this.draft.patient.homePhone = p?.homePhone || '';
-    this.draft.patient.taj = p?.taj || '';
+    const u = item?.user;
+    const p = item?.patient;
+
+    this.draft.appointmentId      = appt.id ?? null;
+    this.draft.patientId          = appt.patient_id ?? null;
+    this.draft.patient.name       = u?.name ?? '';
+    this.draft.patient.email      = u?.email ?? '';
+    this.draft.patient.phone      = u?.phoneNumber ?? '';
+    this.draft.patient.address    = u?.address ?? '';
+    this.draft.patient.gender     = String(p?.gender ?? '');
+    this.draft.patient.homePhone  = p?.homePhone ?? '';
+    this.draft.patient.taj        = p?.taj ?? '';
   }
 
   buildSummaryVM() {
-    const p = this.draft?.patient || {};
-    const s = this.draft?.symptoms || {};
-    const e = this.draft?.exam || {};
-    const d = this.draft?.diagnosis || {};
-    const plan = this.draft?.plan || {};
+    const p = this.draft.patient
+    const s = this.draft.symptoms;
+    const e = this.draft.exam;
+    const d = this.draft.diagnosis;
+    const plan = this.draft.plan;
 
     const appt = (this.appointments || []).find(a => a.id === this.selectedAppointmentId);
 
@@ -243,7 +244,7 @@ export class NewDiagnosisComponent implements OnInit{
     const height = e.heightCm ? `${e.heightCm} cm` : '';
     const bmi = e.bmi ? `${e.bmi}` : '';
 
-    const certainty = (typeof d.certaintyPct === 'number') ? `${d.certaintyPct}%` : '';
+    const certainty = `${d.certaintyPct}%`;
     const severity = d.severity === 'mild' ? 'Enyhe'
       : d.severity === 'moderate' ? 'Középsúlyos'
         : d.severity === 'severe' ? 'Súlyos' : '';
@@ -263,7 +264,7 @@ export class NewDiagnosisComponent implements OnInit{
 
       // Vitálok
       bp, hr, temp, spo2, weight, height, bmi,
-      examSummary: e.summary || '',
+      examSummary: e.examSummary || '',
 
       // Diagnózis
       diagnosisMain: d.primaryText || '',
@@ -274,8 +275,8 @@ export class NewDiagnosisComponent implements OnInit{
 
       // Plan
       planText: plan.planText || '',
-      redFlags: !!plan.redFlags,
-      informed: !!plan.informed,
+      redFlags: plan.redFlags,
+      informed: plan.informed,
     };
   }
 
@@ -340,7 +341,7 @@ export class NewDiagnosisComponent implements OnInit{
         weightKg: this.draft?.exam?.weightKg ?? null,
         heightCm: this.draft?.exam?.heightCm ?? null,
         bmi: this.draft?.exam?.bmi ?? null,
-        summary: this.draft?.exam?.summary ?? null
+        summary: this.draft?.exam?.examSummary ?? null
       },
 
       diagnosis: {
@@ -360,13 +361,10 @@ export class NewDiagnosisComponent implements OnInit{
       }
     };
 
-    console.log(body)
-
     this.http.post('http://localhost:3000/api/newDiagnosis', body, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
-      next: (res) => {
-        console.log('✅ Diagnózis mentve:', res);
+      next: () => {
         this.toast.show("Sikeres adat felvitel!", "success");
         setTimeout(() => this.reset(), 100);
         },
@@ -379,12 +377,49 @@ export class NewDiagnosisComponent implements OnInit{
 
   reset() {
     this.draft = {
-      patient: null,
       appointmentId: null,
-      symptoms: { chiefComplaint: '', onsetDate: null, history: '' },
-      exam: { bpSys: null, bpDia: null, heartRate: null, tempC: null, spo2: null, weightKg: null, heightCm: null, bmi: null, summary: '' },
-      diagnosis: { primaryText: '', codeSystem: '', code: '', certaintyPct: null, severity: '', differentials: '' },
-      plan: { assessment: '', planText: '', redFlags: false, informed: false }
+      patientId: null,
+      status: 'draft',
+      patient: {
+        id: null,
+        name: '',
+        gender: '',
+        phone: '',
+        homePhone: '',
+        email: '',
+        address: '',
+        taj: ''
+      },
+      symptoms: {
+        chiefComplaint: '',
+        onsetDate: null,
+        history: null
+      },
+      exam: {
+        bpSys: null,
+        bpDia: null,
+        heartRate: null,
+        tempC: null,
+        spo2: null,
+        weightKg: null,
+        heightCm: null,
+        bmi: null,
+        examSummary: null
+      },
+      diagnosis: {
+        primaryText: '',
+        codeSystem: 'ICD-10',
+        code: null,
+        certaintyPct: 50,
+        severity: 'moderate',
+        differentials: null
+      },
+      plan: {
+        assessment: null,
+        planText: null,
+        redFlags: false,
+        informed: false
+      }
     };
     this.goTo(0);
   }
@@ -424,6 +459,7 @@ export class NewDiagnosisComponent implements OnInit{
     }, 0);
   }
 
-
   protected readonly String = String;
+  protected readonly formatPhoneNumber = formatPhoneNumber;
+  protected readonly formatTaj = formatTaj;
 }

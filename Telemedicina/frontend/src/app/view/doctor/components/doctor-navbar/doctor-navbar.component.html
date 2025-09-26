@@ -21,10 +21,10 @@
 
       <!-- Profil blokk: csak desktopon -->
       <div class="profile-block desktop-only" (click)="toggleProfileMenu($event)">
-        <img [src]="user?.user.pictureUrl" alt="Profil" class="profile-picture" draggable="false"/>
+        <img [src]="user?.user?.pictureUrl" alt="Profil" class="profile-picture" draggable="false"/>
         <div class="profile-info">
-          <span class="name">{{ user?.user.name }}</span>
-          <span class="role">{{ user?.user.role }}</span>
+          <span class="name">{{ user?.user?.name }}</span>
+          <span class="role">{{ user?.user?.role }}</span>
         </div>
         <ion-icon class="chevron" name="chevron-down" [class.open]="profileOpen"></ion-icon>
         <div class="profile-menu" *ngIf="profileOpen">
@@ -41,7 +41,7 @@
 
       <!-- Mobil menü gomb -->
       <button class="icon-btn mobile-menu-btn"
-              (click)="openMobileMenu()"
+              (click)="toggleMobileMenu()"
               aria-label="Menü"
               aria-controls="mobile-drawer"
               [attr.aria-expanded]="mobileMenuOpen">
@@ -56,7 +56,12 @@
       <li *ngFor="let item of menuItems"
           [routerLink]="item.route"
           routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }">
+          [routerLinkActiveOptions]="{
+              paths: 'exact',
+              queryParams: 'subset',
+              matrixParams: 'ignored',
+              fragment: 'ignored'
+            }">
         <ion-icon [name]="item.icon"></ion-icon>
         <span>{{ item.label }}</span>
       </li>
@@ -67,13 +72,13 @@
   <div class="backdrop" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()" aria-hidden="true"></div>
 
   <!-- Off-canvas drawer -->
-  <aside id="mobile-drawer" class="drawer" [class.open]="mobileMenuOpen" role="dialog" aria-modal="true">
+  <aside id="mobile-drawer" class="drawer" [class.open]="mobileMenuOpen">
     <div class="drawer-header">
       <div class="user-inline">
-        <img [src]="user?.user.pictureUrl" class="profile-picture" alt="Profil" draggable="false"/>
+        <img [src]="user?.user?.pictureUrl" class="profile-picture" alt="Profil" draggable="false"/>
         <div>
-          <div class="name">{{ user?.user.name }}</div>
-          <div class="role">{{ user?.user.role }}</div>
+          <div class="name">{{ user?.user?.name }}</div>
+          <div class="role">{{ user?.user?.role }}</div>
         </div>
       </div>
       <button class="icon-btn" (click)="closeMobileMenu()" aria-label="Bezárás">
@@ -87,7 +92,12 @@
             (click)="closeMobileMenu()"
             [routerLink]="item.route"
             routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }">
+            [routerLinkActiveOptions]="{
+              paths: 'exact',
+              queryParams: 'subset',
+              matrixParams: 'ignored',
+              fragment: 'ignored'
+            }">
           <ion-icon [name]="item.icon"></ion-icon>
           <span>{{ item.label }}</span>
         </li>

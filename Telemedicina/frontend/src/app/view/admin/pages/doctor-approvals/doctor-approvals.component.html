@@ -33,18 +33,18 @@
         <ion-card>
           <ion-card-header class="card-header">
             <div class="avatar">
-              <img [src]="doctor.User.pictureUrl" alt="avatar" />
+              <img [src]="doctor.user.pictureUrl" alt="avatar" />
             </div>
             <div class="header-text">
-              <ion-card-title>{{ doctor.User.name }}</ion-card-title>
+              <ion-card-title>{{ doctor.user.name }}</ion-card-title>
             </div>
           </ion-card-header>
 
           <ion-card-content>
-            <p><strong>Telefon:</strong> {{ formatPhoneNumber(doctor.User?.phoneNumber) }}</p>
-            <p><strong>Email:</strong> {{ doctor.User?.email }}</p>
-            <p><strong>Specialitás:</strong> {{ doctor.speciality }}</p>
-            <p><strong>Regisztráció dátuma:</strong> {{ doctor.registDate }}</p>
+            <p><strong>Telefon:</strong> {{ formatPhoneNumber(doctor.user?.phoneNumber) }}</p>
+            <p><strong>Email:</strong> {{ doctor.user?.email }}</p>
+            <p><strong>Specialitás:</strong> {{ doctor.doctor?.speciality }}</p>
+            <p><strong>Regisztráció dátuma:</strong> {{ doctor.doctor?.registDate }}</p>
           </ion-card-content>
 
           <div class="button-row">

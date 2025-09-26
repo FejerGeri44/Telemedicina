@@ -214,6 +214,13 @@ ion-modal {
   --height: auto;
   --border-radius: 20px;
 }
+
+.system-message-modal {
+  --width: 80%;
+  --max-width: 450px;
+  --max-height: 500px;
+}
+
 .calendarModal {
   --max-width: 80%;
   --width: 350px;

@@ -1,0 +1,40 @@
+/* Lebegő gomb finom távolságokkal */
+.chat-fab {
+  margin-bottom: 16px;
+  margin-right: 16px;
+  z-index: 9998;
+}
+
+/* Fix pozíciójú chat ablak: 300×600, kerekített, árnyék, overflow kezelve */
+.chat-window {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 300px;
+  height: 600px;
+  max-height: calc(100vh - 32px);
+  background: var(--ion-background-color, #fff);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.24);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+}
+
+/* IonContent a dobozon belül scrollozzon */
+.chat-window ion-content {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+}
+
+/* (A már meglévőid maradnak) */
+.chatbot-content { --padding-start: 12px; --padding-end: 12px; }
+.greeting { margin: 12px 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.dialog { display: grid; gap: 10px; padding: 12px 0; }
+.bubble { padding: 10px 12px; border-radius: 12px; white-space: pre-wrap; }
+.bubble.user { margin-left: auto; max-width: 80%; background: var(--ion-color-primary-tint); }
+.bubble.bot  { margin-right: auto; max-width: 80%; background: var(--ion-color-light); }

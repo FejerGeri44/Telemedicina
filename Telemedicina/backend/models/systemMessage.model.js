@@ -24,7 +24,7 @@ module.exports = (sequelize) => {
       allowNull: false
     },
     type: {
-      type: DataTypes.ENUM('info', 'warning', 'error', 'success'),
+      type: DataTypes.ENUM('info', 'warning', 'error'),
       allowNull: false,
       defaultValue: 'info'
     },
@@ -39,7 +39,7 @@ module.exports = (sequelize) => {
       defaultValue: DataTypes.NOW
     },
     validUntil: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: true
     }
   }, {

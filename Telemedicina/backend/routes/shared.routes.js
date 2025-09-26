@@ -8,5 +8,6 @@ router.post('/getMyMessages', authenticateToken, sharedController.getMyMessages)
 router.post('/deleteConversation', authenticateToken, sharedController.deleteConversation);
 router.post('/mark-conversation-as-read', authenticateToken, sharedController.markConversationAsRead);
 router.post('/getUnreadMessages', authenticateToken, sharedController.getUnreadMessages);
+router.post('/system-messages-for-me', authenticateToken, sharedController.getSystemMessagesForMe);
 
 module.exports = router;

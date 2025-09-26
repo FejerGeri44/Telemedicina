@@ -1,12 +1,13 @@
-import {Component, ComponentRef, Injector, OnInit, ViewContainerRef} from '@angular/core';
-import {IonicModule, ToastController} from '@ionic/angular';
+import {Component, OnInit} from '@angular/core';
+import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {NgForOf, NgIf} from '@angular/common';
-import {CustomToastComponent} from '../../../../shared/toast/toast.component';
 import { ModalController } from '@ionic/angular';
 import { AppointmentModalComponent } from '../../components/appointment-modal/appointment-modal.component';
 import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
+import {DoctorItem} from '../../../../utils/interfaces';
+import {ToastService} from '../../../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-doctor-search',
@@ -22,29 +23,28 @@ import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-prof
 })
 
 export class DoctorSearchComponent implements OnInit{
-  doctors: any[] = [];
+  doctors: DoctorItem[] = [];
   currentPage = 1;
   pageSize = 6;
   showFilters = false;
   selectedSpecialties: string[] = [];
   specialties: string[] = [];
   searchTerm: string = '';
-  filteredDoctors: any[] = [];
+  filteredDoctors: DoctorItem[] = [];
   visiblePages: number[] = [];
   isLoading: boolean = true;
   totalCount = 0;
 
   constructor(
     private http: HttpClient,
-    private toastController: ToastController,
-    private viewContainerRef: ViewContainerRef,
-    private injector: Injector,
-    private modalCtrl: ModalController) {}
+    private toast: ToastService,
+    private modalCtrl: ModalController
+  ) {}
 
   ngOnInit() {
-    this.http.get<any[]>('http://localhost:3000/api/doctors').subscribe(data => {
-      this.doctors = data;
-      this.filteredDoctors = data;
+    this.http.get<DoctorItem[]>('http://localhost:3000/api/doctors').subscribe(res => {
+      this.doctors = res;
+      this.filteredDoctors = res;
       this.extractUniqueSpecialties();
       this.applyFilters();
       this.isLoading = false;
@@ -108,21 +108,21 @@ export class DoctorSearchComponent implements OnInit{
   }
 
   extractUniqueSpecialties() {
-    const allSpecialties = this.doctors.map(doc => doc.speciality);
+    const allSpecialties = this.doctors.map(doctor => doctor.doctor.speciality);
     this.specialties = [...new Set(allSpecialties)];
   }
 
   applyFilters() {
     this.filteredDoctors = this.doctors.filter(doctor => {
-      const nameMatch = doctor.User.name.toLowerCase().includes(this.searchTerm.toLowerCase());
-      const specialtyMatch = this.selectedSpecialties.length === 0 || this.selectedSpecialties.includes(doctor.speciality);
+      const nameMatch = doctor.user.name.toLowerCase().includes(this.searchTerm.toLowerCase());
+      const specialtyMatch = this.selectedSpecialties.length === 0 || this.selectedSpecialties.includes(doctor.doctor.speciality);
       return nameMatch && specialtyMatch;
     });
 
     this.totalCount = this.filteredDoctors.length;
 
     if (this.filteredDoctors.length === 0) {
-      this.showCustomToast('Nincs ilyen Orvos a rendszerben!', 'danger');
+      this.toast.show('Nincs ilyen Orvos a rendszerben!', 'danger');
     }
 
     this.currentPage = 1;
@@ -133,10 +133,13 @@ export class DoctorSearchComponent implements OnInit{
     this.applyFilters();
   }
 
-  async openAppointmentModal(doctor: any) {
+  async openAppointmentModal(doctor: DoctorItem) {
     const modal = await this.modalCtrl.create({
-      component: AppointmentModalComponent,
-      componentProps: { doctor },
+      component: AppointmentModalComponent as any,
+      componentProps: {
+        doctorData: doctor.user,
+        patientData: doctor.doctor
+      },
       cssClass: 'registerTo-appointment-modal'
     });
 
@@ -144,12 +147,11 @@ export class DoctorSearchComponent implements OnInit{
     await modal.onDidDismiss();
   }
 
-  async openDoctorProfileModal(doctor: any) {
+  async openDoctorProfileModal(doctor: DoctorItem) {
     const modal = await this.modalCtrl.create({
-      component: DoctorProfileCardComponent,
+      component: DoctorProfileCardComponent as any,
       componentProps: {
-        user: doctor?.User ?? null,
-        doctor,
+        user: doctor,
         editable: false,
         canRate: true
       },
@@ -158,16 +160,5 @@ export class DoctorSearchComponent implements OnInit{
 
     await modal.present();
     await modal.onDidDismiss();
-  }
-
-  showCustomToast(message: string, type: 'success' | 'warning' | 'danger') {
-    const toastRef: ComponentRef<CustomToastComponent> = this.viewContainerRef.createComponent(CustomToastComponent, {
-      injector: this.injector
-    });
-
-    toastRef.instance.message = message;
-    toastRef.instance.type = type;
-
-    setTimeout(() => toastRef.destroy(), 4000);
   }
 }

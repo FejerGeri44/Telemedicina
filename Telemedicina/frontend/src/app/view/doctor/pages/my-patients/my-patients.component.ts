@@ -6,37 +6,8 @@ import {
   PatientProfileCardComponent
 } from '../../../patient/components/patient-profile-card/patient-profile-card.component';
 import {Router} from '@angular/router';
-
-interface PatientUser {
-  id: number;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  role: string;
-  address: string;
-  birthDate: string;
-  pictureUrl?: string;
-}
-
-interface PatientInfo {
-  id: number;
-  homePhone?: string;
-  height?: number | null;
-  weight?: number | null;
-  gender?: string | null;
-  taj?: string | null;
-}
-
-interface PatientTag {
-  name: string;
-  value: string;
-}
-
-interface MyPatientCard {
-  user: PatientUser;
-  patient: PatientInfo;
-  tags: PatientTag[];
-}
+import {formatPhoneNumber} from '../../../../utils/formatProfileData';
+import {MyPatientCard} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-my-patients',
@@ -63,22 +34,17 @@ export class MyPatientsComponent implements OnInit{
     this.loadMyPatients();
   }
 
-  formatPhoneNumber(phone?: string | null | undefined): string {
-    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
-  }
-
   loadMyPatients() {
     const token = localStorage.getItem('token');
     if (!token) return;
     this.isLoading = true;
 
-    this.http.get<{ doctorId: number; count: number; patients: MyPatientCard[] }>(
+    this.http.get<MyPatientCard[]>(
       'http://localhost:3000/api/getMyPatients',
       { headers: { Authorization: `Bearer ${token}` } }
     ).subscribe({
       next: (res) => {
-        this.patients = res?.patients ?? [];
+        this.patients = res;
         this.isLoading = false;
       },
       error: (err) => {
@@ -125,4 +91,6 @@ export class MyPatientsComponent implements OnInit{
     }
     return src;
   }
+
+  protected readonly formatPhoneNumber = formatPhoneNumber;
 }

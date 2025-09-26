@@ -5,6 +5,7 @@ import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/ro
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {filter, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
+import {AdminItem} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-admin-navbar',
@@ -20,8 +21,7 @@ import {HttpClient} from '@angular/common/http';
   styleUrl: './admin-navbar.component.css'
 })
 export class AdminNavbarComponent implements OnInit{
-  user: any;
-  pictureUrl: any;
+  user!: AdminItem;
   profileOpen = false;
   mobileMenuOpen = false;
   private navSub?: Subscription;
@@ -31,7 +31,7 @@ export class AdminNavbarComponent implements OnInit{
     { icon: 'people', label: 'Felhasználók', route: 'all-users' },
     { icon: 'id-card', label: 'Orvosi jelenzkezések', route: 'doctor-approvals' },
     { icon: 'paper-plane', label: 'Rendszerüzenet', route: 'system-messages' },
-    { icon: 'hardware-chip', label: 'MI asszisztens', route: '' }
+    { icon: 'hardware-chip', label: 'MI asszisztens', route: 'ai-assistants' }
   ];
 
   constructor(
@@ -44,8 +44,7 @@ export class AdminNavbarComponent implements OnInit{
     this.getMyData();
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-      });
+      .subscribe(() => {});
     this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => this.closeMobileMenu());
@@ -55,13 +54,13 @@ export class AdminNavbarComponent implements OnInit{
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getAdminMe', {
+    this.http.get<AdminItem>('http://localhost:3000/api/getAdminMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (user: any) => {
-        this.user = user;
+      next: (res) => {
+        this.user = { user: res.user, admin: res.admin };
       },
       error: (err) => {
         console.error('❌ Felhasználó lekérése sikertelen:', err);
@@ -79,6 +78,7 @@ export class AdminNavbarComponent implements OnInit{
 
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('System-Messages')
     void this.router.navigate(
       ['/regist-login'],
       { queryParams: { tab: 'login' } }

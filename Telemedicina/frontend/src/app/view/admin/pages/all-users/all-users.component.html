@@ -5,7 +5,7 @@
             (keyup.enter)="onRoleCard('')"
             [class.active]="role === ''">
     <ion-card-header>
-      <ion-card-title>{{ total }}</ion-card-title>
+      <ion-card-title>{{ this.users.length }}</ion-card-title>
       <ion-card-subtitle>Összes felhasználó</ion-card-subtitle>
     </ion-card-header>
   </ion-card>
@@ -141,19 +141,21 @@
       <td>
         <div class="user-info">
           <ion-avatar class="user-avatar">
-            <img [src]="user.User.pictureUrl" alt="avatar">
+            <img [src]="user.user.pictureUrl" alt="avatar">
           </ion-avatar>
           <div class="name-block">
-            <div class="id">#{{ user.User.id }}</div>
-            <div class="name">{{ user.User.name }}</div>
+            <div class="id">#{{ user.user.id }}</div>
+            <div class="name">{{ user.user.name }}</div>
           </div>
         </div>
       </td>
       <td><ion-badge [ngClass]="roleBadgeClass(user.role)">{{ user.role }}</ion-badge></td>
-      <td>{{ user.User.email }}</td>
-      <td>{{ user.User.phoneNumber }}</td>
-      <td>{{ user.User.address || 'N/A' }}</td>
-      <td>{{ user.registDate | date:'yyyy.MM.dd' }}</td>
+      <td>{{ user.user.email }}</td>
+      <td>{{ user.user.phoneNumber }}</td>
+      <td>{{ user.user.address || 'N/A' }}</td>
+      <td *ngIf="user.role == 'patient'">{{ user.patient.registDate | date:'yyyy.MM.dd' }}</td>
+      <td *ngIf="user.role == 'doctor'">{{ user.doctor.registDate | date:'yyyy.MM.dd' }}</td>
+      <td *ngIf="user.role == 'admin'">{{ user.admin.registDate | date:'yyyy.MM.dd' }}</td>
       <td>
         <ion-button class="btn-accent" (click)="onProfileClick(user, $event)">
           Profil

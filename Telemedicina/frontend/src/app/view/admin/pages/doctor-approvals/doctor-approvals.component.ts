@@ -4,6 +4,8 @@ import {IonicModule} from '@ionic/angular';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
+import {DoctorItem} from '../../../../utils/interfaces';
+import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 
 @Component({
   selector: 'app-doctor-approvals',
@@ -18,23 +20,27 @@ import {ToastService} from '../../../../shared/toast/toast.service';
   styleUrl: './doctor-approvals.component.css'
 })
 export class DoctorApprovalsComponent implements OnInit{
-  pendingDoctors: any[] = [];
+  pendingDoctors: DoctorItem[] = [];
   loading: boolean = false;
 
-  constructor(private http: HttpClient, private alert: AlertService, private toast: ToastService) {}
+  constructor(
+    private http: HttpClient,
+    private alert: AlertService,
+    private toast: ToastService
+  ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadPendingDoctors();
   }
 
-  loadPendingDoctors(): void {
+  loadPendingDoctors() {
     this.loading = true;
     const token = localStorage.getItem('token') ?? '';
-    this.http.get<any[]>('http://localhost:3000/api/admin/pendingDoctors', {
+    this.http.get<DoctorItem[]>('http://localhost:3000/api/admin/pendingDoctors', {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
-      next: (list) => {
-        this.pendingDoctors = list ?? [];
+      next: (res) => {
+        this.pendingDoctors = res;
         this.loading = false;
       },
       error: (err) => {
@@ -44,12 +50,7 @@ export class DoctorApprovalsComponent implements OnInit{
     });
   }
 
-  formatPhoneNumber(phone?: string | null | undefined): string {
-    if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-    return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
-  }
-
-  confirmation(doctor: any) {
+  confirmation(doctor: DoctorItem) {
     void this.alert.show(
       'Engedély megadása',
       'Biztosan megadja az Orvosnak a regisztrációs engedélyt?',
@@ -57,8 +58,8 @@ export class DoctorApprovalsComponent implements OnInit{
     )
   }
 
-  approveDoctor(doctor: any) {
-    const doctorId = doctor?.id ?? doctor?.Doctor?.id;
+  approveDoctor(doctor: DoctorItem) {
+    const doctorId = doctor.doctor.id;
     if (!doctorId) {
       this.toast?.show('Hiányzó doctor_id.', 'danger');
       return;
@@ -80,4 +81,6 @@ export class DoctorApprovalsComponent implements OnInit{
       }
     });
   }
+
+  protected readonly formatPhoneNumber = formatPhoneNumber;
 }

@@ -1,0 +1,67 @@
+.card {
+  box-shadow: 0 12px 24px rgba(16, 24, 40, 0.08);
+  background: #fff;
+  overflow: hidden;
+  max-width: unset;
+  min-height: 500px;
+}
+
+.hero{
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 5 / 3;
+  overflow: hidden;
+  border-bottom: 1px solid #cbcbcb;
+  display: block;
+}
+
+.hero img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* törzs */
+.body {
+  padding: 20px;
+}
+
+/* badge-ek sora */
+.badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.title {
+  margin: 5px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.message {
+  white-space: pre-line;
+  color: #374151;
+  line-height: 1.5;
+  margin: 5px 0 10px 0;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 380px) {
+  .hero { aspect-ratio: 16 / 9; }
+  .title { font-size: 18px; }
+  .body { padding: 10px; }
+}

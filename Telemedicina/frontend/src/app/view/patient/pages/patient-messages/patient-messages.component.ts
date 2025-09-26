@@ -5,6 +5,12 @@ import {NgForOf, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
+import {
+  DoctorItem,
+  PatientItem,
+  UnreadMessage,
+  DoctorUnreadSummary,
+} from '../../../../utils/interfaces';
 
 @Component({
   selector: 'app-patient-messages',
@@ -19,19 +25,18 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
   styleUrl: './patient-messages.component.css'
 })
 export class PatientMessagesComponent implements OnInit, OnDestroy{
-  user: any;
-  pictureUrl: any;
-  doctors: any[] = [];
-  filteredDoctors: any[] = [];
+  user!: PatientItem;
+  doctors!: DoctorItem[];
+  filteredDoctors: DoctorItem[] = [];
   doctorQuery = '';
   searchOpen = false;
 
   allMessages: any[] = [];
   messages: any[] = [];
-  unreadMessages: any[] = [];
-  unreadByDoctor: any[] = [];
+  unreadMessages: UnreadMessage[] = [];
+  unreadByDoctor: DoctorUnreadSummary[] = [];
 
-  selectedDoctor: any = null;
+  selectedDoctor!: DoctorItem;
   draftText = '';
   isOnline = false;
   isLoading= true;
@@ -40,12 +45,16 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
 
   private pollTimer: any = null;
 
-  constructor(private http: HttpClient, private toast: ToastService, private alert: AlertService) {}
+  constructor(
+    private http: HttpClient,
+    private toast: ToastService,
+    private alert: AlertService
+  ) {}
 
   ngOnInit(): void {
     this.getMyData();
-    this.http.get<any[]>('http://localhost:3000/api/doctors').subscribe(data => {
-      this.doctors = data;
+    this.http.get<DoctorItem[]>('http://localhost:3000/api/doctors').subscribe(res => {
+      this.doctors = res;
       this.isLoading = false;
     });
 
@@ -81,14 +90,14 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     this.selectedDoctor = doctor;
     if (this.isSmall) this.showChatOnMobile = true;
     this.applyConversationFilter();
-    this.markConversationReadAsPatient(this.selectedDoctor?.User?.id);
+    this.markConversationReadAsPatient(this.selectedDoctor.user.id);
     setTimeout(() => {
       this.getUnreadMessages();
     }, 0);
   }
 
   applyConversationFilter() {
-    const otherId = this.selectedDoctor?.User?.id;
+    const otherId = this.selectedDoctor?.user?.id;
     if (!this.user.user.id || !otherId) {
       this.messages = []; return;
     }
@@ -112,7 +121,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
   }
 
   markConversationReadAsPatient(doctorUserId: number) {
-    const myUserId = this.user?.user.id;
+    const myUserId = this.user.user.id;
     const token = localStorage.getItem('token');
     if (!token || !myUserId || !doctorUserId) return;
 
@@ -141,14 +150,13 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get('http://localhost:3000/api/getPatientMe', {
+    this.http.get<PatientItem>('http://localhost:3000/api/getPatientMe', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).subscribe({
-      next: (user: any) => {
-        this.user = user;
-        this.pictureUrl = this.user.pictureUrl;
+      next: (res) => {
+        this.user = res;
         this.loadAllMyMessages();
       },
       error: (err) => {
@@ -159,7 +167,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
 
   loadAllMyMessages() {
     const token = localStorage.getItem('token');
-    const myUserId = this.user?.user.id;
+    const myUserId = this.user.user.id;
     if (!myUserId) return;
 
     this.http.post<any[]>(
@@ -222,7 +230,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
 
   send() {
     const text = this.draftText.trim();
-    if (!text || !this.selectedDoctor?.User?.id) return;
+    if (!text || !this.selectedDoctor.user.id) return;
 
     const token = localStorage.getItem('token');
 
@@ -239,7 +247,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     this.draftText = '';
 
     this.http.post<any>('http://localhost:3000/api/sendMessage', {
-      toUserId: this.selectedDoctor.User.id,
+      toUserId: this.selectedDoctor.user.id,
       content: text,
       role: 'patient'
     }, { headers: { Authorization: `Bearer ${token}` }})
@@ -274,7 +282,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
   deleteConversation() {
     const token = localStorage.getItem('token');
     const meUserId = this.user.user.id;
-    const otherId = this.selectedDoctor?.User?.id;
+    const otherId = this.selectedDoctor.user.id;
     if (!token || !meUserId || !otherId) return;
 
     this.http.post<any>('http://localhost:3000/api/deleteConversation', {
@@ -283,7 +291,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
       role: 'patient'
     }, { headers: { Authorization: `Bearer ${token}` }})
       .subscribe({
-        next: (res) => {
+        next: () => {
           this.allMessages = [];
           this.loadAllMyMessages();
           this.toast.show("Sikeres törlés!", "success");
@@ -304,10 +312,10 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const userId = this.user?.user?.id;
+    const userId = this.user.user.id;
     if (!userId) return;
 
-    this.http.post<{unread:any[], count:number}>(
+    this.http.post<{unread:UnreadMessage[], count:number}>(
       'http://localhost:3000/api/getUnreadMessages',
       {
         userId,
@@ -327,7 +335,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     });
   }
 
-  computeUnreadByDoctor(unreadMessages: any[]): any[] {
+  computeUnreadByDoctor(unreadMessages: UnreadMessage[]): DoctorUnreadSummary[] {
     const map = new Map<number, { doctorId: number; latest: any; count: number }>();
 
     for (const msg of unreadMessages) {
@@ -353,7 +361,8 @@ export class PatientMessagesComponent implements OnInit, OnDestroy{
     );
   }
 
-  getUnreadSummary(doctorUserId: number | undefined): any | null {
+  getUnreadSummary(doctorUserId: number | undefined): DoctorUnreadSummary | null {
+    if (!doctorUserId) return null;
     return this.unreadByDoctor.find(u => u.doctorId === doctorUserId) ?? null;
   }
 }
