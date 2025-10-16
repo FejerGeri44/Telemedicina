@@ -231,6 +231,19 @@ ion-modal {
   max-width: unset;
 }
 
+.admin-ai-modal {
+  --width: 80%;
+  --max-width: 600px;
+  --height: unset;
+}
+
+ion-item.required ion-label::after {
+  content: " *";
+  font-size: 1.2rem;
+  color: var(--ion-color-danger, #eb445a);
+  font-weight: 600;
+}
+
 @media (max-width: 800px) {
   .Profile-edit-modal, .Admin-profile-edit-modal{
     --width: 100%;

@@ -5,7 +5,7 @@ import {NgForOf, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {Appointment, Draft, PatientItem} from '../../../../utils/interfaces';
+import {Appointment, Draft, PatientItem} from '../../../../utils/interfaces/commonInterfaces';
 import {formatPhoneNumber, formatTaj} from '../../../../utils/formatProfileData';
 
 @Component({

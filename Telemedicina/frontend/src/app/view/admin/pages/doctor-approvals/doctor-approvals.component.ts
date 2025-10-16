@@ -4,7 +4,7 @@ import {IonicModule} from '@ionic/angular';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {DoctorItem} from '../../../../utils/interfaces';
+import {DoctorItem} from '../../../../utils/interfaces/commonInterfaces';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 
 @Component({

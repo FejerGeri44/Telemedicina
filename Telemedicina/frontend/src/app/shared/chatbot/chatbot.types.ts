@@ -1,40 +1,29 @@
-export type Audience = 'patient' | 'clinician';
+import {QuickStart, Suggestion} from '../../utils/interfaces/AIInterfaces';
 
-export interface QuickStart { label: string; prompt: string; icon?: string; }
-
-export type Pattern =
-  | { type: 'keywords_any'; list: string[] }
-  | { type: 'keywords_all'; list: string[] }
-  | { type: 'regex'; pattern: string; flags?: string }
-  | { type: 'startsWith'; text: string };
-
-export interface ResponseBlock {
-  text: string;
-  suggestions?: string[];
-  handoff?: 'assistant' | 'doctor' | 'emergency' | null;
-}
+export type Audience = 'patient' | 'doctor';
 
 export interface Intent {
-  id: string;
-  audience: Audience[];
-  patterns: Pattern[];
-  response: ResponseBlock;
+  id: number | string;
+  patterns?: string[];
+  response: string;
   priority?: number;
-  validFrom?: string;
-  validUntil?: string;
 }
 
-export interface AssistantConfig {
-  meta: { version: string; audience: Audience; locale?: string };
-  greeting: { text: string; quickStarts: QuickStart[] };
-  intents: Intent[];
-  fallback: ResponseBlock;
+export interface ChatConfig {
+  greeting?: {
+    quickStartText?: string;
+    quickStarts?: QuickStart[];
+  };
+  fallback?: {
+    suggestionText?: string;
+    suggestions?: Suggestion[];
+  };
+  intents?: Intent[];
 }
 
-export interface AssistantReply {
-  intentId?: string;
+export interface ChatMessage {
+  who: 'user' | 'bot';
   text: string;
-  suggestions?: string[];
-  handoff?: ResponseBlock['handoff'];
-  confidence: number;
+  ts?: number;
 }
+

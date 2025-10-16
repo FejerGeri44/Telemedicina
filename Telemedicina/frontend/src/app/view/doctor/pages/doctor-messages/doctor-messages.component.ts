@@ -11,7 +11,7 @@ import {
   PatientItem,
   UnreadMessage,
   PatientUnreadSummary
-} from '../../../../utils/interfaces';
+} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-doctor-messages',

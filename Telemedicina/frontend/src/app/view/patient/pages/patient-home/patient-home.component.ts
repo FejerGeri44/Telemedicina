@@ -8,7 +8,7 @@ import {PatientProfileCardComponent} from '../../components/patient-profile-card
 import {RouterLink} from '@angular/router';
 import {NgForOf, NgIf} from '@angular/common';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
-import {Appointment, PatientItem, PatientTag, SystemMessage} from '../../../../utils/interfaces';
+import {Appointment, PatientItem, PatientTag, SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-patient-home',

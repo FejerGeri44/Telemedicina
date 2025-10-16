@@ -5,34 +5,51 @@
     "locale": "hu-HU"
   },
   "greeting": {
-    "text": "Szia! Miben segíthetek? Válassz a lehetőségek közül, vagy írj üzenetet.",
+    "quickStartText": "Szia, miben segíthetek?",
     "quickStarts": [
-      { "label": "Navigáció", "prompt": "Hogyan jutok el hozzátok?", "icon": "navigate" },
-      { "label": "Orvos keresés", "prompt": "Szeretnék orvost választani", "icon": "medkit" },
-      { "label": "Gyógyszer", "prompt": "Információ egy gyógyszerről", "icon": "flask" }
+      {
+        "id": 0,
+        "icon": "send",
+        "label": "Navigáció",
+        "prompt": "Hogyan jutok el hozzátok?",
+        "reply": "A rendelőnk címe: 1111 Budapest, Minta u. 1. Tömegközlekedéssel: M4 metró, Minta tér megálló; autóval az udvarban parkolás lehetséges."
+      },
+      {
+        "id": 1,
+        "icon": "medkit",
+        "label": "Orvos keresés",
+        "prompt": "Szeretnék orvost választani",
+        "reply": "Segítek! Add meg a szakterületet (pl. kardiológia), és mutatom a rendelőben elérhető orvosokat és időpontokat."
+      },
+      {
+        "id": 2,
+        "icon": "flask",
+        "label": "Gyógyszer",
+        "prompt": "Információ egy gyógyszerről",
+        "reply": "Írd be a gyógyszer nevét (pl. Algopyrin), és megmutatom az adagolást, ellenjavallatokat és gyakori kérdéseket."
+      }
     ]
   },
   "intents": [
-    {
-      "id": "triage.emergency",
-      "patterns": [
-        { "list": ["mellkasi fájdalom","bénulás","légszomj","erős vérzés"] }
-      ],
-      "response": "Ez sürgős lehet. Kérlek, azonnal hívd a 112-t vagy menj az ügyeletre."
-    },
-    {
-      "id": "nav.opening_hours",
-      "patterns": [
-        { "list": ["nyitvatartás","nyitva","meddig vagytok"] }
-      ],
-      "response": { "text": "Nyitvatartás: H–P 08:00–16:00. Időpontért írj vagy foglalj online." }
-    }
+
   ],
   "fallback": {
-    "text": "Ebben nem vagyok biztos. Javaslom, hogy vedd fel a kapcsolatot szakemberrel.",
+    "suggestionText": "Ebben nem vagyok biztos. Javaslom, hogy vedd fel a kapcsolatot szakemberrel.",
     "suggestions": [
-      { "icon": "calendar", "label": "Időpontfoglalás" },
-      { "icon": "chatbubble-ellipses", "label": "Üzenet az asszisztensnek" }
+      {
+        "id": 0,
+        "icon": "calendar",
+        "label": "Időpontfoglalás",
+        "prompt": "Szeretnék időpontot foglalni orvoshoz.",
+        "reply": "Rendben! Kérlek, add meg, milyen szakterületre vagy orvoshoz szeretnél időpontot foglalni, és megmutatom a legközelebbi szabad időpontokat."
+      },
+      {
+        "id": 1,
+        "icon": "chatbubble-ellipses",
+        "label": "Üzenet az asszisztensnek",
+        "prompt": "Szeretnék üzenetet küldeni az asszisztensnek.",
+        "reply": "Természetesen! Írd le röviden, miben segíthetek — például kérhetsz tájékoztatást a rendelési időkről, gyógyszerfelírásról vagy vizsgálati eredményekről."
+      }
     ]
   }
 }

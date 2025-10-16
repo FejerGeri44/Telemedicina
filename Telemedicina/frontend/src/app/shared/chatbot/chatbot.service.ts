@@ -1,89 +1,87 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
-import {AssistantConfig, AssistantReply, Audience, Intent, Pattern} from './chatbot.types';
+import { Audience, ChatConfig, Intent } from './chatbot.types';
+import {map, Observable, throwError} from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ChatbotService {
-  private cfg?: AssistantConfig;
-
   constructor(private http: HttpClient) {}
 
-  async init(audience: Audience): Promise<void> {
-    const url = audience === 'patient'
-      ? '/chatbot/patient-assistant.json'
-      : '/public/chatbot/assistant-clinician.json';
-    this.cfg = await firstValueFrom(this.http.get<AssistantConfig>(url));
-  }
-
-  async initFromObject(obj: AssistantConfig, audience: Audience): Promise<void> {
-    // opcionálisan ellenőrizheted: obj.meta.audience === audience
-    this.cfg = obj;
-  }
-
-  getGreeting() {
-    this.ensure();
-    return this.cfg!.greeting;
-  }
-
-  respond(text: string, audience: Audience): AssistantReply {
-    this.ensure();
-    const now = Date.now();
-
-    const intents = this.cfg!.intents
-      .filter(i => i.audience.includes(audience))
-      .filter(i => this.isValid(i, now))
-      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-
-    let best: { intent: Intent; score: number } | null = null;
-    for (const i of intents) {
-      const s = this.score(text, i.patterns);
-      if (s > (best?.score ?? 0)) best = { intent: i, score: s };
+  /**
+   * getConfig(audience)
+   * - Lekéri a megfelelő JSON-t a backendről.
+   * - patient -> GET /patient ; doctor -> GET /doctor
+   * Miért: a controller két külön handlerre bontja a két szerepkört.  */
+  getConfig(audience: Audience): Observable<ChatConfig> {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return throwError(() => new Error('AUTH_MISSING_TOKEN'));
     }
+    const url = audience === 'doctor'
+      ? 'http://localhost:3000/api/ai-config/doctor-assistant'
+      : 'http://localhost:3000/api/ai-config/patient-assistant';
+    return this.http.get<ChatConfig>(url, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).pipe(
+      map(cfg => this.normalizeConfig(cfg))
+    );
+  }
 
-    if (best && best.score >= 0.5) {
-      return {
-        intentId: best.intent.id,
-        text: best.intent.response.text,
-        suggestions: best.intent.response.suggestions,
-        handoff: best.intent.response.handoff ?? null,
-        confidence: best.score
-      };
+  /**
+   * normalizeConfig
+   * - Védőkorlátok: üres mezők esetén defaultok.
+   * Miért: a controller is védi ezeket mentéskor; itt is érdemes. */
+  private normalizeConfig(cfg: ChatConfig | null | undefined): ChatConfig {
+    return {
+      greeting: {
+        quickStartText: cfg?.greeting?.quickStartText ?? '',
+        quickStarts: cfg?.greeting?.quickStarts ?? []
+      },
+      fallback: {
+        suggestionText: cfg?.fallback?.suggestionText ?? 'Elnézést, nem értettem.',
+        suggestions: cfg?.fallback?.suggestions ?? []
+      },
+      intents: (cfg?.intents ?? []).slice().sort(this.intentSorter)
+    };
+  }
+
+  /** intentSorter
+   * - Ha van priority, magasabb (vagy kisebb – te döntöd) érték előrébb.
+   * Miért: determinisztikus találat választás. */
+  private intentSorter(a: Intent, b: Intent): number {
+    const pa = Number.isFinite(a.priority as any) ? (a.priority as number) : 0;
+    const pb = Number.isFinite(b.priority as any) ? (b.priority as number) : 0;
+    // nagyobb priority előrébb
+    return pb - pa;
+  }
+
+  /**
+   * matchResponse
+   * - A felhasználói üzenethez megpróbál intentet találni (patterns alapján),
+   *   és visszaadja az intent response-át; ha nincs találat, undefined.
+   * Miért: a controller JSON-jában az intentek 'patterns' és 'response' mezőn működnek. */
+  matchResponse(userText: string, cfg: ChatConfig): string | undefined {
+    const text = (userText ?? '').trim();
+    if (!text) return undefined;
+
+    for (const it of cfg.intents ?? []) {
+      const pats = (it.patterns ?? []).map(p => this.safeToRegExp(p));
+      const hit = pats.some(re => re?.test(text));
+      if (hit) return it.response;
     }
-
-    const fb = this.cfg!.fallback;
-    return { text: fb.text, suggestions: fb.suggestions, confidence: 0 };
+    return undefined;
   }
 
-  private isValid(i: Intent, now: number): boolean {
-    const from = i.validFrom ? Date.parse(i.validFrom) : -Infinity;
-    const until = i.validUntil ? Date.parse(i.validUntil) : Infinity;
-    return now >= from && now <= until;
-  }
-
-  private score(text: string, patterns: Pattern[]): number {
-    const t = this.norm(text);
-    let s = 0;
-    for (const p of patterns) {
-      if (p.type === 'keywords_any') {
-        if (p.list.some(k => t.includes(this.norm(k)))) s += 0.6;
-      } else if (p.type === 'keywords_all') {
-        if (p.list.every(k => t.includes(this.norm(k)))) s += 0.8;
-      } else if (p.type === 'startsWith') {
-        if (t.startsWith(this.norm(p.text))) s += 0.5;
-      } else if (p.type === 'regex') {
-        const re = new RegExp(p.pattern, p.flags ?? 'i');
-        if (re.test(text)) s += 0.7;
-      }
+  /** safeToRegExp
+   * - A backend lehetőséget ad egyszerű string listára (coercePatterns),
+   *   itt biztonságosan RegExp-é alakítjuk (case-insensitive).
+   * Miért: robust pattern matching, injection/hiba nélkül. */
+  private safeToRegExp(p: unknown): RegExp | null {
+    if (p instanceof RegExp) return p;
+    if (typeof p === 'string') {
+      const escaped = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return new RegExp(`\\b${escaped}\\b`, 'i');
     }
-    return Math.max(0, Math.min(1, s));
-  }
-
-  private norm(s: string) {
-    return s.toLowerCase().normalize('NFKD').replace(/[^\w\s]/g, '').trim();
-  }
-
-  private ensure() {
-    if (!this.cfg) throw new Error('AssistantEngineService nincs inicializálva (init).');
+    return null;
   }
 }

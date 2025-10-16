@@ -1,0 +1,6 @@
+ion-card-content {
+  min-height: 600px;
+  width: 100%;
+  display: block;
+  padding: 0;
+}

@@ -6,7 +6,7 @@ import {HttpClient} from '@angular/common/http';
 import localeHu from '@angular/common/locales/hu';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {DoctorItem, newAppointment, prevAppointment} from '../../../../utils/interfaces';
+import {DoctorItem, newAppointment, prevAppointment} from '../../../../utils/interfaces/commonInterfaces';
 
 registerLocaleData(localeHu);
 

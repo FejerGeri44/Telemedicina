@@ -4,7 +4,7 @@ import {NgClass, NgForOf, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {firstValueFrom} from 'rxjs';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
-import {DoctorItem} from '../../../../utils/interfaces';
+import {DoctorItem} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-doctor-profile-card',

@@ -8,7 +8,7 @@ import {RouterLink} from '@angular/router';
 import {AdminProfileCardComponent} from '../../components/admin-profile-card/admin-profile-card.component';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {NgForOf, NgIf} from '@angular/common';
-import {AdminItem, DoctorItem, PatientItem, SystemMessage} from '../../../../utils/interfaces';
+import {AdminItem, DoctorItem, PatientItem, SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-admin-home',

@@ -7,7 +7,7 @@ import {
 } from '../../../patient/components/patient-profile-card/patient-profile-card.component';
 import {Router} from '@angular/router';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
-import {MyPatientCard} from '../../../../utils/interfaces';
+import {MyPatientCard} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-my-patients',

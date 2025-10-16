@@ -5,7 +5,7 @@ import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/ro
 import {filter, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {PatientItem, UnreadMessage} from '../../../../utils/interfaces';
+import {PatientItem, UnreadMessage} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-patient-navbar',

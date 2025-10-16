@@ -6,7 +6,7 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {NgForOf, NgIf} from '@angular/common';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {AdminItem, SystemMessage} from '../../../../utils/interfaces';
+import {AdminItem, SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-system-messages',

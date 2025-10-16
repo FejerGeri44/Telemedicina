@@ -5,7 +5,7 @@ import {DatePipe, NgForOf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {Appointment, PatientItem, prevAppointment, User} from '../../../../utils/interfaces';
+import {Appointment, PatientItem, prevAppointment, User} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-appointment-modal',

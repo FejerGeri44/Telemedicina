@@ -4,7 +4,7 @@ import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {NgForOf, NgIf} from '@angular/common';
-import {Patient, PatientItem, User} from '../../../../utils/interfaces';
+import {Patient, PatientItem, User} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-edit-profile-modal',

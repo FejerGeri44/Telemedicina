@@ -6,7 +6,7 @@ import {HttpClient} from '@angular/common/http';
 import {RouterLink} from '@angular/router';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {Appointment, MyAppointment} from '../../../../utils/interfaces';
+import {Appointment, MyAppointment} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-appointment-list',

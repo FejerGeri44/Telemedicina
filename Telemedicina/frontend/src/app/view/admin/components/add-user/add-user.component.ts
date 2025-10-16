@@ -8,7 +8,7 @@ import {FormsModule} from '@angular/forms';
 import {PatientRegistComponent} from '../../../guest/pages/regist-login/forms/patient-regist/patient-regist.component';
 import {DoctorRegistComponent} from '../../../guest/pages/regist-login/forms/doctor-regist/doctor-regist.component';
 import {AdminRegistComponent} from '../../../guest/pages/regist-login/forms/admin-regist/admin-regist.component';
-import {AdminItem} from '../../../../utils/interfaces';
+import {AdminItem} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-add-user',

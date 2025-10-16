@@ -99,13 +99,6 @@ ion-datetime::part(calendar-day) {
   margin-top: 12px;
 }
 
-ion-item.required ion-label::after {
-  content: " *";
-  font-size: 1.2rem;
-  color: var(--ion-color-danger, #eb445a);
-  font-weight: 600;
-}
-
 ion-note.optional-hint {
   margin-right: 10px;
   font-size: 0.8rem;

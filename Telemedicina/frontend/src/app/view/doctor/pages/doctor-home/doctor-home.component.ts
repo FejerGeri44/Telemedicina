@@ -7,7 +7,7 @@ import {
 import {RouterLink} from '@angular/router';
 import {DoctorProfileCardComponent} from '../../components/doctor-profile-card/doctor-profile-card.component';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
-import {DoctorItem, prevAppointment, SystemMessage} from '../../../../utils/interfaces';
+import {DoctorItem, prevAppointment, SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-doctor-home',

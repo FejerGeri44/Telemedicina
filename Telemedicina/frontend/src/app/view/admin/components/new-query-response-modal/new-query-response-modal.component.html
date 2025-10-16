@@ -1,0 +1,49 @@
+<ion-header class="modal-header">
+  <h2 class="modal-title">
+    {{ kind === 'intent' ? 'Új szabály' :
+        kind === 'greeting' ? 'Köszönés szöveg' :
+          kind === 'fallback' ? 'Fallback szöveg' : 'Beállítás' }}
+  </h2>
+  <ion-button class="close-btn" (click)="onCancel()" aria-label="Bezárás">
+    <ion-icon name="close"></ion-icon>
+  </ion-button>
+</ion-header>
+
+<form #intentForm="ngForm" (ngSubmit)="onSave(intentForm)" *ngIf="kind === 'intent'">
+  <ion-item class="required" lines="none">
+    <ion-label position="stacked" class="section-label">
+      Patterns (vesszővel elválasztva)
+    </ion-label>
+    <ion-input
+      class="rounded"
+      fill="outline"
+      [(ngModel)]="model.intent.patterns"
+      name="intentPatterns"
+      placeholder="Hasmenés, fejfájás, láz..."
+      required>
+    </ion-input>
+  </ion-item>
+
+  <ion-item class="required" lines="none">
+    <ion-label position="stacked" class="section-label">Response</ion-label>
+    <ion-textarea
+      class="rounded"
+      fill="outline"
+      [(ngModel)]="model.intent.response"
+      name="intentResponse"
+      placeholder="Ez súlyos lehet, kérlek mielőbb keress fel egy szakorvost ezügyben!"
+      rows="5"
+      required>
+    </ion-textarea>
+  </ion-item>
+
+  <div class="actions">
+    <ion-button
+      class="btn-primary"
+      type="submit"
+      [disabled]="intentForm.invalid || isSaving">
+      Mentés
+    </ion-button>
+  </div>
+</form>
+

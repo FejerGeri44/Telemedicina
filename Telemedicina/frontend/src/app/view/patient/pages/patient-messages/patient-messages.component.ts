@@ -10,7 +10,7 @@ import {
   PatientItem,
   UnreadMessage,
   DoctorUnreadSummary,
-} from '../../../../utils/interfaces';
+} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-patient-messages',

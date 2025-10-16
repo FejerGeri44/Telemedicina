@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {NgForOf, NgIf} from '@angular/common';
 import {formatPhoneNumber, formatTaj, getAge} from '../../../../utils/formatProfileData';
-import {User, Patient, PatientTag, PatientItem} from '../../../../utils/interfaces';
+import {User, Patient, PatientTag, PatientItem} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-patient-profile-card',

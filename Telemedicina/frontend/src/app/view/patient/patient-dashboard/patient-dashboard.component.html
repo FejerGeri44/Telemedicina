@@ -5,5 +5,8 @@
     <router-outlet></router-outlet>
   </main>
 
-  <app-chatbot></app-chatbot>
+  <app-chatbot
+    [audience]="'patient'"
+    [showBubble]="true">
+  </app-chatbot>
 </ion-content>

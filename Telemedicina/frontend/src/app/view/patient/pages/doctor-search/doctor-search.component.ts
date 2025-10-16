@@ -6,7 +6,7 @@ import {NgForOf, NgIf} from '@angular/common';
 import { ModalController } from '@ionic/angular';
 import { AppointmentModalComponent } from '../../components/appointment-modal/appointment-modal.component';
 import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
-import {DoctorItem} from '../../../../utils/interfaces';
+import {DoctorItem} from '../../../../utils/interfaces/commonInterfaces';
 import {ToastService} from '../../../../shared/toast/toast.service';
 
 @Component({

@@ -20,7 +20,7 @@ import {
 import {
   PatientEditProfileModalComponent
 } from '../../../patient/components/patient-edit-profile-modal/patient-edit-profile-modal.component';
-import {AdminItem, DoctorItem, PatientItem, PatientTag} from '../../../../utils/interfaces';
+import {AdminItem, DoctorItem, PatientItem, PatientTag} from '../../../../utils/interfaces/commonInterfaces';
 
 type UserSortKey = 'name' | 'role' | 'createdAt';
 

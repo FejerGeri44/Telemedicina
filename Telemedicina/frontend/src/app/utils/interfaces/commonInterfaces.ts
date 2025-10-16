@@ -1,4 +1,4 @@
-import {genders, userRoles} from './userRoles';
+import {genders, userRoles} from '../userRoles';
 
 export interface User {
   id: number;

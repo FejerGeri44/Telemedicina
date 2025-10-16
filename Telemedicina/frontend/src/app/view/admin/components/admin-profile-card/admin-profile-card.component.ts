@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/co
 import {IonicModule} from '@ionic/angular';
 import {NgIf} from '@angular/common';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
-import {AdminItem} from '../../../../utils/interfaces';
+import {AdminItem} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-admin-profile-card',

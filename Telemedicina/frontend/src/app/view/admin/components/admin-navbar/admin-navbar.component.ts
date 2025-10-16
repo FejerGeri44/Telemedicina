@@ -5,7 +5,7 @@ import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/ro
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {filter, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {AdminItem} from '../../../../utils/interfaces';
+import {AdminItem} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-admin-navbar',

@@ -3,7 +3,7 @@ import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {Admin, User, AdminItem} from '../../../../utils/interfaces';
+import {Admin, User, AdminItem} from '../../../../utils/interfaces/commonInterfaces';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 
 @Component({
