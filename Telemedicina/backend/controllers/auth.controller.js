@@ -2,47 +2,105 @@ const bcrypt = require('bcrypt');
 const { User, Patient, Doctor, Admin } = require('../models');
 const jwt = require('jsonwebtoken');
 
-const registerPatient = async (req, res) => {
-  try {
-    const { name, email, password, phoneNumber, taj, address, birthDate, height, weight, homePhone, gender } = req.body;
-    const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-profilePictures%2Fpatient.png?alt=media&token=cd37f41f-37cf-4a6e-a8f5-091327113834';
+const { admin }        = require('../config/firebase-config');
+const userModel        = require('../models/user.model');
+const patientModel     = require('../models/patient.model');
 
-    // Ellenőrizzük, hogy van-e már ilyen e-mail
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Ez az e-mail már használatban van.' });
+const PATIENT_DEFAULT_PICTURE = 'gs://szakdolgozat-8655.appspot.com/default-profilePictures/patient.png';
+
+function toE164HU(input) {
+  if (input == null) return null;
+  let s = String(input).trim().replace(/[()\s\-.]/g, '');
+  if (s === '') return null;
+
+  if (s.startsWith('06')) s = '+36' + s.slice(2);
+  else if (s.startsWith('0036')) s = '+' + s.slice(2);
+  else if (/^36\d+/.test(s)) s = '+' + s;
+  else if (/^0\d+/.test(s)) s = '+36' + s.slice(1);
+
+  if (/^\+[1-9]\d{7,14}$/.test(s)) return s;
+  return null;
+}
+
+const registerPatient = async (req, res) => {
+
+  try {
+    const {
+      name, email, password, phoneNumber, taj, address, birthDate,
+      height, weight, homePhone, gender
+    } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'E-mail és jelszó megadása kötelező.' });
     }
 
-    // Jelszó hash-elése
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const emailNorm = String(email).trim().toLowerCase();
+    const phoneE164 = toE164HU(phoneNumber);
 
-    // Felhasználó mentése
-    const user = await User.create({
-      email,
-      name,
-      password: hashedPassword,
+    const authUser = await admin.auth()
+      .getUserByEmail(emailNorm)
+      .catch((e) => {
+        if (e && e.code === 'auth/user-not-found') return null;
+        throw e;
+      });
+
+    let authUid;
+
+    if (authUser) {
+      authUid = authUser.uid;
+
+      const userByAuthUid = await userModel.findByAuthUid
+        ? await userModel.findByAuthUid(authUid)
+        : null;
+
+      if (userByAuthUid) {
+        return res.status(400).json({ message: 'Ez az e-mail már használatban van.' });
+      }
+
+    } else {
+      const userRecord = await admin.auth().createUser({
+        email: emailNorm,
+        password,
+        displayName: name || undefined,
+      });
+      authUid = userRecord.uid;
+    }
+
+    const { id: userId } = await userModel.create({
+      name: name ?? null,
+      email: emailNorm,
       role: 'patient',
-      phoneNumber,
-      address,
-      birthDate,
-      pictureUrl
+      phoneNumber: phoneE164 ?? null,
+      address: address ?? null,
+      birthDate: birthDate ?? null,
+      pictureUrl: PATIENT_DEFAULT_PICTURE,
+      authUid,
     });
 
-    // Páciens bejegyzés létrehozása
-    await Patient.create({
-      userId: user.id,
-      height,
-      weight,
-      taj,
-      homePhone,
-      gender: gender,
-
-      registDate: new Date()
+    const toNumOrNull = v => (v != null && v !== '' ? Number(v) : null);
+    await patientModel.create({
+      userId: String(userId),
+      height: toNumOrNull(height),
+      weight: toNumOrNull(weight),
+      taj: taj ?? null,
+      homePhone: homePhone ?? null,
+      gender: gender ?? null,
     });
 
-    return res.status(201).json({ message: 'Páciens regisztráció sikeres.' });
+    return res.status(201).json({
+      message: 'Páciens regisztráció sikeres.',
+      userId,
+      authUid,
+    });
 
   } catch (error) {
+    if (error?.code === 'auth/email-already-exists') {
+      return res.status(400).json({ message: 'Ez az e-mail már használatban van.' });
+    }
+    if (error?.code === 'auth/weak-password') {
+      return res.status(400).json({ message: 'A jelszó túl gyenge.' });
+    }
+
     console.error('Hiba a páciens regisztráció során:', error);
     return res.status(500).json({ message: 'Szerverhiba a regisztráció közben.' });
   }

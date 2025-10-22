@@ -20,7 +20,8 @@ import {
 import {
   PatientEditProfileModalComponent
 } from '../../../patient/components/patient-edit-profile-modal/patient-edit-profile-modal.component';
-import {AdminItem, DoctorItem, PatientItem, PatientTag} from '../../../../utils/interfaces/commonInterfaces';
+import {AdminItem, DoctorItem, PatientItem} from '../../../../utils/interfaces/commonInterfaces';
+import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 
 type UserSortKey = 'name' | 'role' | 'createdAt';
 
@@ -285,61 +286,76 @@ export class AllUsersComponent implements OnInit{
     return (u?.User?.id ?? u?.id) ?? null;
   }
   isSelected(u: any): boolean {
-    const id = u?.User?.id ?? u?.id ?? null;
-    return id != null && this.selectedIds.has(id);
+    return this.selectedIds.has(u.user.id);
   }
   get hasSelection(): boolean {
-    return (this.selectedIds?.size ?? 0) > 0;
-  }
-  get selectionCount(): number {
-    return this.selectedIds?.size ?? 0;
+    return this.selectedIds.size > 0;
   }
   get hasExactlyOneSelection(): boolean {
-    return this.selectionCount === 1;
+    return this.selectedIds.size === 1;
   }
-  onRowClick(u: any, _ev: MouseEvent) {
-    this.isSelected(u) ? this.deselect(u) : this.select(u);
+  onRowClick(u: any, ev?: MouseEvent) {
+    const el = ev?.target as HTMLElement;
+    if (el && el.closest('ion-button, ion-checkbox')) {
+      return;
+    }
+    this.toggleUser(u);
+  }
+  private toggleUser(u: any, makeSelected?: boolean) {
+    const id = u.user.id;
+    const shouldSelect = (makeSelected !== undefined)
+      ? makeSelected
+      : !this.selectedIds.has(id);
+
+    const next = new Set(this.selectedIds);
+    if (shouldSelect) { next.add(id); } else { next.delete(id); }
+    this.selectedIds = next;
   }
   isIndeterminate(): boolean {
-    const selectedCount = this.filtered.filter(u => this.isSelected(u)).length;
-    return selectedCount > 0 && selectedCount < this.filtered.length;
+    const count = this.filtered.filter(u => this.selectedIds.has(u.user.id)).length;
+    return count > 0 && count < this.filtered.length;
   }
   select(u: any) {
     const id = this.getUserId(u);
     if (id != null) this.selectedIds.add(id);
   }
-  deselect(u: any) {
-    const id = this.getUserId(u);
-    if (id != null) this.selectedIds.delete(id);
-  }
-  onCheckboxChange(u: any, ev: CustomEvent) {
-    ev.stopPropagation();
-    if (ev.detail?.checked) this.select(u);
-    else this.deselect(u);
+  onCheckboxChange(u: any, checked: boolean) {
+    this.toggleUser(u, checked);
   }
   areAllSelected(): boolean {
-    return this.filtered.length > 0 && this.filtered.every(u => this.isSelected(u));
+    return this.filtered.length > 0 && this.filtered.every(u => this.selectedIds.has(u.user.id));
   }
-  getSingleSelectedUser(): any | null {
+  getSingleSelectedUser() {
     if (this.selectedIds.size !== 1) return null;
     const id = Array.from(this.selectedIds)[0];
-    return this.users.find(u => this.getUserId(u) === id) ?? null;
+    return this.filtered.find(it => it.user?.id === id) ?? null;
+  }
+  getSelectedItems() {
+    if (this.selectedIds.size === 0) return [];
+    return this.filtered.filter(it => this.selectedIds.has(it.user?.id));
   }
   toggleSelectAll(checked: boolean) {
+    const next = new Set(this.selectedIds);
     if (checked) {
-      this.filtered.forEach(u => this.select(u));
+      this.filtered.forEach(u => next.add(u.user.id));
     } else {
-      this.filtered.forEach(u => this.deselect(u));
+      this.filtered.forEach(u => next.delete(u.user.id));
     }
+    this.selectedIds = next;
   }
   async editUser() {
     if (!this.hasExactlyOneSelection) return;
 
     const selected = this.getSingleSelectedUser();
-    if (!selected) return;
+    if (!selected) {
+      console.warn('Nincs kiválasztott user.');
+      return;
+    }
 
-    const role: string =
-      (selected.role || selected.User?.role || '').toLowerCase();
+    const role = (selected.role || selected.user?.role || '')
+      .toString()
+      .trim()
+      .toLowerCase();
 
     const component = this.getModalComponentByRole(role);
     if (!component) {
@@ -347,11 +363,9 @@ export class AllUsersComponent implements OnInit{
       return;
     }
 
-    const componentProps = this.mapToModalProps(selected);
-
     const modal = await this.modalCtrl.create({
       component: component as any,
-      componentProps: componentProps,
+      componentProps: this.mapToModalProps(selected),
       backdropDismiss: false
     });
 
@@ -370,17 +384,8 @@ export class AllUsersComponent implements OnInit{
       default:        return null;
     }
   }
-  private mapToModalProps(row: any) {
-    const flatUser = row.User ?? row;
-
-    return {
-      user: {
-        user: flatUser,
-        patient: row.Patient ?? (row.role === 'patient' ? row : null),
-        doctor: row.Doctor  ?? (row.role === 'doctor'  ? row : null),
-        admin: row.Admin   ?? (row.role === 'admin'   ? row : null),
-      }
-    };
+  private mapToModalProps(selected: any) {
+    return { item: selected };
   }
   firstConfirmUserDelete() {
     void this.alert.show(
@@ -481,4 +486,6 @@ export class AllUsersComponent implements OnInit{
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  protected readonly formatPhoneNumber = formatPhoneNumber;
 }

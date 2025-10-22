@@ -135,7 +135,7 @@
         <ion-checkbox
           [checked]="isSelected(user)"
           (click)="$event.stopPropagation()"
-          (ionChange)="onCheckboxChange(user, $event)">
+          (ionChange)="onCheckboxChange(user, $event.detail.checked)">
         </ion-checkbox>
       </td>
       <td>
@@ -151,13 +151,13 @@
       </td>
       <td><ion-badge [ngClass]="roleBadgeClass(user.role)">{{ user.role }}</ion-badge></td>
       <td>{{ user.user.email }}</td>
-      <td>{{ user.user.phoneNumber }}</td>
+      <td>{{ formatPhoneNumber(user.user.phoneNumber) }}</td>
       <td>{{ user.user.address || 'N/A' }}</td>
       <td *ngIf="user.role == 'patient'">{{ user.patient.registDate | date:'yyyy.MM.dd' }}</td>
       <td *ngIf="user.role == 'doctor'">{{ user.doctor.registDate | date:'yyyy.MM.dd' }}</td>
       <td *ngIf="user.role == 'admin'">{{ user.admin.registDate | date:'yyyy.MM.dd' }}</td>
       <td>
-        <ion-button class="btn-accent" (click)="onProfileClick(user, $event)">
+        <ion-button class="btn-accent" (click)="onProfileClick(user, $event); $event.stopPropagation()">
           Profil
         </ion-button>
       </td>

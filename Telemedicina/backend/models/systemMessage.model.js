@@ -1,51 +1,37 @@
-const { DataTypes } = require('sequelize');
+const { col, doc } = require('./shared/firestore');
+const { nextId } = require('./shared/counter');
 
-module.exports = (sequelize) => {
-  const SystemMessage = sequelize.define('SystemMessage', {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true
-    },
-    adminId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'admins',
-        key: 'id'
-      }
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    message: {
-      type: DataTypes.TEXT,
-      allowNull: false
-    },
-    type: {
-      type: DataTypes.ENUM('info', 'warning', 'error'),
-      allowNull: false,
-      defaultValue: 'info'
-    },
-    audience: {
-      type: DataTypes.ENUM('all', 'patient', 'doctor', 'admin'),
-      allowNull: false,
-      defaultValue: 'all'
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW
-    },
-    validUntil: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    }
-  }, {
-    tableName: 'system_messages',
-    timestamps: false
+const C = 'system_messages';
+
+exports.create = async (data) => {
+  const id = await nextId(C);
+  await doc(C, id).set({
+    id,
+    adminId: String(data.adminId),
+    title: data.title,
+    message: data.message,
+    type: data.type ?? 'info',
+    audience: data.audience ?? 'all',
+    createdAt: new Date(),
+    validUntil: data.validUntil ? new Date(data.validUntil) : null
   });
+  return { id };
+};
 
-  return SystemMessage;
+exports.get = async (id) => {
+  const s = await doc(C, id).get();
+  return s.exists ? ({ id: s.id, ...s.data() }) : null;
+};
+
+exports.update = async (id, patch) => {
+  await doc(C, id).set(patch, { merge: true });
+};
+
+exports.listForAdmin = async (adminId) => {
+  const q = await col('system_messages').where('adminId', '==', String(adminId)).get();
+  return q.docs.map(d => d.data());
+};
+
+exports.delete = async (id) => {
+  await doc('system_messages', id).delete();
 };

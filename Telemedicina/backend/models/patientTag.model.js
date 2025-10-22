@@ -1,24 +1,24 @@
-const { DataTypes } = require('sequelize');
+const { col, doc } = require('./shared/firestore');
+const { nextId } = require('./shared/counter');
 
-module.exports = (sequelize) => {
-  const PatientTag = sequelize.define('PatientTag', {
-    patient_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: { model: 'patients', key: 'id' }
-    },
-    tag_name: {
-      type: DataTypes.STRING(50),
-      allowNull: false
-    },
-    tag_value: {
-      type: DataTypes.STRING(255),
-      allowNull: false
-    }
-  }, {
-    tableName: 'patient_tags',
-    timestamps: false
+const C = 'patient_tags';
+
+exports.create = async ({ patient_id, tag_name, tag_value }) => {
+  const id = await nextId(C);
+  await doc(C, id).set({
+    id,
+    patient_id: String(patient_id),
+    tag_name,
+    tag_value
   });
+  return { id };
+};
 
-  return PatientTag;
+exports.listForPatient = async (patientId) => {
+  const q = await col('patient_tags').where('patient_id', '==', String(patientId)).get();
+  return q.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+exports.delete = async (id) => {
+  await doc(C, id).delete();
 };

@@ -1,5 +1,6 @@
 const { User, Admin, Patient, Doctor, PatientTag, sequelize, SystemMessage} = require('../models');
 const bcrypt = require("bcrypt");
+const firebaseAdmin = require("../config/firebase-config");
 
 exports.getCurrentUser = async (req, res) => {
   try {
@@ -41,41 +42,65 @@ exports.getCurrentUser = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const { id, ...updateFields } = req.body;
-    if (!id) {
-      await t.rollback();
-      return res.status(400).json({ message: 'Missing user id' });
-    }
+    let { id, ...updateFields } = req.body;
+    if (!id) return res.status(400).json({ message: 'Missing user id' });
 
     const admin = await Admin.findOne({ where: { userId: id }, transaction: t });
     if (!admin) {
       await t.rollback();
-      return res.status(404).json({ message: 'Admin not found' });
+      return res.status(404).json({ message: 'Doctor not found' });
     }
 
-    const userAllowed   = ['name', 'address', 'phoneNumber', 'pictureUrl'];
     const userFields = {};
+
+    const userAllowed = ['name', 'address', 'phoneNumber'];
+
+    const normalizeField = (val) => {
+      if (typeof val === 'string') {
+        const v = val.trim();
+        return v === '' ? undefined : v;
+      }
+      return val;
+    };
+
     for (const k of userAllowed) {
-      if (updateFields[k] !== undefined) userFields[k] = updateFields[k];
+      if (updateFields[k] !== undefined) {
+        let v = updateFields[k];
+        if (typeof v === 'string') {
+          v = v.trim();
+          if (v === '') v = undefined;
+        } else {
+          v = normalizeField(v);
+        }
+        if (v !== undefined) userFields[k] = v;
+      }
     }
 
+    if (req.file && req.file.buffer) {
+      const bucket = firebaseAdmin.storage().bucket();
+      const objectPath = `user-profilePictures/${id}`;
+      const file = bucket.file(objectPath);
+
+      await file.save(req.file.buffer, {
+        resumable: false,
+        contentType: req.file.mimetype,
+        metadata: { cacheControl: 'public, max-age=31536000' }
+      });
+
+      await file.makePublic();
+
+      const cacheBuster = Date.now();
+      userFields.pictureUrl = `https://storage.googleapis.com/${bucket.name}/${objectPath}?v=${cacheBuster}`;
+    }
     if (Object.keys(userFields).length > 0) {
       await User.update(userFields, { where: { id }, transaction: t });
     }
 
-    const updatedUser = await User.findByPk(id, {
-      attributes: ['id', 'name', 'address', 'phoneNumber', 'pictureUrl'],
-      transaction: t
-    });
-
     await t.commit();
-    return res.json({
-      message: 'Admin profile updated successfully',
-      user: updatedUser,
-    });
+    return res.json({ message: 'Profile updated successfully' });
   } catch (error) {
     await t.rollback();
-    console.error('❌ Error updating doctor profile:', error);
+    console.error('❌ Error updating profile:', error);
     return res.status(500).json({ message: 'Server error', error: String(error) });
   }
 };

@@ -3,7 +3,7 @@ import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {Doctor, DoctorItem, User} from '../../../../utils/interfaces/commonInterfaces';
+import {DoctorItem} from '../../../../utils/interfaces/commonInterfaces';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 
 @Component({
@@ -26,20 +26,13 @@ export class DoctorEditProfileModalComponent {
     introduction: ''
   };
   file: File | null = null;
+  tempPreviewUrl: string | null = null;
 
   constructor(
     private modalCtrl: ModalController,
     private http: HttpClient,
     private toast: ToastService
   ) {}
-
-  getUser(): User {
-    return this.user.user;
-  }
-
-  getDoctor(): Doctor {
-    return this.user.doctor;
-  }
 
   close() {
     void this.modalCtrl.dismiss();
@@ -53,17 +46,17 @@ export class DoctorEditProfileModalComponent {
       return;
     }
 
-    const payload: any = {
-      id: this.user?.user?.id,
-      ...modifiedFields
-    };
-
-    if (!payload.id) {
+    const id = this.user?.user?.id;
+    if (!id) {
       console.error('❌ Nincs felhasználó ID a payloadban!');
       return;
     }
 
-    this.http.patch('http://localhost:3000/api/doctor/profile/update', payload).subscribe({
+    const payload: any = { id, ...modifiedFields };
+
+    const formData = this.buildFormData(payload);
+
+    this.http.patch('http://localhost:3000/api/doctor/profile/update', formData).subscribe({
       next: (res) => {
         console.log('✅ Sikeres mentés:', res);
         void this.modalCtrl.dismiss(res, 'updated');
@@ -77,46 +70,78 @@ export class DoctorEditProfileModalComponent {
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const selectedFile = input?.files[0];
-      const fileType = selectedFile.type;
+    const file = input.files && input?.files[0] ? input?.files[0] : null;
+    if (!file) return;
 
-      if (fileType === 'image/svg+xml') {
-        this.toast.show('Az SVG formátum nem engedélyezett!', 'danger');
-        return;
-      }
-
-      if (fileType === 'image/gif') {
-        this.toast.show('A GIF formátum nem engedélyezett!', 'danger');
-        return;
-      }
-
-      this.file = selectedFile;
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      this.toast.show('Csak JPG/PNG/WEBP kép tölthető fel.', 'warning');
+      return;
     }
+    const MAX_MB = 5;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      this.toast.show(`A kép nem lehet nagyobb, mint ${MAX_MB} MB.`, 'warning');
+      return;
+    }
+    this.tempPreviewUrl = URL.createObjectURL(file);
+    (this as any).file = file;
   }
 
-  getModifiedFields() {
-    const modified: Partial<Record<keyof typeof this.editForm, string | number | null>> = {};
+  private getModifiedFields(): Record<string, any> {
+    const modified: Record<string, any> = {};
 
-    const formKeys = Object.keys(this.editForm) as (keyof typeof this.editForm)[];
+    const baselineUser: any = this.user || {};
+    const baselineDoctor: any = baselineUser.doctor || baselineUser;
 
-    for (const key of formKeys) {
-      const raw = this.editForm[key];
-      const newValue = raw.trim();
+    const userAllowed = ['name', 'address', 'birthDate', 'phoneNumber'];
+    const doctorAllowed = ['speciality', 'introduction'];
 
-      const originalFromUser    = this.user?.user?.[key as keyof User];
-      const originalFromDoctor = this.user?.doctor?.[key as keyof Doctor];
-      const originalValue = originalFromUser ?? originalFromDoctor;
+    const norm = (v: any) => (typeof v === 'string' ? v.trim() : v);
 
-      if (
-        newValue !== '' &&
-        newValue !== originalValue
-      ) {
-        modified[key] = newValue as any;
+    for (const key of userAllowed) {
+      const oldValue = norm(baselineUser[key]);
+      const newValue = norm((this.editForm as any)[key]);
+      if (newValue !== undefined && newValue !== oldValue) {
+        (modified as any)[key] = newValue;
       }
+    }
+
+    for (const key of doctorAllowed) {
+      const oldValue = norm(baselineDoctor[key]);
+      const newValue = norm((this.editForm as any)[key]);
+      if (newValue !== undefined && newValue !== oldValue) {
+        (modified as any)[key] = newValue;
+      }
+    }
+
+    if (this.file) {
+      (modified as any).picture = this.file;
     }
 
     return modified;
+  }
+
+  private buildFormData(payload: any): FormData {
+    const fd = new FormData();
+
+    const appendValue = (key: string, value: any) => {
+      if (value === undefined || value === null) return;
+
+      if (key === 'picture' && value instanceof File) {
+        fd.append('picture', value, value.name);
+        return;
+      }
+
+      if (typeof value === 'object' && !(value instanceof File)) {
+        fd.append(key, JSON.stringify(value));
+        return;
+      }
+
+      fd.append(key, String(value));
+    };
+
+    Object.keys(payload).forEach(k => appendValue(k, payload[k]));
+    return fd;
   }
 
   protected readonly formatPhoneNumber = formatPhoneNumber;

@@ -1,12 +1,11 @@
-import {Component, ComponentRef, Injector, Input, ViewContainerRef} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { ToastController } from '@ionic/angular';
-import {CustomToastComponent} from '../../../../../../shared/toast/toast.component';
 import {ToastService} from '../../../../../../shared/toast/toast.service';
+import {environment} from '../../../../../../../../../backend/config/enviroment';
 
 @Component({
   selector: 'app-patient-regist',
@@ -35,8 +34,6 @@ export class PatientRegistComponent {
   birthDate: string = '';
   gender: string = '';
 
-  validEmail: boolean = false;
-  invalidEmail: boolean = false;
   showPassword: boolean = false;
 
   buttonText: string = this.calledByAdmin ? 'jelentkezek' : 'Mentés';
@@ -49,43 +46,36 @@ export class PatientRegistComponent {
   ) {}
 
   onPatientRegister() {
-    // Üres mezők ellenőrzése
-    if (!this.fullName || !this.email || !this.password || !this.password_again || !this.phoneNumber || !this.address ||! this.birthDate) {
+    if (!this.fullName || !this.email || !this.password || !this.password_again ||
+      !this.phoneNumber || !this.address || !this.birthDate) {
       this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
       return;
-    } else {
-
-      // Email ellenőrzése
-      if (!this.email.includes('@')) {
-        this.invalidEmail = true;
-        this.validEmail = false;
-        this.toast.show('Hibás e-mail cím!', 'danger');
-        return;
-      } else {
-        this.invalidEmail = false;
-        this.validEmail = true;
-      }
-
-      // Jelszavak egyezősége
-      if (this.password !== this.password_again) {
-        this.toast.show('A jelszavak nem egyeznek!', 'warning');
-        return;
-      }
     }
 
-    const patientData = {
-      name: this.fullName,
-      email: this.email,
-      password: this.password,
-      phoneNumber: this.phoneNumber,
-      taj: this.taj,
-      address: this.address,
-      birthDate: this.birthDate,
-      gender: this.gender
+    const email = String(this.email).trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.toast.show('Hibás e-mail cím!', 'danger');
+      return;
+    }
+
+    if (this.password !== this.password_again) {
+      this.toast.show('A jelszavak nem egyeznek!', 'warning');
+      return;
+    }
+
+    const payloadBase = {
+      name: String(this.fullName).trim(),
+      email,
+      password: String(this.password),
+      phoneNumber: String(this.phoneNumber).trim(),
+      taj: this.taj ? String(this.taj).trim() : null,
+      address: String(this.address).trim(),
+      birthDate: new Date(this.birthDate).toISOString(),
+      gender: this.gender ?? null
     };
 
     if (!this.calledByAdmin) {
-      this.http.post('http://localhost:3000/api/auth/register/patient', patientData)
+      this.http.post(`${environment.apiUrl}/auth/register/patient`, payloadBase)
         .subscribe({
           next: () => {
             setTimeout(() => {
@@ -101,44 +91,33 @@ export class PatientRegistComponent {
           },
           error: err => {
             console.error(err);
-            this.toast.show('Hiba történt a páciens regisztráció során.', 'danger');
+            const msg = err?.error?.message || 'Hiba történt a páciens regisztráció során.';
+            this.toast.show(msg, 'danger');
           }
         });
-    }else {
+    } else {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const UserId  = this.adminUser.user.id;
-      const AdminId = this.adminUser.admin.id;
-
-      const payload = {
-        name: this.fullName,
-        email: this.email,
-        password: this.password,
-        phoneNumber: this.phoneNumber,
-        taj: this.taj,
-        address: this.address,
-        birthDate: this.birthDate,
-        gender: this.gender,
-        adminUserId: UserId,
-        adminId: AdminId
+      const payloadAdmin = {
+        ...payloadBase,
+        adminUserId: this.adminUser.user.id,
+        adminId: this.adminUser.admin.id
       };
 
-      this.http.post('http://localhost:3000/api/admin/registerPatient', payload, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      this.http.post(`${environment.apiUrl}/admin/registerPatient`, payloadAdmin, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).subscribe({
+        next: () => {
+          this.toast.show('Sikeres Páciens felvitel!', 'success');
+          void this.modalCtrl.dismiss(true);
+        },
+        error: err => {
+          console.error(err);
+          const msg = err?.error?.message || 'Hiba történt a regisztráció során!';
+          this.toast.show(msg, 'danger');
         }
-      })
-        .subscribe({
-          next: () => {
-            this.toast.show("Sikeres Páciens felvitel!", "success");
-            void this.modalCtrl.dismiss(true);
-          },
-          error: err => {
-            console.error(err);
-            this.toast.show('Hiba történt a regisztráció során!', 'danger');
-          }
-        });
+      });
     }
   }
 

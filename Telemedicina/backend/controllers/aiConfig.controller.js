@@ -1,12 +1,6 @@
 const PatientFile = 'chatbots/patient-assistant/patient-assistant.json';
 const DoctorFile = 'chatbots/doctor-assistant/doctor-assistant.json';
 const admin = require('firebase-admin');
-const serviceAccount = require('../config/serviceAccount.json');
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  storageBucket: 'szakdolgozat-8655.firebasestorage.app',
-});
 
 exports.getPatientAssistantConfig = async (req, res) => {
   try {

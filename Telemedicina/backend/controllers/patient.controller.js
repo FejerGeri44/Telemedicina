@@ -7,6 +7,7 @@ const {
   DoctorRating,
   sequelize
 } = require('../models');
+const admin = require('../config/firebase-config');
 
 exports.getCurrentUser = async (req, res) => {
   try {
@@ -102,7 +103,7 @@ exports.getPatientMeTags = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const { id, tags, ...updateFields } = req.body;
+    let { id, tags, ...updateFields } = req.body;
     if (!id) return res.status(400).json({ message: 'Missing user id' });
 
     const patient = await Patient.findOne({ where: { userId: id }, transaction: t });
@@ -114,16 +115,64 @@ exports.updateProfile = async (req, res) => {
     const userFields = {};
     const patientFields = {};
 
-    const userAllowed = ['name', 'address', 'birthDate', 'phoneNumber', 'pictureUrl'];
+    const userAllowed = ['name', 'address', 'phoneNumber'];
     const patientAllowed = ['gender', 'height', 'weight', 'homePhone'];
 
+    const normalizeField = (val) => {
+      if (typeof val === 'string') {
+        const v = val.trim();
+        return v === '' ? undefined : v;
+      }
+      return val;
+    };
+
+    const normalizeNumberField = (val) => {
+      if (val === '' || val === null || val === undefined) return undefined;
+      const n = Number(val);
+      return Number.isNaN(n) ? undefined : n;
+    };
+
     for (const k of userAllowed) {
-      if (updateFields[k] !== undefined) userFields[k] = updateFields[k];
-    }
-    for (const k of patientAllowed) {
-      if (updateFields[k] !== undefined) patientFields[k] = updateFields[k];
+      if (updateFields[k] !== undefined) {
+        let v = updateFields[k];
+        if (typeof v === 'string') {
+          v = v.trim();
+          if (v === '') v = undefined;
+        } else {
+          v = normalizeField(v);
+        }
+        if (v !== undefined) userFields[k] = v;
+      }
     }
 
+    for (const k of patientAllowed) {
+      if (updateFields[k] !== undefined) {
+        let v = updateFields[k];
+        if (['height', 'weight'].includes(k)) {
+          v = normalizeNumberField(v);
+        } else {
+          v = normalizeField(v);
+        }
+        if (v !== undefined) patientFields[k] = v;
+      }
+    }
+
+    if (req.file && req.file.buffer) {
+      const bucket = admin.storage().bucket();
+      const objectPath = `user-profilePictures/${id}`;
+      const file = bucket.file(objectPath);
+
+      await file.save(req.file.buffer, {
+        resumable: false,
+        contentType: req.file.mimetype,
+        metadata: { cacheControl: 'public, max-age=31536000' }
+      });
+
+      await file.makePublic();
+
+      const cacheBuster = Date.now();
+      userFields.pictureUrl = `https://storage.googleapis.com/${bucket.name}/${objectPath}?v=${cacheBuster}`;
+    }
     if (Object.keys(userFields).length > 0) {
       await User.update(userFields, { where: { id }, transaction: t });
     }
@@ -131,16 +180,22 @@ exports.updateProfile = async (req, res) => {
       await Patient.update(patientFields, { where: { id: patient.id }, transaction: t });
     }
 
-    if (Array.isArray(tags)) {
+    let tagsParsed = tags;
+    if (typeof tags === 'string') {
+      try { tagsParsed = JSON.parse(tags); } catch (_) { tagsParsed = null; }
+    }
+
+    if (Array.isArray(tagsParsed)) {
       await PatientTag.destroy({ where: { patient_id: patient.id }, transaction: t });
 
-      const toCreate = tags
+      const toCreate = tagsParsed
         .filter(tg => tg && tg.name && tg.value)
         .map(tg => ({
           patient_id: patient.id,
           tag_name: String(tg.name).trim(),
           tag_value: String(tg.value).trim()
         }));
+
 
       if (toCreate.length > 0) {
         await PatientTag.bulkCreate(toCreate, { transaction: t });

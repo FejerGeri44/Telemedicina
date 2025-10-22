@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const sharedController = require('../controllers/shared.controller');
-const authenticateToken = require('../middleware/auth.middleware');
+const authenticateToken = require('../middleware/firebaseAuth');
 
 router.post('/sendMessage', authenticateToken, sharedController.sendMessage);
 router.post('/getMyMessages', authenticateToken, sharedController.getMyMessages);

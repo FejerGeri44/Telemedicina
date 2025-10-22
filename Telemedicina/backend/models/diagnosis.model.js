@@ -1,64 +1,55 @@
-const { DataTypes } = require('sequelize');
+const { col, doc } = require('./shared/firestore');
+const { nextId } = require('./shared/counter');
+const C = 'diagnoses';
 
-module.exports = (sequelize) => {
-  const Diagnosis = sequelize.define('Diagnosis', {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true
-    },
-    appointmentId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'appointment_id',
-      references: { model: 'appointments', key: 'id' }
-    },
-    patientId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'patient_id',
-      references: { model: 'patients', key: 'id' }
-    },
-    doctorId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'doctor_id',
-      references: { model: 'doctors', key: 'id' }
-    },
+exports.create = async (data) => {
+  const id = await nextId(C);
+  await doc(C, id).set({
+    id,
+    appointment_id: data.appointmentId ? String(data.appointmentId) : null,
+    patient_id: String(data.patientId),
+    doctor_id: data.doctorId ? String(data.doctorId) : null,
 
-    // Symptoms
-    chiefComplaint: { type: DataTypes.STRING, allowNull: false },
-    onsetDate: { type: DataTypes.DATEONLY, allowNull: true },
-    history: { type: DataTypes.TEXT, allowNull: true },
+    chiefComplaint: data.chiefComplaint,
+    onsetDate: data.onsetDate ? new Date(data.onsetDate) : null,
+    history: data.history ?? null,
 
-    // Exam
-    bpSys: { type: DataTypes.INTEGER, allowNull: true },
-    bpDia: { type: DataTypes.INTEGER, allowNull: true },
-    heartRate: { type: DataTypes.INTEGER, allowNull: true },
-    tempC: { type: DataTypes.DECIMAL(4,1), allowNull: true },
-    spo2: { type: DataTypes.INTEGER, allowNull: true },
-    weightKg: { type: DataTypes.DECIMAL(5,1), allowNull: true },
-    heightCm: { type: DataTypes.DECIMAL(5,1), allowNull: true },
-    bmi: { type: DataTypes.DECIMAL(4,1), allowNull: true },
-    examSummary: { type: DataTypes.TEXT, allowNull: true },
+    bpSys: data.bpSys ?? null,
+    bpDia: data.bpDia ?? null,
+    heartRate: data.heartRate ?? null,
+    tempC: data.tempC != null ? Number(data.tempC) : null,
+    spo2: data.spo2 ?? null,
+    weightKg: data.weightKg != null ? Number(data.weightKg) : null,
+    heightCm: data.heightCm != null ? Number(data.heightCm) : null,
+    bmi: data.bmi != null ? Number(data.bmi) : null,
+    examSummary: data.examSummary ?? null,
 
-    // Diagnosis
-    primaryText: { type: DataTypes.STRING, allowNull: false },
-    codeSystem: { type: DataTypes.STRING, allowNull: true },
-    code: { type: DataTypes.STRING, allowNull: true },
-    certaintyPct: { type: DataTypes.INTEGER, allowNull: true },
-    severity: { type: DataTypes.STRING, allowNull: true },
-    differentials: { type: DataTypes.TEXT, allowNull: true },
+    primaryText: data.primaryText,
+    codeSystem: data.codeSystem ?? null,
+    code: data.code ?? null,
+    certaintyPct: data.certaintyPct ?? null,
+    severity: data.severity ?? null,
+    differentials: data.differentials ?? null,
 
-    // Plan
-    assessment: { type: DataTypes.TEXT, allowNull: true },
-    planText: { type: DataTypes.TEXT, allowNull: true },
-    redFlags: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-    informed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
-  }, {
-    tableName: 'diagnoses',
-    timestamps: false,
+    assessment: data.assessment ?? null,
+    planText: data.planText ?? null,
+    redFlags: !!data.redFlags,
+    informed: !!data.informed,
+    createdAt: new Date()
   });
+  return { id };
+};
 
-  return Diagnosis;
+exports.listForPatient = async (patientId) => {
+  const q = await col('diagnoses').where('patient_id', '==', String(patientId)).get();
+  return q.docs.map(d => d.data());
+};
+
+exports.getByAppointment = async (appointmentId) => {
+  const q = await col(C).where('appointment_id', '==', String(appointmentId)).get();
+  return q.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+exports.delete = async (id) => {
+  await doc('diagnoses', id).delete();
 };

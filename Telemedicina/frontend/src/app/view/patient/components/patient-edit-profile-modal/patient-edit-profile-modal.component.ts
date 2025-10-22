@@ -4,7 +4,7 @@ import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {NgForOf, NgIf} from '@angular/common';
-import {Patient, PatientItem, User} from '../../../../utils/interfaces/commonInterfaces';
+import {PatientItem} from '../../../../utils/interfaces/commonInterfaces';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -41,6 +41,7 @@ export class PatientEditProfileModalComponent {
     value: ''
   };
   file: File | null = null;
+  tempPreviewUrl: string | null = null;
 
   tagOptions = [
     { key: 'bloodType',  label: 'Vértípus',           type: 'select', options: ['A+','A-','B+','B-','AB+','AB-','0+','0-'] },
@@ -98,32 +99,30 @@ export class PatientEditProfileModalComponent {
   async save() {
     const modifiedFields = this.getModifiedFields();
 
-    // tagsDraft -> tags payload [{name, value}]
     const tags = (this.editForm.tagsDraft || [])
-      .filter(t => t && t.label && t.value)
-      .map(t => ({ name: t.label.trim(), value: t.value.trim() }));
+      .filter((t: any) => t && t.label && t.value)
+      .map((t: any) => ({ name: String(t.label).trim(), value: String(t.value).trim() }));
 
     if (Object.keys(modifiedFields).length === 0 && tags.length === 0) {
       this.toast.show('Nincs kitöltve módosítandó mező!', 'warning');
       return;
     }
 
-    const payload: any = {
-      id: this.user?.user?.id,
-      ...modifiedFields
-    };
-    if (tags.length > 0) {
-      payload.tags = tags;
-    }
-
-    if (!payload.id) {
+    const id = this.user?.user?.id;
+    if (!id) {
       console.error('❌ Nincs felhasználó ID a payloadban!');
       return;
     }
 
-    this.http.patch('http://localhost:3000/api/patient/profile/update', payload).subscribe({
+    const payload: any = { id, ...modifiedFields };
+    if (tags.length > 0) payload.tags = tags;
+
+    const formData = this.buildFormData(payload);
+
+    this.http.patch('http://localhost:3000/api/patient/profile/update', formData).subscribe({
       next: (res) => {
         console.log('✅ Sikeres mentés:', res);
+        this.toast.show('Profil frissítve', 'success');
         void this.modalCtrl.dismiss(res, 'updated');
       },
       error: (err) => {
@@ -133,51 +132,50 @@ export class PatientEditProfileModalComponent {
     });
   }
 
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
+    const file = input.files && input?.files[0] ? input?.files[0] : null;
     if (!file) return;
 
-    if (file.type === 'image/svg+xml') {
-      this.toast.show('Az SVG formátum nem engedélyezett!', 'danger');
-      input.value = ''; // reset
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      this.toast.show('Csak JPG/PNG/WEBP kép tölthető fel.', 'warning');
       return;
     }
-    if (file.type === 'image/gif') {
-      this.toast.show('A GIF formátum nem engedélyezett!', 'danger');
-      input.value = ''; // reset
+    const MAX_MB = 5;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      this.toast.show(`A kép nem lehet nagyobb, mint ${MAX_MB} MB.`, 'warning');
       return;
     }
-
-    this.file = file;
-    input.value = '';
+    this.tempPreviewUrl = URL.createObjectURL(file);
+    (this as any).file = file;
   }
 
-  getModifiedFields() {
-    const modified: Partial<Record<
-      Exclude<keyof typeof this.editForm, 'tagsDraft'>,
-      string | number | null
-    >> = {};
+  private getModifiedFields(): Record<string, any> {
+    const modified: Record<string, any> = {};
 
-    const formKeys = Object.keys(this.editForm) as (keyof typeof this.editForm)[];
+    const baselineUser: any = this.user || {};
+    const baselinePatient: any = baselineUser.patient || baselineUser;
 
-    for (const key of formKeys) {
-      if (key === 'tagsDraft') continue;
+    const userAllowed = ['name', 'address', 'phoneNumber'];
+    const patientAllowed = ['gender', 'height', 'weight', 'homePhone'];
 
-      const raw = this.editForm[key];
-      const newValue = typeof raw === 'string' ? raw.trim() : raw;
+    const norm = (v: any) => (typeof v === 'string' ? v.trim() : v);
 
-      const originalFromUser    = this.user?.user?.[key as keyof User];
-      const originalFromPatient = this.user?.patient?.[key as keyof Patient];
-      const originalValue = originalFromUser ?? originalFromPatient;
+    for (const key of userAllowed) {
+      const oldValue = norm(baselineUser[key]);
+      const newValue = norm((this.editForm as any)[key]);
+      if (newValue !== undefined && newValue !== oldValue) {
+        (modified as any)[key] = newValue;
+      }
+    }
 
-      if (
-        newValue !== null &&
-        newValue !== '' &&
-        newValue !== originalValue
-      ) {
-        modified[key as Exclude<keyof typeof this.editForm, 'tagsDraft'>] = newValue as any;
+    for (const key of patientAllowed) {
+      const oldValue = norm(baselinePatient[key]);
+      const newValue = norm((this.editForm as any)[key]);
+      if (newValue !== undefined && newValue !== oldValue) {
+        (modified as any)[key] = newValue;
       }
     }
 
@@ -186,6 +184,34 @@ export class PatientEditProfileModalComponent {
     }
 
     return modified;
+  }
+
+  private buildFormData(payload: any): FormData {
+    const fd = new FormData();
+
+    const appendValue = (key: string, value: any) => {
+      if (value === undefined || value === null) return;
+
+      if (key === 'picture' && value instanceof File) {
+        fd.append('picture', value, value.name);
+        return;
+      }
+
+      if (key === 'tags' && Array.isArray(value)) {
+        fd.append('tags', JSON.stringify(value));
+        return;
+      }
+
+      if (typeof value === 'object' && !(value instanceof File)) {
+        fd.append(key, JSON.stringify(value));
+        return;
+      }
+
+      fd.append(key, String(value));
+    };
+
+    Object.keys(payload).forEach(k => appendValue(k, payload[k]));
+    return fd;
   }
   close() {
     void this.modalCtrl.dismiss();

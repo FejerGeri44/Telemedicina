@@ -1,41 +1,43 @@
-const { DataTypes } = require('sequelize');
+const { col, doc } = require('./shared/firestore');
+const { nextId } = require('./shared/counter');
+const C = 'doctors';
+const { db } = require('../models');
+const { deleteWhereEquals } = require('./shared/delete');
 
-module.exports = (sequelize) => {
-  const Doctor = sequelize.define('Doctor', {
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id'
-      }
-    },
-    speciality: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    introduction: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    avgRating: {
-      type: DataTypes.DECIMAL(3,2),
-      allowNull: true,
-      defaultValue: null
-    },
-    registDate: {
-      type: DataTypes.DATEONLY
-    },
-    status: {
-      type: DataTypes.ENUM('approved', 'pending'),
-      allowNull: false,
-      defaultValue: 'pending',
-      comment: 'Admin jóváhagyási státusz'
-    }
-  }, {
-    tableName: 'doctors',
-    timestamps: false
+exports.create = async (data) => {
+  const id = await nextId(C);
+  await doc(C, id).set({
+    id,
+    userId: String(data.userId),
+    speciality: data.speciality ?? null,
+    introduction: data.introduction ?? null,
+    avgRating: data.avgRating ?? 0,
+    registDate: data.registDate ?? new Date(),
+    status: data.status ?? 'pending',
   });
+  return { id };
+};
 
-  return Doctor;
+exports.getByUserId = async (userId) => {
+  const q = await col('doctors').where('userId', '==', String(userId)).limit(1).get();
+  return q.empty ? null : { id: q.docs[0].id, ...q.docs[0].data() };
+};
+
+exports.update = async (id, patch) => {
+  await doc(C, id).set(patch, { merge: true });
+};
+
+exports.listApproved = async () => {
+  const q = await col(C).where('status', '==', 'approved').get();
+  return q.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+exports.delete = async (id) => {
+  await deleteWhereEquals('appointments',   'doctor_id', id, db);
+  await deleteWhereEquals('diagnoses',      'doctor_id', id, db);
+  await deleteWhereEquals('doctor_ratings', 'doctor_id', id, db);
+  await deleteWhereEquals('messages',       'sender_user_id',   id, db);
+  await deleteWhereEquals('messages',       'receiver_user_id', id, db);
+
+  await doc('doctors', id).delete();
 };

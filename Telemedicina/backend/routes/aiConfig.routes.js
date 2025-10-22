@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const aiConfigController = require('../controllers/aiConfig.controller');
-const authenticateToken = require('../middleware/auth.middleware');
+const authenticateToken = require('../middleware/firebaseAuth');
 
 router.get('/ai-config/patient-assistant', authenticateToken, aiConfigController.getPatientAssistantConfig);
 router.get('/ai-config/doctor-assistant', authenticateToken, aiConfigController.getDoctorAssistantConfig);

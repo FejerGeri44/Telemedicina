@@ -1,33 +1,25 @@
-const { DataTypes } = require('sequelize');
+const { doc, col } = require('./shared/firestore');
+const C = 'doctor_ratings';
 
-module.exports = (sequelize) => {
-  const DoctorRating = sequelize.define('DoctorRating', {
-    doctor_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    patient_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    value: {
-      type: DataTypes.TINYINT,
-      allowNull: false,
-      validate: {
-        isInt: true,
-        min: 1,
-        max: 5
-      }
-    }
-  }, {
-    tableName: 'doctor_ratings',
-    timestamps: false,
-    indexes: [
-      { unique: true, fields: ['doctor_id', 'patient_id'] },
-      { fields: ['doctor_id'] },
-      { fields: ['patient_id'] }
-    ]
-  });
+const makeId = (doctorId, patientId) => `${doctorId}_${patientId}`;
 
-  return DoctorRating;
+exports.upsert = async ({ doctor_id, patient_id, value }) => {
+  const id = makeId(doctor_id, patient_id);
+  const v = Number(value);
+  if (!Number.isInteger(v) || v < 1 || v > 5) throw new Error('INVALID_RATING');
+
+  await doc(C, id).set({
+    doctor_id: String(doctor_id),
+    patient_id: String(patient_id),
+    value: v,
+    updatedAt: new Date()
+  }, { merge: true });
+
+  return { id };
 };
+
+exports.getForDoctor = async (doctorId) => {
+  const q = await col('doctor_ratings').where('doctor_id', '==', String(doctorId)).get();
+  return q.docs.map(d => d.data());
+};
+

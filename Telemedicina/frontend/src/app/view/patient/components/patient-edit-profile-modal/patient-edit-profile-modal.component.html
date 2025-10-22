@@ -14,9 +14,10 @@
   <section class="epm-header">
     <div class="epm-avatar">
       <img
-        [src]="user?.user?.pictureUrl"
+        [src]="tempPreviewUrl || user?.user?.pictureUrl"
         alt="Profilkép"
         class="avatar-img"
+        draggable="false"
       />
       <label class="avatar-edit">
         <ion-icon name="camera"></ion-icon>
