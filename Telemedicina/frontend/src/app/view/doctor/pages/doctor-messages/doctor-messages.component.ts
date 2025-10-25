@@ -7,11 +7,11 @@ import {NgForOf, NgIf} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {Router} from '@angular/router';
 import {
-  DoctorItem,
-  PatientItem,
   UnreadMessage,
   PatientUnreadSummary
 } from '../../../../utils/interfaces/commonInterfaces';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 
 @Component({
   selector: 'app-doctor-messages',

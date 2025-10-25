@@ -17,21 +17,22 @@
 
   <div class="pc-details">
     <div class="pc-item"><span class="label">Születési idő:</span>
-      <span class="value">{{ user?.user?.birthDate }} <ng-container *ngIf=" patientAge as age">({{ age }} év)</ng-container></span>
+      <span class="value">{{ user?.patient?.birthDate }} <ng-container *ngIf=" patientAge as age">({{ age }} év)</ng-container></span>
     </div>
     <div class="pc-item"><span class="label">Cím:</span><span class="value">{{ user?.user?.address }}</span></div>
 
     <div class="pc-item">
       <span class="label">Súly:</span>
-      <span class="value">{{ user?.patient?.weight ? (user?.patient?.weight + ' kg') : 'N/A' }}</span>
+      <span *ngIf="user?.patient?.weight === null" class="value">N/A</span>
+      <span *ngIf="user?.patient?.weight !== null" class="value">{{ user?.patient?.weight + ' kg' }}</span>
     </div>
 
     <div class="pc-item">
       <span class="label">Nem:</span>
       <span class="value">
         {{ user?.patient?.gender || 'N/A' }}
-        <ion-icon *ngIf="user?.patient?.gender === 'Férfi'" name="male"></ion-icon>
-        <ion-icon *ngIf="user?.patient?.gender === 'Nő'"   name="female"></ion-icon>
+        <ion-icon *ngIf="user?.patient?.gender === 'férfi'" name="male"></ion-icon>
+        <ion-icon *ngIf="user?.patient?.gender === 'nő'" name="female"></ion-icon>
       </span>
     </div>
 
@@ -39,12 +40,13 @@
 
     <div class="pc-item">
       <span class="label">Magasság:</span>
-      <span class="value">{{ user?.patient?.height ? (user?.patient?.height + ' cm') : 'N/A' }}</span>
+      <span *ngIf="user?.patient?.height === null" class="value">N/A</span>
+      <span *ngIf="user?.patient?.height !== null" class="value">{{ user?.patient?.height + ' cm' }}</span>
     </div>
   </div>
 
-  <div class="pc-chips" *ngIf="tags?.length">
-    <ion-chip class="chip" *ngFor="let t of tags">
+  <div class="pc-chips" *ngIf="user?.patient?.tags?.length">
+    <ion-chip class="chip" *ngFor="let t of user?.patient?.tags">
       <ion-icon [name]="iconFor(t.name)" *ngIf="iconFor(t.name)"></ion-icon>
       <ion-label><strong>{{ t.name }}:</strong> {{ t.value }}</ion-label>
     </ion-chip>

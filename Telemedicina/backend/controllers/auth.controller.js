@@ -1,29 +1,16 @@
-const bcrypt = require('bcrypt');
-const { User, Patient, Doctor, Admin } = require('../models');
 const jwt = require('jsonwebtoken');
 
 const { admin }        = require('../config/firebase-config');
 const userModel        = require('../models/user.model');
 const patientModel     = require('../models/patient.model');
+const doctorModel     = require('../models/doctor.model');
+const {buildProfile} = require("../utils/profileBuilder");
 
-const PATIENT_DEFAULT_PICTURE = 'gs://szakdolgozat-8655.appspot.com/default-profilePictures/patient.png';
-
-function toE164HU(input) {
-  if (input == null) return null;
-  let s = String(input).trim().replace(/[()\s\-.]/g, '');
-  if (s === '') return null;
-
-  if (s.startsWith('06')) s = '+36' + s.slice(2);
-  else if (s.startsWith('0036')) s = '+' + s.slice(2);
-  else if (/^36\d+/.test(s)) s = '+' + s;
-  else if (/^0\d+/.test(s)) s = '+36' + s.slice(1);
-
-  if (/^\+[1-9]\d{7,14}$/.test(s)) return s;
-  return null;
-}
+const PATIENT_DEFAULT_PICTURE = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-profilePictures%2Fpatient.png?alt=media&token=cd37f41f-37cf-4a6e-a8f5-091327113834';
+const DOCTOR_DEFAULT_PICTURE = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-profilePictures%2Fdoctor.png?alt=media&token=7a578ae2-23b6-4316-b9d8-568a0ee9e310';
+const COOKIE_NAME = 'session';
 
 const registerPatient = async (req, res) => {
-
   try {
     const {
       name, email, password, phoneNumber, taj, address, birthDate,
@@ -36,6 +23,8 @@ const registerPatient = async (req, res) => {
 
     const emailNorm = String(email).trim().toLowerCase();
     const phoneE164 = toE164HU(phoneNumber);
+    const birthDateYMD = toYMD(birthDate);
+    const registDateYMD = toYMD(new Date());
 
     const authUser = await admin.auth()
       .getUserByEmail(emailNorm)
@@ -49,7 +38,7 @@ const registerPatient = async (req, res) => {
     if (authUser) {
       authUid = authUser.uid;
 
-      const userByAuthUid = await userModel.findByAuthUid
+      const userByAuthUid = userModel.findByAuthUid
         ? await userModel.findByAuthUid(authUid)
         : null;
 
@@ -67,29 +56,33 @@ const registerPatient = async (req, res) => {
     }
 
     const { id: userId } = await userModel.create({
-      name: name ?? null,
+      name,
       email: emailNorm,
       role: 'patient',
-      phoneNumber: phoneE164 ?? null,
-      address: address ?? null,
-      birthDate: birthDate ?? null,
+      phoneNumber: phoneE164,
+      address,
       pictureUrl: PATIENT_DEFAULT_PICTURE,
       authUid,
     });
 
-    const toNumOrNull = v => (v != null && v !== '' ? Number(v) : null);
     await patientModel.create({
-      userId: String(userId),
-      height: toNumOrNull(height),
-      weight: toNumOrNull(weight),
-      taj: taj ?? null,
+      userId,
+      height,
+      weight,
+      taj,
+      birthDate: birthDateYMD,
       homePhone: homePhone ?? null,
-      gender: gender ?? null,
+      gender,
+      registDate: registDateYMD,
     });
+
+    const createdUser = await userModel.findByEmail(email);
+    const { user, related } = await buildProfile(createdUser);
 
     return res.status(201).json({
       message: 'Páciens regisztráció sikeres.',
-      userId,
+      user,
+      related,
       authUid,
     });
 
@@ -108,42 +101,82 @@ const registerPatient = async (req, res) => {
 
 const registerDoctor = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber, address, birthDate, speciality, introduction, status } = req.body;
-    const pictureUrl = 'https://firebasestorage.googleapis.com/v0/b/szakdolgozat-8655.firebasestorage.app/o/default-profilePictures%2Fdoctor.png?alt=media&token=7a578ae2-23b6-4316-b9d8-568a0ee9e310';
+    const { name, email, password, phoneNumber, speciality } = req.body;
 
-    // Ellenőrzés: van-e már ilyen felhasználó?
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Ez az e-mail már használatban van.' });
+    if (!email || !password) {
+      return res.status(400).json({ message: 'E-mail és jelszó megadása kötelező.' });
     }
 
-    // Jelszó hash-elése
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const emailNorm = String(email).trim().toLowerCase();
+    const phoneE164 = toE164HU(phoneNumber);
+    const registDateYMD = toYMD(new Date());
 
-    // Felhasználó mentése
-    const user = await User.create({
+    const authUser = await admin.auth()
+      .getUserByEmail(emailNorm)
+      .catch((e) => {
+        if (e && e.code === 'auth/user-not-found') return null;
+        throw e;
+      });
+
+    let authUid;
+
+    if (authUser) {
+      authUid = authUser.uid;
+
+      const userByAuthUid = userModel.findByAuthUid
+        ? await userModel.findByAuthUid(authUid)
+        : null;
+
+      if (userByAuthUid) {
+        return res.status(400).json({ message: 'Ez az e-mail már használatban van.' });
+      }
+
+    } else {
+      const userRecord = await admin.auth().createUser({
+        email: emailNorm,
+        password,
+        displayName: name || undefined,
+      });
+      authUid = userRecord.uid;
+    }
+
+    const { id: userId } = await userModel.create({
       name,
-      email,
-      password: hashedPassword,
+      email: emailNorm,
       role: 'doctor',
-      phoneNumber,
-      address,
-      birthDate,
-      pictureUrl
+      phoneNumber: phoneE164,
+      address: null,
+      pictureUrl: DOCTOR_DEFAULT_PICTURE,
+      authUid,
     });
 
-    // Orvos-specifikus adatok mentése
-    await Doctor.create({
-      userId: user.id,
+    await doctorModel.create({
+      userId,
       speciality,
-      introduction,
-      registDate: new Date(),
-      status: 'Pending'
+      introduction: null,
+      status: 'Pending',
+      registDate: registDateYMD,
     });
 
-    return res.status(201).json({ message: 'Orvos regisztráció sikeres.' });
+    // <<< Itt jön a buildProfile >>>
+    const createdUser = await userModel.findByEmail(email);
+    const { user, related } = await buildProfile(createdUser);
+
+    return res.status(201).json({
+      message: 'Orvos regisztráció sikeres.',
+      user,
+      related,
+      authUid,
+    });
 
   } catch (error) {
+    if (error?.code === 'auth/email-already-exists') {
+      return res.status(400).json({ message: 'Ez az e-mail már használatban van.' });
+    }
+    if (error?.code === 'auth/weak-password') {
+      return res.status(400).json({ message: 'A jelszó túl gyenge.' });
+    }
+
     console.error('Hiba az orvos regisztráció során:', error);
     return res.status(500).json({ message: 'Szerverhiba a regisztráció közben.' });
   }
@@ -151,32 +184,33 @@ const registerDoctor = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(400).json({ message: 'Hiányzó ID token.' });
+    }
 
-    // Felhasználó megkeresése
-    const existingUser = await User.findOne({ where: { email } });
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    console.log('[BE] decoded uid/email/aud:', decoded.uid, decoded.email, decoded.aud);
+
+    const authUid = decoded.uid;
+
+    let existingUser = await userModel.findByAuthUid(authUid);
+    if (!existingUser && decoded.email) {
+      console.log('[BE] user not found by authUid, try by email:', decoded.email);
+
+      existingUser = await userModel.findByEmail(String(decoded.email).toLowerCase());
+    }
     if (!existingUser) {
-      return res.status(401).json({ message: 'Hibás email vagy jelszó.' });
-    }
+      console.warn('[BE] NO USER in DB for uid/email:', decoded.uid, decoded.email);
 
-    // Jelszó ellenőrzése
-    const isMatch = await bcrypt.compare(password, existingUser.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Hibás email vagy jelszó.' });
+      return res.status(401).json({ message: 'Felhasználó nem található.' });
     }
+    console.log('[BE] matched user:', existingUser.id, existingUser.role);
 
-    // 3) ORVOS: státusz ellenőrzése (csak approved léphet be)
     if (existingUser.role === 'doctor') {
-      const doc = await Doctor.findOne({
-        where: { userId: existingUser.id },
-        attributes: ['status']
-      });
-
+      const doc = await doctorModel.getByUserId(existingUser.id);
       const status = doc?.status?.toLowerCase();
       if (!doc || status !== 'approved') {
-        console.warn(
-          `⛔ Doctor login blocked: userId=${existingUser.id}, email=${email}, status=${status ?? 'missing'}`
-        );
         return res.status(403).json({
           code: 'DOCTOR_PENDING',
           message: 'Az orvosi fiók még nincs jóváhagyva. Bejelentkezés nem engedélyezett.'
@@ -184,65 +218,80 @@ const login = async (req, res) => {
       }
     }
 
-    // Token létrehozása
-    const token = jwt.sign(
-      { id: existingUser.id },
+    const appToken = jwt.sign(
+      { id: existingUser.id, role: existingUser.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
-    let extraData = {};
+    res.cookie(COOKIE_NAME, appToken, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+      maxAge: 3600_000,
+      path: '/',
+    });
 
-    if (existingUser.role === 'patient') {
-      const patientData = await Patient.findOne({ where: { userId: existingUser.id }, attributes: ['height', 'weight', 'homePhone', 'registDate'] });
-      if (patientData) {
-        extraData = replaceNullWithNA(patientData.dataValues);
-      }
-    } else if (existingUser.role === 'doctor') {
-      const doctorData = await Doctor.findOne({ where: { userId: existingUser.id }, attributes: ['speciality', 'introduction', 'registDate'] });
-      if (doctorData) {
-        extraData = replaceNullWithNA(doctorData.dataValues);
-      }
-    } else if (existingUser.role === 'admin') {
-      const adminData = await Admin.findOne({ where: { userId: existingUser.id }, attributes: ['registDate'] });
-      if (adminData) {
-        extraData = replaceNullWithNA(adminData.dataValues);
-      }
-    }
+    const { user, related } = await buildProfile(existingUser);
 
     return res.status(200).json({
       message: 'Sikeres bejelentkezés.',
-      token,
-      user: {
-        email: existingUser.email,
-        name: existingUser.name,
-        role: existingUser.role,
-        phoneNumber: existingUser.phoneNumber ?? 'N/A',
-        address: existingUser.address ?? 'N/A',
-        birthDate: existingUser.birthDate ?? 'N/A',
-        pictureUrl: existingUser.pictureUrl ?? 'N/A',
-        ...extraData
-      }
+      user,
+      related
     });
 
-  } catch (error) {
-    console.error('Bejelentkezési hiba:', error);
-    return res.status(500).json({ message: 'Szerverhiba a bejelentkezés során.' });
+  } catch (err) {
+    console.error('Bejelentkezési hiba (idToken):', err);
+    return res.status(401).json({ message: 'Érvénytelen vagy lejárt token.' });
   }
 };
 
-function replaceNullWithNA(data) {
-  const cleanedData = {};
-  for (const key in data) {
-    if (data.hasOwnProperty(key)) {
-      cleanedData[key] = data[key] === null ? 'N/A' : data[key];
-    }
+const logout = (req, res) => {
+  const isProd = process.env.NODE_ENV === 'production';
+
+  res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    sameSite: isProd ? 'none' : 'lax',
+    secure: isProd,
+    path: '/',
+  });
+
+  return res.status(200).json({ message: 'Logged out' });
+};
+
+function toE164HU(input) {
+  if (input == null) return null;
+  let s = String(input).trim().replace(/[()\s\-.]/g, '');
+  if (s === '') return null;
+
+  if (s.startsWith('06')) s = '+36' + s.slice(2);
+  else if (s.startsWith('0036')) s = '+' + s.slice(2);
+  else if (/^36\d+/.test(s)) s = '+' + s;
+  else if (/^0\d+/.test(s)) s = '+36' + s.slice(1);
+
+  if (/^\+[1-9]\d{7,14}$/.test(s)) return s;
+  return null;
+}
+
+function toYMD(input) {
+  if (input == null) return null;
+
+  if (typeof input === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(input)) {
+    return input;
   }
-  return cleanedData;
+
+  const d = (input instanceof Date) ? input : new Date(input);
+  if (Number.isNaN(d.getTime())) return null;
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 module.exports = {
   registerPatient,
   registerDoctor,
-  login
+  login,
+  logout
 };

@@ -1,9 +1,25 @@
-export function formatPhoneNumber(phone?: string): string {
-  if (!phone || phone.length !== 11 || !phone.startsWith('06')) return phone ?? '';
-  return `${phone.slice(0, 2)} ${phone.slice(2, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}`;
+export function formatPhoneNumber(phone?: string | null): string {
+  if (!phone) return '';
+
+  let cleaned = phone.replace(/\s|-/g, '');
+
+  if (cleaned.startsWith('06')) {
+    cleaned = '+36' + cleaned.slice(2);
+  }
+
+  if (/^\+36\d{8,9}$/.test(cleaned)) {
+    const part1 = cleaned.slice(0, 3);
+    const part2 = cleaned.slice(3, 5);
+    const part3 = cleaned.slice(5, 8);
+    const part4 = cleaned.slice(8);
+    return `${part1} ${part2} ${part3} ${part4}`;
+  }
+
+  return phone;
 }
 
-export function getAge(birthDateString?: string): number | null {
+
+export function getAge(birthDateString?: string | null | undefined): number | null {
   if (!birthDateString) return null;
   const today = new Date();
   const birth = new Date(birthDateString);
@@ -17,4 +33,12 @@ export function formatTaj(taj?: string | number): string {
   if (!taj) return 'N/A';
   const clean = String(taj).replace(/\D/g, '');
   return clean.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+}
+
+
+export function formatAppointmentTime(from: string, to: string): string {
+  const [year, month, day, fromHour, fromMin] = from.split(':');
+  const [, , , toHour, toMin] = to.split(':');
+
+  return `${year}.${month}.${day}. ${fromHour}:${fromMin} - ${toHour}:${toMin}`;
 }

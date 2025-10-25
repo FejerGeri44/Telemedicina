@@ -6,11 +6,11 @@ import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {
-  DoctorItem,
-  PatientItem,
   UnreadMessage,
   DoctorUnreadSummary,
 } from '../../../../utils/interfaces/commonInterfaces';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 
 @Component({
   selector: 'app-patient-messages',

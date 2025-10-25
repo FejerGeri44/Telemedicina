@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {NgForOf, NgIf} from '@angular/common';
 import {formatPhoneNumber, formatTaj, getAge} from '../../../../utils/formatProfileData';
-import {User, Patient, PatientTag, PatientItem} from '../../../../utils/interfaces/commonInterfaces';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 
 @Component({
   selector: 'app-patient-profile-card',
@@ -17,20 +17,19 @@ import {User, Patient, PatientTag, PatientItem} from '../../../../utils/interfac
 })
 export class PatientProfileCardComponent {
   @Input() user!: PatientItem;
-  @Input() tags: PatientTag[] = [];
   @Input() editable = false;
   @Output() edit = new EventEmitter<void>();
   get patientAge(): number | null {
-    return getAge(this.user?.user.birthDate);
+    return getAge(this.user?.patient?.birthDate);
   }
   get patientTaj(): string {
     return formatTaj(this.user?.patient?.taj);
   }
   get patientPhoneNumber(): string {
-    return formatPhoneNumber(this.user?.user.phoneNumber);
+    return formatPhoneNumber(this.user?.user?.phoneNumber);
   }
   get patientHomePhone(): string {
-    return formatPhoneNumber(this.user?.patient.homePhone);
+    return formatPhoneNumber(this.user?.patient?.homePhone);
   }
   iconFor(name: string): string | null {
     const n = (name || '').toLowerCase();

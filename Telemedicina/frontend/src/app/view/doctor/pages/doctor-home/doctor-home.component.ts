@@ -7,7 +7,10 @@ import {
 import {RouterLink} from '@angular/router';
 import {DoctorProfileCardComponent} from '../../components/doctor-profile-card/doctor-profile-card.component';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
-import {DoctorItem, prevAppointment, SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
+import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {UserService} from '../../../../shared/user.service';
+import {prevAppointment} from '../../../../utils/interfaces/appointment.inteface';
 
 @Component({
   selector: 'app-doctor-home',
@@ -28,12 +31,13 @@ export class DoctorHomeComponent implements OnInit{
 
   constructor(
     private http: HttpClient,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private userService: UserService
   ) {}
 
   ngOnInit() {
     this.loadSystemMessagesOnceAfterLogin();
-    this.loadMyData();
+    this.getUserData();
     this.loadAppointments();
   }
 
@@ -88,22 +92,12 @@ export class DoctorHomeComponent implements OnInit{
     }
   }
 
-  loadMyData(){
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get<DoctorItem>('http://localhost:3000/api/getDoctorMe', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).subscribe({
-      next: (res) => {
-        this.user = { user: res.user, doctor: res.doctor };
-      },
-      error: (err) => {
-        console.error('❌ Doctor user lekérése sikertelen:', err);
-      }
-    });
+  private getUserData() {
+    const cached = this.userService.getUserAsDoctor();
+    if (cached) {
+      this.user = cached;
+      return;
+    }
   }
 
   loadAppointments() {
@@ -138,7 +132,7 @@ export class DoctorHomeComponent implements OnInit{
     const { role } = await modal.onDidDismiss();
 
     if (role === 'updated') {
-      this.loadMyData();
+      this.getUserData();
     }
   }
 }

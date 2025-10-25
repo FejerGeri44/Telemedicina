@@ -6,8 +6,10 @@ import {NgForOf, NgIf} from '@angular/common';
 import { ModalController } from '@ionic/angular';
 import { AppointmentModalComponent } from '../../components/appointment-modal/appointment-modal.component';
 import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
-import {DoctorItem} from '../../../../utils/interfaces/commonInterfaces';
 import {ToastService} from '../../../../shared/toast/toast.service';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {environment} from '../../../../../../../backend/config/enviroment';
+import {AuthService} from '../../../../shared/auth.service';
 
 @Component({
   selector: 'app-doctor-search',
@@ -37,17 +39,45 @@ export class DoctorSearchComponent implements OnInit{
 
   constructor(
     private http: HttpClient,
-    private toast: ToastService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private authService: AuthService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
-    this.http.get<DoctorItem[]>('http://localhost:3000/api/doctors').subscribe(res => {
-      this.doctors = res;
-      this.filteredDoctors = res;
-      this.extractUniqueSpecialties();
-      this.applyFilters();
-      this.isLoading = false;
+    this.getDoctors().then(r => {});
+  }
+
+  async getDoctors(): Promise<DoctorItem[] | null> {
+    const token = await this.authService.getIdToken();
+    if (!token) {
+      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
+      return null;
+    }
+
+    return new Promise((resolve) => {
+      this.http.get<DoctorItem[]>(
+        `${environment.apiUrl}/patient/doctors`,
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      ).subscribe({
+        next: (res) => {
+          this.doctors = res;
+          this.filteredDoctors = res;
+          this.extractUniqueSpecialties();
+          this.applyFilters();
+          this.isLoading = false;
+          resolve(res);
+        },
+        error: (err) => {
+          console.error('❌ Orvosok lekérése sikertelen:', err);
+          this.toast.show('Nem sikerült betölteni az orvosokat.', 'danger');
+          this.isLoading = false;
+          resolve(null);
+        }
+      });
     });
   }
 
@@ -137,8 +167,7 @@ export class DoctorSearchComponent implements OnInit{
     const modal = await this.modalCtrl.create({
       component: AppointmentModalComponent as any,
       componentProps: {
-        doctorData: doctor.user,
-        patientData: doctor.doctor
+        doctorData: doctor,
       },
       cssClass: 'registerTo-appointment-modal'
     });

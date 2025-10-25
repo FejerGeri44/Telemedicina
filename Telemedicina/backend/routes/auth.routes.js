@@ -11,4 +11,7 @@ router.post('/register/doctor', authController.registerDoctor);
 // Bejelentkezés
 router.post('/login', authController.login);
 
+//Kijelentkezés
+router.post('/logout', authController.logout);
+
 module.exports = router;

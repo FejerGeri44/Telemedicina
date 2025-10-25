@@ -1,12 +1,17 @@
-import {Component, Injector, OnInit, ViewContainerRef} from '@angular/core';
-import {AlertController, IonicModule} from '@ionic/angular';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {DatePipe, NgClass, NgForOf, NgIf, registerLocaleData} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import localeHu from '@angular/common/locales/hu';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {DoctorItem, newAppointment, prevAppointment} from '../../../../utils/interfaces/commonInterfaces';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {UserService} from '../../../../shared/user.service';
+import {Appointment, newAppointment} from '../../../../utils/interfaces/appointment.inteface';
+import {AuthService} from '../../../../shared/auth.service';
+import {environment} from '../../../../../../../backend/config/enviroment';
+import {firstValueFrom} from 'rxjs';
 
 registerLocaleData(localeHu);
 
@@ -26,7 +31,7 @@ registerLocaleData(localeHu);
 })
 
 export class AppointmentsComponent implements OnInit{
-  appointments: prevAppointment[] = [];
+  appointments: Appointment[] = [];
   appointmentDates: string[] = [];
   newAppointment: newAppointment = {
     date: '',
@@ -40,163 +45,190 @@ export class AppointmentsComponent implements OnInit{
   weekDays: Date[] = [];
   timeSlots: string[] = [];
   activeTab: 'week' | 'new' = 'week';
-  appointmentUserDataMap: { [key: number]: { name: string; email: string; phoneNumber: string } } = {};
+  appointmentUserDataMap: Record<string, { userId: number; name: string }> = {};
   openMonthPicker = false;
   timeOptions: string[] = [];
   locale = 'hu-HU';
   appointmentToDelete: any = null;
+  savingData: boolean = false;
 
   constructor(
     private http: HttpClient,
-    private viewContainerRef: ViewContainerRef,
-    private injector: Injector,
-    private alertController: AlertController,
+    private userService: UserService,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
     private alert: AlertService,
     private toast: ToastService
   ) {}
 
   ngOnInit() {
-    this.loadMyData();
-    this.loadAppointments();
+    this.getUserData();
+    this.loadAppointments().then();
     this.onDateChange({ detail: { value: this.selectedDate } });
-    this.computeWeek(this.selectedDate);
-    this.timeSlots = this.buildTimeSlots('08:00', '19:30');
+    this.generateWeek(this.selectedDate);
+    this.generateTimeSlots();
+    this.generateTimeOptions();
+  }
 
-    const startHour = 8;
-    const endHour = 20;
-
-    for (let hour = startHour; hour < endHour; hour++) {
-      this.timeOptions.push(`${this.pad(hour)}:00`, `${this.pad(hour)}:30`);
+  private getUserData() {
+    const cached = this.userService.getUserAsDoctor();
+    if (cached) {
+      this.user = cached;
+      return;
     }
   }
 
-  loadMyData () {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  async loadAppointments(): Promise<Appointment[] | null> {
+    const token = await this.authService.getIdToken();
+    if (!token) {
+      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
+      return null;
+    }
+    try {
+      this.appointments = await firstValueFrom(
+        this.http.post<Appointment[]>(
+          `${environment.apiUrl}/doctor/myAppointments`,
+          {id: this.user?.doctor?.id},
+          {
+            withCredentials: true,
+            headers: {Authorization: `Bearer ${token}`},
+          }
+        )
+      );
 
-    this.http.get<DoctorItem>('http://localhost:3000/api/getDoctorMe', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).subscribe({
-      next: (res) => {
-        this.user = { user: res.user, doctor: res.doctor };
-      },
-      error: (err) => {
-        console.error('❌ Doctor user lekérése sikertelen:', err);
-      }
-    });
+      this.appointmentDates = this.appointments.map(appt => appt.from);
+
+      await this.loadPatientNamesForWeek(this.appointments);
+
+      return this.appointments;
+    } catch (err) {
+      console.error('❌ Hiba az időpontok lekérésekor:', err);
+      this.toast.show('Nem sikerült betölteni az időpontokat.', 'danger');
+      return null;
+    }
   }
 
-  loadAppointments() {
-    const token = localStorage.getItem('token');
-    this.http.get<any[]>('http://localhost:3000/api/myAppointments', {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: (appointments) => {
-        this.appointments = appointments;
-        this.appointmentDates = appointments.map(appt =>
-          new Date(appt.from).toISOString().split('T')[0]
-        );
+  private async loadPatientNamesForWeek(appts: Appointment[]): Promise<void> {
+    const token = await this.authService.getIdToken();
+    const patientIds = [...new Set(
+      appts.map(a => a.patient_id).filter((x): x is string => !!x)
+    )];
+    if (patientIds.length === 0) {
+      this.appointmentUserDataMap = {};
+      return;
+    }
 
-        const patientIds = [...new Set(this.appointments.map(a => a.patient_id).filter(id => id))];
-        this.loadAppointmentUserData(patientIds);
-      },
-      error: (err) => console.error('❌ Hiba az időpontok lekérésekor:', err)
-    });
+    const res = await firstValueFrom(
+      this.http.post<{ map: Record<string, { userId: number; name: string }> }>(
+        `${environment.apiUrl}/doctor/resolvePatientNames`,
+        { patientIds },
+        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+      )
+    );
+
+    this.appointmentUserDataMap = res.map || {};
   }
 
-  loadAppointmentUserData(patientIds: (number | null)[]) {
-    const token = localStorage.getItem('token');
-    if (!token || patientIds.length === 0) return;
-
-    this.http.post('http://localhost:3000/api/getAppointmentUserData', { patientIds }, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: (userDataMap: any) => {
-        this.appointmentUserDataMap = userDataMap;
-      },
-      error: (err) => console.error('❌ Hiba a beteg adatok lekérésekor:', err)
-    });
+  patientName(appt: { patient_id: string | number }): string {
+    const pid = appt?.patient_id;
+    if (pid == null || pid === '') return 'Szabad';
+    const key = String(pid).trim();
+    return <string>this.appointmentUserDataMap[key]?.name;
   }
 
   onTabChange(ev: any) {
     const value = ev?.detail?.value ?? ev;
     this.activeTab = value;
     if (value === 'week') {
-      this.loadAppointments();
+      void this.loadAppointments();
     }
   }
 
-  private computeWeek(pivot: Date) {
-    const d = new Date(pivot);
-    // hétfőre vissza
-    const day = d.getDay() || 7; // 1..7 (vasárnap 7)
-    const monday = new Date(d);
-    monday.setDate(d.getDate() - (day - 1));
-    monday.setHours(0, 0, 0, 0);
-
-    this.weekStart = monday;
-
-    // 7 nap
-    this.weekDays = Array.from({ length: 7 }, (_, i) => {
-      const x = new Date(monday);
-      x.setDate(monday.getDate() + i);
-      return x;
-    });
-
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    sunday.setHours(23, 59, 59, 999);
-    this.weekEnd = sunday;
-  }
-
-  buildTimeSlots(from = '08:00', to = '20:00'): string[] {
-    const [fh, fm] = from.split(':').map(Number);
-    const [th, tm] = to.split(':').map(Number);
+  generateTimeSlots() {
     const slots: string[] = [];
+    const startHour = 8;
+    const endHour = 19;
 
-    const cur = new Date();
-    cur.setHours(fh, fm, 0, 0);
-
-    const end = new Date();
-    end.setHours(th, tm, 0, 0);
-
-    while (cur <= end) {
-      const hh = String(cur.getHours()).padStart(2, '0');
-      const mm = String(cur.getMinutes()).padStart(2, '0');
-      slots.push(`${hh}:${mm}`);
-      cur.setMinutes(cur.getMinutes() + 30);
+    for (let hour = startHour; hour <= endHour; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`);
+      if (hour !== endHour) {
+        slots.push(`${hour.toString().padStart(2, '0')}:30`);
+      }
     }
-    return slots;
+
+    this.timeSlots = slots;
+  }
+
+  generateTimeOptions() {
+    const options: string[] = [];
+    for (let hour = 8; hour <= 19; hour++) {
+      options.push(`${hour.toString().padStart(2, '0')}:00`);
+      options.push(`${hour.toString().padStart(2, '0')}:30`);
+    }
+    this.timeOptions = options;
+  }
+
+  generateWeek(date: Date) {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    const start = new Date(date.setDate(diff));
+    this.weekStart = new Date(start);
+    this.weekEnd = new Date(start);
+    this.weekEnd.setDate(this.weekStart.getDate() + 6);
+
+    this.weekDays = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(this.weekStart);
+      d.setDate(this.weekStart.getDate() + i);
+      this.weekDays.push(d);
+    }
+  }
+
+  prevWeek() {
+    const newStart = new Date(this.weekStart);
+    newStart.setDate(this.weekStart.getDate() - 7);
+    this.generateWeek(newStart);
+  }
+
+  nextWeek() {
+    const newStart = new Date(this.weekStart);
+    newStart.setDate(this.weekStart.getDate() + 7);
+    this.generateWeek(newStart);
+  }
+
+  stringToDate(str: string): Date {
+    if (!str) return new Date();
+    const [year, month, day, hour, minute] = str.split(':').map(Number);
+    return new Date(year, month - 1, day, hour, minute);
   }
 
   getAppt(day: Date, time: string) {
-    if (!this.appointments?.length) return null;
-
-    // time = "HH:mm"
-    const [] = time.split(':').map(Number);
+    if (!this.appointments || this.appointments.length === 0) return null;
 
     return this.appointments.find(appt => {
-      const start = new Date(appt.from);
-      const sameDay =
-        start.getFullYear() === day.getFullYear() &&
-        start.getMonth()    === day.getMonth() &&
-        start.getDate()     === day.getDate();
+      if (!appt.from) return false;
 
-      if (!sameDay) return false;
+      const fromDate = this.stringToDate(appt.from);
 
-      const startHH = String(start.getHours()).padStart(2, '0');
-      const startMM = String(start.getMinutes()).padStart(2, '0');
-      const startTime = `${startHH}:${startMM}`;
+      const [hour, minute] = time.split(':').map(Number);
 
-      return startTime === time;
+      return (
+        fromDate.getFullYear() === day.getFullYear() &&
+        fromDate.getMonth() === day.getMonth() &&
+        fromDate.getDate() === day.getDate() &&
+        fromDate.getHours() === hour &&
+        fromDate.getMinutes() === minute
+      );
     }) || null;
   }
 
+  trackByTime(index: number, time: string) {
+    return time;
+  }
 
-  trackByTime = (_: number, t: string) => t;
-  trackByDate = (_: number, d: Date) => d.toISOString().slice(0,10);
+  trackByDate(index: number, date: Date) {
+    return date.getTime();
+  }
 
   onDateChange(value: any): void {
     if (value && value.detail && value.detail.value != null) {
@@ -216,37 +248,20 @@ export class AppointmentsComponent implements OnInit{
       asDate.getDate()
     );
 
-    this.computeWeek?.(this.selectedDate);
-  }
-
-
-  prevWeek(): void {
-    const d = new Date(this.weekStart);
-    d.setDate(d.getDate() - 7);
-    this.selectedDate = d;
-    this.computeWeek(this.selectedDate);
-  }
-
-  nextWeek(): void {
-    const d = new Date(this.weekStart);
-    d.setDate(d.getDate() + 7);
-    this.selectedDate = d;
-    this.computeWeek(this.selectedDate);
+    this.generateWeek?.(this.selectedDate);
   }
 
   onMonthPicked(ev: any): void {
-    // ion-datetime esemény normalizálása
     const raw = ev?.detail?.value ?? ev;
     const picked = raw instanceof Date ? raw : new Date(raw);
     if (isNaN(picked.getTime())) { this.openMonthPicker = false; return; }
 
-    // Hónap első napjára állunk, és abból számoljuk a hetet
     this.selectedDate = new Date(picked.getFullYear(), picked.getMonth(), 1);
-    this.computeWeek(this.selectedDate);
+    this.generateWeek(this.selectedDate);
     this.openMonthPicker = false;
   }
 
-  addAppointment() {
+  async addAppointment() {
     const now = new Date();
     const date = new Date(this.newAppointment.date);
     const day = date.getDay();
@@ -264,39 +279,28 @@ export class AppointmentsComponent implements OnInit{
     const onlyDate = this.newAppointment.date.split('T')[0];
     const fromDateTime = new Date(`${onlyDate}T${this.newAppointment.from}`);
     const toDateTime = new Date(fromDateTime);
-          toDateTime.setMinutes(toDateTime.getMinutes() + 30);
+    toDateTime.setMinutes(toDateTime.getMinutes() + 30);
 
-    if (fromDateTime > toDateTime || fromDateTime.getTime() > toDateTime.getTime()) {
+    if (fromDateTime >= toDateTime) {
       this.toast.show('A befejezési időpontnak a kezdés után kell lennie.', 'danger');
       return;
     }
-
-    if (fromDateTime < now || fromDateTime.getTime() === toDateTime.getTime()) {
+    if (fromDateTime < now) {
       this.toast.show('A kezdési időpont nem lehet múltbeli.', 'danger');
       return;
     }
-
-    if (fromDateTime.getTime() === toDateTime.getTime()) {
-      this.toast.show('A kezdési és befejezési időpont nem lehet azonos!', 'danger');
-      return;
-    }
-
-    const diffInMinutes = Math.abs((toDateTime.getTime() - fromDateTime.getTime()) / (1000 * 60));
+    const diffInMinutes = Math.abs((+toDateTime - +fromDateTime) / 60000);
     if (diffInMinutes !== 30) {
       this.toast.show('Az időpontok közötti különbségnek pontosan 30 percnek kell lennie!', 'danger');
       return;
     }
 
-    const conflict = this.appointments.some(appt => {
-      const apptFrom = new Date(appt.from);
-      const apptTo = new Date(appt.to);
+    const fromKeyUTC = this.toKeyLocal(fromDateTime);
+    const toKeyUTC   = this.toKeyLocal(toDateTime);
 
-      return (
-        apptFrom.getTime() === fromDateTime.getTime() &&
-        apptTo.getTime() === toDateTime.getTime()
-      );
-    });
-
+    const conflict = this.appointments.some(appt =>
+      appt.from === fromKeyUTC && appt.to === toKeyUTC
+    );
     if (conflict) {
       this.toast.show('Már létezik ilyen időpont!', 'danger');
       return;
@@ -304,60 +308,97 @@ export class AppointmentsComponent implements OnInit{
 
     const appointmentPayload = {
       doctor_id: this.user.doctor.id,
-      from: this.formatDateTimeToMySQL(fromDateTime),
-      to: this.formatDateTimeToMySQL(toDateTime)
+      from: fromKeyUTC,
+      to: toKeyUTC
     };
 
-    const token = localStorage.getItem('token');
+    this.savingData = true;
 
-    this.http.post('http://localhost:3000/api/createAppointment', appointmentPayload, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: () => {
-        this.toast.show('Sikeres időpontkiírás!', 'success');
-      },
-      error: () => {
-        this.toast.show('Szerver oldali hiba!!', 'danger');
-      }
+    const token = await this.authService.getIdToken();
+    if (!token) {
+      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
+      return null;
+    }
+
+    return new Promise<Appointment | null>((resolve) => {
+      this.http.post<Appointment>(
+        `${environment.apiUrl}/doctor/addAppointment`,
+        appointmentPayload,
+        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+      ).subscribe({
+        next: (created) => {
+          this.toast.show('Sikeres időpontfelvétel!', 'success');
+          this.savingData = false;
+          resolve(created);
+        },
+        error: (err) => {
+          this.savingData = false;
+          console.error('❌ Időpont létrehozása sikertelen:', err);
+          if (err?.status === 409) {
+            this.toast.show('Ez az időpont már létezik az orvosnál.', 'danger');
+          } else {
+            this.toast.show('Szerver oldali hiba!', 'danger');
+          }
+          resolve(null);
+        }
+      });
     });
   }
 
-  private formatDateTimeToMySQL(date: Date): string {
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  toKeyLocal(d: Date): string {
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${year}:${month}:${day}:${hours}:${minutes}`;
   }
 
-  pad(n: number): string {
-    return n < 10 ? '0' + n : n.toString();
-  }
-
-  async onAppointmentAction(appt: any) {
-    this.appointmentToDelete = appt;
+  async confirmDeleteAppointment(appointment: Appointment) {
 
     await this.alert.show(
       'Megerősítés',
       'Biztosan szeretnéd törölni az időpontot?',
       () => {
-        this.confirmDeleteAppointment();
+        this.deleteAppointment(appointment);
       }
     );
   }
 
-  confirmDeleteAppointment() {
-    if (!this.appointmentToDelete) return;
+  async deleteAppointment(appointment: Appointment | null): Promise<boolean> {
+    if (!appointment) return false;
 
-    const token = localStorage.getItem('token');
-    this.http.post('http://localhost:3000/api/deleteAppointment', {
-      id: this.appointmentToDelete.id
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: () => {
-        this.toast.show('Sikeres törlés!', 'success');
-        this.loadAppointments();
-        this.appointmentToDelete = null;
-      },
-      error: (err) => console.error('❌ Törlés hiba:', err)
+    const token = await this.authService.getIdToken();
+    if (!token) {
+      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
+      return false;
+    }
+
+    return new Promise<boolean>((resolve) => {
+      this.http.post<{ deleted: boolean }>(
+        `${environment.apiUrl}/doctor/deleteAppointment`,
+        { id: appointment.id },
+        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+      ).subscribe({
+        next: () => {
+          this.toast.show('Sikeres törlés!', 'success');
+
+          const removedId = appointment.id;
+          this.appointments = this.appointments.filter(a => a.id !== removedId);
+
+          Promise.resolve().then(() => {
+            this.appointmentToDelete = null;
+            this.cdr.markForCheck();
+          });
+
+          resolve(true);
+        },
+        error: (err) => {
+          console.error('❌ Törlés hiba:', err);
+          this.toast.show('Törlés közben hiba történt.', 'danger');
+          resolve(false);
+        }
+      });
     });
   }
 }

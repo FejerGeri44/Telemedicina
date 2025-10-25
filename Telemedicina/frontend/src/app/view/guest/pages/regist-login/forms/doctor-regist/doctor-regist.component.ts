@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {ToastService} from '../../../../../../shared/toast/toast.service';
+import {environment} from '../../../../../../../../../backend/config/enviroment';
 
 @Component({
   selector: 'app-doctor-regist',
@@ -28,12 +29,7 @@ export class DoctorRegistComponent {
   password_again: string = '';
   phoneNumber: string = '';
   speciality: string = '';
-  address: string = '';
-  birthDate: string = '';
-  introduction: string = '';
 
-  validEmail: boolean = false;
-  invalidEmail: boolean = false;
   showPassword: boolean = false;
 
   buttonText: string = this.calledByAdmin ? 'jelentkezek' : 'Mentés';
@@ -46,40 +42,35 @@ export class DoctorRegistComponent {
   ) {}
 
   onDoctorRegister() {
-    // Üres mezők ellenőrzése
-    if (!this.fullName || !this.email || !this.password || !this.password_again || !this.phoneNumber || !this.speciality) {
+    if (
+      !this.fullName || !this.email || !this.password || !this.password_again ||
+      !this.phoneNumber  || !this.speciality
+    ) {
       this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
       return;
-    } else {
-
-      // Email ellenőrzése
-      if (!this.email.includes('@')) {
-        this.invalidEmail = true;
-        this.validEmail = false;
-        this.toast.show('Hibás e-mail cím!', 'danger');
-        return;
-      } else {
-        this.invalidEmail = false;
-        this.validEmail = true;
-      }
-
-      // Jelszavak egyezősége
-      if (this.password !== this.password_again) {
-        this.toast.show('A jelszavak nem egyeznek!', 'warning');
-        return;
-      }
     }
 
-    const doctorData: any = {
-      name: this.fullName,
-      email: this.email,
-      password: this.password,
-      phoneNumber: this.phoneNumber,
-      speciality: this.speciality,
+    const email = String(this.email).trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.toast.show('Hibás e-mail cím!', 'danger');
+      return;
+    }
+
+    if (this.password !== this.password_again) {
+      this.toast.show('A jelszavak nem egyeznek!', 'warning');
+      return;
+    }
+
+    const payloadBase = {
+      name: String(this.fullName).trim(),
+      email,
+      password: String(this.password),
+      phoneNumber: String(this.phoneNumber).trim(),
+      speciality: String(this.speciality).trim(),
     };
 
     if (!this.calledByAdmin) {
-      this.http.post('http://localhost:3000/api/auth/register/doctor', doctorData)
+      this.http.post(`${environment.apiUrl}/auth/register/doctor`, payloadBase)
         .subscribe({
           next: () => {
             setTimeout(() => {
@@ -95,41 +86,34 @@ export class DoctorRegistComponent {
           },
           error: err => {
             console.error(err);
-            this.toast.show('Hiba történt a regisztráció során!', 'danger');
+            const msg = err?.error?.message || 'Hiba történt az orvos regisztráció során.';
+            this.toast.show(msg, 'danger');
           }
         });
-    }else {
+
+    } else {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const UserId  = this.adminUser.user.id;
-      const AdminId = this.adminUser.admin.id;
-
-      const payload = {
-        name: this.fullName,
-        email: this.email,
-        password: this.password,
-        phoneNumber: this.phoneNumber,
-        speciality: this.speciality,
-        adminUserId: UserId,
-        adminId: AdminId
+      const payloadAdmin = {
+        ...payloadBase,
+        adminUserId: this.adminUser.user.id,
+        adminId: this.adminUser.admin.id
       };
 
-      this.http.post('http://localhost:3000/api/admin/registerDoctor', payload, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      this.http.post(`${environment.apiUrl}/admin/registerDoctor`, payloadAdmin, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).subscribe({
+        next: () => {
+          this.toast.show('Sikeres Orvos felvitel!', 'success');
+          void this.modalCtrl.dismiss(true);
+        },
+        error: err => {
+          console.error(err);
+          const msg = err?.error?.message || 'Hiba történt a regisztráció során!';
+          this.toast.show(msg, 'danger');
         }
-      })
-        .subscribe({
-          next: () => {
-            this.toast.show("Sikeres Orvos felvitel!", "success");
-            void this.modalCtrl.dismiss(true);
-          },
-          error: err => {
-            console.error(err);
-            this.toast.show('Hiba történt a regisztráció során!', 'danger');
-          }
-        });
+      });
     }
   }
 

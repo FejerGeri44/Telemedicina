@@ -4,34 +4,29 @@ dotenv.config();
 const express = require('express');
 const cors = require('cors');
 
-const { admin, db } = require('./models');
-
-const authRoutes = require('./routes/auth.routes');
-const patientRoutes = require('./routes/patient.routes');
-const doctorRoutes = require('./routes/doctor.routes');
-const adminRoutes = require('./routes/admin.routes');
-const sharedRoutes = require('./routes/shared.routes');
-const aiRoutes = require('./routes/aiConfig.routes');
-
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:4200',
+  credentials: true,
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
-app.use('/api/auth', authRoutes);
-app.use('/api', patientRoutes);
-app.use('/api', doctorRoutes);
-app.use('/api', adminRoutes);
-app.use('/api', sharedRoutes);
-app.use('/api', aiRoutes);
+app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/patient', require('./routes/patient.routes'));
+app.use('/api/doctor', require('./routes/doctor.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/shared', require('./routes/shared.routes'));
+app.use('/api/aiConfig', require('./routes/aiConfig.routes'));
 
-const PORT =  3000;
+const PORT =  process.env.PORT;
 
 app.listen(PORT, async () => {
   console.log(`🚀 Szerver elindult a ${PORT} porton`);
 
   try {
-    const snap = await db.collection('__healthcheck').limit(1).get();
-    console.log('🔗 Firestore kapcsolat aktív. Doksi szám:', snap.size);
+    console.log('🔗 Firestore kapcsolat aktív.');
   } catch (err) {
     console.error('❌ Firestore kapcsolat sikertelen:', err);
   }

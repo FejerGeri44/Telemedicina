@@ -4,7 +4,11 @@ import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {NgForOf, NgIf} from '@angular/common';
-import {PatientItem} from '../../../../utils/interfaces/commonInterfaces';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {environment} from '../../../../../../../backend/config/enviroment';
+import {AuthService} from '../../../../shared/auth.service';
+import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
+import {UserService} from '../../../../shared/user.service';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -42,6 +46,7 @@ export class PatientEditProfileModalComponent {
   };
   file: File | null = null;
   tempPreviewUrl: string | null = null;
+  savingData: boolean = false;
 
   tagOptions = [
     { key: 'bloodType',  label: 'Vértípus',           type: 'select', options: ['A+','A-','B+','B-','AB+','AB-','0+','0-'] },
@@ -54,6 +59,8 @@ export class PatientEditProfileModalComponent {
   constructor(
     private modalCtrl: ModalController,
     private http: HttpClient,
+    private userService: UserService,
+    private authService: AuthService,
     private toast: ToastService
   ) {}
 
@@ -97,13 +104,14 @@ export class PatientEditProfileModalComponent {
   }
 
   async save() {
+    this.savingData = true;
     const modifiedFields = this.getModifiedFields();
 
     const tags = (this.editForm.tagsDraft || [])
       .filter((t: any) => t && t.label && t.value)
       .map((t: any) => ({ name: String(t.label).trim(), value: String(t.value).trim() }));
 
-    if (Object.keys(modifiedFields).length === 0 && tags.length === 0) {
+    if (Object.keys(modifiedFields).length === 0 && tags.length === 0 && !this.file) {
       this.toast.show('Nincs kitöltve módosítandó mező!', 'warning');
       return;
     }
@@ -114,24 +122,63 @@ export class PatientEditProfileModalComponent {
       return;
     }
 
-    const payload: any = { id, ...modifiedFields };
-    if (tags.length > 0) payload.tags = tags;
+    const token = await this.authService.getIdToken();
+    if (!token) {
+      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
+      return;
+    }
 
-    const formData = this.buildFormData(payload);
+    if (this.file) {
+      const form = new FormData();
+      form.append('id', String(id));
 
-    this.http.patch('http://localhost:3000/api/patient/profile/update', formData).subscribe({
-      next: (res) => {
-        console.log('✅ Sikeres mentés:', res);
-        this.toast.show('Profil frissítve', 'success');
-        void this.modalCtrl.dismiss(res, 'updated');
-      },
-      error: (err) => {
-        console.error('❌ Mentési hiba:', err);
-        this.toast.show('Mentés közben hiba történt.', 'danger');
-      }
-    });
+      Object.entries(modifiedFields).forEach(([k, v]) => {
+        form.append(k, typeof v === 'number' ? String(v) : (v ?? ''));
+      });
+
+      if (tags.length > 0) form.append('tags', JSON.stringify(tags));
+
+      form.append('picture', this.file, this.file.name);
+
+      this.http.patch(`${environment.apiUrl}/patient/updateProfile`, form, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${token}` },
+      }).subscribe({
+        next: (res: any) => {
+          const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
+          this.userService.setUser(updated);
+          this.savingData = false;
+          this.toast.show('Profil frissítve', 'success');
+          void this.modalCtrl.dismiss(updated, 'updated');
+        },
+        error: (err) => {
+          console.error('❌ Mentési hiba:', err);
+          this.toast.show('Mentés közben hiba történt.', 'danger');
+        }
+      });
+
+    } else {
+      const payload: any = { id, ...modifiedFields };
+      if (tags.length > 0) payload.tags = tags;
+
+      this.http.patch(`${environment.apiUrl}/patient/updateProfile`, payload, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${token}` },
+      }).subscribe({
+        next: (res: any) => {
+          const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
+          this.userService.setUser(updated);
+          this.savingData = false;
+          this.toast.show('Profil frissítve', 'success');
+          void this.modalCtrl.dismiss(updated, 'updated');
+        },
+        error: (err) => {
+          console.error('❌ Mentési hiba:', err);
+          this.toast.show('Mentés közben hiba történt.', 'danger');
+        }
+      });
+    }
   }
-
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -155,64 +202,56 @@ export class PatientEditProfileModalComponent {
   private getModifiedFields(): Record<string, any> {
     const modified: Record<string, any> = {};
 
-    const baselineUser: any = this.user || {};
-    const baselinePatient: any = baselineUser.patient || baselineUser;
+    const baselineUser: any = this.user?.user ?? {};
+    const baselinePatient: any = this.user?.patient ?? {};
 
-    const userAllowed = ['name', 'address', 'phoneNumber'];
-    const patientAllowed = ['gender', 'height', 'weight', 'homePhone'];
-
-    const norm = (v: any) => (typeof v === 'string' ? v.trim() : v);
+    const userAllowed = ['name', 'address', 'phoneNumber'] as const;
+    const patientAllowed = ['gender', 'height', 'weight', 'homePhone'] as const;
 
     for (const key of userAllowed) {
-      const oldValue = norm(baselineUser[key]);
-      const newValue = norm((this.editForm as any)[key]);
-      if (newValue !== undefined && newValue !== oldValue) {
-        (modified as any)[key] = newValue;
+      const oldValue = this.norm(baselineUser[key]);
+      const newValueRaw = (this.editForm as any)[key];
+      const newValue = this.norm(newValueRaw);
+
+      if (this.isMeaningful(newValue) && newValue !== oldValue) {
+        modified[key] = newValue;
       }
     }
 
     for (const key of patientAllowed) {
-      const oldValue = norm(baselinePatient[key]);
-      const newValue = norm((this.editForm as any)[key]);
-      if (newValue !== undefined && newValue !== oldValue) {
-        (modified as any)[key] = newValue;
-      }
-    }
+      const oldValue = this.norm(baselinePatient[key]);
 
-    if (this.file) {
-      (modified as any).picture = this.file;
+      let newValue: any = (this.editForm as any)[key];
+      if (key === 'height' || key === 'weight') {
+        newValue = this.toNumberOrUndef(newValue);
+      } else {
+        newValue = this.norm(newValue);
+      }
+
+      if (this.isMeaningful(newValue) && newValue !== oldValue) {
+        modified[key] = newValue;
+      }
     }
 
     return modified;
   }
 
-  private buildFormData(payload: any): FormData {
-    const fd = new FormData();
-
-    const appendValue = (key: string, value: any) => {
-      if (value === undefined || value === null) return;
-
-      if (key === 'picture' && value instanceof File) {
-        fd.append('picture', value, value.name);
-        return;
-      }
-
-      if (key === 'tags' && Array.isArray(value)) {
-        fd.append('tags', JSON.stringify(value));
-        return;
-      }
-
-      if (typeof value === 'object' && !(value instanceof File)) {
-        fd.append(key, JSON.stringify(value));
-        return;
-      }
-
-      fd.append(key, String(value));
-    };
-
-    Object.keys(payload).forEach(k => appendValue(k, payload[k]));
-    return fd;
+  private isMeaningful(val: any): boolean {
+    if (val === null || val === undefined) return false;
+    if (typeof val === 'string') return val.trim().length > 0;
+    return true;
   }
+
+  private toNumberOrUndef(val: any): number | undefined {
+    if (val === '' || val === null || val === undefined) return undefined;
+    const n = Number(val);
+    return Number.isNaN(n) ? undefined : n;
+  }
+
+  private norm(val: any): any {
+    return typeof val === 'string' ? val.trim() : val;
+  }
+
   close() {
     void this.modalCtrl.dismiss();
   }

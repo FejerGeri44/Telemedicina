@@ -1,7 +1,7 @@
 const { db } = require('../index');
 
 exports.nextId = async (collectionName) => {
-  const ref = db.collection('_counters').doc(collectionName);
+  const ref = db.collection('counters').doc(collectionName);
 
   return await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);

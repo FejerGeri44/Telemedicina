@@ -1,12 +1,11 @@
 const { col, doc } = require('./shared/firestore');
 const { nextId } = require('./shared/counter');
-const C = 'patients';
 const { db } = require('../models');
 const { deleteWhereEquals } = require('./shared/delete');
 
 exports.create = async (data) => {
-  const id = await nextId(C);
-  await doc(C, id).set({
+  const id = await nextId('patients');
+  await doc('patients', id).set({
     id,
     userId: String(data.userId),
     gender: data.gender ?? null,
@@ -14,23 +13,24 @@ exports.create = async (data) => {
     weight: data.weight != null ? Number(data.weight) : null,
     taj: data.taj ?? null,
     homePhone: data.homePhone ?? null,
+    birthDate: data.birthDate,
     registDate: data.registDate ?? new Date()
   });
   return { id };
 };
 
 exports.getByUserId = async (userId) => {
-  const q = await col('patients').where('userId', '==', String(userId)).limit(1).get();
-  return q.empty ? null : { id: q.docs[0].id, ...q.docs[0].data() };
+  const query = await col('patients').where('userId', '==', String(userId)).limit(1).get();
+  return query.empty ? null : { id: query.docs[0].id, ...query.docs[0].data() };
 };
 
 exports.update = async (id, patch) => {
-  await doc(C, id).set(patch, { merge: true });
+  await doc('patients', id).set(patch, { merge: true });
 };
 
 exports.findByUserId = async (userId) => {
-  const q = await col(C).where('userId', '==', String(userId)).limit(1).get();
-  return q.empty ? null : { id: q.docs[0].id, ...q.docs[0].data() };
+  const query = await col('patients').where('userId', '==', String(userId)).limit(1).get();
+  return query.empty ? null : { id: query.docs[0].id, ...query.docs[0].data() };
 };
 
 exports.delete = async (id) => {

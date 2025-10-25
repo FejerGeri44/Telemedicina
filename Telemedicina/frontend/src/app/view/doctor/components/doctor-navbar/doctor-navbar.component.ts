@@ -5,7 +5,9 @@ import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/ro
 import {filter, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {Doctor, DoctorItem, UnreadMessage, User} from '../../../../utils/interfaces/commonInterfaces';
+import {UnreadMessage} from '../../../../utils/interfaces/commonInterfaces';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {UserService} from '../../../../shared/user.service';
 
 @Component({
   selector: 'app-doctor-navbar',
@@ -41,11 +43,12 @@ export class DoctorNavbarComponent implements OnInit{
   constructor(
     private http: HttpClient,
     private router: Router,
+    private userService: UserService,
     private alert: AlertService
   ) {}
 
   ngOnInit() {
-    this.getMyData();
+    this.getUserData();
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {});
@@ -54,23 +57,12 @@ export class DoctorNavbarComponent implements OnInit{
       .subscribe(() => this.closeMobileMenu());
   }
 
-  getMyData() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get<DoctorItem>('http://localhost:3000/api/getDoctorMe', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).subscribe({
-      next: (res) => {
-        this.user = { user: res.user, doctor: res.doctor };
-        this.getUnreadMessages();
-      },
-      error: (err) => {
-        console.error('❌ Felhasználó lekérése sikertelen:', err);
-      }
-    });
+  private getUserData() {
+    const cached = this.userService.getUserAsDoctor();
+    if (cached) {
+      this.user = cached;
+      return;
+    }
   }
 
   confirmLogout() {
@@ -82,12 +74,7 @@ export class DoctorNavbarComponent implements OnInit{
   }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('System-Messages');
-    void this.router.navigate(
-      ['/regist-login'],
-      { queryParams: { tab: 'login' } }
-    );
+    void this.userService.logout();
   }
 
   public getUnreadMessages() {

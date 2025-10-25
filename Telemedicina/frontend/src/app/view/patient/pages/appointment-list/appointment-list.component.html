@@ -20,7 +20,9 @@
     <ion-row *ngFor="let appointment of myAppointments" class="table-row">
       <ion-col size="1.5">
         <div class="doctor-info">
-          <img [src]="appointment?.doctor?.user?.pictureUrl" class="doctor-avatar" alt="Profilkép" draggable="false"/>
+          <div class="avatar">
+            <img [src]="appointment?.doctor?.user?.pictureUrl" alt="Profilkép" draggable="false"/>
+          </div>
           <span>Dr. {{ appointment?.doctor?.user?.name }}</span>
         </div>
       </ion-col>
@@ -30,7 +32,7 @@
       </ion-col>
 
       <ion-col size="2" class="hide-sm">
-        {{ appointment.from | date: 'yyyy. MMM d.' }} {{ appointment.from | date: 'HH:mm' }}
+        {{ formatAppointmentTime(appointment.from, appointment.to) }}
       </ion-col>
 
       <ion-col size="2" class="message-column">
@@ -45,7 +47,7 @@
         {{ appointment?.doctor?.user?.email }}
       </ion-col>
 
-      <ion-col size="1" class="text-center actions">
+      <ion-col size="1" class="actions">
         <ion-button size="small" color="danger" fill="clear"
                     (click)="confirmDelete(appointment)" class="ghost-btn">
           <ion-icon name="trash" slot="icon-only"></ion-icon>

@@ -3,8 +3,12 @@ import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {Admin, User, AdminItem} from '../../../../utils/interfaces/commonInterfaces';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
+import {AdminItem} from '../../../../utils/interfaces/admin.interface';
+import {environment} from '../../../../../../../backend/config/enviroment';
+import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
+import {UserService} from '../../../../shared/user.service';
+import {AuthService} from '../../../../shared/auth.service';
 
 @Component({
   selector: 'app-admin-edit-profile-modal',
@@ -25,10 +29,13 @@ export class AdminEditProfileModalComponent {
   };
   file: File | null = null;
   tempPreviewUrl: string | null = null;
+  savingData: boolean = false;
 
   constructor(
     private modalCtrl: ModalController,
     private http: HttpClient,
+    private userService: UserService,
+    private authService: AuthService,
     private toast: ToastService
   ) {
   }
@@ -38,9 +45,10 @@ export class AdminEditProfileModalComponent {
   }
 
   async save() {
+    this.savingData = true;
     const modifiedFields = this.getModifiedFields();
 
-    if (Object.keys(modifiedFields).length === 0) {
+    if (Object.keys(modifiedFields).length === 0 && !this.file) {
       this.toast.show('Nincs kitöltve módosítandó mező!', 'warning');
       return;
     }
@@ -51,20 +59,61 @@ export class AdminEditProfileModalComponent {
       return;
     }
 
-    const payload: any = { id, ...modifiedFields };
+    const token = await this.authService.getIdToken();
+    if (!token) {
+      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
+      return;
+    }
 
-    const formData = this.buildFormData(payload);
+    if (this.file) {
+      const form = new FormData();
+      form.append('id', String(id));
 
-    this.http.patch('http://localhost:3000/api/admin/profile/update', formData).subscribe({
-      next: (res) => {
-        console.log('✅ Sikeres mentés:', res);
-        void this.modalCtrl.dismiss(res, 'updated');
-      },
-      error: (err) => {
-        console.error('❌ Mentési hiba:', err);
-        this.toast.show('Mentés közben hiba történt.', 'danger');
-      }
-    });
+      Object.entries(modifiedFields).forEach(([k, v]) => {
+        form.append(k, typeof v === 'number' ? String(v) : (v ?? ''));
+      });
+
+      form.append('picture', this.file, this.file.name);
+
+      this.http.patch(`${environment.apiUrl}/admin/updateProfile`, form, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${token}` },
+      }).subscribe({
+        next: (res: any) => {
+          const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
+          console.log(updated)
+          this.userService.setUser(updated);
+          this.savingData = false;
+          this.toast.show('Profil frissítve', 'success');
+          void this.modalCtrl.dismiss(updated, 'updated');
+        },
+        error: (err) => {
+          console.error('❌ Mentési hiba:', err);
+          this.toast.show('Mentés közben hiba történt.', 'danger');
+        }
+      });
+
+    } else {
+      const payload: any = { id, ...modifiedFields };
+
+      this.http.patch(`${environment.apiUrl}/admin/updateProfile`, payload, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${token}` },
+      }).subscribe({
+        next: (res: any) => {
+          const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
+          console.log(updated)
+          this.userService.setUser(updated);
+          this.savingData = false;
+          this.toast.show('Profil frissítve', 'success');
+          void this.modalCtrl.dismiss(updated, 'updated');
+        },
+        error: (err) => {
+          console.error('❌ Mentési hiba:', err);
+          this.toast.show('Mentés közben hiba történt.', 'danger');
+        }
+      });
+    }
   }
 
   onFileSelected(event: Event): void {
@@ -89,48 +138,31 @@ export class AdminEditProfileModalComponent {
   private getModifiedFields(): Record<string, any> {
     const modified: Record<string, any> = {};
 
-    const baselineUser: any = this.user || {};
+    const baselineUser: any = this.user?.user ?? {};
 
     const userAllowed = ['name', 'address', 'phoneNumber'];
 
-    const norm = (v: any) => (typeof v === 'string' ? v.trim() : v);
-
     for (const key of userAllowed) {
-      const oldValue = norm(baselineUser[key]);
-      const newValue = norm((this.editForm as any)[key]);
-      if (newValue !== undefined && newValue !== oldValue) {
-        (modified as any)[key] = newValue;
-      }
-    }
+      const oldValue = this.norm(baselineUser[key]);
+      const newValueRaw = (this.editForm as any)[key];
+      const newValue = this.norm(newValueRaw);
 
-    if (this.file) {
-      (modified as any).picture = this.file;
+      if (this.isMeaningful(newValue) && newValue !== oldValue) {
+        modified[key] = newValue;
+      }
     }
 
     return modified;
   }
 
-  private buildFormData(payload: any): FormData {
-    const fd = new FormData();
+  private isMeaningful(val: any): boolean {
+    if (val === null || val === undefined) return false;
+    if (typeof val === 'string') return val.trim().length > 0;
+    return true;
+  }
 
-    const appendValue = (key: string, value: any) => {
-      if (value === undefined || value === null) return;
-
-      if (key === 'picture' && value instanceof File) {
-        fd.append('picture', value, value.name);
-        return;
-      }
-
-      if (typeof value === 'object' && !(value instanceof File)) {
-        fd.append(key, JSON.stringify(value));
-        return;
-      }
-
-      fd.append(key, String(value));
-    };
-
-    Object.keys(payload).forEach(k => appendValue(k, payload[k]));
-    return fd;
+  private norm(val: any): any {
+    return typeof val === 'string' ? val.trim() : val;
   }
 
   protected readonly formatPhoneNumber = formatPhoneNumber;

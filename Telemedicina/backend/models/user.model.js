@@ -15,11 +15,10 @@ exports.create = async (data) => {
     email: String(data.email).toLowerCase(),
     name: data.name,
     role: data.role,
-    phoneNumber: data.phoneNumber ?? null,
-    address: data.address ?? null,
-    birthDate: data.birthDate ?? null,
-    pictureUrl: data.pictureUrl ?? null,
-    authUid: data.authUid ?? null,
+    phoneNumber: data.phoneNumber,
+    address: data.address,
+    pictureUrl: data.pictureUrl,
+    authUid: data.authUid,
     createdAt: new Date()
   });
   return { id };

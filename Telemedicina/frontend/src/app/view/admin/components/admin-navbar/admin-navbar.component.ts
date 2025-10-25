@@ -5,7 +5,8 @@ import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/ro
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {filter, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {AdminItem} from '../../../../utils/interfaces/commonInterfaces';
+import {AdminItem} from '../../../../utils/interfaces/admin.interface';
+import {UserService} from '../../../../shared/user.service';
 
 @Component({
   selector: 'app-admin-navbar',
@@ -37,11 +38,12 @@ export class AdminNavbarComponent implements OnInit{
   constructor(
     private http: HttpClient,
     private router: Router,
+    private userService: UserService,
     private alert: AlertService
   ) {}
 
   ngOnInit() {
-    this.getMyData();
+    this.getUserData();
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {});
@@ -50,22 +52,12 @@ export class AdminNavbarComponent implements OnInit{
       .subscribe(() => this.closeMobileMenu());
   }
 
-  getMyData() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get<AdminItem>('http://localhost:3000/api/getAdminMe', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).subscribe({
-      next: (res) => {
-        this.user = { user: res.user, admin: res.admin };
-      },
-      error: (err) => {
-        console.error('❌ Felhasználó lekérése sikertelen:', err);
-      }
-    });
+  private getUserData() {
+    const cached = this.userService.getUserAsAdmin();
+    if (cached) {
+      this.user = cached;
+      return;
+    }
   }
 
   confirmLogout() {
@@ -77,12 +69,7 @@ export class AdminNavbarComponent implements OnInit{
   }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('System-Messages')
-    void this.router.navigate(
-      ['/regist-login'],
-      { queryParams: { tab: 'login' } }
-    );
+    void this.userService.logout();
   }
 
   openMobileMenu() {

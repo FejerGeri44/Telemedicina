@@ -79,20 +79,14 @@
                 <ng-container *ngIf="getAppt(d, t) as appt; else freeCell">
                   <div class="day-col cell" [ngClass]="appt.patient_id != null ? 'cell--booked' : 'cell--free'">
                     <div class="cell-title">
-                      <ng-container *ngIf="appt.patient_id != null && appointmentUserDataMap[appt.patient_id] as patient; else statusOrFree">
-                        {{ patient.name }}
-                      </ng-container>
-                      <ng-template #statusOrFree>
-                        <!-- ha van appt, de nincs patient (szabad slot létrehozva) -->
-                        {{ appt.status || 'Szabad' }}
-                      </ng-template>
+                      {{ patientName(appt) }}
                     </div>
 
                     <div class="cell-actions">
                       <ion-button
                         size="small"
                         class="delete"
-                        (click)="onAppointmentAction(appt)"
+                        (click)="confirmDeleteAppointment(appt)"
                         [disabled]="appt.patient_id != null">
                         Törlés
                       </ion-button>
@@ -142,7 +136,10 @@
             </ion-select>
           </ion-item>
 
-          <ion-button class="btn-accent submit" (click)="addAppointment()">Hozzáadás</ion-button>
+          <ion-button
+            class="btn-accent submit"
+            (click)="addAppointment()"
+            [disabled]="savingData">Hozzáadás</ion-button>
         </div>
       </div>
     </ion-card-content>

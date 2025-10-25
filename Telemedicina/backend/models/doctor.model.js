@@ -1,12 +1,11 @@
 const { col, doc } = require('./shared/firestore');
 const { nextId } = require('./shared/counter');
-const C = 'doctors';
 const { db } = require('../models');
 const { deleteWhereEquals } = require('./shared/delete');
 
 exports.create = async (data) => {
-  const id = await nextId(C);
-  await doc(C, id).set({
+  const id = await nextId('doctors');
+  await doc('doctors', id).set({
     id,
     userId: String(data.userId),
     speciality: data.speciality ?? null,
@@ -19,17 +18,17 @@ exports.create = async (data) => {
 };
 
 exports.getByUserId = async (userId) => {
-  const q = await col('doctors').where('userId', '==', String(userId)).limit(1).get();
-  return q.empty ? null : { id: q.docs[0].id, ...q.docs[0].data() };
+  const query = await col('doctors').where('userId', '==', String(userId)).limit(1).get();
+  return query.empty ? null : { id: query.docs[0].id, ...query.docs[0].data() };
 };
 
 exports.update = async (id, patch) => {
-  await doc(C, id).set(patch, { merge: true });
+  await doc('doctors', id).set(patch, { merge: true });
 };
 
 exports.listApproved = async () => {
-  const q = await col(C).where('status', '==', 'approved').get();
-  return q.docs.map(d => ({ id: d.id, ...d.data() }));
+  const query = await col('doctors').where('status', '==', 'approved').get();
+  return query.docs.map(document => ({ id: document.id, ...document.data() }));
 };
 
 exports.delete = async (id) => {

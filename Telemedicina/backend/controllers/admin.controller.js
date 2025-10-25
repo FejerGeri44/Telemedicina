@@ -1,6 +1,7 @@
-const { User, Admin, Patient, Doctor, PatientTag, sequelize, SystemMessage} = require('../models');
+const { User, Admin, Patient, Doctor, PatientTag, SystemMessage} = require('../models');
 const bcrypt = require("bcrypt");
-const firebaseAdmin = require("../config/firebase-config");
+const {db, bucket} = require("../config/firebase-config");
+const {normalizeField, buildLoggedUser} = require("../utils/loggedUserUpdate");
 
 exports.getCurrentUser = async (req, res) => {
   try {
@@ -40,51 +41,46 @@ exports.getCurrentUser = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-  const t = await sequelize.transaction();
   try {
     let { id, ...updateFields } = req.body;
     if (!id) return res.status(400).json({ message: 'Missing user id' });
 
-    const admin = await Admin.findOne({ where: { userId: id }, transaction: t });
-    if (!admin) {
-      await t.rollback();
-      return res.status(404).json({ message: 'Doctor not found' });
+    const userIdStr = String(id);
+    const userRef = db.collection('users').doc(userIdStr);
+    const userSnap = await userRef.get();
+    if (!userSnap.exists) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    const userFields = {};
+    const adminsCol = db.collection('admins');
+    const existingAdminSnap = await adminsCol
+      .where('userId', '==', userIdStr)
+      .limit(1)
+      .get();
 
-    const userAllowed = ['name', 'address', 'phoneNumber'];
+    if (existingAdminSnap.empty) {
+      return res.status(404).json({ message: 'Admin profile not found' });
+    }
 
-    const normalizeField = (val) => {
-      if (typeof val === 'string') {
-        const v = val.trim();
-        return v === '' ? undefined : v;
-      }
-      return val;
-    };
+    const userAllowed    = ['name', 'address', 'phoneNumber'];
+
+    const userFields   = {};
 
     for (const k of userAllowed) {
       if (updateFields[k] !== undefined) {
-        let v = updateFields[k];
-        if (typeof v === 'string') {
-          v = v.trim();
-          if (v === '') v = undefined;
-        } else {
-          v = normalizeField(v);
-        }
+        const v = normalizeField(updateFields[k]);
         if (v !== undefined) userFields[k] = v;
       }
     }
 
     if (req.file && req.file.buffer) {
-      const bucket = firebaseAdmin.storage().bucket();
-      const objectPath = `user-profilePictures/${id}`;
+      const objectPath = `user-profilePictures/${userIdStr}`;
       const file = bucket.file(objectPath);
 
       await file.save(req.file.buffer, {
         resumable: false,
         contentType: req.file.mimetype,
-        metadata: { cacheControl: 'public, max-age=31536000' }
+        metadata: { cacheControl: 'public, max-age=31536000' },
       });
 
       await file.makePublic();
@@ -92,15 +88,16 @@ exports.updateProfile = async (req, res) => {
       const cacheBuster = Date.now();
       userFields.pictureUrl = `https://storage.googleapis.com/${bucket.name}/${objectPath}?v=${cacheBuster}`;
     }
-    if (Object.keys(userFields).length > 0) {
-      await User.update(userFields, { where: { id }, transaction: t });
-    }
 
-    await t.commit();
-    return res.json({ message: 'Profile updated successfully' });
+    const batch = db.batch();
+    if (Object.keys(userFields).length > 0)  batch.update(userRef, userFields);
+    await batch.commit();
+
+    const loggedUser = await buildLoggedUser(db, userIdStr);
+    return res.json({ updated: loggedUser });
+
   } catch (error) {
-    await t.rollback();
-    console.error('❌ Error updating profile:', error);
+    console.error('❌ Error updating doctor profile:', error);
     return res.status(500).json({ message: 'Server error', error: String(error) });
   }
 };

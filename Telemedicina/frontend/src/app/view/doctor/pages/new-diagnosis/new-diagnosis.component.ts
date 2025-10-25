@@ -5,8 +5,10 @@ import {NgForOf, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {Appointment, Draft, PatientItem} from '../../../../utils/interfaces/commonInterfaces';
+import {Draft} from '../../../../utils/interfaces/commonInterfaces';
 import {formatPhoneNumber, formatTaj} from '../../../../utils/formatProfileData';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
 
 @Component({
   selector: 'app-new-diagnosis',
@@ -164,7 +166,7 @@ export class NewDiagnosisComponent implements OnInit{
     return Array.isArray(this.patients) ? this.patients : Object.values(this.patients ?? {});
   }
 
-  getUserNameByPatientId(uid: number): string {
+  getUserNameByPatientId(uid: string): string {
     const id = Number(uid);
     if (!Number.isFinite(id)) return '';
     return this.patientsList().find(it => it?.user?.id === id)?.user?.name ?? '';
@@ -206,13 +208,13 @@ export class NewDiagnosisComponent implements OnInit{
     if (!appt) return;
 
     const item = this.patientsList()
-      .find(it => Number(it?.patient?.id) === Number(appt.patient_id));
+      .find(it => String(it?.patient?.id) === String(appt.patient_id));
 
     const u = item?.user;
     const p = item?.patient;
 
     this.draft.appointmentId      = appt.id ?? null;
-    this.draft.patientId          = appt.patient_id ?? null;
+    this.draft.patientId          = appt.patient_id;
     this.draft.patient.name       = u?.name ?? '';
     this.draft.patient.email      = u?.email ?? '';
     this.draft.patient.phone      = u?.phoneNumber ?? '';

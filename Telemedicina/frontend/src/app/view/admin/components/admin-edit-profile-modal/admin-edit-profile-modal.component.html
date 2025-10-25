@@ -71,6 +71,9 @@
 
   <!-- Sticky action sáv -->
   <div class="epm-actions">
-    <ion-button class="btn-accent" (click)="save()">Mentés</ion-button>
+    <ion-button
+      class="btn-accent"
+      (click)="save()"
+      [disabled]="savingData">Mentés</ion-button>
   </div>
 </ion-content>

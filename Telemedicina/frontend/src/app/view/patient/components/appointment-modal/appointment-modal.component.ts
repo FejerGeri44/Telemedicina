@@ -1,11 +1,16 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
-import {DatePipe, NgForOf} from '@angular/common';
+import {DatePipe, NgClass, NgForOf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {Appointment, PatientItem, prevAppointment, User} from '../../../../utils/interfaces/commonInterfaces';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
+import {UserService} from '../../../../shared/user.service';
+import {environment} from '../../../../../../../backend/config/enviroment';
+import {AuthService} from '../../../../shared/auth.service';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 
 @Component({
   selector: 'app-appointment-modal',
@@ -13,7 +18,8 @@ import {Appointment, PatientItem, prevAppointment, User} from '../../../../utils
     IonicModule,
     FormsModule,
     NgForOf,
-    DatePipe
+    DatePipe,
+    NgClass
   ],
   templateUrl: './appointment-modal.component.html',
   standalone: true,
@@ -21,9 +27,9 @@ import {Appointment, PatientItem, prevAppointment, User} from '../../../../utils
 })
 
 export class AppointmentModalComponent implements OnInit{
-  @Input() doctorData!: User;
+  @Input() doctorData!: DoctorItem;
   patientData!: PatientItem;
-  appointments: prevAppointment[] = [];
+  appointments: Appointment[] = [];
   days: { date: Date, weekday: string }[] = [];
   timeSlots: string[] = [];
   selectedDate: Date = new Date();
@@ -31,32 +37,51 @@ export class AppointmentModalComponent implements OnInit{
   constructor(
     private modalCtrl: ModalController,
     private http: HttpClient,
+    private authService: AuthService,
+    private userService: UserService,
     private toast: ToastService,
     private alert: AlertService
     ) {}
 
   ngOnInit() {
-    this.getMyData();
+    this.getUserData();
     this.generateDays();
     this.generateTimeSlots();
-    this.getDoctorsAppointments();
+    void this.getDoctorsAppointments();
   }
 
-  getMyData() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  private getUserData() {
+    const cached = this.userService.getUserAsPatient();
+    if (cached) {
+      this.patientData = cached;
+      return;
+    }
+  }
 
-    this.http.get<PatientItem>('http://localhost:3000/api/getPatientMe', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).subscribe({
-      next: (res) => {
-        this.patientData = { user: res.user, patient: res.patient };
-      },
-      error: (err) => {
-        console.error('❌ Felhasználó lekérése sikertelen:', err);
-      }
+  async getDoctorsAppointments(): Promise<Appointment[] | null> {
+    const userId = this.doctorData?.user?.id;
+    const token = await this.authService.getIdToken();
+    if (!userId || !token) return null;
+
+    return new Promise<Appointment[] | null>((resolve) => {
+      this.http.post<Appointment[]>(
+        `${environment.apiUrl}/patient/getDoctorsAppointments`,
+        { userId },
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}`
+          }
+        }).subscribe({
+        next: (res) => {
+          this.appointments = res;
+          resolve(this.appointments);
+        },
+        error: (err) => {
+          console.error('API hiba:', err);
+          this.toast?.show?.('Nem sikerült betölteni az időpontokat.', 'danger');
+          resolve(null);
+        }
+      });
     });
   }
 
@@ -97,13 +122,18 @@ export class AppointmentModalComponent implements OnInit{
   }
 
   generateTimeSlots() {
-    const start = 8 * 60;
-    const end = 19 * 60 + 30;
-    for (let mins = start; mins <= end; mins += 30) {
-      const h = Math.floor(mins / 60).toString().padStart(2, '0');
-      const m = (mins % 60).toString().padStart(2, '0');
-      this.timeSlots.push(`${h}:${m}`);
+    const slots: string[] = [];
+    const startHour = 8;
+    const endHour = 19;
+
+    for (let hour = startHour; hour <= endHour; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`);
+      if (hour !== endHour) {
+        slots.push(`${hour.toString().padStart(2, '0')}:30`);
+      }
     }
+
+    this.timeSlots = slots;
   }
 
   async selectTime(day: any, time: string) {
@@ -111,19 +141,30 @@ export class AppointmentModalComponent implements OnInit{
 
     const [hours, minutes] = time.split(':').map(Number);
 
-    const from = new Date(day.date);
-    from.setHours(hours, minutes, 0, 0);
+    const fromDate = new Date(day.date);
+    fromDate.setHours(hours, minutes, 0, 0);
 
-    const to = new Date(from);
-    to.setMinutes(from.getMinutes() + 30);
+    const toDate = new Date(fromDate);
+    toDate.setMinutes(fromDate.getMinutes() + 30);
+
+    const toKeyString = (d: Date): string => {
+      const year = d.getFullYear();
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      const day = d.getDate().toString().padStart(2, '0');
+      const hour = d.getHours().toString().padStart(2, '0');
+      const minute = d.getMinutes().toString().padStart(2, '0');
+      return `${year}:${month}:${day}:${hour}:${minute}`;
+    };
+
+    const fromString = toKeyString(fromDate);
+    const toString = toKeyString(toDate);
 
     if (cssClass.includes('btn-free')) {
       await this.alert.show(
         'Megerősítés',
         'Biztosan szeretnél időpontot foglalni?',
         () => {
-          this.handleAppointmentSaving(from, to);
-          this.toast.show('Sikeres foglalás!', 'success');
+          this.handleAppointmentSaving(fromString, toString);
         }
       );
 
@@ -141,68 +182,93 @@ export class AppointmentModalComponent implements OnInit{
 
     if (!list.length) return 'btn-date';
 
+    const parseDateString = (str: string): Date => {
+      if (!str) return new Date('');
+      const [year, month, day, hour, minute] = str.split(':').map(Number);
+      return new Date(year, month - 1, day, hour, minute, 0, 0);
+    };
+
+    const [h, m] = time.split(':').map(Number);
+    const buttonDate = new Date(day.date);
+    buttonDate.setHours(h || 0, m || 0, 0, 0);
+
     const match = list.find(app => {
-      const from = new Date(app.from);
-
-      const buttonDate = new Date(day.date);
-      const [h, m] = time.split(':').map(Number);
-      buttonDate.setHours(h || 0, m || 0, 0, 0);
-
+      const from = parseDateString(app.from);
       return from.getTime() === buttonDate.getTime();
     });
 
     if (!match) return 'btn-date';
-    if (match.status === 'free') return 'btn-date btn-free';
-    if (match.status === 'accepted') return 'btn-date btn-accepted';
-    return 'btn-date';
+
+    switch (match.status) {
+      case 'free': return 'btn-date btn-free';
+      case 'booked': return 'btn-date btn-booked';
+      case 'accepted': return 'btn-date btn-accepted';
+      default: return 'btn-date';
+    }
   }
 
-  getDoctorsAppointments() {
-    const doctorId = this.doctorData.id;
-    const token = localStorage.getItem('token');
-
-    if (!doctorId || !token) return;
-
-    this.http.post<Appointment[]>('http://localhost:3000/api/getDoctorsAppointments',
-      { doctorId },
-      {headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }).subscribe({
-      next: (res) => {
-        this.appointments = res;
-      },
-      error: (err) => {
-        console.error('API hiba:', err);
-      }
-    });
-  }
-
-  handleAppointmentSaving(from: Date, to: Date) {
-    const doctorId = this.doctorData.id;
+  async handleAppointmentSaving(from: string, to: string) {
+    const doctorId = this.doctorData?.doctor?.id;
     const patientId = this.patientData.user.id;
-    const token = localStorage.getItem('token');
+    const token = await this.authService.getIdToken();
 
     const payload = {
-      doctorId,
-      patientId,
-      from,
-      to
+      doctorId: Number(doctorId),
+      patientId: String(patientId),
+      from: from,
+      to: to
     };
 
+    console.log(payload)
     if (!doctorId || !token || !payload.patientId) {
       return;
     }
 
-    this.http.post('http://localhost:3000/api/patient/registerToAppointment', payload, {
-      headers: { Authorization: `Bearer ${token}` }
-      }).subscribe({
+    this.http.post(
+      `${environment.apiUrl}/patient/registerToAppointment`,
+      payload,
+      { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+    ).subscribe({
       next: () => {
+        const list: any[] = Array.isArray(this.appointments)
+          ? this.appointments
+          : (this.appointments && (this as any).appointments?.appointments) || [];
+
+        const idx = list.findIndex(a =>
+          String(a.from) === from &&
+          String(a.to) === to &&
+          Number(a.doctor_id) === Number(doctorId)
+        );
+
+        if (idx !== -1) {
+          const updated = {
+            ...list[idx],
+            patient_id: String(patientId),
+            status: (list[idx].status && list[idx].status !== 'free') ? list[idx].status : 'booked',
+          };
+
+          const newList = [...list];
+          newList[idx] = updated;
+
+          if (Array.isArray(this.appointments)) {
+            this.appointments = newList;
+          } else if (this.appointments && (this as any).appointments) {
+            (this as any).appointments = {
+              ...(this as any).appointments,
+              appointments: newList
+            };
+          }
+        }
+
         this.toast.show('Sikeres foglalás!', 'success');
-        this.getDoctorsAppointments();
       },
       error: (err) => {
         console.error('API hiba:', err);
+        if (err.status === 404) {
+          this.toast.show('Ez az időpont már foglalt.', 'danger');
+        } else {
+          this.toast.show('Hiba történt a foglalás közben.', 'danger');
+        }
       }
     });
   }

@@ -6,7 +6,12 @@ import {HttpClient} from '@angular/common/http';
 import {RouterLink} from '@angular/router';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {Appointment, MyAppointment} from '../../../../utils/interfaces/commonInterfaces';
+import {MyAppointment} from '../../../../utils/interfaces/appointment.inteface';
+import {environment} from '../../../../../../../backend/config/enviroment';
+import {AuthService} from '../../../../shared/auth.service';
+import {UserService} from '../../../../shared/user.service';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {formatAppointmentTime} from '../../../../utils/formatProfileData';
 
 @Component({
   selector: 'app-appointment-list',
@@ -24,36 +29,53 @@ import {Appointment, MyAppointment} from '../../../../utils/interfaces/commonInt
 })
 
 export class AppointmentListComponent implements OnInit {
+  user!: PatientItem;
   myAppointments: MyAppointment[] = [];
   isLoading = true;
-  sortColumn: string = '';
+  sortColumn: 'datetime' | null = null;
   sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor(
     private http: HttpClient,
+    private authService: AuthService,
+    private userService: UserService,
     private alertService: AlertService,
-    private toastService: ToastService
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
-    this.fetchAppointments();
+    this.getUserData();
+    void this.fetchAppointments();
   }
 
-  fetchAppointments() {
+  private getUserData() {
+    const cached = this.userService.getUserAsPatient();
+    if (cached) {
+      this.user = cached;
+      return;
+    }
+  }
+
+  async fetchAppointments(): Promise<void> {
     this.isLoading = true;
 
-    const token = localStorage.getItem('token');
+    const token = await this.authService.getIdToken();
     if (!token) {
-      console.error('❌ Nincs token, nem lehet lekérni az időpontokat.');
+      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
       this.isLoading = false;
       return;
     }
 
-    this.http.get<MyAppointment[]>('http://localhost:3000/api/loadMyRegisteredAppointments', {
-      headers: {
-        Authorization: `Bearer ${token}`
+    const payload = this.user?.patient?.id;
+
+    this.http.post<MyAppointment[]>(
+      `${environment.apiUrl}/patient/loadMyAppointments`,
+      { payload },
+      {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${token}` }
       }
-    }).subscribe({
+    ).subscribe({
       next: (res) => {
         this.myAppointments = res;
         this.isLoading = false;
@@ -66,7 +88,13 @@ export class AppointmentListComponent implements OnInit {
   }
 
   sortAppointments(): void {
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    if (this.sortColumn !== 'datetime') {
+      this.sortColumn = 'datetime';
+      this.sortDirection = 'asc';
+    } else {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    }
+
     const dir = this.sortDirection === 'asc' ? 1 : -1;
 
     this.myAppointments = [...this.myAppointments].sort((a, b) => {
@@ -84,20 +112,28 @@ export class AppointmentListComponent implements OnInit {
     );
   }
 
-  cancelAppointment(appointment: MyAppointment) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  async cancelAppointment(appointment: MyAppointment): Promise<void | null> {
+    const token = await this.authService.getIdToken();
+    if (!token) return null;
 
-    this.http.patch(
-      'http://localhost:3000/api/patient/cancelAppointment',
-      { id: appointment.id },
-      { headers: { Authorization: `Bearer ${token}` } }
+    this.http.patch<{ message: string }>(
+      `${environment.apiUrl}/patient/cancelAppointment`,
+      {payload: appointment.id},
+      {
+        withCredentials: true,
+        headers: {Authorization: `Bearer ${token}`}
+      }
     ).subscribe({
       next: () => {
-        this.toastService.show('Időpont lemondva', 'success');
+        this.toast.show('Időpont lemondva', 'success');
         this.myAppointments = this.myAppointments.filter(a => a.id !== appointment.id);
       },
-      error: (err) => console.error('❌ Lemondás sikertelen:', err)
+      error: (err) => {
+        console.error('❌ Lemondás sikertelen:', err);
+        this.toast.show('Lemondás sikertelen', 'danger');
+      }
     });
   }
+
+  protected readonly formatAppointmentTime = formatAppointmentTime;
 }

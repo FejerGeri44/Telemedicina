@@ -8,7 +8,11 @@ import {RouterLink} from '@angular/router';
 import {AdminProfileCardComponent} from '../../components/admin-profile-card/admin-profile-card.component';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {NgForOf, NgIf} from '@angular/common';
-import {AdminItem, DoctorItem, PatientItem, SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
+import {AdminItem} from '../../../../utils/interfaces/admin.interface';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {UserService} from '../../../../shared/user.service';
 
 @Component({
   selector: 'app-admin-home',
@@ -33,20 +37,21 @@ export class AdminHomeComponent implements OnInit{
   systemMessagesForMe: SystemMessage[] = [];
   systemMessages: SystemMessage[] = [];
 
+  constructor(
+    private http: HttpClient,
+    private modalCtrl: ModalController,
+    private userService: UserService
+  ) {}
+
   ngOnInit() {
     this.loadSystemMessagesOnceAfterLogin();
-    this.getMyData();
+    this.getUserData();
     this.getAllPatients();
     this.getAllDoctors();
     this.getAllAdmins();
     this.loadPendingDoctors();
     this.loadMessages();
   }
-
-  constructor(
-    private http: HttpClient,
-    private modalCtrl: ModalController
-  ) {}
 
   loadSystemMessagesOnceAfterLogin() {
     const token = localStorage.getItem('token');
@@ -97,22 +102,12 @@ export class AdminHomeComponent implements OnInit{
     }
   }
 
-  getMyData() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get<AdminItem>('http://localhost:3000/api/getAdminMe', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).subscribe({
-      next: (res) => {
-        this.user = { user: res.user, admin: res.admin};
-      },
-      error: (err) => {
-        console.error('❌ Admin user lekérése sikertelen:', err);
-      }
-    });
+  private getUserData() {
+    const cached = this.userService.getUserAsAdmin();
+    if (cached) {
+      this.user = cached;
+      return;
+    }
   }
 
   getAllPatients() {
@@ -204,7 +199,7 @@ export class AdminHomeComponent implements OnInit{
     const {role} = await modal.onDidDismiss();
 
     if (role === 'updated') {
-      this.getMyData();
+      this.getUserData();
     }
   }
 }

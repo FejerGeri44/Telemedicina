@@ -4,10 +4,11 @@ const adminController = require('../controllers/admin.controller');
 const authenticateToken = require('../middleware/firebaseAuth');
 
 const multer = require('multer');
+const doctorController = require("../controllers/doctor.controller");
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/getAdminMe', authenticateToken, adminController.getCurrentUser);
-router.patch('/admin/profile/update', upload.single('picture'), adminController.updateProfile);
+router.patch('/updateProfile', authenticateToken, upload.single('picture'), adminController.updateProfile);
 router.get('/admin/getAllPatients', authenticateToken, adminController.getAllPatients);
 router.get('/admin/getAllDoctors', authenticateToken, adminController.getAllDoctors);
 router.get('/admin/getAllAdmins', authenticateToken, adminController.getAllAdmins);

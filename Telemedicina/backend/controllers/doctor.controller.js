@@ -1,6 +1,8 @@
-const { Patient, Doctor, User, Appointment, PatientTag, sequelize, Diagnosis} = require('../models');
+const { Patient, Doctor, User, Appointment, PatientTag, Diagnosis} = require('../models');
 const {Op} = require("sequelize");
-const admin = require("../config/firebase-config");
+const {admin, db, bucket} = require("../config/firebase-config");
+const {normalizeField, buildLoggedUser} = require("../utils/loggedUserUpdate");
+const {nextId} = require("../models/shared/counter");
 
 exports.getCurrentUser = async (req, res) => {
   try {
@@ -43,53 +45,55 @@ exports.getCurrentUser = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-  const t = await sequelize.transaction();
   try {
     let { id, ...updateFields } = req.body;
     if (!id) return res.status(400).json({ message: 'Missing user id' });
 
-    const doctor = await Doctor.findOne({ where: { userId: id }, transaction: t });
-    if (!doctor) {
-      await t.rollback();
-      return res.status(404).json({ message: 'Doctor not found' });
+    const userIdStr = String(id);
+    const userRef = db.collection('users').doc(userIdStr);
+    const userSnap = await userRef.get();
+    if (!userSnap.exists) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    const userFields = {};
+    const doctorsCol = db.collection('doctors');
+    const existingDoctorSnap = await doctorsCol
+      .where('userId', '==', userIdStr)
+      .limit(1)
+      .get();
+
+    if (existingDoctorSnap.empty) {
+      return res.status(404).json({ message: 'Doctor profile not found' });
+    }
+    const doctorRef = existingDoctorSnap.docs[0].ref;
+
+    const userAllowed    = ['name', 'address', 'phoneNumber'];
+    const doctorAllowed  = ['speciality', 'introduction'];
+
+    const userFields   = {};
     const doctorFields = {};
-
-    const userAllowed = ['name', 'address', 'phoneNumber'];
-    const doctorAllowed = ['speciality', 'introduction'];
-
-    const normalizeField = (val) => {
-      if (typeof val === 'string') {
-        const v = val.trim();
-        return v === '' ? undefined : v;
-      }
-      return val;
-    };
 
     for (const k of userAllowed) {
       if (updateFields[k] !== undefined) {
-        let v = updateFields[k];
-        if (typeof v === 'string') {
-          v = v.trim();
-          if (v === '') v = undefined;
-        } else {
-          v = normalizeField(v);
-        }
+        const v = normalizeField(updateFields[k]);
         if (v !== undefined) userFields[k] = v;
+      }
+    }
+    for (const k of doctorAllowed) {
+      if (updateFields[k] !== undefined) {
+        const v = normalizeField(updateFields[k]);
+        if (v !== undefined) doctorFields[k] = v;
       }
     }
 
     if (req.file && req.file.buffer) {
-      const bucket = admin.storage().bucket();
-      const objectPath = `user-profilePictures/${id}`;
+      const objectPath = `user-profilePictures/${userIdStr}`;
       const file = bucket.file(objectPath);
 
       await file.save(req.file.buffer, {
         resumable: false,
         contentType: req.file.mimetype,
-        metadata: { cacheControl: 'public, max-age=31536000' }
+        metadata: { cacheControl: 'public, max-age=31536000' },
       });
 
       await file.makePublic();
@@ -97,119 +101,193 @@ exports.updateProfile = async (req, res) => {
       const cacheBuster = Date.now();
       userFields.pictureUrl = `https://storage.googleapis.com/${bucket.name}/${objectPath}?v=${cacheBuster}`;
     }
-    if (Object.keys(userFields).length > 0) {
-      await User.update(userFields, { where: { id }, transaction: t });
-    }
-    if (Object.keys(doctorFields).length > 0) {
-      await Patient.update(doctorFields, { where: { id: doctor.id }, transaction: t });
-    }
 
-    await t.commit();
-    return res.json({ message: 'Profile updated successfully' });
+    const batch = db.batch();
+    if (Object.keys(userFields).length > 0)  batch.update(userRef, userFields);
+    if (Object.keys(doctorFields).length > 0) batch.update(doctorRef, doctorFields);
+    await batch.commit();
+
+    const loggedUser = await buildLoggedUser(db, userIdStr);
+    return res.json({ updated: loggedUser });
+
   } catch (error) {
-    await t.rollback();
-    console.error('❌ Error updating profile:', error);
+    console.error('❌ Error updating doctor profile:', error);
     return res.status(500).json({ message: 'Server error', error: String(error) });
   }
 };
 
-exports.createAppointment = async (req, res) => {
+exports.addAppointment = async (req, res) => {
   try {
     const { doctor_id, from, to } = req.body;
 
-    if (!doctor_id || !from || !to) {
-      return res.status(400).json({ message: 'Hiányzó adatok.' });
+    if (from == null || to == null) {
+      return res.status(400).json({ message: 'Hiányzó from vagy to mező.' });
     }
 
-    const newAppointment = await Appointment.create({
-      doctor_id,
-      from,
-      to,
-      status: 'free',
-      patient_id: null
-    });
+    const dupSnap = await db.collection('appointments')
+      .where('doctor_id', '==', doctor_id)
+      .where('from', '==', from)
+      .where('to', '==', to)
+      .limit(1)
+      .get();
 
-    res.status(201).json({ message: 'Rendelés létrehozva.', appointment: newAppointment });
-  } catch (err) {
-    console.error('Hiba appointment létrehozásakor:', err);
-    res.status(500).json({ message: 'Szerverhiba.' });
+    if (!dupSnap.empty) {
+      return res.status(409).json({ message: 'Ez az időpont már létezik ennél az orvosnál.' });
+    }
+
+    const newId = await nextId('appointments');
+
+    const payload = {
+      id: newId,
+      doctor_id: doctor_id,
+      patient_id: null,
+      from: from,
+      to: to,
+      status: 'free'
+    };
+
+    await db.collection('appointments').doc(String(newId)).set(payload);
+
+    return res.status(201).json(payload);
+  } catch (error) {
+    console.error('❌ addAppointment error:', error);
+    return res.status(500).json({ message: 'Server error', error: String(error) });
   }
 };
 
-exports.getAppointmentsForCurrentDoctor = async (req, res) => {
+exports.listMyAppointments = async (req, res) => {
   try {
-    const userId = req.user.id;
-
-    const doctor = await Doctor.findOne({ where: { userId: userId } });
-
-    if (!doctor) {
-      return res.status(404).json({ message: 'Orvos nem található a token alapján.' });
+    const raw = req.body?.id;
+    const doctorId = Number(raw);
+    if (!Number.isFinite(doctorId)) {
+      return res.status(400).json({ message: 'Hiányzó vagy érvénytelen doctor id.' });
     }
 
-    const appointments = await Appointment.findAll({
-      where: { doctor_id: doctor.id },
-      order: [['from', 'ASC']]
+    const doctorSnap = await db.collection('doctors')
+      .where('id', '==', doctorId)
+      .limit(1)
+      .get();
+
+    if (doctorSnap.empty) {
+      return res.status(404).json({ message: `Doctor not found: ${doctorId}` });
+    }
+
+    const apptSnap = await db.collection('appointments')
+      .where('doctor_id', '==', doctorId)
+      .get();
+
+    const items = apptSnap.docs.map(d => {
+      const a = d.data();
+      return {
+        id: a.id,
+        doctor_id: a.doctor_id,
+        patient_id: a.patient_id ?? null,
+        from: a.from,
+        to: a.to,
+        status: a.status,
+      };
     });
 
-    res.status(200).json(appointments);
+    return res.json(items);
   } catch (err) {
-    console.error('❌ Hiba az időpontok lekérésekor:', err);
-    res.status(500).json({ message: 'Szerverhiba az időpontok lekérésekor.' });
+    console.error('❌ listAppointmentsByDoctorId error:', err);
+    return res.status(500).json({ message: 'Server error', error: String(err) });
   }
 };
 
 exports.getAppointmentUserData = async (req, res) => {
-  const { patientIds } = req.body;
-
-  if (!patientIds || !Array.isArray(patientIds)) {
-    return res.status(400).json({ message: 'Hiányzó vagy érvénytelen patientIds tömb.' });
-  }
-
   try {
-    const patients = await Patient.findAll({
-      where: { id: patientIds },
-      include: [
-        {
-          model: User,
-          attributes: ['name', 'email', 'phoneNumber']
-        }
-      ]
-    });
-
-    const userDataMap = {};
-    for (const patient of patients) {
-      userDataMap[patient.id] = {
-        name: patient.User.name,
-        email: patient.User.email,
-        phoneNumber: patient.User.phoneNumber
-      };
+    const rawIds = req.body?.patientIds;
+    if (!Array.isArray(rawIds) || rawIds.length === 0) {
+      return res.json({});
     }
 
-    res.status(200).json(userDataMap);
+    const patientIds = [...new Set(
+      rawIds
+        .filter(v => v !== null && v !== undefined)
+        .map(Number)
+        .filter(Number.isFinite)
+    )];
+
+    if (patientIds.length === 0) return res.json({});
+
+    const chunkSize = 10;
+    const patientDocs = [];
+    for (let i = 0; i < patientIds.length; i += chunkSize) {
+      const chunk = patientIds.slice(i, i + chunkSize);
+      const snap = await db.collection('patients')
+        .where('id', 'in', chunk)
+        .get();
+      patientDocs.push(...snap.docs);
+    }
+
+    if (patientDocs.length === 0) return res.json({});
+
+    const patientToUserId = new Map();
+    const userIds = new Set();
+    for (const pdoc of patientDocs) {
+      const pdata = pdoc.data();
+      const pid = typeof pdata.id === 'number' ? pdata.id : Number(pdoc.id);
+      const uid = pdata.userId ? String(pdata.userId) : null;
+      if (Number.isFinite(pid) && uid) {
+        patientToUserId.set(pid, uid);
+        userIds.add(uid);
+      }
+    }
+
+    if (userIds.size === 0) return res.json({});
+
+    const { FieldPath } = admin.firestore;
+    const usersById = {};
+    const userIdList = Array.from(userIds);
+    for (let i = 0; i < userIdList.length; i += chunkSize) {
+      const chunk = userIdList.slice(i, i + chunkSize);
+      const snap = await db.collection('users')
+        .where(FieldPath.documentId(), 'in', chunk)
+        .get();
+      for (const udoc of snap.docs) {
+        usersById[udoc.id] = { id: udoc.id, ...udoc.data() };
+      }
+    }
+
+    const result = {};
+    for (const pid of patientIds) {
+      const uid = patientToUserId.get(pid);
+      const user = uid ? usersById[uid] : null;
+      if (user && typeof user.name === 'string' && user.name.trim() !== '') {
+        result[pid] = { name: user.name.trim() };
+      } else {
+        result[pid] = { name: '' };
+      }
+    }
+
+    return res.json(result);
   } catch (err) {
-    console.error('❌ Hiba a beteg adatok lekérésekor:', err);
-    res.status(500).json({ message: 'Szerverhiba a beteg adatok lekérésekor.' });
+    console.error('❌ getAppointmentUserData error:', err);
+    return res.status(500).json({ message: 'Server error', error: String(err) });
   }
 };
 
 exports.deleteAppointment = async (req, res) => {
-  const appointmentId = req.body.id;
-
-  if (!appointmentId) {
-    return res.status(400).json({ message: 'Hiányzó appointment ID.' });
-  }
-
   try {
-    const result = await Appointment.destroy({ where: { id: appointmentId } });
-
-    if (result === 0) {
-      return res.status(404).json({ message: 'Időpont nem található.' });
+    const rawId = req.body?.id;
+    const apptId = Number(rawId);
+    if (!Number.isFinite(apptId)) {
+      return res.status(400).json({ message: 'Hiányzó vagy érvénytelen appointment id.' });
     }
 
-    res.status(200).json({ message: 'Időpont sikeresen törölve.' });
+    const apptRef = db.collection('appointments').doc(String(apptId));
+    const apptSnap = await apptRef.get();
+    if (!apptSnap.exists) {
+      return res.status(404).json({ message: `Appointment not found: ${apptId}` });
+    }
+
+    await apptRef.delete();
+
+    return res.json({ deleted: true, id: apptId });
   } catch (err) {
-    console.error('❌ Törlés hiba:', err);
-    res.status(500).json({ message: 'Szerverhiba.' });
+    console.error('❌ deleteAppointment error:', err);
+    return res.status(500).json({ message: 'Server error', error: String(err) });
   }
 };
 
@@ -310,83 +388,106 @@ exports.getAllPatients = async (req, res) => {
   }
 };
 
-exports.getUserDataForDiagnosis = async (req, res) => {
+exports.resolvePatientNames = async (req, res) => {
   try {
-    const { patientIds } = req.body;
-
-    if (!Array.isArray(patientIds)) {
-      return res.status(400).json({ message: 'Hiányzó vagy érvénytelen patientIds tömb.' });
+    const raw = req.body?.patientIds;
+    if (!Array.isArray(raw) || raw.length === 0) {
+      return res.status(400).json({ message: 'Hiányzó vagy üres patientIds tömb.' });
     }
 
-    const ids = [...new Set(
-      patientIds
-        .map(n => Number(n))
-        .filter(n => Number.isInteger(n))
+    const patientIds = [...new Set(
+      raw
+        .map(v => String(v).trim())
+        .filter(v => v !== '' && v !== 'null' && v !== 'undefined')
     )];
 
-    if (ids.length === 0) {
-      return res.status(200).json({});
+    if (patientIds.length === 0) {
+      return res.status(200).json({ map: {} });
     }
 
-    const patients = await Patient.findAll({
-      where: { id: { [Op.in]: ids } },
-      attributes: [
-        'id',
-        'height',
-        'weight',
-        'homePhone',
-        'taj',
-        'registDate',
-        'gender',
-        'userId'
-      ],
-      include: [{
-        model: User,
-        attributes: [
-          'id',
-          'name',
-          'email',
-          'role',
-          'phoneNumber',
-          'address',
-          'birthDate',
-          'pictureUrl'
-        ]
-      }]
-    });
+    const patientsById = new Map();
+    for (const group of chunk(patientIds, 10)) {
+      const docReads = await Promise.all(group.map(id => db.collection('patients').doc(id).get()));
+      const missing = [];
 
-    const response = {};
-    for (const p of patients) {
-      const u = p.User || null;
-      response[p.id] = {
-        user: u ? {
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          role: u.role,
-          phoneNumber: u.phoneNumber,
-          address: u.address,
-          birthDate: u.birthDate,
-          pictureUrl: u.pictureUrl
-        } : null,
-        patient: {
-          id: p.id,
-          height: p.height,
-          weight: p.weight,
-          homePhone: p.homePhone,
-          taj: p.taj,
-          registDate: p.registDate,
-          gender: p.gender
+      docReads.forEach((snap, idx) => {
+        const pid = group[idx];
+        if (snap.exists) {
+          const data = snap.data();
+          if (data?.userId != null) {
+            const userIdNum = typeof data.userId === 'number' ? data.userId : Number(String(data.userId));
+            if (!Number.isNaN(userIdNum)) patientsById.set(pid, { userId: userIdNum });
+          }
+        } else {
+          missing.push(group[idx]);
         }
-      };
+      });
+
+      if (missing.length) {
+        for (const mgrp of chunk(missing, 10)) {
+          const q = await db.collection('patients').where('id', 'in', mgrp.map(x => Number(x))).get();
+          q.forEach(doc => {
+            const d = doc.data();
+            const pidStr = String(d.id);
+            const userIdNum = typeof d.userId === 'number' ? d.userId : Number(String(d.userId));
+            if (!Number.isNaN(userIdNum)) patientsById.set(pidStr, { userId: userIdNum });
+          });
+        }
+      }
     }
 
-    return res.status(200).json(response);
+    if (patientsById.size === 0) {
+      return res.status(200).json({ map: {} });
+    }
+
+    const userIds = [...new Set([...patientsById.values()].map(p => p.userId))];
+    const usersById = new Map(); // key: userId(number), val: { name:string }
+
+    for (const group of chunk(userIds, 10)) {
+      const docReads = await Promise.all(group.map(id => db.collection('users').doc(String(id)).get()));
+      const missing = [];
+
+      docReads.forEach((snap, idx) => {
+        const uid = group[idx];
+        if (snap.exists) {
+          const d = snap.data();
+          if (d?.name) usersById.set(uid, { name: d.name });
+        } else {
+          missing.push(uid);
+        }
+      });
+
+      if (missing.length) {
+        for (const mgrp of chunk(missing, 10)) {
+          const q = await db.collection('users').where('id', 'in', mgrp).get();
+          q.forEach(doc => {
+            const d = doc.data();
+            if (d?.id != null && d?.name) usersById.set(d.id, { name: d.name });
+          });
+        }
+      }
+    }
+
+    const result = {};
+    for (const [patientIdStr, { userId }] of patientsById.entries()) {
+      const u = usersById.get(userId);
+      if (u?.name) {
+        result[patientIdStr] = { userId, name: u.name };
+      }
+    }
+
+    return res.status(200).json({ map: result });
   } catch (err) {
-    console.error('❌ Hiba a beteg/user adatok lekérésekor:', err);
-    return res.status(500).json({ message: 'Szerverhiba a beteg/user adatok lekérésekor.' });
+    console.error('❌ resolvePatientNames error:', err);
+    return res.status(500).json({ message: 'Szerver hiba', error: String(err?.message || '') });
   }
 };
+
+function chunk(arr, size = 10) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
 
 exports.newDiagnosis = async (req, res) => {
   try {

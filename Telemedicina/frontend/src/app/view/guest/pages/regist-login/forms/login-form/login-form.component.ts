@@ -1,4 +1,4 @@
-import {Component, Injector, ViewContainerRef} from '@angular/core';
+import {Component, Injector, OnInit, ViewContainerRef} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -6,6 +6,10 @@ import {ActivatedRoute, Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CustomToastComponent } from '../../../../../../shared/toast/toast.component';
 import {ToastService} from '../../../../../../shared/toast/toast.service';
+import {environment} from '../../../../../../../../../backend/config/enviroment';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import {UserService} from '../../../../../../shared/user.service';
+import { LoggedUser } from '../../../../../../utils/interfaces/logged-user.interface';
 
 @Component({
   selector: 'app-login-form',
@@ -18,9 +22,7 @@ import {ToastService} from '../../../../../../shared/toast/toast.service';
     FormsModule
   ]
 })
-export class LoginFormComponent {
-  validEmail: boolean = false;
-  invalidEmail: boolean = false;
+export class LoginFormComponent implements OnInit{
   email: string = '';
   password: string = '';
   showPassword = false;
@@ -30,6 +32,7 @@ export class LoginFormComponent {
     private router: Router,
     private viewContainerRef: ViewContainerRef,
     private injector: Injector,
+    private userService: UserService,
     private route: ActivatedRoute,
     private toast: ToastService
     ) {}
@@ -64,58 +67,75 @@ export class LoginFormComponent {
     });
   }
 
-  onLogin() {
-
-    // Üres mezők ellenőrzése
-    if (!this.email || !this.password){
+  async onLogin() {
+    if (!this.email || !this.password) {
       this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
       return;
-    } else {
-
-      // Email ellenőrzése
-      if (!this.email.includes('@')) {
-        this.invalidEmail = true;
-        this.validEmail = false;
-        this.toast.show('Hibás e-mail cím!', 'danger');
-        return;
-      } else {
-        this.invalidEmail = false;
-        this.validEmail = true;
-      }
+    }
+    const email = String(this.email).trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.toast.show('Hibás e-mail cím!', 'danger');
+      return;
     }
 
-    const credentials = {
-      email: this.email,
-      password: this.password
-    };
+    try {
+      const auth = getAuth();
+      const cred = await signInWithEmailAndPassword(auth, email, String(this.password));
+      const idToken = await cred.user.getIdToken();
 
-    this.http.post<any>('http://localhost:3000/api/auth/login', credentials)
-      .subscribe({
-        next: res => {
-          localStorage.setItem('token', res.token);
-          this.toast.show('Sikeresen bejelentkeztél!', 'success');
+      const resp = await this.http.post<LoggedUser>(
+        `${environment.apiUrl}/auth/login`,
+        { idToken },
+        { withCredentials: true }
+      ).toPromise();
 
-          // Iranyitas szerepkor szerint
-          switch (res.user.role) {
-            case 'doctor':
-              void this.router.navigate(['/doctor/doctor-home']);
-              break;
-            case 'patient':
-              void this.router.navigate(['/patient/patient-home']);
-              break;
-            case 'admin':
-              void this.router.navigate(['/admin/admin-home']);
-              break;
-          }
-        },
-        error: err => {
-          if (err?.error?.code === 'DOCTOR_PENDING') {
-            this.toast.show("A regisztráció még nincs jóváhagyva!", 'warning');
-            return;
-          }
-          this.toast.show('Hibás email cím vagy jelszó!', 'danger');
-        }
-      });
+      if (resp) {
+        this.userService.setUser(resp);
+      }
+
+      const role = resp?.user?.role;
+      switch (role) {
+        case 'doctor':
+          void this.router.navigate(['/doctor/doctor-home']);
+          break;
+        case 'patient':
+          void this.router.navigate(['/patient/patient-home']);
+          break;
+        case 'admin':
+          void this.router.navigate(['/admin/admin-home']);
+          break;
+        default:
+          void this.router.navigate(['/']);
+      }
+
+    } catch (err: any) {
+      if (err?.status === 403 && err?.error?.code === 'DOCTOR_PENDING') {
+        this.toast.show('A regisztráció még nincs jóváhagyva!', 'warning');
+        return;
+      }
+
+      if (err?.status === 0) {
+        console.error('Network/CORS error:', err);
+        this.toast.show('Hálózati vagy CORS hiba a bejelentkezésnél.', 'danger');
+        return;
+      }
+
+      if (typeof err?.status === 'number') {
+        const serverMsg = err?.error?.message || `Hiba (${err.status}) a bejelentkezésnél.`;
+        console.error('Backend login error:', err);
+        this.toast.show(serverMsg, 'danger');
+        return;
+      }
+
+      if (err?.code?.startsWith?.('auth/')) {
+        console.error('Firebase signIn error:', err);
+        this.toast.show('Hibás email vagy jelszó!', 'danger');
+        return;
+      }
+
+      console.error('Unknown login error:', err);
+      this.toast.show('Hiba történt a bejelentkezés során.', 'danger');
+    }
   }
 
   togglePasswordVisibility() {

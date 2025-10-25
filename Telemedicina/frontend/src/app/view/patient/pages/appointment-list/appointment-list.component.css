@@ -47,6 +47,10 @@
   max-height: 100px;
   overflow-y: auto;
 }
+
+.sort ion-icon {
+  cursor: pointer;
+}
 .doctor-info {
   display: flex;
   flex-direction: row;
@@ -54,13 +58,23 @@
   align-items: center;
   gap: 10px;
 }
-.doctor-avatar {
+.avatar {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #e6f4ff;
+  display: inline-block;
+  place-items: center;
+  overflow: visible;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+.avatar img {
   width: 50px;
   height: 50px;
+  margin: 5px 0 0 5px;
   border-radius: 50%;
-  overflow: hidden;
-  background: #e6f4ff;
-  flex: 0 0 auto;
+  object-fit: cover;
 }
 
 .chips-col {
@@ -112,20 +126,18 @@
   overflow-y: auto;
 }
 
-/* akció gomb */
 .actions .ghost-btn {
-  --padding-start: 6px; --padding-end: 6px;
-  --border-radius: 10px;
+  --padding-start: 5px;
+  --padding-top: 5px;
+  --padding-bottom: 5px;
+  --padding-end: 5px;
+  border-radius: 5px;
   --background: transparent;
-  --ripple-color: rgba(220,38,38,.15);
-}
-.actions .ghost-btn:hover {
-  background: #fff1f2;
 }
 
 .ghost-btn ion-icon {
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
 }
 
 .no-data {

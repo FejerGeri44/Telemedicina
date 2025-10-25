@@ -20,8 +20,10 @@ import {
 import {
   PatientEditProfileModalComponent
 } from '../../../patient/components/patient-edit-profile-modal/patient-edit-profile-modal.component';
-import {AdminItem, DoctorItem, PatientItem} from '../../../../utils/interfaces/commonInterfaces';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 
 type UserSortKey = 'name' | 'role' | 'createdAt';
 

@@ -12,8 +12,8 @@ exports.create = async ({ doctor_id, patient_id = null, from, to, status = 'free
     id: newId,
     doctor_id: String(doctor_id),
     patient_id: patient_id ? String(patient_id) : null,
-    from: new Date(from),
-    to:   new Date(to),
+    from: from,
+    to: to,
     status
   });
 

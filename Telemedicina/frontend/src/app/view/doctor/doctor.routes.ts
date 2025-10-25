@@ -1,8 +1,11 @@
 import { Routes } from '@angular/router';
+import {authChildGuard, authMatchGuard} from '../../utils/guards/auth.guard';
 
 export const DOCTOR_ROUTES: Routes = [
   {
     path: '',
+    canMatch: [authMatchGuard],
+    canActivateChild: [authChildGuard],
     loadComponent: () =>
       import('./doctor-dashboard/doctor-dashboard.component')
         .then(m => m.DoctorDashboardComponent),

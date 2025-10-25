@@ -10,7 +10,7 @@
 <ion-content>
   <ion-card class="appointment-modal-card">
     <ion-card-header>
-      <ion-card-title>Dr. {{ doctorData.name }}</ion-card-title>
+      <ion-card-title>Dr. {{ doctorData?.user?.name }}</ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <div class="time-table">
@@ -48,7 +48,7 @@
           <div class="time-column" *ngFor="let day of days">
             <ion-button
               size="small"
-              [class]="getButtonClass(day, time)"
+              [ngClass]="getButtonClass(day, time)"
               *ngFor="let time of timeSlots"
               (click)="selectTime(day, time)">
               {{ time }}
