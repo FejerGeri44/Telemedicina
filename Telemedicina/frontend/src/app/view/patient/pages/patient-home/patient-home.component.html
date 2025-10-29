@@ -1,11 +1,73 @@
 <div class="grid">
-  <app-patient-profile-card
+  <app-patient-profile-card *ngIf="userService.patient$() | async as user; else patientCardSkeleton"
     class="profile-card"
     [user]="user"
     [editable]="true"
     (edit)="openEditModal()">
   </app-patient-profile-card>
 
+  <ng-template #patientCardSkeleton>
+    <div class="profile-card">
+      <div class="card">
+        <div class="pc-header">
+          <div class="pc-left">
+            <div class="pc-avatar">
+              <ion-skeleton-text animated style="display:block;width:100%;height:100%;border-radius:50%"></ion-skeleton-text>
+            </div>
+            <div class="pc-name" style="min-width:0">
+              <ion-skeleton-text animated style="width:180px;height:18px;border-radius:6px;margin:4px 0"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width:120px;height:14px;border-radius:6px"></ion-skeleton-text>
+            </div>
+          </div>
+
+          <ion-skeleton-text class="pc-edit-top" animated style="width:120px;height:36px;border-radius:8px"></ion-skeleton-text>
+        </div>
+
+        <div class="pc-details">
+          <div class="pc-item">
+            <span class="label"><ion-skeleton-text animated style="width:110px;height:12px;border-radius:6px"></ion-skeleton-text></span>
+            <span class="value" style="flex:1"><ion-skeleton-text animated style="width:60%;height:12px;border-radius:6px"></ion-skeleton-text></span>
+          </div>
+          <div class="pc-item">
+            <span class="label"><ion-skeleton-text animated style="width:60px;height:12px;border-radius:6px"></ion-skeleton-text></span>
+            <span class="value" style="flex:1"><ion-skeleton-text animated style="width:80%;height:12px;border-radius:6px"></ion-skeleton-text></span>
+          </div>
+          <div class="pc-item">
+            <span class="label"><ion-skeleton-text animated style="width:50px;height:12px;border-radius:6px"></ion-skeleton-text></span>
+            <span class="value" style="flex:1"><ion-skeleton-text animated style="width:40%;height:12px;border-radius:6px"></ion-skeleton-text></span>
+          </div>
+          <div class="pc-item">
+            <span class="label"><ion-skeleton-text animated style="width:50px;height:12px;border-radius:6px"></ion-skeleton-text></span>
+            <span class="value" style="flex:1"><ion-skeleton-text animated style="width:30%;height:12px;border-radius:6px"></ion-skeleton-text></span>
+          </div>
+          <div class="pc-item">
+            <span class="label"><ion-skeleton-text animated style="width:40px;height:12px;border-radius:6px"></ion-skeleton-text></span>
+            <span class="value" style="flex:1"><ion-skeleton-text animated style="width:55%;height:12px;border-radius:6px"></ion-skeleton-text></span>
+          </div>
+          <div class="pc-item">
+            <span class="label"><ion-skeleton-text animated style="width:70px;height:12px;border-radius:6px"></ion-skeleton-text></span>
+            <span class="value" style="flex:1"><ion-skeleton-text animated style="width:35%;height:12px;border-radius:6px"></ion-skeleton-text></span>
+          </div>
+        </div>
+
+        <div class="pc-chips">
+          <ion-skeleton-text animated style="width:90px;height:22px;border-radius:999px"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width:120px;height:22px;border-radius:999px"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width:80px;height:22px;border-radius:999px"></ion-skeleton-text>
+        </div>
+
+        <div class="pc-stats">
+          <div class="stat"><span class="label"><ion-skeleton-text animated style="width:60px;height:12px;border-radius:6px"></ion-skeleton-text></span><span class="value"><ion-skeleton-text animated style="width:160px;height:12px;border-radius:6px"></ion-skeleton-text></span></div>
+          <div class="stat"><span class="label"><ion-skeleton-text animated style="width:60px;height:12px;border-radius:6px"></ion-skeleton-text></span><span class="value"><ion-skeleton-text animated style="width:140px;height:12px;border-radius:6px"></ion-skeleton-text></span></div>
+          <div class="stat"><span class="label"><ion-skeleton-text animated style="width:70px;height:12px;border-radius:6px"></ion-skeleton-text></span><span class="value"><ion-skeleton-text animated style="width:120px;height:12px;border-radius:6px"></ion-skeleton-text></span></div>
+        </div>
+
+        <div class="pc-edit-bottom-wrap">
+          <ion-skeleton-text animated style="width:100%;height:36px;border-radius:8px"></ion-skeleton-text>
+        </div>
+      </div>
+    </div>
+  </ng-template>
 
   <ion-card class="appointments">
     <div class="card-header">
@@ -18,7 +80,9 @@
     <div *ngIf="myAppointments.length > 0" class="appointments-wrapper">
       <div *ngFor="let app of myAppointments" class="appointment-card">
         <div class="appointment-left">
-          <img [src]="app.doctor.user.pictureUrl" alt="Doktor" class="doctor-image" draggable="false"/>
+          <div class="avatar">
+            <img ngSrc="{{app.doctor.user.pictureUrl}}" alt="Doktor" class="doctor-image" draggable="false" fill/>
+          </div>
           <div class="doctor-info">
             <div class="doctor-name">{{ app.doctor.user.name }}</div>
             <div class="doctor-speciality">{{ app.doctor.doctor.speciality }}</div>

@@ -1,44 +1,6 @@
-const { User, Admin, Patient, Doctor, PatientTag, SystemMessage} = require('../models');
+const { User, Admin, Patient, Doctor, PatientTag, SystemMessage} = require('../repositories');
 const bcrypt = require("bcrypt");
-const {db, bucket} = require("../config/firebase-config");
-const {normalizeField, buildLoggedUser} = require("../utils/loggedUserUpdate");
-
-exports.getCurrentUser = async (req, res) => {
-  try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'pictureUrl', 'name', 'email', 'role', 'phoneNumber', 'address', 'birthDate'],
-      include: [{
-        model: Admin,
-        attributes: ['id', 'registDate']
-      }]
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: 'Felhasználó nem található.' });
-    }
-
-    const userData = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      phoneNumber: user.phoneNumber,
-      address: user.address,
-      birthDate: user.birthDate,
-      pictureUrl: user.pictureUrl
-    };
-
-    const adminData = user.Admin ? {
-      id: user.Admin.id,
-      registDate: user.Admin.registDate
-    } : null;
-
-    return res.status(200).json({ user: userData, admin: adminData });
-  } catch (err) {
-    console.error('Hiba a /me route-nál:', err);
-    res.status(500).json({ message: 'Szerverhiba.' });
-  }
-};
+const {db, bucket} = require("../config/db.config");
 
 exports.updateProfile = async (req, res) => {
   try {

@@ -20,7 +20,7 @@ import {AdminItem} from '../../../../utils/interfaces/admin.interface';
   ],
   templateUrl: './add-user.component.html',
   standalone: true,
-  styleUrl: './add-user.component.css'
+  styleUrl: './add-user.component.scss'
 })
 export class AddUserComponent implements OnInit{
   user!: AdminItem;

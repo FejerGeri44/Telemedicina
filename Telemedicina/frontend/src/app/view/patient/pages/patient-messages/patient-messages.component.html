@@ -24,19 +24,19 @@
         class="doctor-profile"
         *ngFor="let doctor of doctors; trackBy: trackByDoctorId"
         (click)="selectDoctor(doctor)"
-        [class.active]="doctor.user?.id === selectedDoctor?.user?.id">
+        [class.active]="doctor.user.id === selectedDoctor.user.id">
 
         <div class="avatar-wrap">
-          <img class="avatar" [src]="doctor.user?.pictureUrl" alt="Dr. avatar" />
+          <img class="avatar" [src]="doctor.user.pictureUrl" alt="Dr. avatar" />
         </div>
 
         <div class="info">
-          <div class="name">Dr. {{ doctor.user?.name }}</div>
+          <div class="name">Dr. {{ doctor.user.name }}</div>
           <div class="specialty">{{ doctor.doctor.speciality }}</div>
         </div>
 
         <div class="last-message" *ngIf="getUnreadSummary(doctor.user.id) as summary">
-          <span class="preview">{{ summary.latest?.content }}</span>
+          <span class="preview">{{ summary.latest.content }}</span>
           <span class="badge" *ngIf="summary.count > 0">{{ summary.count }}</span>
         </div>
       </button>
@@ -109,7 +109,7 @@
 
         <ion-button
           class="send-btn"
-          [disabled]="!draftText?.trim()"
+          [disabled]="!draftText"
           (click)="send()">
           <ion-icon name="send" slot="end"></ion-icon>
         </ion-button>

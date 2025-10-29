@@ -4,8 +4,8 @@ export type genders = 'nő' | 'férfi';
 
 export interface Patient {
   id: number;
-  height?: number | null;
-  weight?: number | null;
+  height?: number | string |null;
+  weight?: number | string | null;
   homePhone?: string | null;
   taj: string;
   gender: genders;

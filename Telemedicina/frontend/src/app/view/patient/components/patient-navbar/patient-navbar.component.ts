@@ -1,8 +1,8 @@
 import {Component, HostListener, OnInit} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
-import {NgForOf, NgIf} from '@angular/common';
+import {IonicModule, NavController} from '@ionic/angular';
+import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/router';
-import {filter, Subscription} from 'rxjs';
+import {filter, finalize, Observable, Subscription, take} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {UnreadMessage} from '../../../../utils/interfaces/commonInterfaces';
@@ -16,14 +16,16 @@ import {UserService} from '../../../../shared/user.service';
     NgIf,
     RouterLinkActive,
     RouterModule,
-    NgForOf
+    NgForOf,
+    NgOptimizedImage,
+    AsyncPipe
   ],
   templateUrl: './patient-navbar.component.html',
   standalone: true,
-  styleUrl: './patient-navbar.component.css'
+  styleUrl: './patient-navbar.component.scss'
 })
 export class PatientNavbarComponent implements OnInit{
-  user!: PatientItem;
+  user: Observable<PatientItem | null>;
   profileOpen = false;
   mobileMenuOpen = false;
   private navSub?: Subscription;
@@ -42,26 +44,20 @@ export class PatientNavbarComponent implements OnInit{
   constructor(
     private http: HttpClient,
     private router: Router,
-    private userService: UserService,
+    protected userService: UserService,
+    private nav: NavController,
     private alert: AlertService
-  ) {}
+  ) {
+    this.user = this.userService.patient$();
+  }
 
   ngOnInit() {
-    this.getUserData();
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {});
     this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => this.closeMobileMenu());
-  }
-
-  private getUserData() {
-    const cached = this.userService.getUserAsPatient();
-    if (cached) {
-      this.user = cached;
-      return;
-    }
   }
 
   confirmLogout() {
@@ -73,20 +69,16 @@ export class PatientNavbarComponent implements OnInit{
   }
 
   logout() {
-    void this.userService.logout();
+    this.userService.logout().subscribe(() => this.nav.navigateRoot('/regist-login?tab=login'));
   }
 
   public getUnreadMessages() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const userId = this.user?.user?.id;
-    if (!userId) return;
-
     this.http.post<{unread:any[], count:number}>(
       'http://localhost:3000/api/getUnreadMessages',
       {
-        userId,
         role: 'patient',
         limit: 200
       },

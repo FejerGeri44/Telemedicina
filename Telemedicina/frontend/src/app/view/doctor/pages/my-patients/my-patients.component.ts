@@ -18,7 +18,7 @@ import {MyPatientCard} from '../../../../utils/interfaces/commonInterfaces';
   ],
   templateUrl: './my-patients.component.html',
   standalone: true,
-  styleUrl: './my-patients.component.css'
+  styleUrl: './my-patients.component.scss'
 })
 export class MyPatientsComponent implements OnInit{
   isLoading = false;

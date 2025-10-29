@@ -31,7 +31,13 @@
     ]
   },
   "intents": [
-
+    {
+      "id": 0,
+      "patterns": [
+        "fejfájás"
+      ],
+      "response": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
   ],
   "fallback": {
     "suggestionText": "Ebben nem vagyok biztos. Javaslom, hogy vedd fel a kapcsolatot szakemberrel.",

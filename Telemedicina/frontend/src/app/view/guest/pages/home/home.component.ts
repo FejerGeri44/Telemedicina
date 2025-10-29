@@ -16,7 +16,7 @@ import { FooterComponent } from '../../../../shared/footer/footer.component';
     NavbarComponent,
     FooterComponent
   ],
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.scss']
 })
 
 export class HomeComponent implements OnInit, OnDestroy {

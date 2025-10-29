@@ -12,7 +12,7 @@ import {RouterOutlet} from '@angular/router';
   ],
   templateUrl: './doctor-dashboard.component.html',
   standalone: true,
-  styleUrl: './doctor-dashboard.component.css'
+  styleUrl: './doctor-dashboard.component.scss'
 })
 
 export class DoctorDashboardComponent {}

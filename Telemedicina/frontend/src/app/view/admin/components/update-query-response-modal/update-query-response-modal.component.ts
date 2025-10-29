@@ -24,7 +24,7 @@ type IntentForm   = { id: number | null; patterns: string; response: string };
   ],
   templateUrl: './update-query-response-modal.component.html',
   standalone: true,
-  styleUrl: './update-query-response-modal.component.css'
+  styleUrl: './update-query-response-modal.component.scss'
 })
 export class UpdateQueryResponseModalComponent {
   @Input({ required: true }) kind!: UpdateKind;

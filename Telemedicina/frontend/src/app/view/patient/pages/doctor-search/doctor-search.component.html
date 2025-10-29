@@ -96,7 +96,7 @@
         <ion-card>
           <ion-card-header class="doctor-card-header">
             <ion-avatar>
-              <img [src]="doctor.user.pictureUrl" class="doctor-avatar" alt="Profilkép" draggable="false"/>
+              <img ngSrc="{{doctor.user.pictureUrl}}" class="doctor-avatar" alt="Profilkép" draggable="false" fill/>
             </ion-avatar>
             <div class="doctor-header-info">
               <ion-card-title>Dr. {{ doctor.user.name }}</ion-card-title>
@@ -105,14 +105,13 @@
           </ion-card-header>
 
           <ion-card-content class="doctor-rating">
-            <ng-container *ngFor="let star of [1,2,3,4,5]">
-              <ion-icon
-                [name]="((doctor?.doctor?.avgRating ?? 0) >= star)
-                 ? 'star'
-                 : ((doctor?.doctor?.avgRating ?? 0) >= star - 0.5
-                    ? 'star-half'
-                    : 'star-outline')">
-              </ion-icon>
+            <ng-container *ngIf="ratingFor(doctor.doctor.avgRating) as rv">
+              <div class="rating">
+                <div class="rating-icons">
+                  <ion-icon *ngFor="let icon of rv.icons" [name]="icon"></ion-icon>
+                </div>
+                <span class="rating-number">{{ rv.rounded | number:'1.1-1' }}/5</span>
+              </div>
             </ng-container>
           </ion-card-content>
 
@@ -122,6 +121,7 @@
           </div>
         </ion-card>
       </ion-col>
+
     </ion-row>
   </ion-grid>
 </div>

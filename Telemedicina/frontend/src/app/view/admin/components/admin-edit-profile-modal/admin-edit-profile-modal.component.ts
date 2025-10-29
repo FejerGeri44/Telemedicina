@@ -8,17 +8,18 @@ import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {environment} from '../../../../../../../backend/config/enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../shared/user.service';
-import {AuthService} from '../../../../shared/auth.service';
+import {NgOptimizedImage} from "@angular/common";
 
 @Component({
   selector: 'app-admin-edit-profile-modal',
-  imports: [
-    IonicModule,
-    FormsModule
-  ],
+    imports: [
+        IonicModule,
+        FormsModule,
+        NgOptimizedImage
+    ],
   templateUrl: './admin-edit-profile-modal.component.html',
   standalone: true,
-  styleUrl: './admin-edit-profile-modal.component.css'
+  styleUrl: './admin-edit-profile-modal.component.scss'
 })
 export class AdminEditProfileModalComponent {
   @Input() user!: AdminItem;
@@ -35,7 +36,6 @@ export class AdminEditProfileModalComponent {
     private modalCtrl: ModalController,
     private http: HttpClient,
     private userService: UserService,
-    private authService: AuthService,
     private toast: ToastService
   ) {
   }
@@ -59,12 +59,6 @@ export class AdminEditProfileModalComponent {
       return;
     }
 
-    const token = await this.authService.getIdToken();
-    if (!token) {
-      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
-      return;
-    }
-
     if (this.file) {
       const form = new FormData();
       form.append('id', String(id));
@@ -77,12 +71,10 @@ export class AdminEditProfileModalComponent {
 
       this.http.patch(`${environment.apiUrl}/admin/updateProfile`, form, {
         withCredentials: true,
-        headers: { Authorization: `Bearer ${token}` },
       }).subscribe({
         next: (res: any) => {
           const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
           console.log(updated)
-          this.userService.setUser(updated);
           this.savingData = false;
           this.toast.show('Profil frissítve', 'success');
           void this.modalCtrl.dismiss(updated, 'updated');
@@ -98,12 +90,10 @@ export class AdminEditProfileModalComponent {
 
       this.http.patch(`${environment.apiUrl}/admin/updateProfile`, payload, {
         withCredentials: true,
-        headers: { Authorization: `Bearer ${token}` },
       }).subscribe({
         next: (res: any) => {
           const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
           console.log(updated)
-          this.userService.setUser(updated);
           this.savingData = false;
           this.toast.show('Profil frissítve', 'success');
           void this.modalCtrl.dismiss(updated, 'updated');

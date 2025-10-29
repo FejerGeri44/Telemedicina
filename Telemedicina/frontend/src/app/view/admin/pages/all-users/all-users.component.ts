@@ -38,7 +38,7 @@ type UserSortKey = 'name' | 'role' | 'createdAt';
   ],
   templateUrl: './all-users.component.html',
   standalone: true,
-  styleUrl: './all-users.component.css'
+  styleUrl: './all-users.component.scss'
 })
 export class AllUsersComponent implements OnInit{
   patients: PatientItem[] = [];

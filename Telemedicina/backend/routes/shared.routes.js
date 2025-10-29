@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const sharedController = require('../controllers/shared.controller');
-const authenticateToken = require('../middleware/firebaseAuth');
+const { authGuard } = require('../middleware/auth.guard');
 
-router.post('/sendMessage', authenticateToken, sharedController.sendMessage);
-router.post('/getMyMessages', authenticateToken, sharedController.getMyMessages);
-router.post('/deleteConversation', authenticateToken, sharedController.deleteConversation);
-router.post('/mark-conversation-as-read', authenticateToken, sharedController.markConversationAsRead);
-router.post('/getUnreadMessages', authenticateToken, sharedController.getUnreadMessages);
-router.post('/system-messages-for-me', authenticateToken, sharedController.getSystemMessagesForMe);
+router.post('/sendMessage', authGuard, sharedController.sendMessage);
+router.post('/getMyMessages', authGuard, sharedController.getMyMessages);
+router.post('/deleteConversation', authGuard, sharedController.deleteConversation);
+router.post('/mark-conversation-as-read', authGuard, sharedController.markConversationAsRead);
+router.post('/getUnreadMessages', authGuard, sharedController.getUnreadMessages);
+router.post('/system-messages-for-me', authGuard, sharedController.getSystemMessagesForMe);
 
 module.exports = router;

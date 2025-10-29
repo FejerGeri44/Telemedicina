@@ -14,19 +14,23 @@
   <section class="epm-header">
     <div class="epm-avatar">
       <img
-        [src]="tempPreviewUrl || user?.user?.pictureUrl"
+        ngSrc="{{tempPreviewUrl || user.user.pictureUrl}}"
         alt="Profilkép"
         class="avatar-img"
         draggable="false"
-      />
+        fill/>
       <label class="avatar-edit">
         <ion-icon name="camera"></ion-icon>
-        <input type="file" hidden (change)="onFileSelected($event)" accept="image/*" />
+        <input
+          type="file"
+          hidden
+          (change)="onFileSelected($event)"
+          accept="image/*" />
       </label>
     </div>
     <div class="epm-headline">
-      <h2>Dr. {{ user?.user?.name }}</h2>
-      <p class="muted">{{ user?.user?.email }}</p>
+      <h2>Dr. {{ user.user.name }}</h2>
+      <p class="muted">{{ user.user.email }}</p>
     </div>
   </section>
 
@@ -38,7 +42,7 @@
           class="custom-input"
           type="text"
           [(ngModel)]="editForm.name"
-          [placeholder]="user?.user?.name"
+          [placeholder]="user.user.name"
           fill="outline"
           clearInput>
         </ion-input>
@@ -50,7 +54,7 @@
           class="custom-input"
           type="text"
           [(ngModel)]="editForm.address"
-          [placeholder]="user?.user?.address || 'N/A'"
+          [placeholder]="user.user.address || 'N/A'"
           fill="outline"
           clearInput>
         </ion-input>
@@ -62,7 +66,7 @@
           class="custom-input"
           type="tel"
           [(ngModel)]="editForm.phoneNumber"
-          [placeholder]="formatPhoneNumber(user?.user?.phoneNumber)"
+          [placeholder]="formatPhoneNumber(user.user.phoneNumber)"
           fill="outline"
           clearInput>
         </ion-input>

@@ -30,9 +30,7 @@
       }
     ]
   },
-  "intents": [
-
-  ],
+  "intents": [],
   "fallback": {
     "suggestionText": "Nem egyértelmű. Finomítsd a kérést (panasz, kezdet, társuló tünetek).",
     "suggestions": [

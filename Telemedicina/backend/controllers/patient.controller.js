@@ -1,189 +1,130 @@
-const {
-  Doctor,
-  User,
-  Patient,
-  Appointment,
-  DoctorRating,
-  sequelize
-} = require('../models');
-const { admin, db, bucket } = require("../config/firebase-config");
-const { nextId } = require('../models/shared/counter');
-const {normalizeField, buildLoggedUser} = require("../utils/loggedUserUpdate");
-const {Timestamp} = require("@google-cloud/firestore/build/src");
-const { FieldPath } = admin.firestore;
-
-exports.getCurrentUser = async (req, res) => {
-  try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'pictureUrl', 'name', 'email', 'role', 'phoneNumber', 'address', 'birthDate'],
-      include: [{
-        model: Patient,
-        attributes: ['id', 'height', 'weight', 'homePhone', 'taj', 'registDate', 'gender']
-      }]
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: 'Felhasználó nem található.' });
-    }
-
-    const userData = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      phoneNumber: user.phoneNumber,
-      address: user.address,
-      birthDate: user.birthDate,
-      pictureUrl: user.pictureUrl
-    };
-
-    const patientData = user.Patient ? {
-      id: user.Patient.id,
-      height: user.Patient.height,
-      weight: user.Patient.weight,
-      homePhone: user.Patient.homePhone,
-      taj: user.Patient.taj,
-      registDate: user.Patient.registDate,
-      gender: user.Patient.gender
-    } : null;
-
-    return res.status(200).json({ user: userData, patient: patientData });
-  } catch (err) {
-    console.error('Hiba a /me route-nál:', err);
-    res.status(500).json({ message: 'Szerverhiba.' });
-  }
-};
-
-exports.getPatientTags = async (req, res) => {
-  try {
-    const { patientId } = req.query;
-    if (!patientId) return res.status(400).json({ message: 'Missing patientId' });
-
-    const snap = await db
-      .collection('patientTags')
-      .where('patient_id', '==', patientId)
-      .get();
-
-    const tags = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    return res.json(tags);
-  } catch (err) {
-    console.error('❌ getPatientTags error:', err);
-    return res.status(500).json({ message: 'Server error' });
-  }
-};
+const { db } = require("../config/db.config");
+const { supabaseAdmin } = require('../utils/supabaseAdmin');
+const {buildProfile} = require("../utils/profileBuilder");
+const PatientTagRepository = require("../repositories/patientTag.repository");
 
 exports.updateProfile = async (req, res) => {
   try {
-    let { id, tags, ...updateFields } = req.body;
+    const { id, tags, ...updateFields } = req.body;
     if (!id) return res.status(400).json({ message: 'Missing user id' });
-
     const userId = String(id);
 
-    const userRef = db.collection('users').doc(userId);
-    const userSnap = await userRef.get();
-    if (!userSnap.exists) {
-      return res.status(404).json({ message: 'User not found' });
+    let signedUrlToSave = null;
+    let storagePath = null;
+
+    if (req.file?.buffer) {
+      const ext = '.jpg';
+      const contentType = 'image/jpeg';
+      const filePath = `${userId}${ext}`;
+
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from('user-profilePictures')
+        .upload(filePath, req.file.buffer, {
+          upsert: true,
+          contentType,
+          cacheControl: '3600',
+        });
+      if (uploadError) {
+        console.error('❌ Supabase upload error:', uploadError);
+        return res.status(500).json({ message: 'Kép feltöltése sikertelen.' });
+      }
+
+      storagePath = filePath;
+
+      const expiresIn = 7 * 24 * 60 * 60;
+      const { data, error } = await supabaseAdmin.storage
+        .from('user-profilePictures')
+        .createSignedUrl(filePath, expiresIn);
+
+      if (error) {
+        console.error('❌ Signed URL create error:', error);
+        return res.status(500).json({ message: 'Signed URL generálása sikertelen.' });
+      }
+
+      signedUrlToSave = data.signedUrl;
     }
 
-    const patientsCol = db.collection('patients');
-    const existingPatientSnap = await patientsCol
-      .where('userId', '==', userId)
-      .limit(1)
-      .get();
-
-    if (existingPatientSnap.empty) {
-      return res.status(404).json({ message: 'Doctor profile not found' });
-    }
-    const patientRef = existingPatientSnap.docs[0].ref;
-
-    const userAllowed    = ['name', 'address', 'phoneNumber'];
+    const userAllowed = ['name', 'address', 'phoneNumber'];
     const patientAllowed = ['gender', 'height', 'weight', 'homePhone'];
 
     const userFields = {};
     const patientFields = {};
 
     for (const k of userAllowed) {
-      if (updateFields[k] !== undefined) {
-        let v = updateFields[k];
-        v = normalizeField(v);
-        if (v !== undefined) userFields[k] = v;
-      }
+      if (updateFields[k] !== undefined) userFields[k] = updateFields[k];
     }
     for (const k of patientAllowed) {
       if (updateFields[k] !== undefined) {
-        let v = updateFields[k];
-        if (k === 'height' || k === 'weight') v = normalizeNumberField(v);
-        else v = normalizeField(v);
-        if (v !== undefined) patientFields[k] = v;
+        if (k === 'height' || k === 'weight') {
+          const n = Number(updateFields[k]);
+          patientFields[k] = Number.isFinite(n) ? n : null;
+        } else {
+          patientFields[k] = updateFields[k];
+        }
       }
     }
+
+    if (signedUrlToSave) userFields.pictureUrl = signedUrlToSave;
+
+    if (Object.keys(userFields).length) {
+      const { error } = await supabaseAdmin.from('users').update(userFields).eq('id', userId);
+      if (error) throw error;
+    }
+    if (Object.keys(patientFields).length) {
+      const { error } = await supabaseAdmin.from('patients').update(patientFields).eq('userId', userId);
+      if (error) throw error;
+    }
+
+    const { data: patientRow, error: patErr } = await supabaseAdmin
+      .from('patients')
+      .select('id')
+      .eq('userId', userId)
+      .single();
+
+    if (patErr || !patientRow) {
+      console.error('❌ Patient not found for userId:', userId, patErr);
+      return res.status(400).json({ message: 'Nincs patient rekord ehhez a userhez.' });
+    }
+
+    const patientId = patientRow.id;
 
     let tagsParsed = tags;
-    if (typeof tags === 'string') {
-      try { tagsParsed = JSON.parse(tags); } catch (_) { tagsParsed = null; }
+    if (typeof tagsParsed === 'string') {
+      try { tagsParsed = JSON.parse(tagsParsed); } catch { tagsParsed = null; }
     }
-
     if (Array.isArray(tagsParsed)) {
-      const toCreate = tagsParsed
-        .filter(tg => tg && tg.name && tg.value)
-        .map(tg => ({
-          tag_name: String(tg.name).trim(),
-          tag_value: String(tg.value).trim(),
+      const cleaned = tagsParsed
+        .filter(t => t && t.name && t.value)
+        .map(t => ({
+          tagName: String(t.name).trim(),
+          tagValue: String(t.value).trim()
         }));
 
-      const tagsColName = 'patientTags';
-      const existingSnap = await db
-        .collection(tagsColName)
-        .where('patient_id', '==', Number(id))
-        .get();
-
-      if (!existingSnap.empty) {
-        const delBatch = db.batch();
-        existingSnap.forEach(doc => delBatch.delete(doc.ref));
-        await delBatch.commit();
-      }
-
-      for (const docData of toCreate) {
-        const newId = await nextId(tagsColName);
-        const ref = db.collection(tagsColName).doc(String(newId));
-        await ref.set({
-          id: newId,
-          patient_id: Number(id),
-          tag_name: docData.tag_name,
-          tag_value: docData.tag_value
-        });
-      }
+      await PatientTagRepository.replaceForPatient(patientId, cleaned);
     }
 
-    if (req.file && req.file.buffer) {
-      const objectPath = `user-profilePictures/${userId}`;
-      const file = bucket.file(objectPath);
+    const { data: userRow, error: fetchErr } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (fetchErr) throw fetchErr;
+    if (!userRow) return res.status(404).json({ message: 'User not found' });
 
-      await file.save(req.file.buffer, {
-        resumable: false,
-        contentType: req.file.mimetype,
-        metadata: { cacheControl: 'public, max-age=31536000' }
-      });
+    const { user: u, related } = await buildProfile(userRow);
+    const loggedUser = { user: u, related };
 
-      await file.makePublic();
-
-      const cacheBuster = Date.now();
-      userFields.pictureUrl = `https://storage.googleapis.com/${bucket.name}/${objectPath}?v=${cacheBuster}`;
-    }
-
-    const batch = db.batch();
-
-    if (Object.keys(userFields).length > 0)  batch.update(userRef, userFields);
-    if (Object.keys(patientFields).length > 0) batch.update(patientRef, patientFields);
-    await batch.commit();
-
-    const loggedUser = await buildLoggedUser(db, userId);
-    return res.json({ updated: loggedUser });
+    return res.status(200).json({
+      user: loggedUser,
+      picture: {
+        path: storagePath,
+        url: userRow.pictureUrl
+      }
+    });
 
   } catch (error) {
     console.error('❌ Error updating profile:', error);
-    return res.status(500).json({ message: 'Server error', error: String(error) });
+    return res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -498,88 +439,6 @@ exports.loadMyAppointments = async (req, res) => {
   }
 };
 
-exports.getDoctorCardData = async (req, res) => {
-  const { doctorId } = req.body;
-
-  if (!doctorId) {
-    return res.status(400).json({ error: 'Hiányzó doctorId.' });
-  }
-
-  try {
-    const doctor = await Doctor.findOne({
-      where: { id: doctorId },
-      attributes: ['speciality'],
-      include: [{
-        model: User,
-        attributes: ['name', 'pictureUrl']
-      }]
-    });
-
-    if (!doctor || !doctor.User) {
-      return res.status(404).json({ error: 'Orvos nem található.' });
-    }
-
-    return res.status(200).json({ pictureUrl: doctor.User.pictureUrl, name: doctor.User.name, speciality: doctor.speciality });
-  } catch (err) {
-    console.error('❌ Hiba a doctor kép lekérdezésénél:', err);
-    return res.status(500).json({ error: 'Szerverhiba.' });
-  }
-};
-
-exports.loadMyRegisteredAppointments = async (req, res) => {
-  try {
-    const patient = await Patient.findOne({ where: { userId: req.user.id } });
-    if (!patient) {
-      return res.status(404).json({ message: 'Páciens nem található.' });
-    }
-
-    const rows = await Appointment.findAll({
-      where: { patient_id: patient.id },
-      order: [['from', 'ASC']],
-      attributes: ['id', 'from', 'to', 'status'],
-      include: [{
-        model: Doctor,
-        attributes: ['id', 'speciality', 'introduction', 'avgRating', 'registDate', 'userId'],
-        include: [{
-          model: User,
-          attributes: ['id', 'name', 'email', 'role', 'phoneNumber', 'address', 'birthDate', 'pictureUrl']
-        }]
-      }]
-    });
-
-    const result = rows.map(appt => ({
-      id: appt.id,
-      from: new Date(appt.from).toISOString(),
-      to: new Date(appt.to).toISOString(),
-      status: appt.status,
-      doctor: {
-        user: {
-          id: appt.Doctor?.User?.id,
-          name: appt.Doctor?.User?.name,
-          email: appt.Doctor?.User?.email,
-          role: appt.Doctor?.User?.role,
-          phoneNumber: appt.Doctor?.User?.phoneNumber,
-          address: appt.Doctor?.User?.address,
-          birthDate: appt.Doctor?.User?.birthDate,
-          pictureUrl: appt.Doctor?.User?.pictureUrl
-        },
-        doctor: {
-          id: appt.Doctor?.id,
-          speciality: appt.Doctor?.speciality,
-          introduction: appt.Doctor?.introduction ?? null,
-          avgRating: appt.Doctor?.avgRating ?? null,
-          registDate: appt.Doctor?.registDate ?? null
-        }
-      }
-    }));
-
-    return res.status(200).json(result);
-  } catch (err) {
-    console.error('❌ Hiba az időpontok lekérésekor:', err);
-    return res.status(500).json({ message: 'Szerverhiba.' });
-  }
-};
-
 exports.cancelAppointment = async (req, res) => {
   try {
     const appointmentId = req.body?.payload;
@@ -611,58 +470,5 @@ exports.cancelAppointment = async (req, res) => {
     console.error('❌ cancelAppointment error:', err);
     const msg = String(err?.message || '');
     return res.status(500).json({ message: 'Szerver hiba', error: msg });
-  }
-};
-
-exports.rateDoctor = async (req, res) => {
-  const t = await sequelize.transaction();
-  try {
-    const { doctorId, value } = req.body;
-
-    const doctor_id = parseInt(doctorId, 10);
-    const val = Number(value);
-    if (!Number.isInteger(doctor_id) || !Number.isInteger(val) || val < 1 || val > 5) {
-      await t.rollback();
-      return res.status(400).json({ message: 'Érvénytelen kérés: doctorId egész szám, value 1..5 egész.' });
-    }
-
-    const userId = req.user?.id;
-
-    const patient = await Patient.findOne({ where: { userId }, transaction: t });
-    if (!patient) {
-      await t.rollback();
-      return res.status(403).json({ message: 'Csak páciens értékelhet.' });
-    }
-
-    const doctor = await Doctor.findByPk(doctor_id, { transaction: t });
-    if (!doctor) {
-      await t.rollback();
-      return res.status(404).json({ message: 'Orvos nem található.' });
-    }
-
-    await DoctorRating.upsert({
-      doctor_id,
-      patient_id: patient.id,
-      value: val
-    }, { transaction: t });
-
-    const row = await DoctorRating.findOne({
-      where: { doctor_id },
-      attributes: [
-        [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.col('value')), 2), 'avg']
-      ],
-      raw: true,
-      transaction: t
-    });
-    const avg = row?.avg != null ? Number(row.avg) : null;
-
-    await Doctor.update({ avgRating: avg }, { where: { id: doctor_id }, transaction: t });
-
-    await t.commit();
-    return res.json({ ok: true, avg });
-  } catch (err) {
-    await t.rollback();
-    console.error('❌ Értékelés mentési hiba:', err);
-    return res.status(500).json({ message: 'Szerverhiba az értékelés mentésekor.' });
   }
 };

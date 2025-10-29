@@ -18,6 +18,9 @@
     "firebase": "^12.4.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.0",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
+    "postgres": "^3.4.7",
     "sequelize": "^6.37.7"
   }
 }

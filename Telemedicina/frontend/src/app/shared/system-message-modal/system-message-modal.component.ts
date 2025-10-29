@@ -13,7 +13,7 @@ import {NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from '@angular/common';
   ],
   templateUrl: './system-message-modal.component.html',
   standalone: true,
-  styleUrl: './system-message-modal.component.css'
+  styleUrl: './system-message-modal.component.scss'
 })
 export class SystemMessageModalComponent {
   @Input() messages: any[] = [];

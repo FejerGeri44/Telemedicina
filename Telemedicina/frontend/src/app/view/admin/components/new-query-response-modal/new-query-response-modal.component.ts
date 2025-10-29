@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {FormsModule, NgForm, ReactiveFormsModule} from '@angular/forms';
 import {IonicModule, ModalController} from '@ionic/angular';
-import {NgForOf, NgIf} from '@angular/common';
+import {NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 
@@ -12,14 +12,13 @@ type IntentForm   = { id: number | null; patterns: string; response: string };
   selector: 'app-new-query-response-modal',
   imports: [
     IonicModule,
-    NgForOf,
     NgIf,
     ReactiveFormsModule,
     FormsModule
   ],
   templateUrl: './new-query-response-modal.component.html',
   standalone: true,
-  styleUrl: './new-query-response-modal.component.css'
+  styleUrl: './new-query-response-modal.component.scss'
 })
 export class NewQueryResponseModalComponent {
   @Input({ required: true }) kind!: UpdateKind;

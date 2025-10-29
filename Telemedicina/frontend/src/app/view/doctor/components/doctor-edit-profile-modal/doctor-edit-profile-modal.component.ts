@@ -8,7 +8,8 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {environment} from '../../../../../../../backend/config/enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../shared/user.service';
-import {AuthService} from '../../../../shared/auth.service';
+import {NgOptimizedImage} from '@angular/common';
+import {mapLoggedToItem} from '../../../../shared/user.mapper';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -17,8 +18,9 @@ import {AuthService} from '../../../../shared/auth.service';
   imports: [
     IonicModule,
     FormsModule,
+    NgOptimizedImage,
   ],
-  styleUrls: ['./doctor-edit-profile-modal.component.css']
+  styleUrls: ['./doctor-edit-profile-modal.component.scss']
 })
 export class DoctorEditProfileModalComponent {
   @Input() user!: DoctorItem;
@@ -37,7 +39,6 @@ export class DoctorEditProfileModalComponent {
     private modalCtrl: ModalController,
     private http: HttpClient,
     private userService: UserService,
-    private authService: AuthService,
     private toast: ToastService
   ) {}
 
@@ -47,74 +48,52 @@ export class DoctorEditProfileModalComponent {
 
   async save() {
     this.savingData = true;
-    const modifiedFields = this.getModifiedFields();
 
-    if (Object.keys(modifiedFields).length === 0 && !this.file) {
-      this.toast.show('Nincs kitöltve módosítandó mező!', 'warning');
-      return;
-    }
+    const modified = this.getModifiedFields();
 
     const id = this.user?.user?.id;
     if (!id) {
-      console.error('❌ Nincs felhasználó ID a payloadban!');
+      this.toast.show('Nincs user ID', 'danger');
+      this.savingData = false;
       return;
     }
 
-    const token = await this.authService.getIdToken();
-    if (!token) {
-      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
+    if (!this.file && Object.keys(modified).length === 0) {
+      this.toast.show('Nincs módosítandó mező.', 'warning');
+      this.savingData = false;
       return;
     }
+
+    const form = new FormData();
+    form.append('id', String(id));
+
+    Object.entries(modified).forEach(([k, v]) => {
+      form.append(k, v != null ? String(v) : '');
+    });
 
     if (this.file) {
-      const form = new FormData();
-      form.append('id', String(id));
-
-      Object.entries(modifiedFields).forEach(([k, v]) => {
-        form.append(k, typeof v === 'number' ? String(v) : (v ?? ''));
-      });
-
       form.append('picture', this.file, this.file.name);
-
-      this.http.patch(`${environment.apiUrl}/doctor/updateProfile`, form, {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${token}` },
-      }).subscribe({
-        next: (res: any) => {
-          const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
-          console.log(updated)
-          this.userService.setUser(updated);
-          this.savingData = false;
-          this.toast.show('Profil frissítve', 'success');
-          void this.modalCtrl.dismiss(updated, 'updated');
-        },
-        error: (err) => {
-          console.error('❌ Mentési hiba:', err);
-          this.toast.show('Mentés közben hiba történt.', 'danger');
-        }
-      });
-
-    } else {
-      const payload: any = { id, ...modifiedFields };
-
-      this.http.patch(`${environment.apiUrl}/doctor/updateProfile`, payload, {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${token}` },
-      }).subscribe({
-        next: (res: any) => {
-          const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
-          console.log(updated)
-          this.userService.setUser(updated);
-          this.savingData = false;
-          this.toast.show('Profil frissítve', 'success');
-          void this.modalCtrl.dismiss(updated, 'updated');
-        },
-        error: (err) => {
-          console.error('❌ Mentési hiba:', err);
-          this.toast.show('Mentés közben hiba történt.', 'danger');
-        }
-      });
     }
+
+    this.http
+      .patch(`${environment.apiUrl}/doctor/updateProfile`, form, { withCredentials: true })
+      .subscribe({
+        next: (res: any) => {
+          const logged: LoggedUser = (res?.user ?? res?.updated ?? res) as LoggedUser;
+
+          const updatedFrontend = mapLoggedToItem(logged);
+          this.userService.setUser(updatedFrontend);
+
+          this.savingData = false;
+          this.toast.show('Profil frissítve', 'success');
+          void this.modalCtrl.dismiss({ user: updatedFrontend }, 'updated');
+        },
+        error: (err) => {
+          console.error('❌ Mentési hiba:', err);
+          this.savingData = false;
+          this.toast.show('Mentés közben hiba történt.', 'danger');
+        },
+      });
   }
 
   onFileSelected(event: Event): void {

@@ -6,9 +6,9 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 import {NgForOf, NgIf} from '@angular/common';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {environment} from '../../../../../../../backend/config/enviroment';
-import {AuthService} from '../../../../shared/auth.service';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../shared/user.service';
+import {mapLoggedToItem} from '../../../../shared/user.mapper';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -20,7 +20,7 @@ import {UserService} from '../../../../shared/user.service';
     NgIf,
     NgForOf
   ],
-  styleUrls: ['./patient-edit-profile-modal.component.css']
+  styleUrls: ['./patient-edit-profile-modal.component.scss']
 })
 export class PatientEditProfileModalComponent {
   @Input() user!: PatientItem;
@@ -60,7 +60,6 @@ export class PatientEditProfileModalComponent {
     private modalCtrl: ModalController,
     private http: HttpClient,
     private userService: UserService,
-    private authService: AuthService,
     private toast: ToastService
   ) {}
 
@@ -70,15 +69,12 @@ export class PatientEditProfileModalComponent {
     this.newTag.value = '';
   }
 
-  // hozzáadható-e az aktuális új tag
   canAddTag(): boolean {
     if (!this.newTag.key || !this.newTag.value) return false;
 
-    // pl. vértípus csak egyszer legyen
     return !(this.newTag.key === 'bloodType' && this.editForm.tagsDraft.some(t => t.key === 'bloodType'));
   }
 
-  // új tag hozzáadása a draft listához
   addTag() {
     if (!this.canAddTag()) return;
     const value = String(this.newTag.value).trim();
@@ -92,12 +88,10 @@ export class PatientEditProfileModalComponent {
     this.resetNewTag();
   }
 
-  // tag törlése
   removeTag(index: number) {
     this.editForm.tagsDraft.splice(index, 1);
   }
 
-  // új tag mezők törlése
   resetNewTag() {
     this.newTag = { key: '', label: '', value: '' };
     this.currentTagDef = null;
@@ -105,79 +99,59 @@ export class PatientEditProfileModalComponent {
 
   async save() {
     this.savingData = true;
-    const modifiedFields = this.getModifiedFields();
 
+    const modified = this.getModifiedFields();
     const tags = (this.editForm.tagsDraft || [])
       .filter((t: any) => t && t.label && t.value)
       .map((t: any) => ({ name: String(t.label).trim(), value: String(t.value).trim() }));
 
-    if (Object.keys(modifiedFields).length === 0 && tags.length === 0 && !this.file) {
-      this.toast.show('Nincs kitöltve módosítandó mező!', 'warning');
-      return;
-    }
-
     const id = this.user?.user?.id;
     if (!id) {
-      console.error('❌ Nincs felhasználó ID a payloadban!');
+      this.toast.show('Nincs user ID', 'danger');
+      this.savingData = false;
       return;
     }
 
-    const token = await this.authService.getIdToken();
-    if (!token) {
-      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
+    if (!this.file && Object.keys(modified).length === 0 && tags.length === 0) {
+      this.toast.show('Nincs módosítandó mező.', 'warning');
+      this.savingData = false;
       return;
+    }
+
+    const form = new FormData();
+    form.append('id', String(id));
+
+    Object.entries(modified).forEach(([k, v]) => {
+      form.append(k, v != null ? String(v) : '');
+    });
+
+    if (tags.length > 0) {
+      form.append('tags', JSON.stringify(tags));
     }
 
     if (this.file) {
-      const form = new FormData();
-      form.append('id', String(id));
-
-      Object.entries(modifiedFields).forEach(([k, v]) => {
-        form.append(k, typeof v === 'number' ? String(v) : (v ?? ''));
-      });
-
-      if (tags.length > 0) form.append('tags', JSON.stringify(tags));
-
       form.append('picture', this.file, this.file.name);
-
-      this.http.patch(`${environment.apiUrl}/patient/updateProfile`, form, {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${token}` },
-      }).subscribe({
-        next: (res: any) => {
-          const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
-          this.userService.setUser(updated);
-          this.savingData = false;
-          this.toast.show('Profil frissítve', 'success');
-          void this.modalCtrl.dismiss(updated, 'updated');
-        },
-        error: (err) => {
-          console.error('❌ Mentési hiba:', err);
-          this.toast.show('Mentés közben hiba történt.', 'danger');
-        }
-      });
-
-    } else {
-      const payload: any = { id, ...modifiedFields };
-      if (tags.length > 0) payload.tags = tags;
-
-      this.http.patch(`${environment.apiUrl}/patient/updateProfile`, payload, {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${token}` },
-      }).subscribe({
-        next: (res: any) => {
-          const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
-          this.userService.setUser(updated);
-          this.savingData = false;
-          this.toast.show('Profil frissítve', 'success');
-          void this.modalCtrl.dismiss(updated, 'updated');
-        },
-        error: (err) => {
-          console.error('❌ Mentési hiba:', err);
-          this.toast.show('Mentés közben hiba történt.', 'danger');
-        }
-      });
     }
+
+    this.http
+      .patch<{ user: LoggedUser }>(`${environment.apiUrl}/patient/updateProfile`, form, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res) => {
+          const updatedFrontend = mapLoggedToItem(res.user);
+          this.userService.setUser(updatedFrontend);
+
+          this.savingData = false;
+          this.toast.show('Profil frissítve', 'success');
+          void this.modalCtrl.dismiss({ user: updatedFrontend }, 'updated');
+        },
+        error: (err) => {
+          console.error('❌ Mentési hiba:', err);
+          this.savingData = false;
+          this.toast.show('Mentés közben hiba történt.', 'danger');
+        },
+      });
   }
 
   onFileSelected(event: Event): void {

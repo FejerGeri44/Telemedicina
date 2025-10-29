@@ -58,7 +58,7 @@
     <ion-toolbar>
       <ion-input [(ngModel)]="input" placeholder="Írj üzenetet..." (keyup.enter)="send(input); input=''"></ion-input>
       <ion-buttons slot="end">
-        <ion-button (click)="send(input); input=''" [disabled]="!input?.trim()">Küldés</ion-button>
+        <ion-button (click)="send(input); input=''" [disabled]="!input">Küldés</ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-footer>

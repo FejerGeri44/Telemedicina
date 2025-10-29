@@ -1,22 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const patientController = require('../controllers/patient.controller');
-const authenticateToken = require('../middleware/firebaseAuth');
-
+const { authGuard } = require('../middleware/auth.guard');
+const requireRole = require('../middleware/role.guard')
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.patch('/updateProfile', authenticateToken, upload.single('picture'), patientController.updateProfile);
-router.get('/doctors', authenticateToken, patientController.listDoctors);
-router.post('/getDoctorsAppointments', authenticateToken, patientController.getDoctorsAppointments);
-router.post('/registerToAppointment', authenticateToken, patientController.registerToAppointment);
-router.post('/loadMyAppointments', authenticateToken, patientController.loadMyAppointments);
-router.patch('/cancelAppointment', authenticateToken, patientController.cancelAppointment);
-
-router.get('/getPatientMe', authenticateToken, patientController.getCurrentUser);
-router.get('/patient-tags', authenticateToken, patientController.getPatientTags);
-router.post('/getDoctorCardData', authenticateToken, patientController.getDoctorCardData);
-router.get('/loadMyRegisteredAppointments', authenticateToken, patientController.loadMyRegisteredAppointments);
-router.post('/doctorsRating', authenticateToken, patientController.rateDoctor);
+router.patch('/updateProfile', authGuard, requireRole('patient'), upload.single('picture'), patientController.updateProfile);
+router.get('/doctors', authGuard, requireRole('patient'), patientController.listDoctors);
+router.post('/getDoctorsAppointments', authGuard, requireRole('patient'), patientController.getDoctorsAppointments);
+router.post('/registerToAppointment', authGuard, requireRole('patient'), patientController.registerToAppointment);
+router.post('/loadMyAppointments', authGuard, requireRole('patient'), patientController.loadMyAppointments);
+router.patch('/cancelAppointment', authGuard, requireRole('patient'), patientController.cancelAppointment);
 
 module.exports = router;

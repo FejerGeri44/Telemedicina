@@ -1,95 +1,66 @@
 <header class="navbar">
-  <!-- Felső sáv -->
-  <div class="navbar-top">
-    <div class="logo-title">
-      <img src="pictures/logo.png" alt="CareLink" />
-      <span class="site-title">CareLink</span>
-    </div>
+  <ng-container *ngIf="userService.doctor$() | async as user; else navbarSkeleton">
+    <div class="navbar-top">
+      <div class="logo-title">
+        <img src="pictures/logo.png" alt="CareLink" />
+        <span class="site-title">CareLink</span>
+      </div>
 
-    <div class="top-right">
-      <button class="icon-btn notification" (click)="onNotifications()" aria-label="Értesítések">
-        <ion-icon name="notifications"></ion-icon>
+      <div class="top-right">
+        <button class="icon-btn notification" (click)="onNotifications()" aria-label="Értesítések">
+          <ion-icon name="notifications"></ion-icon>
 
-        <!-- Badge csak ha van olvasatlan -->
-        <span *ngIf="unreadCount > 0"
-              class="notif-badge"
-              aria-live="polite"
-              aria-label="Olvasatlan üzenetek száma">
+          <!-- Badge csak ha van olvasatlan -->
+          <span *ngIf="unreadCount > 0"
+                class="notif-badge"
+                aria-live="polite"
+                aria-label="Olvasatlan üzenetek száma">
               {{ unreadCount > 99 ? '99+' : unreadCount }}
         </span>
-      </button>
+        </button>
 
-      <!-- Profil blokk: csak desktopon -->
-      <div class="profile-block desktop-only" (click)="toggleProfileMenu($event)">
-        <img [src]="user?.user?.pictureUrl" alt="Profil" class="profile-picture" draggable="false"/>
-        <div class="profile-info">
-          <span class="name">{{ user?.user?.name }}</span>
-          <span class="role">{{ user?.user?.role }}</span>
+        <!-- Profil blokk: csak desktopon -->
+        <div class="profile-block desktop-only" (click)="toggleProfileMenu($event)">
+          <div class="epm-avatar">
+            <img
+              ngSrc="{{user.user.pictureUrl}}"
+              alt="Profilkép"
+              class="avatar-img"
+              draggable="false"
+              fill/>
+          </div>
+          <div class="profile-info">
+            <span class="name">{{ user.user.name }}</span>
+            <span class="role">{{ user.user.role }}</span>
+          </div>
+          <ion-icon class="chevron" name="chevron-down" [class.open]="profileOpen"></ion-icon>
+          <div class="profile-menu" *ngIf="profileOpen">
+            <button routerLink="/dashboard/doctor">
+              <ion-icon name="person-circle"></ion-icon>
+              <span>Profil</span>
+            </button>
+            <button (click)="confirmLogout()">
+              <ion-icon name="log-out"></ion-icon>
+              <span>Kijelentkezés</span>
+            </button>
+          </div>
         </div>
-        <ion-icon class="chevron" name="chevron-down" [class.open]="profileOpen"></ion-icon>
-        <div class="profile-menu" *ngIf="profileOpen">
-          <button routerLink="/dashboard/doctor">
-            <ion-icon name="person-circle"></ion-icon>
-            <span>Profil</span>
-          </button>
-          <button (click)="confirmLogout()">
-            <ion-icon name="log-out"></ion-icon>
-            <span>Kijelentkezés</span>
-          </button>
-        </div>
+
+        <!-- Mobil menü gomb -->
+        <button class="icon-btn mobile-menu-btn"
+                (click)="toggleMobileMenu()"
+                aria-label="Menü"
+                aria-controls="mobile-drawer"
+                [attr.aria-expanded]="mobileMenuOpen">
+          <ion-icon name="menu"></ion-icon>
+        </button>
       </div>
-
-      <!-- Mobil menü gomb -->
-      <button class="icon-btn mobile-menu-btn"
-              (click)="toggleMobileMenu()"
-              aria-label="Menü"
-              aria-controls="mobile-drawer"
-              [attr.aria-expanded]="mobileMenuOpen">
-        <ion-icon name="menu"></ion-icon>
-      </button>
-    </div>
-  </div>
-
-  <!-- Alsó menüsor: csak desktopon -->
-  <div class="navbar-bottom desktop-only">
-    <ul>
-      <li *ngFor="let item of menuItems"
-          [routerLink]="item.route"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{
-              paths: 'exact',
-              queryParams: 'subset',
-              matrixParams: 'ignored',
-              fragment: 'ignored'
-            }">
-        <ion-icon [name]="item.icon"></ion-icon>
-        <span>{{ item.label }}</span>
-      </li>
-    </ul>
-  </div>
-
-  <!-- Overlay -->
-  <div class="backdrop" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()" aria-hidden="true"></div>
-
-  <!-- Off-canvas drawer -->
-  <aside id="mobile-drawer" class="drawer" [class.open]="mobileMenuOpen">
-    <div class="drawer-header">
-      <div class="user-inline">
-        <img [src]="user?.user?.pictureUrl" class="profile-picture" alt="Profil" draggable="false"/>
-        <div>
-          <div class="name">{{ user?.user?.name }}</div>
-          <div class="role">{{ user?.user?.role }}</div>
-        </div>
-      </div>
-      <button class="icon-btn" (click)="closeMobileMenu()" aria-label="Bezárás">
-        <ion-icon name="close"></ion-icon>
-      </button>
     </div>
 
-    <nav class="drawer-nav">
+    <!-- Alsó menüsor: csak desktopon -->
+    <div class="navbar-bottom desktop-only">
       <ul>
         <li *ngFor="let item of menuItems"
-            (click)="closeMobileMenu()"
             [routerLink]="item.route"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{
@@ -102,17 +73,96 @@
           <span>{{ item.label }}</span>
         </li>
       </ul>
-    </nav>
-
-    <div class="drawer-footer">
-      <button class="drawer-action" routerLink="/dashboard/doctor">
-        <ion-icon name="person-circle"></ion-icon>
-        <span>Profil</span>
-      </button>
-      <button class="drawer-action" (click)="confirmLogout()">
-        <ion-icon name="log-out"></ion-icon>
-        <span>Kijelentkezés</span>
-      </button>
     </div>
-  </aside>
+
+    <!-- Overlay -->
+    <div class="backdrop" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()" aria-hidden="true"></div>
+
+    <!-- Off-canvas drawer -->
+    <aside id="mobile-drawer" class="drawer" [class.open]="mobileMenuOpen">
+      <div class="drawer-header">
+        <div class="user-inline">
+          <div class="epm-avatar">
+            <img
+              ngSrc="{{user.user.pictureUrl}}"
+              alt="Profilkép"
+              class="avatar-img"
+              draggable="false"
+              fill/>
+          </div>
+          <div>
+            <div class="name">{{ user.user.name }}</div>
+            <div class="role">{{ user.user.role }}</div>
+          </div>
+        </div>
+        <button class="icon-btn" (click)="closeMobileMenu()" aria-label="Bezárás">
+          <ion-icon name="close"></ion-icon>
+        </button>
+      </div>
+
+      <nav class="drawer-nav">
+        <ul>
+          <li *ngFor="let item of menuItems"
+              (click)="closeMobileMenu()"
+              [routerLink]="item.route"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{
+              paths: 'exact',
+              queryParams: 'subset',
+              matrixParams: 'ignored',
+              fragment: 'ignored'
+            }">
+            <ion-icon [name]="item.icon"></ion-icon>
+            <span>{{ item.label }}</span>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="drawer-footer">
+        <button class="drawer-action" routerLink="/dashboard/doctor">
+          <ion-icon name="person-circle"></ion-icon>
+          <span>Profil</span>
+        </button>
+        <button class="drawer-action" (click)="confirmLogout()">
+          <ion-icon name="log-out"></ion-icon>
+          <span>Kijelentkezés</span>
+        </button>
+      </div>
+    </aside>
+  </ng-container>
+
+  <ng-template #navbarSkeleton>
+    <div class="navbar-top">
+      <div class="logo-title">
+        <ion-skeleton-text animated style="width:28px;height:28px;border-radius:6px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width:100px;height:20px;border-radius:6px;"></ion-skeleton-text>
+      </div>
+
+      <div class="top-right">
+        <ion-skeleton-text animated style="width:32px;height:32px;border-radius:8px;"></ion-skeleton-text>
+
+        <div class="profile-block desktop-only">
+          <div class="epm-avatar">
+            <ion-skeleton-text animated style="width:32px;height:32px;border-radius:50%;"></ion-skeleton-text>
+          </div>
+          <div class="profile-info">
+            <ion-skeleton-text animated style="width:120px;height:12px;border-radius:6px;margin-bottom:6px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width:60px;height:10px;border-radius:6px;"></ion-skeleton-text>
+          </div>
+          <ion-skeleton-text animated style="width:16px;height:16px;border-radius:4px;"></ion-skeleton-text>
+        </div>
+
+        <ion-skeleton-text class="mobile-menu-btn" animated style="width:32px;height:32px;border-radius:8px;"></ion-skeleton-text>
+      </div>
+    </div>
+
+    <div class="navbar-bottom desktop-only">
+      <ul>
+        <li *ngFor="let _ of [1,2,3,4,5]">
+          <ion-skeleton-text animated style="width:18px;height:18px;border-radius:4px;margin-right:8px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width:80px;height:14px;border-radius:6px;"></ion-skeleton-text>
+        </li>
+      </ul>
+    </div>
+  </ng-template>
 </header>

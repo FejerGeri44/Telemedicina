@@ -25,7 +25,7 @@ import {UserService} from '../../../../shared/user.service';
   ],
   templateUrl: './admin-home.component.html',
   standalone: true,
-  styleUrl: './admin-home.component.css'
+  styleUrl: './admin-home.component.scss'
 })
 export class AdminHomeComponent implements OnInit{
   user!: AdminItem;
@@ -103,11 +103,7 @@ export class AdminHomeComponent implements OnInit{
   }
 
   private getUserData() {
-    const cached = this.userService.getUserAsAdmin();
-    if (cached) {
-      this.user = cached;
-      return;
-    }
+
   }
 
   getAllPatients() {

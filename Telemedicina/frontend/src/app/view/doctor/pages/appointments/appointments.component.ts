@@ -9,9 +9,7 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../shared/user.service';
 import {Appointment, newAppointment} from '../../../../utils/interfaces/appointment.inteface';
-import {AuthService} from '../../../../shared/auth.service';
 import {environment} from '../../../../../../../backend/config/enviroment';
-import {firstValueFrom} from 'rxjs';
 
 registerLocaleData(localeHu);
 
@@ -27,7 +25,7 @@ registerLocaleData(localeHu);
   ],
   templateUrl: './appointments.component.html',
   standalone: true,
-  styleUrl: './appointments.component.css'
+  styleUrl: './appointments.component.scss'
 })
 
 export class AppointmentsComponent implements OnInit{
@@ -55,7 +53,6 @@ export class AppointmentsComponent implements OnInit{
   constructor(
     private http: HttpClient,
     private userService: UserService,
-    private authService: AuthService,
     private cdr: ChangeDetectorRef,
     private alert: AlertService,
     private toast: ToastService
@@ -71,62 +68,70 @@ export class AppointmentsComponent implements OnInit{
   }
 
   private getUserData() {
-    const cached = this.userService.getUserAsDoctor();
-    if (cached) {
-      this.user = cached;
-      return;
-    }
+
   }
 
   async loadAppointments(): Promise<Appointment[] | null> {
-    const token = await this.authService.getIdToken();
-    if (!token) {
-      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
-      return null;
-    }
-    try {
-      this.appointments = await firstValueFrom(
-        this.http.post<Appointment[]>(
-          `${environment.apiUrl}/doctor/myAppointments`,
-          {id: this.user?.doctor?.id},
-          {
-            withCredentials: true,
-            headers: {Authorization: `Bearer ${token}`},
+
+    return new Promise<Appointment[] | null>((resolve) => {
+      this.http.post<Appointment[]>(
+        `${environment.apiUrl}/doctor/myAppointments`,
+        { id: this.user?.doctor?.id },
+      ).subscribe({
+        next: async (appointments) => {
+          this.appointments = appointments;
+          this.appointmentDates = appointments.map(appt => appt.from);
+
+          try {
+            await this.loadPatientNamesForWeek(appointments);
+          } catch (e) {
+            console.error('⚠️ Hiba a páciensek nevének betöltésekor:', e);
           }
-        )
-      );
 
-      this.appointmentDates = this.appointments.map(appt => appt.from);
+          Promise.resolve().then(() => this.cdr?.markForCheck?.());
 
-      await this.loadPatientNamesForWeek(this.appointments);
-
-      return this.appointments;
-    } catch (err) {
-      console.error('❌ Hiba az időpontok lekérésekor:', err);
-      this.toast.show('Nem sikerült betölteni az időpontokat.', 'danger');
-      return null;
-    }
+          resolve(appointments);
+        },
+        error: (err) => {
+          console.error('❌ Hiba az időpontok lekérésekor:', err);
+          this.toast.show('Nem sikerült betölteni az időpontokat.', 'danger');
+          resolve(null);
+        }
+      });
+    });
   }
 
   private async loadPatientNamesForWeek(appts: Appointment[]): Promise<void> {
-    const token = await this.authService.getIdToken();
+
     const patientIds = [...new Set(
       appts.map(a => a.patient_id).filter((x): x is string => !!x)
     )];
+
     if (patientIds.length === 0) {
       this.appointmentUserDataMap = {};
       return;
     }
 
-    const res = await firstValueFrom(
+    return new Promise<void>((resolve) => {
       this.http.post<{ map: Record<string, { userId: number; name: string }> }>(
         `${environment.apiUrl}/doctor/resolvePatientNames`,
         { patientIds },
-        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
-      )
-    );
+      ).subscribe({
+        next: (res) => {
+          this.appointmentUserDataMap = res.map;
 
-    this.appointmentUserDataMap = res.map || {};
+          Promise.resolve().then(() => this.cdr?.markForCheck?.());
+
+          resolve();
+        },
+        error: (err) => {
+          console.error('❌ Hiba a páciensek nevének feloldásakor:', err);
+          this.toast?.show?.('Nem sikerült betölteni a páciensek neveit.', 'danger');
+          this.appointmentUserDataMap = {};
+          resolve();
+        }
+      });
+    });
   }
 
   patientName(appt: { patient_id: string | number }): string {
@@ -314,17 +319,10 @@ export class AppointmentsComponent implements OnInit{
 
     this.savingData = true;
 
-    const token = await this.authService.getIdToken();
-    if (!token) {
-      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
-      return null;
-    }
-
     return new Promise<Appointment | null>((resolve) => {
       this.http.post<Appointment>(
         `${environment.apiUrl}/doctor/addAppointment`,
         appointmentPayload,
-        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
       ).subscribe({
         next: (created) => {
           this.toast.show('Sikeres időpontfelvétel!', 'success');
@@ -368,17 +366,10 @@ export class AppointmentsComponent implements OnInit{
   async deleteAppointment(appointment: Appointment | null): Promise<boolean> {
     if (!appointment) return false;
 
-    const token = await this.authService.getIdToken();
-    if (!token) {
-      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
-      return false;
-    }
-
     return new Promise<boolean>((resolve) => {
       this.http.post<{ deleted: boolean }>(
         `${environment.apiUrl}/doctor/deleteAppointment`,
         { id: appointment.id },
-        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
       ).subscribe({
         next: () => {
           this.toast.show('Sikeres törlés!', 'success');

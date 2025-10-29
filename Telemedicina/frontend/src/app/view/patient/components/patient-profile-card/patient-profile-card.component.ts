@@ -1,6 +1,6 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
-import {NgForOf, NgIf} from '@angular/common';
+import {DatePipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {formatPhoneNumber, formatTaj, getAge} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 
@@ -9,28 +9,19 @@ import {PatientItem} from '../../../../utils/interfaces/patient.interface';
   imports: [
     IonicModule,
     NgForOf,
-    NgIf
+    NgIf,
+    NgOptimizedImage,
+    DatePipe
   ],
   templateUrl: './patient-profile-card.component.html',
   standalone: true,
-  styleUrl: './patient-profile-card.component.css'
+  styleUrl: './patient-profile-card.component.scss'
 })
 export class PatientProfileCardComponent {
   @Input() user!: PatientItem;
   @Input() editable = false;
   @Output() edit = new EventEmitter<void>();
-  get patientAge(): number | null {
-    return getAge(this.user?.patient?.birthDate);
-  }
-  get patientTaj(): string {
-    return formatTaj(this.user?.patient?.taj);
-  }
-  get patientPhoneNumber(): string {
-    return formatPhoneNumber(this.user?.user?.phoneNumber);
-  }
-  get patientHomePhone(): string {
-    return formatPhoneNumber(this.user?.patient?.homePhone);
-  }
+
   iconFor(name: string): string | null {
     const n = (name || '').toLowerCase();
     if (n.includes('vér')) return 'water-outline';
@@ -40,4 +31,8 @@ export class PatientProfileCardComponent {
     if (n.includes('diéta')) return 'leaf-outline';
     return null;
   }
+
+  protected readonly formatPhoneNumber = formatPhoneNumber;
+  protected readonly formatTaj = formatTaj;
+  protected readonly getAge = getAge;
 }

@@ -10,7 +10,7 @@ import {NgClass} from '@angular/common';
       <span>{{ message }}</span>
     </div>
   `,
-  styleUrls: ['./toast.component.css'],
+  styleUrls: ['./toast.component.scss'],
   standalone: true,
   imports: [
     IonicModule,

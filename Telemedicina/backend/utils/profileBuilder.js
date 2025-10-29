@@ -1,7 +1,7 @@
-const patientModel     = require('../models/patient.model');
-const doctorModel      = require('../models/doctor.model');
-const adminModel       = require('../models/admin.model');
-const patientTagModel  = require('../models/patientTag.model');
+const patient     = require('../repositories/patient.repository');
+const doctor      = require('../repositories/doctor.repository');
+const admin       = require('../repositories/admin.repository');
+const patientTagModel  = require('../repositories/patientTag.repository');
 
 function replaceNullWithNA(obj) {
   const out = {};
@@ -35,14 +35,14 @@ async function buildProfile(existingUser) {
   let related = null;
 
   if (existingUser.role === 'patient') {
-    const p = await patientModel.getByUserId(existingUser.id);
+    const p = await patient.getByUserId(existingUser.id);
 
     if (p) {
       const patientBase = { kind: 'patient', ...replaceNullWithNA(p) };
 
       let tags = [];
       try {
-        const rows = await patientTagModel.getPatientTagsByUserId(existingUser.id);
+        const rows = await patientTagModel.getByPatientId(p.id);
         tags = Array.isArray(rows) ? rows.map(mapTagRow) : [];
       } catch (e) {
         console.error('patient tags fetch failed for user:', existingUser.id, e);
@@ -55,11 +55,11 @@ async function buildProfile(existingUser) {
     }
 
   } else if (existingUser.role === 'doctor') {
-    const d = await doctorModel.getByUserId(existingUser.id);
+    const d = await doctor.getByUserId(existingUser.id);
     related = d ? { kind: 'doctor', ...replaceNullWithNA(d) } : null;
 
   } else if (existingUser.role === 'admin') {
-    const a = await adminModel.getByUserId(existingUser.id);
+    const a = await admin.getByUserId(existingUser.id);
     related = a ? { kind: 'admin', ...replaceNullWithNA(a) } : null;
   }
 

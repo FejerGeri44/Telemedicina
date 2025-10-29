@@ -1,14 +1,7 @@
 export const environment = {
-  production: false,
-  firebaseConfig: {
-    apiKey: "AIzaSyBDa4LdX0ZAAHrXNCq6Tq0vuhgmxPMpwZ4",
-    authDomain: "szakdolgozat-8655.firebaseapp.com",
-    projectId: "szakdolgozat-8655",
-    storageBucket: "szakdolgozat-8655.appspot.com",
-    messagingSenderId: "1003822989155",
-    appId: "1:1003822989155:web:791e25f01680c749e89d56",
-    measurementId: "G-5W6SP26142"
-  },
+  production: true,
   apiUrl: 'http://localhost:3000/api',
-  cryptoKey: 'EzValamiTITKOSKulcs123!'
+  supabaseUrl: 'https://ubesundbzjtyxxuwmbgg.supabase.co',
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZXN1bmRiemp0eXh4dXdtYmdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MDUwODUsImV4cCI6MjA3NzA4MTA4NX0.HKqqPqIlNrJGTNqsgLg2YsHwghj3e-HWpCRegrTjBaY',
+  cryptoKey: 'itt_a_supabase_jwt_secret'
 };

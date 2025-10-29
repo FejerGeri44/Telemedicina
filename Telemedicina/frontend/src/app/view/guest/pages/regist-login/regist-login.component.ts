@@ -12,7 +12,7 @@ import { DoctorRegistComponent } from './forms/doctor-regist/doctor-regist.compo
   selector: 'app-regist-login',
   standalone: true,
   templateUrl: './regist-login.component.html',
-  styleUrls: ['./regist-login.component.css'],
+  styleUrls: ['./regist-login.component.scss'],
   imports: [
     CommonModule,
     FormsModule,

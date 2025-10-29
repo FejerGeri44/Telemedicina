@@ -1,14 +1,11 @@
 import {Component, OnInit} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
-import {DatePipe, NgForOf, NgIf} from '@angular/common';
-import {PatientNavbarComponent} from '../../components/patient-navbar/patient-navbar.component';
+import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
-import {RouterLink} from '@angular/router';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {MyAppointment} from '../../../../utils/interfaces/appointment.inteface';
 import {environment} from '../../../../../../../backend/config/enviroment';
-import {AuthService} from '../../../../shared/auth.service';
 import {UserService} from '../../../../shared/user.service';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {formatAppointmentTime} from '../../../../utils/formatProfileData';
@@ -19,13 +16,11 @@ import {formatAppointmentTime} from '../../../../utils/formatProfileData';
     IonicModule,
     NgForOf,
     NgIf,
-    PatientNavbarComponent,
-    DatePipe,
-    RouterLink
+    NgOptimizedImage
   ],
   templateUrl: './appointment-list.component.html',
   standalone: true,
-  styleUrl: './appointment-list.component.css'
+  styleUrl: './appointment-list.component.scss'
 })
 
 export class AppointmentListComponent implements OnInit {
@@ -37,7 +32,6 @@ export class AppointmentListComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService,
     private userService: UserService,
     private alertService: AlertService,
     private toast: ToastService
@@ -49,22 +43,11 @@ export class AppointmentListComponent implements OnInit {
   }
 
   private getUserData() {
-    const cached = this.userService.getUserAsPatient();
-    if (cached) {
-      this.user = cached;
-      return;
-    }
+
   }
 
   async fetchAppointments(): Promise<void> {
     this.isLoading = true;
-
-    const token = await this.authService.getIdToken();
-    if (!token) {
-      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
-      this.isLoading = false;
-      return;
-    }
 
     const payload = this.user?.patient?.id;
 
@@ -73,7 +56,6 @@ export class AppointmentListComponent implements OnInit {
       { payload },
       {
         withCredentials: true,
-        headers: { Authorization: `Bearer ${token}` }
       }
     ).subscribe({
       next: (res) => {
@@ -113,15 +95,12 @@ export class AppointmentListComponent implements OnInit {
   }
 
   async cancelAppointment(appointment: MyAppointment): Promise<void | null> {
-    const token = await this.authService.getIdToken();
-    if (!token) return null;
 
     this.http.patch<{ message: string }>(
       `${environment.apiUrl}/patient/cancelAppointment`,
       {payload: appointment.id},
       {
-        withCredentials: true,
-        headers: {Authorization: `Bearer ${token}`}
+        withCredentials: true
       }
     ).subscribe({
       next: () => {

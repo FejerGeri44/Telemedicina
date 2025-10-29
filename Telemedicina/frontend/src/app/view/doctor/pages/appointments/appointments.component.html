@@ -46,7 +46,7 @@
         (didDismiss)="openMonthPicker = false">
         <ng-template>
           <ion-datetime
-            [value]="selectedDate?.toISOString()"
+            [value]="selectedDate.toISOString()"
             presentation="month-year"
             [showDefaultButtons]="true"
             locale="hu-HU"

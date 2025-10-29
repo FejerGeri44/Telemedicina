@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { RouterOutlet } from '@angular/router';
-
+import {UserService} from './shared/user.service';
 
 @Component({
   selector: 'app-root',
@@ -12,4 +12,9 @@ import { RouterOutlet } from '@angular/router';
     RouterOutlet
   ]
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(private userService: UserService) {}
+  ngOnInit() {
+    this.userService.refresh().subscribe();
+  }
+}

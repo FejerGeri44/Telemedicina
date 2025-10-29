@@ -1,0 +1,261 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 20px;
+  width: 90%;
+  flex-direction: column;
+  margin: 0 auto;
+  justify-content: center;
+  align-content: center;
+  padding: 3%;
+}
+
+.appointments,
+.results,
+.prescriptions {
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  background-color: #ffffff;
+}
+
+.profile-card {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.appointments {
+  grid-column: 1 / 2;
+  grid-row: 2;
+  user-select: none;
+}
+
+.results {
+  grid-column: 2 / 3;
+  grid-row: 2;
+}
+
+.prescriptions {
+  grid-column: 1 / -1;
+  grid-row: 3;
+}
+
+h2 {
+  margin-bottom: 0;
+}
+
+.profile-card {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 30px;
+  margin-bottom: 15px;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.expand-btn {
+  --background: transparent;
+  --box-shadow: none;
+  --padding-start: 0;
+  --padding-end: 0;
+  --color: var(--secondary);
+  font-size: 1.5rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.expand-btn:hover {
+  scale: 1.1;
+}
+
+.appointments-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.appointment-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f7f7f7;
+  border-radius: 15px;
+  padding: 10px 15px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+}
+
+.appointment-left {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #e6f4ff;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  margin-right: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.avatar .doctor-image {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #fff;
+  box-shadow: 0 0 0 3px #e6f4ff;
+}
+
+.doctor-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.doctor-name {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.doctor-speciality {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.appointment-date {
+  display: flex;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.appointment-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 40px);
+}
+
+.appointment-count span {
+  font-size: 3rem;
+  color: var(--secondary);
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .data-right::before {
+    display: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .profile-card,
+  .appointments,
+  .results,
+  .prescriptions {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+.profile-card .card {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  margin: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* HEADER */
+.profile-card .pc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.profile-card .pc-edit-top { display: inline-flex; margin-left: auto; margin-bottom: 50px; }
+.profile-card .pc-edit-bottom-wrap { display: none; }
+
+.profile-card .pc-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+.profile-card .pc-avatar {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #e6f4ff;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+.profile-card .pc-name { min-width: 0; }
+.profile-card .pc-name .pc-fullname { font-weight: 700; font-size: 1.125rem; line-height: 1.2; }
+.profile-card .pc-name .pc-role     { font-size: .9rem; color: #7a8aa0; }
+
+/* RÉSZLETEK */
+.profile-card .pc-details {
+  display: grid;
+  grid-template-columns: 1fr; /* mobil */
+  gap: 12px 16px;
+  padding: 12px 0;
+}
+.profile-card .pc-item { display: flex; gap: 8px; align-items: flex-start; min-width: 0; }
+.profile-card .pc-item .label { color: #6b7785; font-weight: 600; white-space: nowrap; }
+.profile-card .pc-item .value { color: #1e2a3a; overflow-wrap: anywhere; min-width: 0; }
+
+/* CHIPEK helye (spacing egyezzen) */
+.profile-card .pc-chips { display: flex; flex-wrap: wrap; gap: 10px; padding: 8px 0 12px; }
+
+/* STATOK */
+.profile-card .pc-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,.08);
+}
+.profile-card .pc-stats .stat  { display: flex; gap: 8px; justify-content: flex-start; }
+.profile-card .pc-stats .label { color: #6b7785; font-weight: 600; }
+.profile-card .pc-stats .value { color: #1e2a3a; overflow-wrap: anywhere; }
+
+/* --- BREAKPOINTOK (pont mint a komponensben) --- */
+@media (min-width: 600px) {
+  .profile-card .pc-details { grid-template-columns: repeat(2, 1fr); }
+  .profile-card .pc-stats   { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1000px) {
+  .profile-card .pc-header { flex-direction: row; align-items: center; justify-content: space-between; }
+  .profile-card .pc-avatar { width: 96px; height: 96px; }
+  .profile-card .pc-name .pc-fullname { font-size: 1.35rem; }
+  .profile-card .pc-details { grid-template-columns: repeat(3, 1fr); }
+  .profile-card .pc-stats   { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 999px) {
+  .profile-card .pc-edit-top { display: none !important; }
+  .profile-card .pc-edit-bottom-wrap { display: flex; justify-content: flex-end; margin-top: 12px; }
+  .profile-card .pc-edit-bottom { width: 100%; }
+}

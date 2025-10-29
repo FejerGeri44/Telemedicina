@@ -1,18 +1,19 @@
 import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
-import {NgIf} from '@angular/common';
+import {NgIf, NgOptimizedImage} from '@angular/common';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 
 @Component({
   selector: 'app-admin-profile-card',
-  imports: [
-    IonicModule,
-    NgIf
-  ],
+    imports: [
+        IonicModule,
+        NgIf,
+        NgOptimizedImage
+    ],
   templateUrl: './admin-profile-card.component.html',
   standalone: true,
-  styleUrl: './admin-profile-card.component.css'
+  styleUrl: './admin-profile-card.component.scss'
 })
 export class AdminProfileCardComponent {
   @Input() user!: AdminItem;

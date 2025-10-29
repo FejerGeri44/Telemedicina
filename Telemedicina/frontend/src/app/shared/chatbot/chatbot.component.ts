@@ -17,7 +17,7 @@ import {QuickStart, Suggestion} from '../../utils/interfaces/AIInterfaces';
     FormsModule,
     NgClass
   ],
-  styleUrls: ['./chatbot.component.css']
+  styleUrls: ['./chatbot.component.scss']
 })
 export class ChatbotComponent implements OnInit {
   @Input({ required: true }) audience!: Audience;

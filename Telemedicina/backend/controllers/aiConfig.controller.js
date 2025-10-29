@@ -1,6 +1,5 @@
 const PatientFile = 'chatbots/patient-assistant/patient-assistant.json';
 const DoctorFile = 'chatbots/doctor-assistant/doctor-assistant.json';
-const admin = require('firebase-admin');
 
 exports.getPatientAssistantConfig = async (req, res) => {
   try {

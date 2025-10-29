@@ -22,7 +22,7 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
   ],
   templateUrl: './patient-messages.component.html',
   standalone: true,
-  styleUrl: './patient-messages.component.css'
+  styleUrl: './patient-messages.component.scss'
 })
 export class PatientMessagesComponent implements OnInit, OnDestroy{
   user!: PatientItem;

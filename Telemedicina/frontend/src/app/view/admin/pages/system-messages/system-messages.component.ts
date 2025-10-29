@@ -19,7 +19,7 @@ import {AdminItem} from '../../../../utils/interfaces/admin.interface';
   ],
   templateUrl: './system-messages.component.html',
   standalone: true,
-  styleUrl: './system-messages.component.css'
+  styleUrl: './system-messages.component.scss'
 })
 export class SystemMessagesComponent implements OnInit {
   user!: AdminItem;

@@ -31,7 +31,7 @@ type AIRule =
   ],
   templateUrl: './ai-rules-card.component.html',
   standalone: true,
-  styleUrl: './ai-rules-card.component.css'
+  styleUrl: './ai-rules-card.component.scss'
 })
 export class AiRulesCardComponent implements OnInit {
   @Input({ required: true }) role!: 'patient' | 'doctor';

@@ -16,7 +16,7 @@ import {environment} from '../../../../../../../../../backend/config/enviroment'
     IonicModule
   ],
   templateUrl: './patient-regist.component.html',
-  styleUrls: ['./patient-regist.component.css']
+  styleUrls: ['./patient-regist.component.scss']
 })
 
 export class PatientRegistComponent {
@@ -63,21 +63,22 @@ export class PatientRegistComponent {
       return;
     }
 
-    const payloadBase = {
+    const payloadBase: any = {
       name: String(this.fullName).trim(),
       email,
       password: String(this.password),
       phoneNumber: String(this.phoneNumber).trim(),
-      taj: this.taj ? String(this.taj).trim() : null,
       address: String(this.address).trim(),
-      birthDate: new Date(this.birthDate).toISOString(),
-      gender: this.gender ?? null
+      birthDate: new Date(this.birthDate).toISOString().split('T')[0],
     };
+
+    if (this.taj) payloadBase.taj = String(this.taj).trim();
+    if (this.gender) payloadBase.gender = this.gender;
 
     if (!this.calledByAdmin) {
       this.http.post(`${environment.apiUrl}/auth/register/patient`, payloadBase)
         .subscribe({
-          next: () => {
+          next: (resp) => {
             setTimeout(() => {
               void this.router.navigate(['/regist-login'], {
                 queryParams: {
@@ -95,10 +96,8 @@ export class PatientRegistComponent {
             this.toast.show(msg, 'danger');
           }
         });
-    } else {
-      const token = localStorage.getItem('token');
-      if (!token) return;
 
+    } else {
       const payloadAdmin = {
         ...payloadBase,
         adminUserId: this.adminUser.user.id,
@@ -106,7 +105,7 @@ export class PatientRegistComponent {
       };
 
       this.http.post(`${environment.apiUrl}/admin/registerPatient`, payloadAdmin, {
-        headers: { Authorization: `Bearer ${token}` }
+        withCredentials: true
       }).subscribe({
         next: () => {
           this.toast.show('Sikeres Páciens felvitel!', 'success');

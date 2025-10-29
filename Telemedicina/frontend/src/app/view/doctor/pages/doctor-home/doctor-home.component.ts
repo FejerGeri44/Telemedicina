@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {
@@ -10,35 +10,62 @@ import {SystemMessageModalComponent} from '../../../../shared/system-message-mod
 import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../shared/user.service';
-import {prevAppointment} from '../../../../utils/interfaces/appointment.inteface';
+import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
+import {environment} from '../../../../../../../backend/config/enviroment';
+import {AlertService} from '../../../../shared/alert/alert.service.component';
+import {ToastService} from '../../../../shared/toast/toast.service';
+import {AsyncPipe, DecimalPipe, NgForOf, NgIf} from '@angular/common';
+import {buildStarIcons, roundToHalf} from '../../../../utils/formatDoctorRating';
+import {firstValueFrom, Observable, Subject, take, takeUntil} from 'rxjs';
 
 @Component({
   selector: 'app-doctor-home',
   imports: [
     IonicModule,
     RouterLink,
-    DoctorProfileCardComponent
+    DoctorProfileCardComponent,
+    DecimalPipe,
+    NgForOf,
+    AsyncPipe,
+    NgIf
   ],
   templateUrl: './doctor-home.component.html',
   standalone: true,
-  styleUrl: './doctor-home.component.css'
+  styleUrl: './doctor-home.component.scss'
 })
-export class DoctorHomeComponent implements OnInit{
-  user!: DoctorItem;
-  appointments: prevAppointment[] = [];
-  todaysAppointments: number = 0;
+export class DoctorHomeComponent implements OnInit, OnDestroy{
+  user: Observable<DoctorItem | null>;
+  appointments: Appointment[] = [];
   systemMessages: SystemMessage[] = [];
+
+  todaysAppointments: number = 0;
+  roundedRating = 0;
+  starIcons: string[] = [];
+  private destroy$ = new Subject<void>();
 
   constructor(
     private http: HttpClient,
     private modalCtrl: ModalController,
-    private userService: UserService
-  ) {}
+    protected userService: UserService,
+    private cdr: ChangeDetectorRef,
+    private alert: AlertService,
+    private toast: ToastService
+  ) {
+    this.user = this.userService.doctor$();
+  }
 
   ngOnInit() {
+    this.user
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(u => this.updateRatingStars(u));
+
     this.loadSystemMessagesOnceAfterLogin();
-    this.getUserData();
     this.loadAppointments();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadSystemMessagesOnceAfterLogin(): void {
@@ -92,38 +119,91 @@ export class DoctorHomeComponent implements OnInit{
     }
   }
 
-  private getUserData() {
-    const cached = this.userService.getUserAsDoctor();
-    if (cached) {
-      this.user = cached;
-      return;
-    }
-  }
+  async loadAppointments(): Promise<Appointment[] | null> {
 
-  loadAppointments() {
-    const token = localStorage.getItem('token');
-    this.http.get<any[]>('http://localhost:3000/api/myAppointments', {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: (appointments) => {
-        this.appointments = appointments;
-        const today = new Date().toISOString().split('T')[0];
+    return new Promise<Appointment[] | null>((resolve) => {
+      this.http.post<Appointment[]>(
+        `${environment.apiUrl}/doctor/myAppointments`,
+        { },
+      ).subscribe({
+        next: async (appointments) => {
+          this.appointments = appointments;
+          this.setTodaysAppointmentsFrom(this.appointments);
+          Promise.resolve().then(() => this.cdr.markForCheck?.());
 
-        this.todaysAppointments = this.appointments.filter(appt => {
-          const apptDate = new Date(appt.from).toISOString().split('T')[0];
-          return appt.patient_id !== null && apptDate === today;
-        }).length;
-      },
-      error: (err) => console.error('❌ Hiba az időpontok lekérésekor:', err)
+          resolve(appointments);
+        },
+        error: (err) => {
+          console.error('❌ Hiba az időpontok lekérésekor:', err);
+          this.toast.show('Nem sikerült betölteni az időpontokat.', 'danger');
+          resolve(null);
+        }
+      });
     });
   }
 
+  private parseToDate(src: string): Date | null {
+    if (!src) return null;
+
+    const re = /^(\d{4}):(\d{2}):(\d{2}):(\d{2}):(\d{2})$/;
+    const m = src.match(re);
+    if (m) {
+      const y  = parseInt(m[1], 10);
+      const mo = parseInt(m[2], 10) - 1;
+      const d  = parseInt(m[3], 10);
+      const hh = parseInt(m[4], 10);
+      const mm = parseInt(m[5], 10);
+      return new Date(y, mo, d, hh, mm, 0, 0);
+    }
+
+    const dt = new Date(src);
+    return isNaN(dt.getTime()) ? null : dt;
+  }
+
+  private isTodayAndNotPast(appt: Appointment, now = new Date()): boolean {
+    const dt = this.parseToDate(appt.from);
+    if (!dt) return false;
+
+    const sameDay =
+      dt.getFullYear() === now.getFullYear() &&
+      dt.getMonth() === now.getMonth() &&
+      dt.getDate() === now.getDate();
+
+    if (!sameDay) return false;
+
+    return dt.getTime() >= now.getTime();
+  }
+
+  setTodaysAppointmentsFrom(appts: Appointment[]): number {
+    if (!Array.isArray(appts) || appts.length === 0) {
+      this.todaysAppointments = 0;
+      return 0;
+    }
+
+    const count = appts.reduce((acc, a) => {
+      if (!this.isTodayAndNotPast(a)) return acc;
+      return acc + 1;
+    }, 0);
+
+    this.todaysAppointments = count;
+    return count;
+  }
+
+  updateRatingStars(u: DoctorItem | null): void {
+    const r = roundToHalf(u?.doctor?.avgRating ?? 0);
+    this.roundedRating = r;
+    this.starIcons = buildStarIcons(r);
+    this.cdr?.markForCheck?.();
+  }
+
   async openEditModal() {
+    const user = await firstValueFrom(this.user.pipe(take(1)));
+
     const modal = await this.modalCtrl.create({
       component: DoctorEditProfileModalComponent as any,
       cssClass: 'Profile-edit-modal',
       componentProps: {
-        user: this.user,
+        user,
       }
     });
 
@@ -132,7 +212,6 @@ export class DoctorHomeComponent implements OnInit{
     const { role } = await modal.onDidDismiss();
 
     if (role === 'updated') {
-      this.getUserData();
     }
   }
 }

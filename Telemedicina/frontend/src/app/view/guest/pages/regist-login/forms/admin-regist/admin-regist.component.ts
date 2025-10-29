@@ -16,7 +16,7 @@ import {ToastService} from "../../../../../../shared/toast/toast.service";
   ],
   templateUrl: './admin-regist.component.html',
   standalone: true,
-  styleUrl: './admin-regist.component.css'
+  styleUrl: './admin-regist.component.scss'
 })
 export class AdminRegistComponent {
   @Input() calledByAdmin: boolean = false;

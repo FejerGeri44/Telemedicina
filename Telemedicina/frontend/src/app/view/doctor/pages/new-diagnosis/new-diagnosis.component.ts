@@ -23,7 +23,7 @@ import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
   ],
   templateUrl: './new-diagnosis.component.html',
   standalone: true,
-  styleUrl: './new-diagnosis.component.css'
+  styleUrl: './new-diagnosis.component.scss'
 })
 
 export class NewDiagnosisComponent implements OnInit{

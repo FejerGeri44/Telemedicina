@@ -2,14 +2,14 @@ import {Component, OnInit} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
-import {NgForOf, NgIf} from '@angular/common';
+import {DecimalPipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import { ModalController } from '@ionic/angular';
 import { AppointmentModalComponent } from '../../components/appointment-modal/appointment-modal.component';
 import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {environment} from '../../../../../../../backend/config/enviroment';
-import {AuthService} from '../../../../shared/auth.service';
+import {buildStarIcons, roundToHalf, StarIcon} from '../../../../utils/formatDoctorRating';
 
 @Component({
   selector: 'app-doctor-search',
@@ -17,11 +17,13 @@ import {AuthService} from '../../../../shared/auth.service';
     IonicModule,
     FormsModule,
     NgForOf,
-    NgIf
+    NgIf,
+    DecimalPipe,
+    NgOptimizedImage
   ],
   templateUrl: './doctor-search.component.html',
   standalone: true,
-  styleUrl: './doctor-search.component.css'
+  styleUrl: './doctor-search.component.scss'
 })
 
 export class DoctorSearchComponent implements OnInit{
@@ -37,10 +39,12 @@ export class DoctorSearchComponent implements OnInit{
   isLoading: boolean = true;
   totalCount = 0;
 
+  roundedRating = 0;
+  starIcons: string[] = [];
+
   constructor(
     private http: HttpClient,
     private modalCtrl: ModalController,
-    private authService: AuthService,
     private toast: ToastService
   ) {}
 
@@ -49,18 +53,12 @@ export class DoctorSearchComponent implements OnInit{
   }
 
   async getDoctors(): Promise<DoctorItem[] | null> {
-    const token = await this.authService.getIdToken();
-    if (!token) {
-      this.toast.show('Nincs bejelentkezett felhasználó!', 'warning');
-      return null;
-    }
 
     return new Promise((resolve) => {
       this.http.get<DoctorItem[]>(
         `${environment.apiUrl}/patient/doctors`,
         {
           withCredentials: true,
-          headers: { Authorization: `Bearer ${token}` }
         }
       ).subscribe({
         next: (res) => {
@@ -161,6 +159,12 @@ export class DoctorSearchComponent implements OnInit{
 
   onSearchChange() {
     this.applyFilters();
+  }
+
+  ratingFor(rating: number | null | undefined): { rounded: number; icons: StarIcon[] } {
+    const rounded = roundToHalf(rating);
+    const icons = buildStarIcons(rounded);
+    return { rounded, icons };
   }
 
   async openAppointmentModal(doctor: DoctorItem) {

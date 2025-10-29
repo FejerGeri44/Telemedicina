@@ -1,25 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller');
-const authenticateToken = require('../middleware/firebaseAuth');
-
+const { authGuard } = require('../middleware/auth.guard');
+const requireRole = require('../middleware/role.guard')
 const multer = require('multer');
-const doctorController = require("../controllers/doctor.controller");
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.get('/getAdminMe', authenticateToken, adminController.getCurrentUser);
-router.patch('/updateProfile', authenticateToken, upload.single('picture'), adminController.updateProfile);
-router.get('/admin/getAllPatients', authenticateToken, adminController.getAllPatients);
-router.get('/admin/getAllDoctors', authenticateToken, adminController.getAllDoctors);
-router.get('/admin/getAllAdmins', authenticateToken, adminController.getAllAdmins);
-router.post('/admin/registerPatient', authenticateToken, adminController.registerPatient);
-router.post('/admin/registerDoctor', authenticateToken, adminController.registerDoctor);
-router.post('/admin/registerAdmin', authenticateToken, adminController.registerAdmin);
-router.delete('/admin/deleteUsers', authenticateToken, adminController.deleteUsers);
-router.get('/admin/pendingDoctors', authenticateToken, adminController.getPendingDoctors);
-router.patch('/admin/approveDoctor', authenticateToken, adminController.approveDoctor);
-router.post('/admin/system-messages', authenticateToken, adminController.createSystemMessage);
-router.get('/admin/getAllSystemMessage', authenticateToken, adminController.listSystemMessages);
-router.delete('/admin/delete-system-message', authenticateToken, adminController.deleteSystemMessage);
+router.patch('/updateProfile', authGuard, requireRole('admin'), upload.single('picture'), adminController.updateProfile);
+router.get('/admin/getAllPatients', authGuard, requireRole('admin'), adminController.getAllPatients);
+router.get('/admin/getAllDoctors', authGuard, requireRole('admin'), adminController.getAllDoctors);
+router.get('/admin/getAllAdmins', authGuard, requireRole('admin'), adminController.getAllAdmins);
+router.post('/admin/registerPatient', authGuard, requireRole('admin'), adminController.registerPatient);
+router.post('/admin/registerDoctor', authGuard, requireRole('admin'), adminController.registerDoctor);
+router.post('/admin/registerAdmin', authGuard, requireRole('admin'), adminController.registerAdmin);
+router.delete('/admin/deleteUsers', authGuard, requireRole('admin'), adminController.deleteUsers);
+router.get('/admin/pendingDoctors', authGuard, requireRole('admin'), adminController.getPendingDoctors);
+router.patch('/admin/approveDoctor', authGuard, requireRole('admin'), adminController.approveDoctor);
+router.post('/admin/system-messages', authGuard, requireRole('admin'), adminController.createSystemMessage);
+router.get('/admin/getAllSystemMessage', authGuard, requireRole('admin'), adminController.listSystemMessages);
+router.delete('/admin/delete-system-message', authGuard, requireRole('admin'), adminController.deleteSystemMessage);
 
 module.exports = router;

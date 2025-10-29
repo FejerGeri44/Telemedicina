@@ -9,7 +9,6 @@ import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
 import {UserService} from '../../../../shared/user.service';
 import {environment} from '../../../../../../../backend/config/enviroment';
-import {AuthService} from '../../../../shared/auth.service';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 
 @Component({
@@ -23,7 +22,7 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
   ],
   templateUrl: './appointment-modal.component.html',
   standalone: true,
-  styleUrl: './appointment-modal.component.css'
+  styleUrl: './appointment-modal.component.scss'
 })
 
 export class AppointmentModalComponent implements OnInit{
@@ -37,7 +36,6 @@ export class AppointmentModalComponent implements OnInit{
   constructor(
     private modalCtrl: ModalController,
     private http: HttpClient,
-    private authService: AuthService,
     private userService: UserService,
     private toast: ToastService,
     private alert: AlertService
@@ -51,17 +49,11 @@ export class AppointmentModalComponent implements OnInit{
   }
 
   private getUserData() {
-    const cached = this.userService.getUserAsPatient();
-    if (cached) {
-      this.patientData = cached;
-      return;
-    }
+
   }
 
   async getDoctorsAppointments(): Promise<Appointment[] | null> {
     const userId = this.doctorData?.user?.id;
-    const token = await this.authService.getIdToken();
-    if (!userId || !token) return null;
 
     return new Promise<Appointment[] | null>((resolve) => {
       this.http.post<Appointment[]>(
@@ -69,8 +61,6 @@ export class AppointmentModalComponent implements OnInit{
         { userId },
         {
           withCredentials: true,
-          headers: { Authorization: `Bearer ${token}`
-          }
         }).subscribe({
         next: (res) => {
           this.appointments = res;
@@ -210,7 +200,6 @@ export class AppointmentModalComponent implements OnInit{
   async handleAppointmentSaving(from: string, to: string) {
     const doctorId = this.doctorData?.doctor?.id;
     const patientId = this.patientData.user.id;
-    const token = await this.authService.getIdToken();
 
     const payload = {
       doctorId: Number(doctorId),
@@ -219,15 +208,10 @@ export class AppointmentModalComponent implements OnInit{
       to: to
     };
 
-    console.log(payload)
-    if (!doctorId || !token || !payload.patientId) {
-      return;
-    }
-
     this.http.post(
       `${environment.apiUrl}/patient/registerToAppointment`,
       payload,
-      { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+      { withCredentials: true }
     ).subscribe({
       next: () => {
         const list: any[] = Array.isArray(this.appointments)

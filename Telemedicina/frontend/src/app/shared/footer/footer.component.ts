@@ -7,7 +7,7 @@ import {IonicModule} from '@ionic/angular';
   standalone: true,
   imports: [CommonModule, IonicModule],
   templateUrl: './footer.component.html',
-  styleUrls: ['./footer.component.css']
+  styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent {}
 

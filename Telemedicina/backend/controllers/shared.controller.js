@@ -2,7 +2,7 @@ const {
   User,
   Message,
   sequelize, SystemMessage
-} = require('../models');
+} = require('../repositories');
 const {Op} = require("sequelize");
 
 exports.sendMessage = async (req, res) => {

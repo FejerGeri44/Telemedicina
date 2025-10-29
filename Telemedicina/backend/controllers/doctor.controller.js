@@ -1,118 +1,103 @@
-const { Patient, Doctor, User, Appointment, PatientTag, Diagnosis} = require('../models');
+const { Patient, Doctor, User, Appointment, PatientTag, Diagnosis} = require('../repositories');
 const {Op} = require("sequelize");
-const {admin, db, bucket} = require("../config/firebase-config");
-const {normalizeField, buildLoggedUser} = require("../utils/loggedUserUpdate");
-const {nextId} = require("../models/shared/counter");
-
-exports.getCurrentUser = async (req, res) => {
-  try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'pictureUrl', 'name', 'email', 'role', 'phoneNumber', 'address', 'birthDate'],
-      include: [{
-        model: Doctor,
-        attributes: ['id', 'speciality', 'introduction', 'avgRating', 'registDate']
-      }]
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: 'Felhasználó nem található.' });
-    }
-
-    const userData = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      phoneNumber: user.phoneNumber,
-      address: user.address,
-      birthDate: user.birthDate,
-      pictureUrl: user.pictureUrl
-    };
-
-    const doctorData = user.Doctor ? {
-      id: user.Doctor.id,
-      speciality: user.Doctor.speciality,
-      introduction: user.Doctor.introduction,
-      avgRating: user.Doctor.avgRating,
-      registDate: user.Doctor.registDate
-    } : null;
-
-    return res.status(200).json({ user: userData, doctor: doctorData });
-  } catch (err) {
-    console.error('Hiba a /me route-nál:', err);
-    res.status(500).json({ message: 'Szerverhiba.' });
-  }
-};
+const {admin, db} = require("../config/db.config");
+const {supabaseAdmin} = require("../utils/supabaseAdmin");
+const {buildProfile} = require("../utils/profileBuilder");
 
 exports.updateProfile = async (req, res) => {
   try {
-    let { id, ...updateFields } = req.body;
+    const { id, ...updateFields } = req.body;
     if (!id) return res.status(400).json({ message: 'Missing user id' });
+    const userId = String(id);
 
-    const userIdStr = String(id);
-    const userRef = db.collection('users').doc(userIdStr);
-    const userSnap = await userRef.get();
-    if (!userSnap.exists) {
-      return res.status(404).json({ message: 'User not found' });
+    let storagePath = null;
+    let signedUrlToSave = null;
+
+    if (req.file?.buffer) {
+      const ext = '.jpg';
+      const contentType = 'image/jpeg';
+      const filePath = `${userId}${ext}`;
+
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from('user-profilePictures')
+        .upload(filePath, req.file.buffer, {
+          upsert: true,
+          contentType,
+          cacheControl: '3600',
+        });
+      if (uploadError) {
+        console.error('❌ Supabase upload error:', uploadError);
+        return res.status(500).json({ message: 'Kép feltöltése sikertelen.' });
+      }
+
+      storagePath = filePath;
+
+      const expiresIn = 7 * 24 * 60 * 60;
+      const { data, error } = await supabaseAdmin.storage
+        .from('user-profilePictures')
+        .createSignedUrl(filePath, expiresIn);
+      if (error) {
+        console.error('❌ Signed URL create error:', error);
+        return res.status(500).json({ message: 'Signed URL generálása sikertelen.' });
+      }
+      signedUrlToSave = data.signedUrl;
     }
 
-    const doctorsCol = db.collection('doctors');
-    const existingDoctorSnap = await doctorsCol
-      .where('userId', '==', userIdStr)
-      .limit(1)
-      .get();
+    const userAllowed   = ['name', 'address', 'phoneNumber'];
+    const doctorAllowed = ['speciality', 'introduction'];
 
-    if (existingDoctorSnap.empty) {
-      return res.status(404).json({ message: 'Doctor profile not found' });
-    }
-    const doctorRef = existingDoctorSnap.docs[0].ref;
-
-    const userAllowed    = ['name', 'address', 'phoneNumber'];
-    const doctorAllowed  = ['speciality', 'introduction'];
-
-    const userFields   = {};
+    const userFields = {};
     const doctorFields = {};
 
     for (const k of userAllowed) {
-      if (updateFields[k] !== undefined) {
-        const v = normalizeField(updateFields[k]);
-        if (v !== undefined) userFields[k] = v;
-      }
+      if (updateFields[k] !== undefined) userFields[k] = updateFields[k];
     }
     for (const k of doctorAllowed) {
-      if (updateFields[k] !== undefined) {
-        const v = normalizeField(updateFields[k]);
-        if (v !== undefined) doctorFields[k] = v;
+      if (updateFields[k] !== undefined) doctorFields[k] = updateFields[k];
+    }
+
+    if (signedUrlToSave) {
+      userFields.pictureUrl = signedUrlToSave;
+    }
+
+    if (Object.keys(userFields).length) {
+      const { error } = await supabaseAdmin
+        .from('users')
+        .update(userFields)
+        .eq('id', userId);
+      if (error) throw error;
+    }
+
+    if (Object.keys(doctorFields).length) {
+      const { error } = await supabaseAdmin
+        .from('doctors')
+        .update(doctorFields)
+        .eq('userId', userId);
+      if (error) throw error;
+    }
+
+    const { data: userRow, error: fetchErr } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (fetchErr) throw fetchErr;
+    if (!userRow) return res.status(404).json({ message: 'User not found' });
+
+    const { user: u, related } = await buildProfile(userRow);
+    const loggedUser = { user: u, related };
+
+    return res.status(200).json({
+      user: loggedUser,
+      picture: {
+        path: storagePath,
+        url: u?.pictureUrl ?? null,
       }
-    }
-
-    if (req.file && req.file.buffer) {
-      const objectPath = `user-profilePictures/${userIdStr}`;
-      const file = bucket.file(objectPath);
-
-      await file.save(req.file.buffer, {
-        resumable: false,
-        contentType: req.file.mimetype,
-        metadata: { cacheControl: 'public, max-age=31536000' },
-      });
-
-      await file.makePublic();
-
-      const cacheBuster = Date.now();
-      userFields.pictureUrl = `https://storage.googleapis.com/${bucket.name}/${objectPath}?v=${cacheBuster}`;
-    }
-
-    const batch = db.batch();
-    if (Object.keys(userFields).length > 0)  batch.update(userRef, userFields);
-    if (Object.keys(doctorFields).length > 0) batch.update(doctorRef, doctorFields);
-    await batch.commit();
-
-    const loggedUser = await buildLoggedUser(db, userIdStr);
-    return res.json({ updated: loggedUser });
+    });
 
   } catch (error) {
     console.error('❌ Error updating doctor profile:', error);
-    return res.status(500).json({ message: 'Server error', error: String(error) });
+    return res.status(500).json({ message: 'Server error', error: String(error?.message || error) });
   }
 };
 
@@ -291,6 +276,103 @@ exports.deleteAppointment = async (req, res) => {
   }
 };
 
+exports.resolvePatientNames = async (req, res) => {
+  try {
+    const raw = req.body?.patientIds;
+    if (!Array.isArray(raw) || raw.length === 0) {
+      return res.status(400).json({ message: 'Hiányzó vagy üres patientIds tömb.' });
+    }
+
+    const patientIds = [...new Set(
+      raw
+        .map(v => String(v).trim())
+        .filter(v => v !== '' && v !== 'null' && v !== 'undefined')
+    )];
+
+    if (patientIds.length === 0) {
+      return res.status(200).json({ map: {} });
+    }
+
+    const patientsById = new Map();
+    for (const group of chunk(patientIds, 10)) {
+      const docReads = await Promise.all(group.map(id => db.collection('patients').doc(id).get()));
+      const missing = [];
+
+      docReads.forEach((snap, idx) => {
+        const pid = group[idx];
+        if (snap.exists) {
+          const data = snap.data();
+          if (data?.userId != null) {
+            const userIdNum = typeof data.userId === 'number' ? data.userId : Number(String(data.userId));
+            if (!Number.isNaN(userIdNum)) patientsById.set(pid, { userId: userIdNum });
+          }
+        } else {
+          missing.push(group[idx]);
+        }
+      });
+
+      if (missing.length) {
+        for (const mgrp of chunk(missing, 10)) {
+          const q = await db.collection('patients').where('id', 'in', mgrp.map(x => Number(x))).get();
+          q.forEach(doc => {
+            const d = doc.data();
+            const pidStr = String(d.id);
+            const userIdNum = typeof d.userId === 'number' ? d.userId : Number(String(d.userId));
+            if (!Number.isNaN(userIdNum)) patientsById.set(pidStr, { userId: userIdNum });
+          });
+        }
+      }
+    }
+
+    if (patientsById.size === 0) {
+      return res.status(200).json({ map: {} });
+    }
+
+    const userIds = [...new Set([...patientsById.values()].map(p => p.userId))];
+    const usersById = new Map(); // key: userId(number), val: { name:string }
+
+    for (const group of chunk(userIds, 10)) {
+      const docReads = await Promise.all(group.map(id => db.collection('users').doc(String(id)).get()));
+      const missing = [];
+
+      docReads.forEach((snap, idx) => {
+        const uid = group[idx];
+        if (snap.exists) {
+          const d = snap.data();
+          if (d?.name) usersById.set(uid, { name: d.name });
+        } else {
+          missing.push(uid);
+        }
+      });
+
+      if (missing.length) {
+        for (const mgrp of chunk(missing, 10)) {
+          const q = await db.collection('users').where('id', 'in', mgrp).get();
+          q.forEach(doc => {
+            const d = doc.data();
+            if (d?.id != null && d?.name) usersById.set(d.id, { name: d.name });
+          });
+        }
+      }
+    }
+
+    const result = {};
+    for (const [patientIdStr, { userId }] of patientsById.entries()) {
+      const u = usersById.get(userId);
+      if (u?.name) {
+        result[patientIdStr] = { userId, name: u.name };
+      }
+    }
+
+    return res.status(200).json({ map: result });
+  } catch (err) {
+    console.error('❌ resolvePatientNames error:', err);
+    return res.status(500).json({ message: 'Szerver hiba', error: String(err?.message || '') });
+  }
+};
+
+
+
 exports.getMyPatients = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -388,107 +470,6 @@ exports.getAllPatients = async (req, res) => {
   }
 };
 
-exports.resolvePatientNames = async (req, res) => {
-  try {
-    const raw = req.body?.patientIds;
-    if (!Array.isArray(raw) || raw.length === 0) {
-      return res.status(400).json({ message: 'Hiányzó vagy üres patientIds tömb.' });
-    }
-
-    const patientIds = [...new Set(
-      raw
-        .map(v => String(v).trim())
-        .filter(v => v !== '' && v !== 'null' && v !== 'undefined')
-    )];
-
-    if (patientIds.length === 0) {
-      return res.status(200).json({ map: {} });
-    }
-
-    const patientsById = new Map();
-    for (const group of chunk(patientIds, 10)) {
-      const docReads = await Promise.all(group.map(id => db.collection('patients').doc(id).get()));
-      const missing = [];
-
-      docReads.forEach((snap, idx) => {
-        const pid = group[idx];
-        if (snap.exists) {
-          const data = snap.data();
-          if (data?.userId != null) {
-            const userIdNum = typeof data.userId === 'number' ? data.userId : Number(String(data.userId));
-            if (!Number.isNaN(userIdNum)) patientsById.set(pid, { userId: userIdNum });
-          }
-        } else {
-          missing.push(group[idx]);
-        }
-      });
-
-      if (missing.length) {
-        for (const mgrp of chunk(missing, 10)) {
-          const q = await db.collection('patients').where('id', 'in', mgrp.map(x => Number(x))).get();
-          q.forEach(doc => {
-            const d = doc.data();
-            const pidStr = String(d.id);
-            const userIdNum = typeof d.userId === 'number' ? d.userId : Number(String(d.userId));
-            if (!Number.isNaN(userIdNum)) patientsById.set(pidStr, { userId: userIdNum });
-          });
-        }
-      }
-    }
-
-    if (patientsById.size === 0) {
-      return res.status(200).json({ map: {} });
-    }
-
-    const userIds = [...new Set([...patientsById.values()].map(p => p.userId))];
-    const usersById = new Map(); // key: userId(number), val: { name:string }
-
-    for (const group of chunk(userIds, 10)) {
-      const docReads = await Promise.all(group.map(id => db.collection('users').doc(String(id)).get()));
-      const missing = [];
-
-      docReads.forEach((snap, idx) => {
-        const uid = group[idx];
-        if (snap.exists) {
-          const d = snap.data();
-          if (d?.name) usersById.set(uid, { name: d.name });
-        } else {
-          missing.push(uid);
-        }
-      });
-
-      if (missing.length) {
-        for (const mgrp of chunk(missing, 10)) {
-          const q = await db.collection('users').where('id', 'in', mgrp).get();
-          q.forEach(doc => {
-            const d = doc.data();
-            if (d?.id != null && d?.name) usersById.set(d.id, { name: d.name });
-          });
-        }
-      }
-    }
-
-    const result = {};
-    for (const [patientIdStr, { userId }] of patientsById.entries()) {
-      const u = usersById.get(userId);
-      if (u?.name) {
-        result[patientIdStr] = { userId, name: u.name };
-      }
-    }
-
-    return res.status(200).json({ map: result });
-  } catch (err) {
-    console.error('❌ resolvePatientNames error:', err);
-    return res.status(500).json({ message: 'Szerver hiba', error: String(err?.message || '') });
-  }
-};
-
-function chunk(arr, size = 10) {
-  const out = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
-}
-
 exports.newDiagnosis = async (req, res) => {
   try {
     const patientId = req.body?.patient;
@@ -559,4 +540,10 @@ exports.newDiagnosis = async (req, res) => {
     console.error('❌ Hiba diagnózis mentésekor:', err);
     return res.status(500).json({ error: 'Nem sikerült elmenteni a diagnózist' });
   }
+}
+
+function chunk(arr, size = 10) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
 }

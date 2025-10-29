@@ -1,6 +1,6 @@
 import {Component, HostListener, OnInit} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
-import {NgForOf, NgIf} from '@angular/common';
+import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/router';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {filter, Subscription} from 'rxjs';
@@ -15,11 +15,12 @@ import {UserService} from '../../../../shared/user.service';
     NgIf,
     RouterLinkActive,
     RouterModule,
-    NgForOf
+    NgForOf,
+    NgOptimizedImage
   ],
   templateUrl: './admin-navbar.component.html',
   standalone: true,
-  styleUrl: './admin-navbar.component.css'
+  styleUrl: './admin-navbar.component.scss'
 })
 export class AdminNavbarComponent implements OnInit{
   user!: AdminItem;
@@ -53,11 +54,7 @@ export class AdminNavbarComponent implements OnInit{
   }
 
   private getUserData() {
-    const cached = this.userService.getUserAsAdmin();
-    if (cached) {
-      this.user = cached;
-      return;
-    }
+
   }
 
   confirmLogout() {

@@ -1,17 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/auth.controller');
+const {authGuard} = require("../middleware/auth.guard");
+const { registerPatient, registerDoctor, login, logout, me } = require('../controllers/auth.controller');
 
-// Páciens regisztráció
-router.post('/register/patient', authController.registerPatient);
+router.post('/register/patient', registerPatient);
 
-// Orvos regisztráció
-router.post('/register/doctor', authController.registerDoctor);
+router.post('/register/doctor', registerDoctor);
 
-// Bejelentkezés
-router.post('/login', authController.login);
+router.post('/login', login);
 
-//Kijelentkezés
-router.post('/logout', authController.logout);
+router.get('/me', authGuard, me);
+
+router.post('/logout', logout);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {DatePipe, NgForOf, NgIf} from '@angular/common';
+import {NgForOf, NgIf} from '@angular/common';
 import {IonicModule} from '@ionic/angular';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
@@ -10,14 +10,13 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 @Component({
   selector: 'app-doctor-approvals',
   imports: [
-    DatePipe,
     IonicModule,
     NgForOf,
     NgIf
   ],
   templateUrl: './doctor-approvals.component.html',
   standalone: true,
-  styleUrl: './doctor-approvals.component.css'
+  styleUrl: './doctor-approvals.component.scss'
 })
 export class DoctorApprovalsComponent implements OnInit{
   pendingDoctors: DoctorItem[] = [];

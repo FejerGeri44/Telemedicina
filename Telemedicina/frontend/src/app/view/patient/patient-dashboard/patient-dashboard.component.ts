@@ -14,7 +14,7 @@ import {ChatbotComponent} from '../../../shared/chatbot/chatbot.component';
   ],
   templateUrl: './patient-dashboard.component.html',
   standalone: true,
-  styleUrl: './patient-dashboard.component.css'
+  styleUrl: './patient-dashboard.component.scss'
 })
 
 export class PatientDashboardComponent {}
