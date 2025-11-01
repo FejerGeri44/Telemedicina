@@ -1,5 +1,4 @@
 <ion-app>
-  <!-- Mobile view -->
   <ion-menu contentId="main-content" type="overlay" side="end" class="sideMenu">
     <ion-content>
       <ion-list>
@@ -9,7 +8,7 @@
       </ion-list>
     </ion-content>
   </ion-menu>
-  <div *ngIf="isMobile" class="ion-page" id="main-content">
+  <div *ngIf="isMobile" id="main-content">
     <ion-header>
       <ion-toolbar color="primary" class="navbar-container">
         <ion-buttons slot="end">
@@ -21,10 +20,8 @@
         </div>
       </ion-toolbar>
     </ion-header>
-    <ion-router-outlet></ion-router-outlet>
   </div>
 
-  <!-- Desktop view -->
   <ion-header *ngIf="!isMobile">
     <ion-toolbar>
       <div class="navbar-content">

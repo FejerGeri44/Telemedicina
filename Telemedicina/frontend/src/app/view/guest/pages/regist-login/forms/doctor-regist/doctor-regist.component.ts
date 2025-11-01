@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {ToastService} from '../../../../../../shared/toast/toast.service';
@@ -10,11 +10,12 @@ import {environment} from '../../../../../../../../../backend/config/enviroment'
 @Component({
   selector: 'app-doctor-regist',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule
-  ],
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        ReactiveFormsModule
+    ],
   templateUrl: './doctor-regist.component.html',
   styleUrls: ['./doctor-regist.component.scss']
 })
@@ -23,50 +24,66 @@ export class DoctorRegistComponent {
   @Input() calledByAdmin: boolean = false;
   @Input() adminUser: any;
 
-  fullName: string = '';
-  email: string = '';
-  password: string = '';
-  password_again: string = '';
-  phoneNumber: string = '';
-  speciality: string = '';
+  doctorForm: FormGroup;
 
-  showPassword: boolean = false;
+  showPwd1 = false;
+  showPwd2 = false;
 
-  buttonText: string = this.calledByAdmin ? 'jelentkezek' : 'Mentés';
+  loading = false;
 
   constructor(
     private http: HttpClient,
+    private fb: FormBuilder,
     private modalCtrl: ModalController,
     private router: Router,
     private toast: ToastService
-  ) {}
+  ) {
+    this.doctorForm = this.fb.group({
+      fullName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required],
+      password_again: ['', Validators.required],
+      phoneNumber: ['', Validators.required],
+      speciality: ['', Validators.required],
+    });
+  }
 
   onDoctorRegister() {
-    if (
-      !this.fullName || !this.email || !this.password || !this.password_again ||
-      !this.phoneNumber || !this.speciality
-    ) {
+    if (this.doctorForm.invalid) {
+      this.doctorForm.markAllAsTouched();
       this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
       return;
     }
 
-    const email = String(this.email).trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const {
+      fullName,
+      email,
+      password,
+      password_again,
+      phoneNumber,
+      speciality,
+    } = this.doctorForm.getRawValue();
+
+    const emailNorm = String(email ?? '').trim().toLowerCase();
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm);
+    if (!emailOk) {
+      this.doctorForm.get('email')?.setErrors({ email: true });
       this.toast.show('Hibás e-mail cím!', 'danger');
       return;
     }
 
-    if (this.password !== this.password_again) {
+    if (password !== password_again) {
+      this.doctorForm.get('password_again')?.setErrors({ mismatch: true });
       this.toast.show('A jelszavak nem egyeznek!', 'warning');
       return;
     }
 
     const payloadBase: any = {
-      name: String(this.fullName).trim(),
+      name: String(fullName).trim(),
       email,
-      password: String(this.password),
-      phoneNumber: String(this.phoneNumber).trim(),
-      speciality: String(this.speciality).trim(),
+      password: String(password),
+      phoneNumber: String(phoneNumber).trim(),
+      speciality: String(speciality).trim(),
     };
 
     if (!this.calledByAdmin) {
@@ -114,8 +131,12 @@ export class DoctorRegistComponent {
     }
   }
 
-  togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
+  togglePwd1() {
+    this.showPwd1 = !this.showPwd1;
+  }
+
+  togglePwd2() {
+    this.showPwd2 = !this.showPwd2;
   }
 
   backToDash() {

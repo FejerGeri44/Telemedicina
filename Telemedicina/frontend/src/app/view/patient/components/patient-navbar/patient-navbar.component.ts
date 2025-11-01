@@ -2,7 +2,7 @@ import {Component, HostListener, OnInit} from '@angular/core';
 import {IonicModule, NavController} from '@ionic/angular';
 import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/router';
-import {filter, finalize, Observable, Subscription, take} from 'rxjs';
+import {filter, finalize, firstValueFrom, Observable, Subscription, take} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {UnreadMessage} from '../../../../utils/interfaces/commonInterfaces';

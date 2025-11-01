@@ -10,6 +10,7 @@ import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
 import {UserService} from '../../../../shared/user.service';
 import {environment} from '../../../../../../../backend/config/enviroment';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {firstValueFrom, Observable} from 'rxjs';
 
 @Component({
   selector: 'app-appointment-modal',
@@ -27,8 +28,9 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 
 export class AppointmentModalComponent implements OnInit{
   @Input() doctorData!: DoctorItem;
-  patientData!: PatientItem;
+  patientData!: Observable<PatientItem | null>;
   appointments: Appointment[] = [];
+  private apptBySlot = new Map<string, Appointment>();
   days: { date: Date, weekday: string }[] = [];
   timeSlots: string[] = [];
   selectedDate: Date = new Date();
@@ -36,20 +38,22 @@ export class AppointmentModalComponent implements OnInit{
   constructor(
     private modalCtrl: ModalController,
     private http: HttpClient,
-    private userService: UserService,
+    protected userService: UserService,
     private toast: ToastService,
     private alert: AlertService
-    ) {}
+    ) {
+    this.patientData = this.userService.patient$();
+  }
 
   ngOnInit() {
-    this.getUserData();
     this.generateDays();
     this.generateTimeSlots();
     void this.getDoctorsAppointments();
   }
 
-  private getUserData() {
-
+  private async getPatientId(): Promise<number | null> {
+    const user = await firstValueFrom(this.patientData);
+    return user?.patient.id ?? null;
   }
 
   async getDoctorsAppointments(): Promise<Appointment[] | null> {
@@ -59,11 +63,11 @@ export class AppointmentModalComponent implements OnInit{
       this.http.post<Appointment[]>(
         `${environment.apiUrl}/patient/getDoctorsAppointments`,
         { userId },
-        {
-          withCredentials: true,
-        }).subscribe({
+        { withCredentials: true }
+      ).subscribe({
         next: (res) => {
           this.appointments = res;
+          this.reindexAppointments();
           resolve(this.appointments);
         },
         error: (err) => {
@@ -113,16 +117,14 @@ export class AppointmentModalComponent implements OnInit{
 
   generateTimeSlots() {
     const slots: string[] = [];
-    const startHour = 8;
-    const endHour = 19;
-
-    for (let hour = startHour; hour <= endHour; hour++) {
-      slots.push(`${hour.toString().padStart(2, '0')}:00`);
-      if (hour !== endHour) {
-        slots.push(`${hour.toString().padStart(2, '0')}:30`);
-      }
+    let h = 8, m = 0;
+    while (true) {
+      slots.push(`${this.pad(h)}:${this.pad(m)}`);
+      m += 30;
+      if (m === 60) { m = 0; h += 1; }
+      if (h === 19 && m === 30) { slots.push('19:30'); break; }
+      if (h > 19) break;
     }
-
     this.timeSlots = slots;
   }
 
@@ -159,53 +161,68 @@ export class AppointmentModalComponent implements OnInit{
       );
 
     } else if (cssClass.includes('btn-accepted')) {
-      this.toast.show('Ez az időpont már foglalt!', 'danger');
-    } else {
       this.toast.show('Erre az időpontra nincs rendelés kiírva!', 'warning');
+    } else {
+      this.toast.show('Ez az időpont már foglalt!', 'danger');
     }
   }
 
-  getButtonClass(day: any, time: string): string {
-    const list = Array.isArray(this.appointments)
-      ? this.appointments
-      : (this.appointments && (this as any).appointments.appointments) || [];
+  getButtonClass(day: { date: Date }, timeHHmm: string) {
+    const key = `${this.dateKey(day.date)}|${timeHHmm}`;
+    const appt = this.apptBySlot.get(key);
 
-    if (!list.length) return 'btn-date';
+    if (!appt) return 'btn-date btn-accepted';
+    if (appt.patient_id == null) return 'btn-date btn-free';
+    return 'btn-date btn-booked';
+  }
 
-    const parseDateString = (str: string): Date => {
-      if (!str) return new Date('');
-      const [year, month, day, hour, minute] = str.split(':').map(Number);
-      return new Date(year, month - 1, day, hour, minute, 0, 0);
-    };
+  private pad(n: number) { return String(n).padStart(2, '0'); }
 
-    const [h, m] = time.split(':').map(Number);
-    const buttonDate = new Date(day.date);
-    buttonDate.setHours(h || 0, m || 0, 0, 0);
+  private dateKey(d: Date): string {
+    return `${d.getFullYear()}-${this.pad(d.getMonth()+1)}-${this.pad(d.getDate())}`;
+  }
 
-    const match = list.find(app => {
-      const from = parseDateString(app.from);
-      return from.getTime() === buttonDate.getTime();
-    });
+  private parseLocal(dt: string): Date {
+    if (!dt) return new Date(NaN);
+    if (dt.includes('T')) return new Date(dt);
+    const [d, t='00:00:00'] = dt.split(' ');
+    const [y,m,day] = d.split('-').map(Number);
+    const [hh,mm,ss] = t.split(':').map(Number);
+    return new Date(y, m-1, day, hh, mm, ss ?? 0, 0);
+  }
 
-    if (!match) return 'btn-date';
-
-    switch (match.status) {
-      case 'free': return 'btn-date btn-free';
-      case 'booked': return 'btn-date btn-booked';
-      case 'accepted': return 'btn-date btn-accepted';
-      default: return 'btn-date';
+  private reindexAppointments() {
+    this.apptBySlot.clear();
+    for (const a of this.appointments ?? []) {
+      const start = this.parseLocal(String(a.from));
+      const key = `${this.dateKey(start)}|${this.pad(start.getHours())}:${this.pad(start.getMinutes())}`;
+      this.apptBySlot.set(key, a);
     }
+  }
+
+  toSupabaseTimestamp(s: string): string {
+    const [year, month, day, hour, minute] = s.split(':').map(Number);
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    return `${year}-${pad(month)}-${pad(day)} ${pad(hour)}:${pad(minute)}:00`;
   }
 
   async handleAppointmentSaving(from: string, to: string) {
-    const doctorId = this.doctorData?.doctor?.id;
-    const patientId = this.patientData.user.id;
+    const patientId = await this.getPatientId();
+    if (!patientId) {
+      this.toast.show('Hiányzik a páciens azonosító. Jelentkezz be újra.', 'danger');
+      return;
+    }
+
+    const starts_at = this.toSupabaseTimestamp(from);
+    const ends_at   = this.toSupabaseTimestamp(to);
 
     const payload = {
-      doctorId: Number(doctorId),
-      patientId: String(patientId),
-      from: from,
-      to: to
+      doctorId: Number(this.doctorData?.doctor?.id),
+      patientId: patientId,
+      from: starts_at,
+      to: ends_at
     };
 
     this.http.post(
@@ -214,36 +231,8 @@ export class AppointmentModalComponent implements OnInit{
       { withCredentials: true }
     ).subscribe({
       next: () => {
-        const list: any[] = Array.isArray(this.appointments)
-          ? this.appointments
-          : (this.appointments && (this as any).appointments?.appointments) || [];
-
-        const idx = list.findIndex(a =>
-          String(a.from) === from &&
-          String(a.to) === to &&
-          Number(a.doctor_id) === Number(doctorId)
-        );
-
-        if (idx !== -1) {
-          const updated = {
-            ...list[idx],
-            patient_id: String(patientId),
-            status: (list[idx].status && list[idx].status !== 'free') ? list[idx].status : 'booked',
-          };
-
-          const newList = [...list];
-          newList[idx] = updated;
-
-          if (Array.isArray(this.appointments)) {
-            this.appointments = newList;
-          } else if (this.appointments && (this as any).appointments) {
-            (this as any).appointments = {
-              ...(this as any).appointments,
-              appointments: newList
-            };
-          }
-        }
-
+        this.updateAppointment(patientId, from, to);
+        this.reindexAppointments();
         this.toast.show('Sikeres foglalás!', 'success');
       },
       error: (err) => {
@@ -255,6 +244,86 @@ export class AppointmentModalComponent implements OnInit{
         }
       }
     });
+  }
+
+  updateAppointment(patientId: number, from: string, to: string) {
+    const rawList: any[] = Array.isArray(this.appointments)
+      ? this.appointments
+      : (this.appointments && (this as any).appointments?.appointments) || [];
+
+    const getTime = (item: any, keys: string[]) =>
+      keys.map(k => item?.[k]).find(v => v != null);
+
+    const getDoctorId = (item: any) =>
+      item?.doctor_id ?? item?.doctorId ?? item?.doctor?.id;
+
+    const toComparable = (val: any): string => {
+      if (!val) return '';
+      let s = String(val).trim();
+
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+\-]\d{2}:\d{2})?$/.test(s)) {
+        s = s.replace('T', ' ');
+        s = s.replace(/\.\d+/, '');
+        s = s.replace(/(Z|[+\-]\d{2}:\d{2})$/, '');
+        if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(s)) s += ':00';
+        return s;
+      }
+
+      if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/.test(s)) {
+        return s.length === 16 ? s + ':00' : s;
+      }
+
+      if (/^\d{4}:\d{2}:\d{2}:\d{2}:\d{2}$/.test(s)) {
+        const [Y, M, D, h, m] = s.split(':');
+        return `${Y}-${M}-${D} ${h}:${m}:00`;
+      }
+
+      return s;
+    };
+
+    const starts_at_target = toComparable(this.toSupabaseTimestamp(from));
+    const ends_at_target   = toComparable(this.toSupabaseTimestamp(to));
+    const doctorIdTarget   = Number(this.doctorData?.doctor?.id);
+
+    const idx = rawList.findIndex(item => {
+      const itemStart = toComparable(getTime(item, ['from', 'starts_at', 'start', 'start_at']));
+      const itemEnd   = toComparable(getTime(item, ['to', 'ends_at', 'end', 'end_at']));
+      const itemDocId = Number(getDoctorId(item));
+      return (
+        itemStart === starts_at_target &&
+        itemEnd === ends_at_target &&
+        itemDocId === doctorIdTarget
+      );
+    });
+
+    if (idx !== -1) {
+      const current = rawList[idx];
+
+      const updated = {
+        ...current,
+        starts_at: toComparable(getTime(current, ['from', 'starts_at'])) || starts_at_target,
+        ends_at:   toComparable(getTime(current, ['to', 'ends_at']))   || ends_at_target,
+        patient_id: String(patientId),
+        status: (current.status && current.status !== 'free') ? current.status : 'accepted',
+        doctor_id: Number(getDoctorId(current) ?? doctorIdTarget)
+      };
+
+      const newList = [...rawList];
+      newList[idx] = updated;
+
+      if (Array.isArray(this.appointments)) {
+        this.appointments = newList;
+      } else if (this.appointments && (this as any).appointments) {
+        (this as any).appointments = {
+          ...(this as any).appointments,
+          appointments: newList
+        };
+      }
+    } else {
+      console.warn('Nem talált egyező appointment a lokális listában.', {
+        starts_at_target, ends_at_target, doctorIdTarget, rawListSample: rawList.slice(0, 3)
+      });
+    }
   }
 
   dismiss() {

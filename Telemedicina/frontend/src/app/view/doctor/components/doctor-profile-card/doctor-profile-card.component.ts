@@ -24,8 +24,6 @@ export class DoctorProfileCardComponent {
   @Output() rate = new EventEmitter<{ doctorId: number, value: number }>();
   @Output() edit = new EventEmitter<void>();
 
-  editingRating = false;
-
   get fullName(): string {
     return this.user?.user?.name || '';
   }

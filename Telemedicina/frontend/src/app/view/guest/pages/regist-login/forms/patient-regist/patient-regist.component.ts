@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {ToastService} from '../../../../../../shared/toast/toast.service';
@@ -13,7 +13,8 @@ import {environment} from '../../../../../../../../../backend/config/enviroment'
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule
+    IonicModule,
+    ReactiveFormsModule
   ],
   templateUrl: './patient-regist.component.html',
   styleUrls: ['./patient-regist.component.scss']
@@ -24,61 +25,81 @@ export class PatientRegistComponent {
   @Input() calledByAdmin: boolean = false;
   @Input() adminUser: any;
 
-  fullName: string = '';
-  email: string = '';
-  password: string = '';
-  password_again: string = '';
-  phoneNumber: string = '';
-  taj: string = '';
-  address: string = '';
-  birthDate: string = '';
-  gender: string = '';
+  patientForm: FormGroup;
 
-  showPassword: boolean = false;
+  showPwd1 = false;
+  showPwd2 = false;
 
-  buttonText: string = this.calledByAdmin ? 'jelentkezek' : 'Mentés';
+  loading = false;
 
   constructor(
     private http: HttpClient,
+    private fb: FormBuilder,
     private modalCtrl: ModalController,
     private router: Router,
     private toast: ToastService
-  ) {}
+  ) {
+    this.patientForm = this.fb.group({
+      fullName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required],
+      password_again: ['', Validators.required],
+      phoneNumber: ['', Validators.required],
+      address: ['', Validators.required],
+      birthDate: ['', Validators.required],
+      taj: ['', Validators.required],
+      gender: ['', Validators.required]
+    });
+  }
 
   onPatientRegister() {
-    if (!this.fullName || !this.email || !this.password || !this.password_again ||
-      !this.phoneNumber || !this.address || !this.birthDate) {
+    if (this.patientForm.invalid) {
+      this.patientForm.markAllAsTouched();
       this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
       return;
     }
 
-    const email = String(this.email).trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const {
+      fullName,
+      email,
+      password,
+      password_again,
+      phoneNumber,
+      address,
+      birthDate,
+      taj,
+      gender
+    } = this.patientForm.getRawValue();
+
+    const emailNorm = String(email ?? '').trim().toLowerCase();
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm);
+    if (!emailOk) {
+      this.patientForm.get('email')?.setErrors({ email: true });
       this.toast.show('Hibás e-mail cím!', 'danger');
       return;
     }
 
-    if (this.password !== this.password_again) {
+    if (password !== password_again) {
+      this.patientForm.get('password_again')?.setErrors({ mismatch: true });
       this.toast.show('A jelszavak nem egyeznek!', 'warning');
       return;
     }
 
     const payloadBase: any = {
-      name: String(this.fullName).trim(),
-      email,
-      password: String(this.password),
-      phoneNumber: String(this.phoneNumber).trim(),
-      address: String(this.address).trim(),
-      birthDate: new Date(this.birthDate).toISOString().split('T')[0],
+      name: String(fullName ?? '').trim(),
+      email: emailNorm,
+      password: String(password ?? ''),
+      phoneNumber: String(phoneNumber ?? '').trim(),
+      address: String(address ?? '').trim(),
+      birthDate: new Date(birthDate),
+      ...(taj ? { taj: String(taj).trim() } : {}),
+      ...(gender ? { gender } : {})
     };
-
-    if (this.taj) payloadBase.taj = String(this.taj).trim();
-    if (this.gender) payloadBase.gender = this.gender;
 
     if (!this.calledByAdmin) {
       this.http.post(`${environment.apiUrl}/auth/register/patient`, payloadBase)
         .subscribe({
-          next: (resp) => {
+          next: () => {
             setTimeout(() => {
               void this.router.navigate(['/regist-login'], {
                 queryParams: {
@@ -120,8 +141,12 @@ export class PatientRegistComponent {
     }
   }
 
-  togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
+  togglePwd1() {
+    this.showPwd1 = !this.showPwd1;
+  }
+
+  togglePwd2() {
+    this.showPwd2 = !this.showPwd2;
   }
 
   backToDash() {

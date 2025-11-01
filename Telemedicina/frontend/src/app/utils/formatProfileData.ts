@@ -37,8 +37,15 @@ export function formatTaj(taj?: string | number): string {
 
 
 export function formatAppointmentTime(from: string, to: string): string {
-  const [year, month, day, fromHour, fromMin] = from.split(':');
-  const [, , , toHour, toMin] = to.split(':');
+  const yyyy = from.slice(0, 4);
+  const mm   = from.slice(5, 7);
+  const dd   = from.slice(8, 10);
 
-  return `${year}.${month}.${day}. ${fromHour}:${fromMin} - ${toHour}:${toMin}`;
+  const fromHour = from.slice(11, 13);
+  const fromMin  = from.slice(14, 16);
+
+  const toHour = to.slice(11, 13);
+  const toMin  = to.slice(14, 16);
+
+  return `${yyyy}.${mm}.${dd}. ${fromHour}:${fromMin} - ${toHour}:${toMin}`;
 }

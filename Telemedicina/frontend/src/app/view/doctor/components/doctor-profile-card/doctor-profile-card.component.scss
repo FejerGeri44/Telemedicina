@@ -88,7 +88,11 @@
 .dpc-edit-bottom-wrap { grid-area: editb; display: none; }
 
 /* BEMUTATKOZÁS */
-.dpc-intro { grid-area: intro; border-top: 1px solid rgba(0,0,0,.08); padding-top: 12px; }
+.dpc-intro { grid-area: intro; border-top: 1px solid rgba(0,0,0,.08); padding-top: 12px;
+  .intro {
+    white-space: pre-line;
+  }
+}
 .dpc-intro h4 { margin: 0 0 6px; font-weight: 700; }
 
 /* --- BREAKPOINTOK --- */

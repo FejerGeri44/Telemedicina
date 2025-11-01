@@ -4,143 +4,150 @@
   </ion-card-header>
 
   <ion-card-content class="form">
+    <form [formGroup]="patientForm" (ngSubmit)="onPatientRegister()">
 
-    <!-- 1. sor -->
-    <div class="grid-pair">
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Teljes név</ion-label>
+      <div class="grid-pair">
         <ion-input
-          class="custom-input"
-          type="text"
-          [(ngModel)]="fullName"
-          placeholder="Teljes név"
+          class="field"
+          label="Teljes név"
+          labelPlacement="floating"
           fill="outline"
+          shape="round"
+          type="text"
+          formControlName="fullName"
           required
-          clearInput/>
-      </ion-item>
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">E-mail cím</ion-label>
+          clearInput>
+        </ion-input>
+
         <ion-input
-          class="custom-input"
+          class="field"
+          label="E-mail cím"
+          labelPlacement="floating"
+          fill="outline"
+          shape="round"
           type="email"
-          [(ngModel)]="email"
-          placeholder="Email cím"
-          fill="outline"
-          required
-          clearInput/>
-      </ion-item>
-    </div>
-
-    <!-- 2. sor -->
-    <div class="grid-pair">
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Jelszó</ion-label>
-        <ion-input
-          class="custom-input"
-          [type]="showPassword ? 'text' : 'password'"
-          [(ngModel)]="password"
-          placeholder="Jelszó"
-          fill="outline"
+          formControlName="email"
           required
           clearInput>
         </ion-input>
-        <ion-icon
-          *ngIf="password"
-          [name]="showPassword ? 'eye-off' : 'eye'"
-          (click)="togglePasswordVisibility()"
-          class="password-toggle-icon">
-        </ion-icon>
-      </ion-item>
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Jelszó</ion-label>
+      </div>
+
+      <div class="grid-pair">
         <ion-input
-          class="custom-input"
-          [type]="showPassword ? 'text' : 'password'"
-          [(ngModel)]="password_again"
-          placeholder="Jelszó"
+          class="field"
+          label="Jelszó"
+          labelPlacement="floating"
           fill="outline"
+          shape="round"
+          [type]="showPwd1 ? 'text' : 'password'"
+          formControlName="password"
           required
           clearInput>
+          <ion-button
+            slot="end"
+            fill="clear"
+            size="small"
+            type="button"
+            (click)="togglePwd1()"
+            aria-label="Jelszó mutatása/elrejtése">
+            <ion-icon [name]="showPwd1 ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </ion-button>
         </ion-input>
-        <ion-icon
-          *ngIf="password_again"
-          [name]="showPassword ? 'eye-off' : 'eye'"
-          (click)="togglePasswordVisibility()"
-          class="password-toggle-icon">
-        </ion-icon>
-      </ion-item>
-    </div>
 
-    <!-- 3. sor -->
-    <div class="grid-pair">
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Telefonszám</ion-label>
         <ion-input
-          class="custom-input"
+          class="field"
+          label="Jelszó ismét"
+          labelPlacement="floating"
+          fill="outline"
+          shape="round"
+          [type]="showPwd1 ? 'text' : 'password'"
+          formControlName="password_again"
+          required
+          clearInput>
+          <ion-button
+            slot="end"
+            fill="clear"
+            size="small"
+            type="button"
+            (click)="togglePwd2()"
+            aria-label="Jelszó mutatása/elrejtése">
+            <ion-icon [name]="showPwd2 ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </ion-button>
+        </ion-input>
+      </div>
+
+      <div class="grid-pair">
+        <ion-input
+          class="field"
+          label="Telefonszám"
+          labelPlacement="floating"
+          fill="outline"
+          shape="round"
           type="tel"
-          [(ngModel)]="phoneNumber"
-          placeholder="06XXXXXXXXX"
-          fill="outline"
+          formControlName="phoneNumber"
           required
-          clearInput/>
-      </ion-item>
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">TAJ szám</ion-label>
-        <ion-input
-          class="custom-input"
-          type="text"
-          [(ngModel)]="taj"
-          placeholder="TAJ"
-          fill="outline"
-          required
-          clearInput/>
-      </ion-item>
-    </div>
+          clearInput>
+        </ion-input>
 
-    <!-- 4. sor -->
-    <div class="grid-pair">
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Cím</ion-label>
         <ion-input
-          class="custom-input"
-          type="text"
-          [(ngModel)]="address"
-          placeholder="Baranyai utca 52."
+          class="field"
+          label="TAJ szám"
+          labelPlacement="floating"
           fill="outline"
+          shape="round"
+          type="text"
+          formControlName="taj"
           required
-          clearInput/>
-      </ion-item>
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Születési dátum</ion-label>
+          clearInput>
+        </ion-input>
+      </div>
+
+      <div class="grid-pair">
         <ion-input
-          class="custom-input"
+          class="field"
+          label="Cím"
+          labelPlacement="floating"
+          fill="outline"
+          shape="round"
+          type="text"
+          formControlName="address"
+          required
+          clearInput>
+        </ion-input>
+
+        <ion-input
+          class="field"
+          label="Születési dátum"
+          labelPlacement="floating"
+          fill="outline"
+          shape="round"
           type="date"
-          [(ngModel)]="birthDate"
-          fill="outline"
-          required
-          clearInput/>
-      </ion-item>
-    </div>
+          formControlName="birthDate"
+          required>
+        </ion-input>
+      </div>
 
-    <div class="grid-single">
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Nem</ion-label>
-        <ion-radio-group [(ngModel)]="gender" required>
-          <ion-item lines="none">
-            <ion-label>Férfi</ion-label>
-            <ion-radio slot="start" value="Férfi"></ion-radio>
-          </ion-item>
-          <ion-item lines="none">
-            <ion-label>Nő</ion-label>
-            <ion-radio slot="start" value="Nő"></ion-radio>
-          </ion-item>
-        </ion-radio-group>
-      </ion-item>
-    </div>
+      <div class="grid-single">
+        <ion-item lines="none" class="radio-field">
+          <ion-label>Páciens neme</ion-label>
+          <ion-radio-group formControlName="gender" required>
+            <ion-item lines="none">
+              <ion-label>Férfi</ion-label>
+              <ion-radio slot="start" value="Férfi"></ion-radio>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-label>Nő</ion-label>
+              <ion-radio slot="start" value="Nő"></ion-radio>
+            </ion-item>
+          </ion-radio-group>
+        </ion-item>
+      </div>
 
-    <div class="button-row">
-      <ion-button *ngIf="!calledByAdmin" class="btn-secondary back" (click)="backToDash()">Vissza</ion-button>
-      <ion-button [ngClass]="{ 'full-width': calledByAdmin }" class="btn-primary submit" (click)="onPatientRegister()">{{ buttonText }}</ion-button>
-    </div>
+      <div class="button-row">
+        <ion-button class="btn-secondary back" type="button" (click)="backToDash()">Vissza</ion-button>
+        <ion-button [ngClass]="{ 'full-width': calledByAdmin }" class="btn-primary submit" type="submit" [disabled]="loading">Páciens regisztráció</ion-button>
+      </div>
+
+    </form>
   </ion-card-content>
 </ion-card>

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
@@ -9,6 +9,7 @@ import {environment} from '../../../../../../../backend/config/enviroment';
 import {UserService} from '../../../../shared/user.service';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {formatAppointmentTime} from '../../../../utils/formatProfileData';
+import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 
 @Component({
   selector: 'app-appointment-list',
@@ -23,8 +24,8 @@ import {formatAppointmentTime} from '../../../../utils/formatProfileData';
   styleUrl: './appointment-list.component.scss'
 })
 
-export class AppointmentListComponent implements OnInit {
-  user!: PatientItem;
+export class AppointmentListComponent {
+  user!: Observable<PatientItem | null>;
   myAppointments: MyAppointment[] = [];
   isLoading = true;
   sortColumn: 'datetime' | null = null;
@@ -32,28 +33,42 @@ export class AppointmentListComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private userService: UserService,
-    private alertService: AlertService,
-    private toast: ToastService
-  ) {}
+    protected userService: UserService,
+    private toast: ToastService,
+    private alert: AlertService
+  ) {
+    this.user = this.userService.patient$();
 
-  ngOnInit() {
-    this.getUserData();
-    void this.fetchAppointments();
+    (async () => {
+      const userValue = await firstValueFrom(
+        this.userService.patient$().pipe(
+          filter((u): u is PatientItem => !!u),
+          take(1),
+          delay(50)
+        )
+      );
+
+      await void this.fetchAppointments();
+    })();
   }
 
-  private getUserData() {
-
+  private async getPatientId(): Promise<number | null> {
+    const user = await firstValueFrom(this.user);
+    return user?.patient.id ?? null;
   }
 
   async fetchAppointments(): Promise<void> {
     this.isLoading = true;
 
-    const payload = this.user?.patient?.id;
+    const patientId = await this.getPatientId();
+    if (!patientId) {
+      this.toast.show('Hiányzik a páciens azonosító. Jelentkezz be újra.', 'danger');
+      return;
+    }
 
     this.http.post<MyAppointment[]>(
       `${environment.apiUrl}/patient/loadMyAppointments`,
-      { payload },
+      { patientId },
       {
         withCredentials: true,
       }
@@ -87,7 +102,7 @@ export class AppointmentListComponent implements OnInit {
   }
 
   confirmDelete(appointment: MyAppointment) {
-    void this.alertService.show(
+    void this.alert.show(
       'Biztosan törlöd?',
       'Ez a művelet nem visszavonható.',
       () => this.cancelAppointment(appointment)

@@ -10,6 +10,7 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../shared/user.service';
 import {Appointment, newAppointment} from '../../../../utils/interfaces/appointment.inteface';
 import {environment} from '../../../../../../../backend/config/enviroment';
+import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 
 registerLocaleData(localeHu);
 
@@ -36,7 +37,8 @@ export class AppointmentsComponent implements OnInit{
     from: '',
     to: ''
   };
-  user!: DoctorItem;
+  user!: Observable<DoctorItem | null>;
+  private apptBySlot = new Map<string, Appointment>();
   selectedDate = new Date();
   weekStart!: Date;
   weekEnd!: Date;
@@ -56,40 +58,56 @@ export class AppointmentsComponent implements OnInit{
     private cdr: ChangeDetectorRef,
     private alert: AlertService,
     private toast: ToastService
-  ) {}
+  ) {
+    this.user = this.userService.doctor$();
+
+    (async () => {
+      const userValue = await firstValueFrom(
+        this.userService.doctor$().pipe(
+          filter((u): u is DoctorItem => !!u),
+          take(1),
+          delay(50)
+        )
+      );
+
+      await this.loadAppointments();
+    })();
+  }
 
   ngOnInit() {
-    this.getUserData();
-    this.loadAppointments().then();
     this.onDateChange({ detail: { value: this.selectedDate } });
     this.generateWeek(this.selectedDate);
     this.generateTimeSlots();
     this.generateTimeOptions();
   }
 
-  private getUserData() {
-
+  private async getDoctorId(): Promise<number | null> {
+    const user = await firstValueFrom(this.user);
+    return user?.doctor.id ?? null;
   }
 
   async loadAppointments(): Promise<Appointment[] | null> {
+    const doctorId = await this.getDoctorId();
+    if (!doctorId) {
+      this.toast.show('Hiányzik az orvos azonosító.', 'danger');
+      return null;
+    }
 
     return new Promise<Appointment[] | null>((resolve) => {
       this.http.post<Appointment[]>(
         `${environment.apiUrl}/doctor/myAppointments`,
-        { id: this.user?.doctor?.id },
+        { id: doctorId  },
+        { withCredentials: true }
       ).subscribe({
         next: async (appointments) => {
           this.appointments = appointments;
+          this.reindexAppointments();
           this.appointmentDates = appointments.map(appt => appt.from);
-
           try {
-            await this.loadPatientNamesForWeek(appointments);
-          } catch (e) {
-            console.error('⚠️ Hiba a páciensek nevének betöltésekor:', e);
-          }
+            await this.loadPatientNames(appointments);
+          } catch {}
 
           Promise.resolve().then(() => this.cdr?.markForCheck?.());
-
           resolve(appointments);
         },
         error: (err) => {
@@ -101,10 +119,10 @@ export class AppointmentsComponent implements OnInit{
     });
   }
 
-  private async loadPatientNamesForWeek(appts: Appointment[]): Promise<void> {
+  private async loadPatientNames(appts: Appointment[]): Promise<void> {
 
     const patientIds = [...new Set(
-      appts.map(a => a.patient_id).filter((x): x is string => !!x)
+      appts.map(a => a.patient_id).filter((x): x is number => !!x)
     )];
 
     if (patientIds.length === 0) {
@@ -116,6 +134,7 @@ export class AppointmentsComponent implements OnInit{
       this.http.post<{ map: Record<string, { userId: number; name: string }> }>(
         `${environment.apiUrl}/doctor/resolvePatientNames`,
         { patientIds },
+        { withCredentials: true }
       ).subscribe({
         next: (res) => {
           this.appointmentUserDataMap = res.map;
@@ -136,7 +155,7 @@ export class AppointmentsComponent implements OnInit{
 
   patientName(appt: { patient_id: string | number }): string {
     const pid = appt?.patient_id;
-    if (pid == null || pid === '') return 'Szabad';
+    if (pid == null) return 'Szabad';
     const key = String(pid).trim();
     return <string>this.appointmentUserDataMap[key]?.name;
   }
@@ -152,7 +171,7 @@ export class AppointmentsComponent implements OnInit{
   generateTimeSlots() {
     const slots: string[] = [];
     const startHour = 8;
-    const endHour = 19;
+    const endHour = 19.5;
 
     for (let hour = startHour; hour <= endHour; hour++) {
       slots.push(`${hour.toString().padStart(2, '0')}:00`);
@@ -201,30 +220,34 @@ export class AppointmentsComponent implements OnInit{
     this.generateWeek(newStart);
   }
 
-  stringToDate(str: string): Date {
-    if (!str) return new Date();
-    const [year, month, day, hour, minute] = str.split(':').map(Number);
-    return new Date(year, month - 1, day, hour, minute);
+  getAppt(day: Date, timeHHmm: string): Appointment | null {
+    const key = `${this.dateKey(day)}|${timeHHmm}`;
+    return this.apptBySlot.get(key) ?? null;
   }
 
-  getAppt(day: Date, time: string) {
-    if (!this.appointments || this.appointments.length === 0) return null;
+  private pad(n: number) { return String(n).padStart(2, '0'); }
 
-    return this.appointments.find(appt => {
-      if (!appt.from) return false;
+  private dateKey(d: Date): string {
+    return `${d.getFullYear()}-${this.pad(d.getMonth()+1)}-${this.pad(d.getDate())}`;
+  }
 
-      const fromDate = this.stringToDate(appt.from);
+  private parseLocal(dtStr: string): Date {
+    if (dtStr.includes('T')) {
+      return new Date(dtStr);
+    }
+    const [d, t] = dtStr.split(' ');
+    const [y,m,day] = d.split('-').map(Number);
+    const [hh,mm,ss] = (t ?? '00:00:00').split(':').map(Number);
+    return new Date(y, m-1, day, hh, mm, ss ?? 0, 0);
+  }
 
-      const [hour, minute] = time.split(':').map(Number);
-
-      return (
-        fromDate.getFullYear() === day.getFullYear() &&
-        fromDate.getMonth() === day.getMonth() &&
-        fromDate.getDate() === day.getDate() &&
-        fromDate.getHours() === hour &&
-        fromDate.getMinutes() === minute
-      );
-    }) || null;
+  private reindexAppointments() {
+    this.apptBySlot.clear();
+    for (const a of this.appointments ?? []) {
+      const start = this.parseLocal(a.from as unknown as string);
+      const key = `${this.dateKey(start)}|${this.pad(start.getHours())}:${this.pad(start.getMinutes())}`;
+      this.apptBySlot.set(key, a);
+    }
   }
 
   trackByTime(index: number, time: string) {
@@ -268,10 +291,9 @@ export class AppointmentsComponent implements OnInit{
 
   async addAppointment() {
     const now = new Date();
-    const date = new Date(this.newAppointment.date);
-    const day = date.getDay();
+    const today = new Date(this.newAppointment.date).getDay();
 
-    if (day === 0 || day === 6) {
+    if (today === 0 || today === 6) {
       this.toast.show('Hétvégére nem lehet rendelést felvenni!', 'warning');
       return;
     }
@@ -282,9 +304,17 @@ export class AppointmentsComponent implements OnInit{
     }
 
     const onlyDate = this.newAppointment.date.split('T')[0];
-    const fromDateTime = new Date(`${onlyDate}T${this.newAppointment.from}`);
-    const toDateTime = new Date(fromDateTime);
-    toDateTime.setMinutes(toDateTime.getMinutes() + 30);
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const [y, m, d] = onlyDate.split('-').map(Number);
+    const [hh, mm]  = this.newAppointment.from.split(':').map(Number);
+
+    const fromDateTime = new Date(y, m - 1, d, hh, mm, 0, 0);
+    const toDateTime   = new Date(fromDateTime.getTime() + 30 * 60 * 1000);
+
+    const toLocalSql = (dt: Date) =>
+      `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())} ` +
+      `${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
 
     if (fromDateTime >= toDateTime) {
       this.toast.show('A befejezési időpontnak a kezdés után kell lennie.', 'danger');
@@ -300,21 +330,16 @@ export class AppointmentsComponent implements OnInit{
       return;
     }
 
-    const fromKeyUTC = this.toKeyLocal(fromDateTime);
-    const toKeyUTC   = this.toKeyLocal(toDateTime);
-
-    const conflict = this.appointments.some(appt =>
-      appt.from === fromKeyUTC && appt.to === toKeyUTC
-    );
-    if (conflict) {
-      this.toast.show('Már létezik ilyen időpont!', 'danger');
+    const doctorId = await this.getDoctorId();
+    if (!doctorId) {
+      this.toast.show('Hiányzik az orvos azonosító. Jelentkezz be újra.', 'danger');
       return;
     }
 
     const appointmentPayload = {
-      doctor_id: this.user.doctor.id,
-      from: fromKeyUTC,
-      to: toKeyUTC
+      doctor_id: doctorId,
+      from: toLocalSql(fromDateTime),
+      to: toLocalSql(toDateTime)
     };
 
     this.savingData = true;
@@ -323,6 +348,7 @@ export class AppointmentsComponent implements OnInit{
       this.http.post<Appointment>(
         `${environment.apiUrl}/doctor/addAppointment`,
         appointmentPayload,
+        { withCredentials: true }
       ).subscribe({
         next: (created) => {
           this.toast.show('Sikeres időpontfelvétel!', 'success');
@@ -343,15 +369,6 @@ export class AppointmentsComponent implements OnInit{
     });
   }
 
-  toKeyLocal(d: Date): string {
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    const hours = d.getHours().toString().padStart(2, '0');
-    const minutes = d.getMinutes().toString().padStart(2, '0');
-    return `${year}:${month}:${day}:${hours}:${minutes}`;
-  }
-
   async confirmDeleteAppointment(appointment: Appointment) {
 
     await this.alert.show(
@@ -370,12 +387,15 @@ export class AppointmentsComponent implements OnInit{
       this.http.post<{ deleted: boolean }>(
         `${environment.apiUrl}/doctor/deleteAppointment`,
         { id: appointment.id },
+        { withCredentials: true }
       ).subscribe({
         next: () => {
           this.toast.show('Sikeres törlés!', 'success');
 
           const removedId = appointment.id;
           this.appointments = this.appointments.filter(a => a.id !== removedId);
+
+          this.reindexAppointments();
 
           Promise.resolve().then(() => {
             this.appointmentToDelete = null;

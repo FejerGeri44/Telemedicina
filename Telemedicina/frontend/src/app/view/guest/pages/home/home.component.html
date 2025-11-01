@@ -1,114 +1,150 @@
 <app-navbar></app-navbar>
 
+<!-- HERO SECTION -->
 <section class="hero">
-  <ion-grid class="grid">
-    <ion-row>
-      <!-- Bal oldal: szöveges rész -->
-      <ion-col size="12" size-md="6">
+  <ion-grid class="hero-grid">
+    <ion-row class="hero-row">
+      <!-- Bal oldal: szöveg + CTA -->
+      <ion-col size="12" size-md="6" class="hero-left">
         <div class="hero-content">
-          <h1 class="ion-text-wrap">Telemedicina, egyszerűen</h1>
-          <p class="ion-text-wrap">Orvosi ellátás bárhol, bármikor. Csatlakozz még ma!</p>
+          <h1 id="hero-title">
+            Telemedicina, <span class="highlight">egyszerűen</span>
+          </h1>
+          <p class="subtitle">
+            Orvosi ellátás bárhol, bármikor – biztonságosan, online konzultációval.
+          </p>
 
           <div class="hero-buttons">
-            <ion-button class="btn-primary primaryBtn" (click)="navigateToPatient()">Regisztráció</ion-button>
-            <ion-button class="btn-secondary secondaryBtn" (click)="navigateToDoctor()">Orvosi jelentkezés</ion-button>
+            <ion-button class="btn-primary" type="button" (click)="navigateToPatient()">
+              Regisztráció
+            </ion-button>
+            <ion-button class="btn-secondary" type="button" (click)="navigateToDoctor()">
+              Orvosi jelentkezés
+            </ion-button>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <p class="value">50+</p>
+              <p class="label">Partner orvos</p>
+            </div>
+            <div class="stat">
+              <p class="value">6</p>
+              <p class="label">Szolgáltatás</p>
+            </div>
+            <div class="stat">
+              <p class="value">2K+</p>
+              <p class="label">Elégedett felhasználó</p>
+            </div>
           </div>
         </div>
-
-        <ion-grid class="info-boxes">
-          <ion-row class="cards">
-            <ion-col size="4">
-              <div class="info">
-                <p class="mainFocus">50+</p>
-                <p class="complamentary">Partner orvos</p>
-              </div>
-            </ion-col>
-            <ion-col size="4">
-              <div class="info">
-                <p class="mainFocus">6</p>
-                <p class="complamentary">Szolgáltatás</p>
-              </div>
-            </ion-col>
-            <ion-col size="4">
-              <div class="info">
-                <p class="mainFocus">2K+</p>
-                <p class="complamentary">Elégedett felhasználó</p>
-              </div>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
       </ion-col>
 
-      <!-- Jobb oldal: kép -->
-      <ion-col class="image-col" size="12" size-md="6">
-        <img src="pictures/heroPicture.png" alt="heroPicture" class="floating" draggable="false">
+      <ion-col size="12" size-md="6" class="hero-right">
+        <div class="image-wrapper">
+          <img
+            src="pictures/heroPicture.png"
+            alt="Telemedicina videókonzultáció"
+            class="hero-image"
+            draggable="false"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
       </ion-col>
     </ion-row>
   </ion-grid>
 </section>
 
+<!-- IDÉZET -->
 <section class="quote">
-  <blockquote class="quote-text">
-    "Az egészség nem minden, de egészség nélkül minden semmi."
-  </blockquote>
-  <span class="quote-author"><a (click)="navigateToWiki()">Arthur Schopenhauer</a></span>
+  <figure class="quote-figure">
+    <blockquote class="quote-text">
+      „Az egészség nem minden, de egészség nélkül minden semmi.”
+    </blockquote>
+    <figcaption class="quote-author">
+      <a (click)="navigateToWiki()">Arthur Schopenhauer</a>
+    </figcaption>
+  </figure>
 </section>
 
-<section class="gridSystem">
+<!-- SZOLGÁLTATÁSOK ÉS TESTIMONIALOK -->
+<section class="services">
   <ion-grid class="grid-section">
-    <ion-row>
+    <ion-row class="row-gap">
+      <!-- Szolgáltatások listája -->
       <ion-col size="12" size-md="6">
-        <div class="box">
-          <div class="listText">
-            <h3>Szolgáltatásaink</h3>
-            <ul class="service-list">
-              <li>Online receptfelírás</li>
-              <li>Szakorvosi konzultáció</li>
-              <li>Laboreredmény kiértékelés</li>
-              <li>Egészségügyi tanácsadás</li>
-              <li>Gyors receptelérés</li>
-              <li>M.I. Asszisztens</li>
-              <li>Biztonságos adatkezelés</li>
-              <li>Gyors időpontfoglalás</li>
-            </ul>
-          </div>
+        <div class="box listBox">
+          <h2 id="services-title">Szolgáltatásaink</h2>
+          <ul class="service-list">
+            <li><i class="icon-check"></i> Online receptfelírás</li>
+            <li><i class="icon-check"></i> Szakorvosi konzultáció</li>
+            <li><i class="icon-check"></i> Laboreredmény kiértékelés</li>
+            <li><i class="icon-check"></i> Egészségügyi tanácsadás</li>
+            <li><i class="icon-check"></i> Gyors receptelérés</li>
+            <li><i class="icon-check"></i> M.I. Asszisztens</li>
+            <li><i class="icon-check"></i> Biztonságos adatkezelés</li>
+            <li><i class="icon-check"></i> Gyors időpontfoglalás</li>
+          </ul>
         </div>
       </ion-col>
-      <ion-col size="12" size-md="6">
-        <div class="box imageBox">
-          <img src="pictures/gridPicture1.jpg" alt="kep" draggable="false">
-        </div>
-      </ion-col>
+
+      <!-- Kép -->
       <ion-col size="12" size-md="6" class="image-col">
         <div class="box imageBox">
-          <img src="pictures/gridPicture2.png" alt="kep" draggable="false">
+          <img
+            src="pictures/gridPicture1.jpg"
+            alt="Online orvosi konzultáció folyamatban"
+            draggable="false"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       </ion-col>
-      <ion-col size="12" size-md="6" class="list-col">
-        <div class="box">
-          <h3>Pácienseink mondták</h3>
-          <blockquote class="testimonial">
-            „Gyors segítséget kaptam! A videókonzultáció egyszerű és megbízható volt.”
-          </blockquote>
-          <span class="testimonial-author">Kovács Éva, 34</span>
+    </ion-row>
 
-          <blockquote class="testimonial">
-            „Nem gondoltam volna, hogy ilyen gyorsan lehet orvoshoz jutni. Reggel jeleztem a problémám, délutánra már beszéltem egy szakorvossal!”
-          </blockquote>
-          <span class="testimonial-author">Szabó Márk, 42</span>
+    <!-- Testimonial blokk -->
+    <ion-row class="row-gap">
+      <ion-col size="12" size-md="6" class="image-col">
+        <div class="box imageBox">
+          <img
+            src="pictures/gridPicture2.png"
+            alt="Digitális diagnosztikai eszközök"
+            draggable="false"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      </ion-col>
 
-          <blockquote class="testimonial">
-            „Nagyon egyszerű volt használni az oldalt, és biztonságban éreztem magam. Külön jó, hogy nem kellett szabadságot kivennem csak egy konzultáció miatt.”
-          </blockquote>
-          <span class="testimonial-author">Nagy Katalin, 29</span>
+      <ion-col size="12" size-md="6" class="testimonials-col">
+        <div class="box testimonials">
+          <h2>Pácienseink mondták</h2>
 
-          <blockquote class="testimonial">
-            „Külföldön dolgozom, de a magyar orvosaimmal továbbra is könnyen tudok konzultálni. Óriási segítség!”          </blockquote>
-          <span class="testimonial-author">Varga András, 38</span>
+          <figure class="testimonial">
+            <blockquote>„Gyors segítséget kaptam! A videókonzultáció egyszerű és megbízható volt.”</blockquote>
+            <figcaption>Kovács Éva, 34</figcaption>
+          </figure>
 
-          <blockquote class="testimonial">
-            „A rendszer átlátható, az időpontfoglalás gyors, és az orvos is nagyon segítőkész volt. Csak ajánlani tudom.”          </blockquote>
-          <span class="testimonial-author">Tóth Melinda, 46</span>
+          <figure class="testimonial">
+            <blockquote>„Reggel jeleztem a problémám, délután már beszéltem egy szakorvossal!”</blockquote>
+            <figcaption>Szabó Márk, 42</figcaption>
+          </figure>
+
+          <figure class="testimonial">
+            <blockquote>„Nagyon egyszerű volt használni az oldalt, és biztonságban éreztem magam.”</blockquote>
+            <figcaption>Nagy Katalin, 29</figcaption>
+          </figure>
+
+          <figure class="testimonial">
+            <blockquote>„Külföldön dolgozom, de a magyar orvosaimmal továbbra is könnyen tudok konzultálni.”</blockquote>
+            <figcaption>Varga András, 38</figcaption>
+          </figure>
+
+          <figure class="testimonial">
+            <blockquote>„Gyors, átlátható, biztonságos. Csak ajánlani tudom!”</blockquote>
+            <figcaption>Tóth Melinda, 46</figcaption>
+          </figure>
         </div>
       </ion-col>
     </ion-row>

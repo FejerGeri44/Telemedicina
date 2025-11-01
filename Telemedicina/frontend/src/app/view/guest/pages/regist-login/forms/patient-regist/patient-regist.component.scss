@@ -20,6 +20,7 @@ ion-card-title {
   letter-spacing: 1px;
   text-transform: uppercase;
   line-height: 1.5;
+  margin-bottom: 20px;
 }
 
 ion-card-content.form {
@@ -37,29 +38,44 @@ ion-item {
   margin: 0;
 }
 
-ion-label.custom-label {
-  display: block;
-  font-weight: 500;
-  font-size: 1.5rem;
-  color: var(--smoke-color);
-  margin-bottom: 10px;
+.field {
+  --border-width: 1px;
+  --border-radius: 16px;
+  --background: transparent;
+
+  --padding-end: 44px;
 }
 
 ion-input {
-  --padding-start: 12px;
-  --padding-end: 12px;
   font-size: 1rem;
+  margin-bottom: 20px;
 }
 
-ion-input.custom-input {
-  --padding-start: 20px;
-  --padding-end: 20px;
-  --border-radius: 12px;
-  font-size: 1.1rem;
+ion-input.field {
+  --padding-bottom: 5px;
+  --padding-end: 44px;
 }
 
-ion-item {
-  --border-style: none;
+ion-input.field.has-focus::part(label),
+ion-input.field.has-value::part(label) {
+  font-size: 0.9rem;       /* ez lesz a kicsinyített/felcsúszott méret */
+  opacity: 0.9;
+}
+
+ion-input.field::part(native) {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+ion-input.field.has-focus::part(native),
+ion-input.field:focus-within::part(native) {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ion-color-primary) 20%, transparent);
+}
+
+ion-input.field.ng-invalid.ng-touched::part(native),
+ion-input.field.ng-invalid.ng-dirty::part(native) {
+  border-color: var(--ion-color-danger);
 }
 
 .form {
@@ -69,14 +85,16 @@ ion-item {
 }
 
 .grid-pair {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
 }
 
-.grid-pair ion-item {
-  flex: 1 1 calc(50% - 10px);
-  min-width: 200px;
+.grid-pair > ion-input,
+.grid-pair > ion-item {
+  width: 100%;
+  min-width: 0;
 }
 
 .button-row {
@@ -90,21 +108,34 @@ ion-item {
   width: 100%;
 }
 
-.password-toggle-icon {
-  position: absolute;
-  right: 60px;
-  top: 58%;
-  font-size: 1.4rem;
-  color: var(--smoke-color);
-  cursor: pointer;
-  z-index: 10;
-}
-
 .grid-single {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 20px;
+}
+
+ion-item.radio-field::part(native) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 0;
+}
+
+ion-item.radio-field > ion-label {
+  display: block;
+  width: 100% !important;
+  flex: 0 0 auto !important;
+  margin: 0;
+  font-weight: 600;
+}
+
+ion-item.radio-field ion-radio-group {
+  display: flex;
+  flex-direction: row;
+  gap: 8px 16px;
+  width: 100%;
 }
 
 ion-radio-group {
@@ -128,7 +159,7 @@ ion-radio-group {
 }
 
 @media (max-width: 767px) {
-  .grid-pair ion-item {
-    flex: 1 1 100%;
+  .grid-pair {
+    grid-template-columns: 1fr;
   }
 }

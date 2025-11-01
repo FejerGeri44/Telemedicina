@@ -40,7 +40,7 @@ export interface SystemMessage {
 }
 export interface Draft {
   appointmentId: number | null;
-  patientId: string | null;
+  patientId: number | null;
   status: 'draft' | string;
 
   patient: {

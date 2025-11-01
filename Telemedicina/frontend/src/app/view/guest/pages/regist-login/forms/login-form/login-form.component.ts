@@ -1,5 +1,5 @@
 import {Component, Injector, OnInit, ViewContainerRef} from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -10,7 +10,7 @@ import {UserService} from '../../../../../../shared/user.service';
 import {LoggedUser} from '../../../../../../utils/interfaces/logged-user.interface';
 import { createClient } from '@supabase/supabase-js';
 import {environment} from '../../../../../../../../../backend/config/enviroment';
-import {FrontendUser} from '../../../../../../shared/user.mapper';
+import {firstValueFrom} from 'rxjs';
 const supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
 
 @Component({
@@ -21,23 +21,30 @@ const supabase = createClient(environment.supabaseUrl, environment.supabaseAnonK
   imports: [
     CommonModule,
     IonicModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ]
 })
 export class LoginFormComponent implements OnInit{
-  email: string = '';
-  password: string = '';
+  loginForm: FormGroup;
   showPassword = false;
+  loading = false;
 
   constructor(
     private http: HttpClient,
     private router: Router,
+    private fb: FormBuilder,
     private viewContainerRef: ViewContainerRef,
     private injector: Injector,
     private userService: UserService,
     private route: ActivatedRoute,
     private toast: ToastService
-    ) {}
+    ) {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required],
+    });
+  }
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
@@ -69,45 +76,58 @@ export class LoginFormComponent implements OnInit{
     });
   }
 
-  async login() {
-    if (!this.email || !this.password) { this.toast.show('Kötelező mezők!', 'warning'); return; }
-    const email = String(this.email).trim().toLowerCase();
+  async login(): Promise<void> {
+    if (this.loading) { return; }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email, password: String(this.password)
-    });
-    if (error || !data?.session?.access_token) {
-      this.toast.show(error?.message || 'Hibás belépési adatok.', 'danger');
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      this.toast.show('Kötelező mezők!', 'warning');
       return;
     }
-    const accessToken = data.session.access_token;
 
-    this.http.post<{ message: string, user: LoggedUser }>(
-      `${environment.apiUrl}/auth/login`,
-      { accessToken },
-      { withCredentials: true }
-    ).subscribe({
-      next: (resp) => {
-        this.userService.setUserFromBackend(resp.user);
-        const role = resp.user.user.role;
-        switch (role) {
-          case 'doctor':  void this.router.navigate(['/doctor/doctor-home']); break;
-          case 'patient': void this.router.navigate(['/patient/patient-home']); break;
-          case 'admin':   void this.router.navigate(['/admin/admin-home']); break;
-          default:        void this.router.navigate(['/']);
-        }
-      },
-      error: (err) => {
-        if (err?.status === 403 && err?.error?.code === 'DOCTOR_PENDING') {
-          this.toast.show('A regisztráció még nincs jóváhagyva!', 'warning'); return;
-        }
-        const serverMsg = err?.error?.message || `Hiba (${err?.status ?? '?'}) a bejelentkezésnél.`;
-        this.toast.show(serverMsg, 'danger');
+    const rawEmail = (this.loginForm.value.email ?? '') as string;
+    const password = (this.loginForm.value.password ?? '') as string;
+    const email = rawEmail.trim().toLowerCase();
+
+    this.loading = true;
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password: String(password) });
+      if (error || !data?.session?.access_token) {
+        this.toast.show(error?.message || 'Hibás belépési adatok.', 'danger');
+        return;
       }
-    });
+
+      const accessToken = data.session.access_token;
+
+      const resp = await firstValueFrom(
+        this.http.post<{ message: string; user: LoggedUser }>(
+          `${environment.apiUrl}/auth/login`,
+          { accessToken },
+          { withCredentials: true }
+        )
+      );
+
+      this.userService.setUserFromBackend(resp.user);
+      const role = resp.user.user.role;
+      switch (role) {
+        case 'doctor':  void this.router.navigate(['/doctor/doctor-home']); break;
+        case 'patient': void this.router.navigate(['/patient/patient-home']); break;
+        case 'admin':   void this.router.navigate(['/admin/admin-home']); break;
+        default:        void this.router.navigate(['/']);
+      }
+    } catch (err: any) {
+      if (err?.status === 403 && err?.error?.code === 'DOCTOR_PENDING') {
+        this.toast.show('A regisztráció még nincs jóváhagyva!', 'warning');
+        return;
+      }
+      const serverMsg = err?.error?.message || `Hiba (${err?.status ?? '?'}) a bejelentkezésnél.`;
+      this.toast.show(serverMsg, 'danger');
+    } finally {
+      this.loading = false;
+    }
   }
 
-  togglePasswordVisibility() {
+  togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
 

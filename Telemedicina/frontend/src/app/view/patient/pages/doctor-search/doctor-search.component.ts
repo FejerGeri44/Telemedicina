@@ -39,9 +39,6 @@ export class DoctorSearchComponent implements OnInit{
   isLoading: boolean = true;
   totalCount = 0;
 
-  roundedRating = 0;
-  starIcons: string[] = [];
-
   constructor(
     private http: HttpClient,
     private modalCtrl: ModalController,

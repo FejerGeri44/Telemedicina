@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -23,7 +23,7 @@ import { DoctorRegistComponent } from './forms/doctor-regist/doctor-regist.compo
     DoctorRegistComponent
   ]
 })
-export class RegistLoginComponent {
+export class RegistLoginComponent implements OnInit{
   activeTab: 'login' | 'patient' | 'doctor' = 'login';
 
   constructor(private route: ActivatedRoute, private router: Router) {}

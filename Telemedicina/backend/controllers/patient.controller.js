@@ -130,29 +130,44 @@ exports.updateProfile = async (req, res) => {
 
 exports.listDoctors = async (req, res) => {
   try {
-    const doctorsSnap = await db.collection('doctors').get();
-    if (doctorsSnap.empty) return res.json([]);
+    const { data: doctors, error: docErr } = await supabaseAdmin
+      .from('doctors')
+      .select('*')
+      .eq('status', 'Approved')
+      .order('id', { ascending: true });
 
-    const doctors = doctorsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const userIds = doctors.map(d => String(d.userId ?? d.id)).filter(Boolean);
-
-    const userDocs = [];
-    for (let i = 0; i < userIds.length; i += 10) {
-      const chunk = userIds.slice(i, i + 10);
-      const qs = await db.collection('users')
-        .where(FieldPath.documentId(), 'in', chunk)
-        .get();
-      userDocs.push(...qs.docs);
+    if (docErr) {
+      console.error('❌ Supabase doctors lekérdezés hiba:', docErr);
+      return res.status(500).json({ message: 'Server error', error: String(docErr.message || docErr) });
+    }
+    if (!doctors || doctors.length === 0) {
+      return res.json([]);
     }
 
-    const usersById = {};
-    for (const u of userDocs) {
-      usersById[u.id] = { id: u.id, ...u.data() };
+    const userIds = doctors
+      .map(d => d.user_id ?? d.userId)
+      .filter((v) => v !== undefined && v !== null);
+
+    if (userIds.length === 0) {
+      const items = doctors.map(d => ({ user: null, doctor: d }));
+      return res.json(items);
     }
+
+    const { data: users, error: userErr } = await supabaseAdmin
+      .from('users')
+      .select('id, name, email, address, role, phoneNumber, pictureUrl')
+      .in('id', userIds);
+
+    if (userErr) {
+      console.error('❌ Supabase users lekérdezés hiba:', userErr);
+      return res.status(500).json({ message: 'Server error', error: String(userErr.message || userErr) });
+    }
+
+    const usersById = new Map(users?.map(u => [u.id, u]) ?? []);
 
     const items = doctors.map(d => {
-      const uid = String(d.userId ?? d.id);
-      const user = usersById[uid] ?? null;
+      const uid = d.user_id ?? d.userId ?? null;
+      const user = uid != null ? (usersById.get(uid) ?? null) : null;
       return { user, doctor: d };
     });
 
@@ -166,55 +181,53 @@ exports.listDoctors = async (req, res) => {
 exports.getDoctorsAppointments = async (req, res) => {
   try {
     const rawUserId = req.body?.userId;
-    if (rawUserId === undefined || rawUserId === null || String(rawUserId).trim() === '') {
+    const userIdStr = String(rawUserId ?? '').trim();
+    if (!userIdStr) {
       return res.status(400).json({ message: 'Hiányzó vagy érvénytelen userId.' });
     }
 
-    const userIdStr = String(rawUserId).trim();
     const userIdNum = Number(userIdStr);
-    const userIdCandidates = Number.isFinite(userIdNum) ? [userIdStr, userIdNum] : [userIdStr];
-    const fieldNames = ['userId', 'user_id'];
+    const hasNumeric = Number.isFinite(userIdNum);
 
-    let doctorDoc = null;
-    for (const field of fieldNames) {
-      for (const val of userIdCandidates) {
-        const snap = await db.collection('doctors')
-          .where(field, '==', val)
-          .limit(1)
-          .get();
-        if (!snap.empty) {
-          doctorDoc = snap.docs[0];
-          break;
-        }
-      }
-      if (doctorDoc) break;
+    let doc = null, docErr = null;
+
+    if (hasNumeric) {
+      ({ data: doc, error: docErr } = await supabaseAdmin
+        .from('doctors')
+        .select('id, userId')
+        .eq('userId', userIdNum)
+        .maybeSingle());
     }
 
-    if (!doctorDoc) {
+    if (docErr) {
+      console.error('❌ Supabase doctors lekérdezés hiba:', docErr);
+      return res.status(500).json({ message: 'Server error' });
+    }
+    if (!doc) {
       return res.status(404).json({ message: `Doctor not found for userId: ${userIdStr}` });
     }
 
-    const docData = doctorDoc.data() || {};
-    const doctorIdNum = Number.isFinite(docData.id) ? Number(docData.id) : Number(doctorDoc.id);
-    if (!Number.isFinite(doctorIdNum)) {
-      return res.status(500).json({ message: 'Érvénytelen doctor azonosító (id) a doctors rekordban.' });
+    const doctorId = doc.id;
+
+    const { data: appts, error: apptErr } = await supabaseAdmin
+      .from('appointments')
+      .select('id, doctor_id, patient_id, starts_at, ends_at, status')
+      .eq('doctor_id', doctorId)
+      .order('starts_at', { ascending: true });
+
+    if (apptErr) {
+      console.error('❌ Supabase appointments lekérdezés hiba:', apptErr);
+      return res.status(500).json({ message: 'Server error' });
     }
 
-    const apptSnap = await db.collection('appointments')
-      .where('doctor_id', '==', doctorIdNum)
-      .get();
-
-    const items = apptSnap.docs.map(d => {
-      const a = d.data();
-      return {
-        id: a.id,
-        doctor_id: a.doctor_id,
-        patient_id: a.patient_id ?? null,
-        from: a.from,
-        to: a.to,
-        status: a.status,
-      };
-    });
+    const items = (appts ?? []).map(appointment => ({
+      id: appointment.id,
+      doctor_id: appointment.doctor_id,
+      patient_id: appointment.patient_id ?? null,
+      from: appointment.starts_at,
+      to: appointment.ends_at,
+      status: appointment.status,
+    }));
 
     return res.json(items);
   } catch (err) {
@@ -242,156 +255,151 @@ exports.registerToAppointment = async (req, res) => {
     const fromStr = String(from).trim();
     const toStr   = String(to).trim();
 
-    await db.runTransaction(async (tx) => {
-      const q = db.collection('appointments')
-        .where('doctor_id', '==', doctorIdNorm)
-        .where('from', '==', fromStr)
-        .where('to', '==', toStr)
-        .limit(1);
-
-      const snap = await tx.get(q);
-      if (snap.empty) {
-        const err = new Error('NOT_FOUND_BY_TRIPLE');
-        err.code = 'NOT_FOUND_BY_TRIPLE';
-        throw err;
-      }
-
-      const doc = snap.docs[0];
-      const ref = doc.ref;
-      const data = doc.data();
-
-      if (data.patient_id !== null) {
-        const err = new Error('ALREADY_BOOKED');
-        err.code = 'ALREADY_BOOKED';
-        throw err;
-      }
-
-      const fresh = (await tx.get(ref)).data();
-      if (fresh.patient_id !== null) {
-        const err = new Error('ALREADY_BOOKED');
-        err.code = 'ALREADY_BOOKED';
-        throw err;
-      }
-
-      tx.update(ref, {
+    const { data: updated, error: updErr } = await supabaseAdmin
+      .from('appointments')
+      .update({
         patient_id: patientIdStr,
-        status: 'booked',
-      });
-    });
+        status: 'accepted'
+      })
+      .eq('doctor_id', doctorIdNorm)
+      .eq('starts_at', fromStr)
+      .eq('ends_at', toStr)
+      .is('patient_id', null)
+      .select('id')
+      .limit(1);
 
-    return res.status(200).json({ message: 'Sikeres foglalás.' });
-
-  } catch (err) {
-    const code = err?.code || '';
-    const msg  = String(err?.message || '');
-
-    if (code === 9 || code === 'FAILED_PRECONDITION' || code === 'failed-precondition' || msg.includes('FAILED_PRECONDITION')) {
-      return res.status(400).json({
-        message: 'Hiányzó Firestore kompozit index ehhez a lekérdezéshez.',
-        error: msg,
-      });
+    if (updErr) {
+      console.error('❌ Supabase update error:', updErr);
+      return res.status(500).json({ message: 'Szerver hiba', error: String(updErr.message || updErr) });
     }
-    if (code === 'NOT_FOUND_BY_TRIPLE') {
+
+    if (Array.isArray(updated) && updated.length === 1) {
+      return res.status(200).json(updated);
+    }
+
+    const { data: probe, error: probeErr } = await supabaseAdmin
+      .from('appointments')
+      .select('id, patient_id')
+      .eq('doctor_id', doctorIdNorm)
+      .eq('starts_at', fromStr)
+      .eq('ends_at', toStr)
+      .limit(1);
+
+    if (probeErr) {
+      console.error('❌ Supabase probe error:', probeErr);
+      return res.status(500).json({ message: 'Szerver hiba', error: String(probeErr.message || probeErr) });
+    }
+
+    if (!probe || probe.length === 0) {
       return res.status(404).json({
         message: 'Nem található ilyen időpont (doctor_id + from + to).',
         hint: 'Ellenőrizd a from/to pontos string-formátumát és a doctor_id típusát.'
       });
     }
-    if (code === 'ALREADY_BOOKED') {
-      return res.status(409).json({ message: 'Ez az időpont már foglalt.' });
-    }
 
+    return res.status(409).json({ message: 'Ez az időpont már foglalt.' });
+
+  } catch (err) {
     console.error('❌ registerToAppointment error:', err);
-    return res.status(500).json({ message: 'Szerver hiba', error: msg });
+    return res.status(500).json({ message: 'Szerver hiba', error: String(err?.message || err) });
   }
 };
 
 exports.loadMyAppointments = async (req, res) => {
   try {
-    const patientId = req.body?.payload;
-    if (!patientId) {
-      return res.status(400).json({ message: 'Hiányzó patientId (payload).' });
+    const raw = req.body?.patientId;
+    const patientIdNum = Number(raw);
+    const patientIdStr = String(raw).trim();
+
+    if (!raw && !Number.isFinite(patientIdNum)) {
+      return res.status(400).json({ message: 'Hiányzó vagy érvénytelen patientId.' });
     }
 
-    const patientIdStr = String(patientId).trim();
+    async function fetchApptsByPatientId(value) {
+      return supabaseAdmin
+        .from('appointments')
+        .select('id, doctor_id, starts_at, ends_at, status')
+        .eq('patient_id', value)
+        .order('starts_at', {ascending: true});
+    }
 
-    const apptSnap = await db
-      .collection('appointments')
-      .where('patient_id', '==', patientIdStr)
-      .get();
+    let { data: appts, error: aErr } = Number.isFinite(patientIdNum)
+      ? await fetchApptsByPatientId(patientIdNum)
+      : await fetchApptsByPatientId(patientIdStr);
 
-    if (apptSnap.empty) {
+    if (aErr) {
+      console.error('❌ Supabase appointments hiba:', aErr);
+      return res.status(500).json({ message: 'Server error', error: String(aErr.message || aErr) });
+    }
+
+    if ((!appts || appts.length === 0) && Number.isFinite(patientIdNum)) {
+      const retry = await fetchApptsByPatientId(patientIdStr);
+      if (retry.error) {
+        console.error('❌ Supabase appointments retry hiba:', retry.error);
+        return res.status(500).json({ message: 'Server error', error: String(retry.error.message || retry.error) });
+      }
+      appts = retry.data || [];
+    }
+
+    if (!appts || appts.length === 0) {
       return res.status(200).json([]);
     }
 
-    const appts = apptSnap.docs.map((doc) => ({ ref: doc.ref, id: doc.id, ...doc.data() }));
-    const doctorIds = new Set(
-      appts
-        .map(a => (typeof a.doctor_id === 'number' ? a.doctor_id : Number(a.doctor_id)))
-        .filter(n => !Number.isNaN(n))
-    );
+    const doctorIds = [...new Set(
+      appts.map(a => Number(a.doctor_id)).filter(Number.isFinite)
+    )];
 
-    async function getDoctorById(doctorIdNum) {
-      const docId = String(doctorIdNum);
+    let doctorMap = new Map();
+    let userMap = new Map();
 
-      let docSnap = await db.collection('doctors').doc(docId).get();
-      if (!docSnap.exists) {
-        const q = await db.collection('doctors').where('id', '==', doctorIdNum).limit(1).get();
-        if (q.empty) return null;
-        docSnap = q.docs[0];
+    if (doctorIds.length > 0) {
+      const { data: doctors, error: dErr } = await supabaseAdmin
+        .from('doctors')
+        .select('id, speciality, introduction, avgRating, registDate, userId')
+        .in('id', doctorIds);
+
+      if (dErr) {
+        console.error('❌ Supabase doctors hiba:', dErr);
+        return res.status(500).json({ message: 'Server error', error: String(dErr.message || dErr) });
       }
-      return { id: doctorIdNum, ...docSnap.data() };
-    }
 
-    const doctorsArr = await Promise.all([...doctorIds].map(id => getDoctorById(id)));
-    const doctorMap = new Map(
-      doctorsArr
-        .filter(Boolean)
-        .map(d => [d.id, d])
-    );
+      doctorMap = new Map((doctors || []).map(d => [Number(d.id), d]));
 
-    const userIds = new Set(
-      doctorsArr
-        .filter(Boolean)
-        .map(d => (typeof d.userId === 'number' ? d.userId : Number(d.userId)))
-        .filter(n => !Number.isNaN(n))
-    );
+      const userIds = [...new Set(
+        (doctors || []).map(d => Number(d.userId)).filter(Number.isFinite)
+      )];
 
-    async function getUserById(userIdNum) {
-      const docId = String(userIdNum);
+      if (userIds.length > 0) {
+        const { data: users, error: uErr } = await supabaseAdmin
+          .from('users')
+          .select('id, name, email, role, phoneNumber, address, pictureUrl')
+          .in('id', userIds);
 
-      let userSnap = await db.collection('users').doc(docId).get();
-      if (!userSnap.exists) {
-        const q = await db.collection('users').where('id', '==', userIdNum).limit(1).get();
-        if (q.empty) return null;
-        userSnap = q.docs[0];
+        if (uErr) {
+          console.error('❌ Supabase users hiba:', uErr);
+          return res.status(500).json({ message: 'Server error', error: String(uErr.message || uErr) });
+        }
+
+        userMap = new Map((users || []).map(u => [Number(u.id), u]));
       }
-      return { id: userIdNum, ...userSnap.data() };
     }
-
-    const usersArr = await Promise.all([...userIds].map(id => getUserById(id)));
-    const userMap = new Map(
-      usersArr
-        .filter(Boolean)
-        .map(u => [u.id, u])
-    );
 
     const result = appts.map(appt => {
-      const apptId = typeof appt.id === 'number' ? appt.id : Number(appt.id) || null;
-      const doctorIdNum = typeof appt.doctor_id === 'number' ? appt.doctor_id : Number(appt.doctor_id);
-      const doctorDoc = doctorMap.get(doctorIdNum) || null;
+      const apptId = Number(appt.id);
+      const doctorIdNum = Number(appt.doctor_id);
 
+      const doctorDoc = doctorMap.get(doctorIdNum) || null;
       let doctorItem = null;
+
       if (doctorDoc) {
-        const userIdNum = typeof doctorDoc.userId === 'number' ? doctorDoc.userId : Number(doctorDoc.userId);
-        const userDoc = userMap.get(userIdNum) || null;
+        const userDoc = userMap.get(Number(doctorDoc.userId)) || null;
 
         const doctorObj = {
           id: doctorDoc.id,
           speciality: doctorDoc.speciality,
           introduction: doctorDoc.introduction ?? null,
           avgRating: doctorDoc.avgRating ?? null,
-          registDate: doctorDoc.registDate,
+          registDate: doctorDoc.registDate ?? null,
         };
 
         const userObj = userDoc
@@ -402,73 +410,65 @@ exports.loadMyAppointments = async (req, res) => {
             role: userDoc.role,
             phoneNumber: userDoc.phoneNumber,
             address: userDoc.address ?? null,
-            pictureUrl: userDoc.pictureUrl,
+            pictureUrl: userDoc.pictureUrl ?? null,
           }
           : null;
 
-        doctorItem = userObj
-          ? { user: userObj, doctor: doctorObj }
-          : null;
+        doctorItem = userObj ? { user: userObj, doctor: doctorObj } : null;
       }
 
       return {
-        id: apptId,
+        id: Number.isFinite(apptId) ? apptId : null,
         doctor: doctorItem,
-        from: String(appt.from),
-        to: String(appt.to),
+        from: String(appt.starts_at),
+        to: String(appt.ends_at),
         status: String(appt.status || ''),
       };
     });
 
     return res.status(200).json(result);
   } catch (err) {
-    console.error('❌ loadMyAppointments error:', err);
-    const msg = String(err?.message || '');
-    if (
-      err?.code === 9 ||
-      err?.code === 'FAILED_PRECONDITION' ||
-      err?.code === 'failed-precondition' ||
-      msg.includes('FAILED_PRECONDITION')
-    ) {
-      return res.status(400).json({
-        message: 'Hiányzó Firestore kompozit index ehhez a lekérdezéshez.',
-        error: msg,
-      });
-    }
-    return res.status(500).json({ message: 'Szerver hiba', error: msg });
+    console.error('❌ loadMyAppointments hiba:', err);
+    return res.status(500).json({ message: 'Szerver hiba', error: String(err?.message || err) });
   }
 };
 
 exports.cancelAppointment = async (req, res) => {
   try {
-    const appointmentId = req.body?.payload;
-    if (appointmentId === undefined || appointmentId === null) {
+    const raw = req.body?.payload;
+    if (raw === undefined || raw === null) {
       return res.status(400).json({ message: 'Hiányzó appointmentId (payload).' });
     }
 
-    const idNum = typeof appointmentId === 'number' ? appointmentId : Number(appointmentId);
-    const idStr = String(appointmentId).trim();
+    const idNum = Number(raw);
+    const idStr = String(raw).trim();
 
-    let ref = db.collection('appointments').doc(idStr);
-    let snap = await ref.get();
-
-    if (!snap.exists) {
-      const q = await db.collection('appointments').where('id', '==', idNum).limit(1).get();
-      if (q.empty) {
-        return res.status(404).json({ message: 'Nem található ilyen appointment.' });
-      }
-      ref = q.docs[0].ref;
+    async function clearPatientIdBy(value) {
+      return supabaseAdmin
+        .from('appointments')
+        .update({patient_id: null})
+        .eq('id', value)
+        .select('id')
+        .single();
     }
 
-    await ref.update({
-      patient_id: null,
-      status: 'free'
-    });
+    let resp = Number.isFinite(idNum) ? await clearPatientIdBy(idNum) : null;
+
+    if (!resp || resp.error?.code === 'PGRST116') {
+      resp = await clearPatientIdBy(idStr);
+    }
+
+    if (resp.error) {
+      if (resp.error.code === 'PGRST116') {
+        return res.status(404).json({ message: 'Nem található ilyen appointment.' });
+      }
+      console.error('❌ Supabase update hiba:', resp.error);
+      return res.status(500).json({ message: 'Server error', error: String(resp.error.message || resp.error) });
+    }
 
     return res.status(200).json({ message: 'Időpont lemondva.' });
   } catch (err) {
     console.error('❌ cancelAppointment error:', err);
-    const msg = String(err?.message || '');
-    return res.status(500).json({ message: 'Szerver hiba', error: msg });
+    return res.status(500).json({ message: 'Szerver hiba', error: String(err?.message || err) });
   }
 };

@@ -2,8 +2,8 @@ import {DoctorItem} from './doctor.interface';
 
 export interface Appointment {
   id: number;
-  doctor_id: string;
-  patient_id: string;
+  doctor_id: number;
+  patient_id: number;
   from: string;
   to: string;
   status: string;

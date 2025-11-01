@@ -43,24 +43,6 @@ const AppointmentRepository = {
     return row;
   },
 
-  async updateById(id, fields) {
-    const sets = [];
-    if (fields.doctor_id !== undefined) sets.push(sql2`doctor_id = ${fields.doctor_id}`);
-    if (fields.patient_id !== undefined) sets.push(sql2`patient_id = ${fields.patient_id}`);
-    if (fields.starts_at !== undefined) sets.push(sql2`starts_at = ${fields.starts_at}`);
-    if (fields.ends_at !== undefined) sets.push(sql2`ends_at = ${fields.ends_at}`);
-    if (fields.status !== undefined) sets.push(sql2`status = ${fields.status}`);
-    if (!sets.length) return await this.findById(id);
-
-    const [row] = await sql2`
-      UPDATE appointments SET ${sql2(sets.join(', '))}
-      WHERE id = ${id}
-      RETURNING id, doctor_id AS "doctor_id", patient_id AS "patient_id",
-      starts_at, ends_at, status
-      `;
-    return row || null;
-  },
-
   async deleteById(id) {
     const [row] = await sql2`
       DELETE FROM appointments WHERE id = ${id} RETURNING id

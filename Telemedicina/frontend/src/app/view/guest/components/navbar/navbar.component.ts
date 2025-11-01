@@ -16,7 +16,6 @@ import {Router} from '@angular/router';
 export class NavbarComponent implements OnInit, OnDestroy {
   isMobile = false;
   private resizeListener!: () => void;
-  isMenuOpen = false;
 
   constructor(private router: Router) {}
 

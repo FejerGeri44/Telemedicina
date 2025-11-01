@@ -16,7 +16,7 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AsyncPipe, DecimalPipe, NgForOf, NgIf} from '@angular/common';
 import {buildStarIcons, roundToHalf} from '../../../../utils/formatDoctorRating';
-import {firstValueFrom, Observable, Subject, take, takeUntil} from 'rxjs';
+import {delay, filter, firstValueFrom, Observable, Subject, take, takeUntil} from 'rxjs';
 
 @Component({
   selector: 'app-doctor-home',
@@ -52,6 +52,18 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
     private toast: ToastService
   ) {
     this.user = this.userService.doctor$();
+
+    (async () => {
+      const userValue = await firstValueFrom(
+        this.userService.doctor$().pipe(
+          filter((u): u is DoctorItem => !!u),
+          take(1),
+          delay(50)
+        )
+      );
+
+      await void this.loadAppointments();
+    })();
   }
 
   ngOnInit() {
@@ -60,7 +72,11 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
       .subscribe(u => this.updateRatingStars(u));
 
     this.loadSystemMessagesOnceAfterLogin();
-    this.loadAppointments();
+  }
+
+  private async getDoctorId(): Promise<number | null> {
+    const user = await firstValueFrom(this.user);
+    return user?.doctor.id ?? null;
   }
 
   ngOnDestroy(): void {
@@ -120,11 +136,17 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
   }
 
   async loadAppointments(): Promise<Appointment[] | null> {
+    const doctorId = await this.getDoctorId();
+    if (!doctorId) {
+      this.toast.show('Hiányzik az orvos azonosító.', 'danger');
+      return null;
+    }
 
     return new Promise<Appointment[] | null>((resolve) => {
       this.http.post<Appointment[]>(
         `${environment.apiUrl}/doctor/myAppointments`,
-        { },
+        { id: doctorId },
+        { withCredentials: true }
       ).subscribe({
         next: async (appointments) => {
           this.appointments = appointments;

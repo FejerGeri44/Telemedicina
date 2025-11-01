@@ -16,6 +16,7 @@ ion-card-title {
   letter-spacing: 1px;
   text-transform: uppercase;
   line-height: 1.5;
+  margin-bottom: 20px;
 }
 
 ion-card-content.form {
@@ -26,33 +27,51 @@ ion-card-content.form {
   line-height: normal;
 }
 
-ion-item {
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  --border-style: none;
-  margin: 0;
+.field {
+  --border-width: 1px;
+  --border-radius: 16px;
+  --background: transparent;
+
+  --padding-end: 44px;
 }
 
-ion-label.custom-label {
-  display: block;
-  font-weight: 500;
-  font-size: 1.5rem;
-  color: var(--smoke-color);
-  margin-bottom: 10px;
+ion-input {
+  font-size: 1rem;
+  margin-bottom: 20px;
 }
 
-ion-input.custom-input {
-  --padding-start: 20px;
-  --padding-end: 20px;
-  --border-radius: 12px;
-  font-size: 1.1rem;
+ion-input.field {
+  --padding-bottom: 5px;
+  --padding-end: 44px;
+}
+
+ion-input.field.has-focus::part(label),
+ion-input.field.has-value::part(label) {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+ion-input.field::part(native) {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+ion-input.field.has-focus::part(native),
+ion-input.field:focus-within::part(native) {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ion-color-primary) 20%, transparent);
+}
+
+ion-input.field.ng-invalid.ng-touched::part(native),
+ion-input.field.ng-invalid.ng-dirty::part(native) {
+  border-color: var(--ion-color-danger);
 }
 
 .button-row {
   display: flex;
-  gap: 20px;
-  width: 100%;
-  margin-top: 15px;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
 }
 
 .password-toggle-icon {

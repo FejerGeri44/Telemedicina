@@ -44,6 +44,11 @@ export class PatientHomeComponent implements OnInit {
     void this.fetchAppointments();
   }
 
+  private async getPatientId(): Promise<number | null> {
+    const user = await firstValueFrom(this.user);
+    return user?.patient.id ?? null;
+  }
+
   loadSystemMessagesOnceAfterLogin(): void {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -101,17 +106,20 @@ export class PatientHomeComponent implements OnInit {
   async fetchAppointments(): Promise<void> {
     this.isLoading = true;
 
-    const payload = null;
+    const patientId = await this.getPatientId();
+    if (!patientId) {
+      this.toast.show('Hiányzik a páciens azonosító. Jelentkezz be újra.', 'danger');
+      return;
+    }
 
     this.http.post<MyAppointment[]>(
       `${environment.apiUrl}/patient/loadMyAppointments`,
-      { payload },
+      { patientId },
       {
         withCredentials: true,
       }
     ).subscribe({
       next: (res) => {
-        console.log(res)
         this.myAppointments = res;
         this.isLoading = false;
       },
