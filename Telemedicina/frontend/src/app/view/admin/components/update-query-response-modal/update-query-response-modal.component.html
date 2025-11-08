@@ -1,14 +1,17 @@
-<ion-header class="modal-header">
-  <h2 class="modal__title">
-    {{ kind === 'intent' ? 'Intent szerkesztése' :
-    kind === 'greeting' ? 'Köszönés quickstarts' :
-      kind === 'fallback' ? 'Fallback suggestion' :
-        kind === 'greetingText' ? 'Greeting szöveg' :
-          kind === 'fallbackText' ? 'Fallback szöveg' : 'Beállítás' }}
-  </h2>
-  <ion-button class="close-btn" (click)="onCancel()" aria-label="Bezárás">
-    <ion-icon name="close"></ion-icon>
-  </ion-button>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ kind === 'intent' ? 'Intent szerkesztése' :
+      kind === 'greeting' ? 'Köszönés quickstarts' :
+        kind === 'fallback' ? 'Fallback suggestion' :
+          kind === 'greetingText' ? 'Greeting szöveg' :
+            kind === 'fallbackText' ? 'Fallback szöveg' : 'Beállítás' }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
 </ion-header>
 
 <section class="modal-content">
@@ -49,124 +52,132 @@
   <form>
     <!-- 1) greetingText -->
     <div class="section" *ngIf="kind === 'greetingText'">
-      <ion-item lines="none">
-        <ion-label position="stacked" class="section-label">Greeting szöveg</ion-label>
-        <ion-textarea
-          class="rounded"
-          fill="outline"
-          [(ngModel)]="model.greetingText"
-          name="greetingText"
-          [placeholder]="valueAsString"
-          rows="5">
-        </ion-textarea>
-      </ion-item>
+      <ion-textarea
+        class="field"
+        label="Greeting szöveg"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="greetingText"
+        [(ngModel)]="model.greetingText"
+        [placeholder]="valueAsString"
+        rows="6">
+      </ion-textarea>
     </div>
 
     <!-- 2) fallbackText -->
     <div class="section" *ngIf="kind === 'fallbackText'">
-      <ion-item lines="none">
-        <ion-label position="stacked" class="section-label">Fallback szöveg</ion-label>
-        <ion-textarea
-          class="rounded"
-          fill="outline"
-          [(ngModel)]="model.fallbackText"
-          name="fallbackText"
-          [placeholder]="valueAsString"
-          rows="5">
-        </ion-textarea>
-      </ion-item>
+      <ion-textarea
+        class="field"
+        label="Fallback szöveg"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="fallbackText"
+        [(ngModel)]="model.fallbackText"
+        [placeholder]="valueAsString"
+        rows="6">
+      </ion-textarea>
     </div>
 
     <!-- 3) greeting -->
     <div class="section" *ngIf="kind === 'greeting'">
-      <ion-item lines="none">
-        <ion-label position="stacked" class="section-label">Quickstart címke</ion-label>
-        <ion-input
-          class="rounded"
-          fill="outline"
-          [(ngModel)]="model.greeting.label"
-          name="greetingLabel"
-          [placeholder]="valueAsGreeting?.label">
-        </ion-input>
+      <ion-input
+        class="field"
+        label="Címke (Label)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemLabel"
+        [(ngModel)]="model.greeting.label"
+        [placeholder]="valueAsGreeting?.label">
+      </ion-input>
 
-        <ion-label position="stacked" class="section-label mt">Prompt</ion-label>
-        <ion-textarea
-          class="rounded"
-          fill="outline"
-          [(ngModel)]="model.greeting.prompt"
-          name="greetingPrompt"
-          [placeholder]="valueAsGreeting?.prompt"
-          rows="5">
-        </ion-textarea>
+      <ion-input
+        class="field"
+        label="Prompt (AI Kérés)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemPrompt"
+        [(ngModel)]="model.greeting.prompt"
+        [placeholder]="valueAsGreeting?.prompt">
+      </ion-input>
 
-        <ion-label position="stacked" class="section-label mt">Prompt</ion-label>
-        <ion-textarea
-          class="rounded"
-          fill="outline"
-          [(ngModel)]="model.greeting.reply"
-          name="greetingReply"
-          [placeholder]="valueAsGreeting?.reply"
-          rows="5">
-        </ion-textarea>
-      </ion-item>
+      <ion-textarea
+        class="field"
+        label="Válasz (Reply)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemReply"
+        [(ngModel)]="model.greeting.reply"
+        [placeholder]="valueAsGreeting?.reply"
+        rows="6">
+      </ion-textarea>
     </div>
 
     <!-- 4) fallback -->
     <div class="section" *ngIf="kind === 'fallback'">
-      <ion-item lines="none">
-        <ion-label position="stacked" class="section-label">Fallback címke</ion-label>
-        <ion-input
-          class="rounded"
-          fill="outline"
-          [(ngModel)]="model.fallback.label"
-          name="fallbackLabel"
-          [placeholder]="valueAsFallback?.label">
-        </ion-input>
+      <ion-input
+        class="field"
+        label="Címke (Label)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemLabel"
+        [(ngModel)]="model.fallback.label"
+        [placeholder]="valueAsFallback?.label">
+      </ion-input>
 
-        <ion-label position="stacked" class="section-label">Fallback címke</ion-label>
-        <ion-textarea
-          class="rounded"
-          fill="outline"
-          [(ngModel)]="model.fallback.prompt"
-          name="fallbackLabel"
-          [placeholder]="valueAsFallback?.prompt"
-          rows="5">
-        </ion-textarea>
+      <ion-textarea
+        class="field"
+        label="Prompt (AI Kérés)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemPrompt"
+        [(ngModel)]="model.fallback.prompt"
+        [placeholder]="valueAsFallback?.prompt"
+        rows="6">
+      </ion-textarea>
 
-        <ion-label position="stacked" class="section-label">Fallback címke</ion-label>
-        <ion-textarea
-          class="rounded"
-          fill="outline"
-          [(ngModel)]="model.fallback.reply"
-          name="fallbackLabel"
-          [placeholder]="valueAsFallback?.reply"
-          rows="5">
-        </ion-textarea>
-      </ion-item>
+      <ion-input
+        class="field"
+        label="Válasz (Reply)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemReply"
+        [(ngModel)]="model.fallback.reply"
+        [placeholder]="valueAsFallback?.reply">
+      </ion-input>
     </div>
 
     <!-- 5) intent-->
     <div class="section" *ngIf="kind === 'intent'">
-      <ion-item lines="none">
-        <ion-label position="stacked" class="section-label mt">Patterns (vesszővel elválasztva)</ion-label>
-        <ion-input
-          class="rounded"
-          fill="outline"
-          [(ngModel)]="model.intent.patterns"
-          name="intentPatterns"
-          [placeholder]="valueAsIntent?.patterns">
-        </ion-input>
+      <ion-input
+        class="field"
+        label="Címke (Label)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemLabel"
+        [(ngModel)]="model.intent.patterns"
+        [placeholder]="valueAsIntent?.patterns">
+      </ion-input>
 
-        <ion-label position="stacked" class="section-label mt">Response</ion-label>
-        <ion-textarea
-          class="rounded"
-          fill="outline"
-          [(ngModel)]="model.intent.response"
-          name="intentResponse"
-          [placeholder]="valueAsIntent?.response"
-          rows="5">
-        </ion-textarea>
-      </ion-item>
+      <ion-textarea
+        class="field"
+        label="Prompt (AI Kérés)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemPrompt"
+        [(ngModel)]="model.intent.response"
+        [placeholder]="valueAsIntent?.response"
+        rows="6">
+      </ion-textarea>
     </div>
 
     <div class="actions">

@@ -2,12 +2,19 @@ import {Component, Input} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {NgForOf, NgIf} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {Intent, QuickStart, Suggestion} from '../../../../utils/interfaces/AIInterfaces';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
+import {
+  AssistantDraft, FallbackConfig,
+  FallbackSuggestion, GreetingConfig,
+  Intent,
+  ItemID,
+  QuickStartItem
+} from '../../../../shared/Ai-assistants/AIInterfaces';
+import {AiConfigService} from '../../../../shared/Ai-assistants/AiConfigService';
 
 type UpdateKind = 'greeting' | 'intent' | 'fallback' | 'greetingText' | 'fallbackText';
-type Incoming = string | Intent | QuickStart | Suggestion;
+type Incoming = string | Intent | QuickStartItem | FallbackSuggestion;
 
 type GreetingForm = { id: number | null; icon: string; label: string; prompt: string, reply: string };
 type FallbackForm = { id: number | null; icon: string; label: string; prompt: string, reply: string };
@@ -49,17 +56,18 @@ export class UpdateQueryResponseModalComponent {
   constructor(
     private http: HttpClient,
     private modalCtrl: ModalController,
+    private ai: AiConfigService,
     private toast: ToastService
   ) {}
 
-  get valueAsGreeting(): QuickStart | undefined {
-    return this.kind === 'greeting' ? (this.value as QuickStart) : undefined;
+  get valueAsGreeting(): QuickStartItem | undefined {
+    return this.kind === 'greeting' ? (this.value as QuickStartItem) : undefined;
   }
   get valueAsIntent(): Intent | undefined {
     return this.kind === 'intent' ? (this.value as Intent) : undefined;
   }
-  get valueAsFallback(): Suggestion | undefined {
-    return this.kind === 'fallback' ? (this.value as Suggestion) : undefined;
+  get valueAsFallback(): FallbackSuggestion | undefined {
+    return this.kind === 'fallback' ? (this.value as FallbackSuggestion) : undefined;
   }
   get valueAsString(): string | undefined {
     return this.kind === 'greetingText' || this.kind === 'fallbackText' ? (this.value as string) : undefined;
@@ -93,10 +101,10 @@ export class UpdateQueryResponseModalComponent {
   isIntent(v: Incoming): v is Intent {
     return v != null && typeof v === 'object' && 'response' in v && 'patterns' in v && 'id' in v;
   }
-  isQuickStart(v: Incoming): v is QuickStart {
+  isQuickStart(v: Incoming): v is QuickStartItem {
     return v != null && typeof v === 'object' && 'label' in v && 'prompt' in v && 'icon' in v;
   }
-  isSuggestion(v: Incoming): v is Suggestion {
+  isSuggestion(v: Incoming): v is FallbackSuggestion {
     return v != null && typeof v === 'object' && 'label' in v && 'icon' in v && !('prompt' in v);
   }
   isString(v: Incoming): v is string {
@@ -117,20 +125,20 @@ export class UpdateQueryResponseModalComponent {
     return n !== '' && n !== o;
   }
 
-  private changedNum(newVal?: number | null, oldVal?: number | null): boolean {
+  private changedNum(newVal?: number | null, oldVal?: ItemID): boolean {
     return newVal !== null && newVal !== undefined && !Number.isNaN(newVal) && newVal !== oldVal;
   }
 
-  private diffQuickStart(orig: QuickStart, form: GreetingForm): Partial<QuickStart> {
-    const patch: Partial<QuickStart> = {};
+  private diffQuickStart(orig: QuickStartItem, form: GreetingForm): Partial<QuickStartItem> {
+    const patch: Partial<QuickStartItem> = {};
     if (this.changedStr(form.icon,   orig.icon))   patch.icon = this.trim(form.icon);
     if (this.changedStr(form.label,  orig.label))  patch.label = this.trim(form.label);
     if (this.changedStr(form.prompt, orig.prompt)) patch.prompt = this.trim(form.prompt);
     return patch;
   }
 
-  private diffSuggestion(orig: Suggestion, form: FallbackForm): Partial<Suggestion> {
-    const patch: Partial<Suggestion> = {};
+  private diffSuggestion(orig: FallbackSuggestion, form: FallbackForm): Partial<FallbackSuggestion> {
+    const patch: Partial<FallbackSuggestion> = {};
     if (this.changedStr(form.icon,  orig.icon))  patch.icon = this.trim(form.icon);
     if (this.changedStr(form.label, orig.label)) patch.label = this.trim(form.label);
     return patch;
@@ -184,63 +192,71 @@ export class UpdateQueryResponseModalComponent {
     }
   }
 
-  onSave() {
+  async onSave() {
     this.isSaving = true;
-    const token = localStorage.getItem('token');
-    if (!token) return;
 
-    let payload: any = null;
+    let patchObj: { kind: string, id?: ItemID, patch: any } | null = null;
+
 
     if (this.kind === 'greetingText' && this.isString(this.value)) {
       const newText = this.trim(this.model.greetingText);
-      if (this.changedStr(newText, this.value)) {
-        payload = { kind: 'greetingText', patch: { text: newText } };
-      }
+      patchObj = { kind: 'greetingText', patch: { quickStartText: newText } };
     }
     else if (this.kind === 'fallbackText' && this.isString(this.value)) {
       const newText = this.trim(this.model.fallbackText);
-      if (this.changedStr(newText, this.value)) {
-        payload = { kind: 'fallbackText', patch: { text: newText } };
-      }
+      patchObj = { kind: 'fallbackText', patch: { suggestionText: newText } };
     }
     else if (this.kind === 'greeting' && this.isQuickStart(this.value)) {
       const patch = this.diffQuickStart(this.value, this.model.greeting);
       if (Object.keys(patch).length) {
-        payload = { kind: 'quickStart', id: this.value.id ?? undefined, patch };
+        patchObj = { kind: 'quickStart', id: this.value.id, patch };
       }
     }
     else if (this.kind === 'fallback' && this.isSuggestion(this.value)) {
       const patch = this.diffSuggestion(this.value, this.model.fallback);
       if (Object.keys(patch).length) {
-        payload = { kind: 'suggestion', id: this.value.id ?? undefined, patch };
+        patchObj = { kind: 'fallbackSuggestion', id: this.value.id, patch };
       }
     }
     else if (this.kind === 'intent' && this.isIntent(this.value)) {
       const patch = this.diffIntent(this.value, this.model.intent);
       if (Object.keys(patch).length) {
-        payload = { kind: 'pattern', id: this.value.id, patch };
+        patchObj = { kind: 'intent', id: this.value.id, patch };
       }
     }
 
-    if (!payload) {
-      console.log('ℹ️ Nincs módosítás, nem küldünk kérést.');
+    if (!patchObj) {
+      this.isSaving = false;
+      console.log('ℹ️ Nincs módosítás.');
       return;
     }
 
-    const body = { role: this.role, ...payload };
-
-    this.http.post('http://localhost:3000/api/ai-config/ai-rules/update', body, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: async (res) => {
-        this.isSaving = false;
-        this.toast.show("Sikeres módosítás!", "success");
-        await this.modalCtrl.dismiss({updated: true}, 'updated');
-      },
-      error: (err) => {
-        this.isSaving = false;
-        console.error('❌ Mentés sikertelen:', err);
+    try {
+      if (patchObj.kind === 'quickStart') {
+        await this.ai.updateQuickStart(this.role, patchObj.id!, patchObj.patch);
+      } else if (patchObj.kind === 'fallbackSuggestion') {
+        await this.ai.updateFallbackSuggestion(this.role, patchObj.id!, patchObj.patch);
+      } else if (patchObj.kind === 'intent') {
+        await this.ai.updateIntent(this.role, patchObj.id!, patchObj.patch);
+      } else if (patchObj.kind === 'greetingText' || patchObj.kind === 'fallbackText') {
+        const draftPatch = patchObj.kind === 'greetingText' ?
+          { greeting: { quickStartText: patchObj.patch.quickStartText } as Partial<GreetingConfig> } :
+          { fallback: { suggestionText: patchObj.patch.suggestionText } as Partial<FallbackConfig> };
+        await this.ai.saveDraft(this.role, draftPatch as unknown as AssistantDraft);
       }
-    });
+
+      this.toast.show("Sikeres módosítás a vázlatban!", "success");
+      await this.modalCtrl.dismiss({ updated: true }, 'updated');
+    } catch (err) {
+      this.isSaving = false;
+      console.error('❌ Mentés sikertelen a vázlatban:', err);
+      this.toast.show("Hiba történt a mentéskor.", "danger");
+    } finally {
+      this.isSaving = false;
+    }
+  }
+
+  close() {
+    void this.modalCtrl.dismiss();
   }
 }

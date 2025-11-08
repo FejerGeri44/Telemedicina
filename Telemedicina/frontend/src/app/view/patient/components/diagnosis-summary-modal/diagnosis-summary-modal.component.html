@@ -1,0 +1,229 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Diagnózis összefoglaló</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [scrollY]="true">
+  <ion-card id="summaryPrint" class="slide">
+    <ion-card-content>
+      <ion-list lines="full" class="summary-list">
+        <ion-grid class="section-body">
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-label position="stacked">Páciens</ion-label>
+                <ion-text>{{ diagnosis.patient.name }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="3">
+              <ion-item>
+                <ion-label position="stacked">TAJ</ion-label>
+                <ion-text>{{ diagnosis.patient.taj || '—' }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="3">
+              <ion-item>
+                <ion-label position="stacked">Időpont</ion-label>
+                <ion-text>{{ diagnosis.patient.taj || '—' }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-label position="stacked">Telefon</ion-label>
+                <ion-text>{{ diagnosis.patient.phone || '—' }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-label position="stacked">E-mail</ion-label>
+                <ion-text>{{ diagnosis.patient.email || '—' }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Tünetek -->
+        <ion-item class="section-header">
+          <ion-label>Tünetek</ion-label>
+        </ion-item>
+        <ion-grid class="section-body">
+          <ion-row>
+            <ion-col size="12" size-md="4">
+              <ion-item>
+                <ion-label position="stacked">Kezdet dátuma</ion-label>
+                <ion-text>{{ diagnosis.symptoms.onsetDate || '—' }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="8">
+              <ion-item>
+                <ion-label position="stacked">Fő panasz</ion-label>
+                <ion-text>{{ diagnosis.symptoms.chiefComplaint || '—' }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row *ngIf="diagnosis.symptoms.history">
+            <ion-col size="12">
+              <ion-item>
+                <ion-label position="stacked">Releváns anamnézis</ion-label>
+                <ion-text>{{ diagnosis.symptoms.history }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Vitáljelek -->
+        <ion-item class="section-header">
+          <ion-label>Vitáljelek</ion-label>
+        </ion-item>
+        <ion-grid class="section-body">
+          <ion-row>
+            <ion-col size="6" size-md="3" *ngIf="diagnosis.exam.bpDia">
+              <ion-item>
+                <ion-label position="stacked">Vérnyomás</ion-label>
+                <ion-text>{{ diagnosis.exam.bpDia }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6" size-md="3" *ngIf="diagnosis.exam.heartRate">
+              <ion-item>
+                <ion-label position="stacked">Pulzus</ion-label>
+                <ion-text>{{ diagnosis.exam.heartRate }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6" size-md="3" *ngIf="diagnosis.exam.tempC">
+              <ion-item>
+                <ion-label position="stacked">Testhő</ion-label>
+                <ion-text>{{ diagnosis.exam.tempC }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6" size-md="3" *ngIf="diagnosis.exam.spo2">
+              <ion-item>
+                <ion-label position="stacked">SpO₂</ion-label>
+                <ion-text>{{ diagnosis.exam.spo2 }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6" size-md="3" *ngIf="diagnosis.exam.weightKg">
+              <ion-item>
+                <ion-label position="stacked">Súly</ion-label>
+                <ion-text>{{ diagnosis.exam.weightKg }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6" size-md="3" *ngIf="diagnosis.exam.heightCm">
+              <ion-item>
+                <ion-label position="stacked">Magasság</ion-label>
+                <ion-text>{{ diagnosis.exam.heightCm }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6" size-md="3" *ngIf="diagnosis.exam.bmi">
+              <ion-item>
+                <ion-label position="stacked">BMI</ion-label>
+                <ion-text>{{ diagnosis.exam.bmi }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row *ngIf="diagnosis.exam.examSummary">
+            <ion-col size="12">
+              <ion-item>
+                <ion-label position="stacked">Objektív lelet összefoglaló</ion-label>
+                <ion-text>{{ diagnosis.exam.examSummary }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Diagnózis -->
+        <ion-item class="section-header">
+          <ion-label>Diagnózis</ion-label>
+        </ion-item>
+        <ion-grid class="section-body">
+          <ion-row>
+            <ion-col size="12">
+              <ion-item>
+                <ion-label position="stacked">Fő diagnózis</ion-label>
+                <ion-text>{{ diagnosis.diagnosis.primaryText }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6" *ngIf="diagnosis.diagnosis.codeSystem">
+              <ion-item>
+                <ion-label position="stacked">Kódrendszer</ion-label>
+                <ion-text>{{ diagnosis.diagnosis.codeSystem }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6" *ngIf="diagnosis.diagnosis.code">
+              <ion-item>
+                <ion-label position="stacked">Kód</ion-label>
+                <ion-text>{{ diagnosis.diagnosis.code }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6" *ngIf="diagnosis.diagnosis.certaintyPct">
+              <ion-item>
+                <ion-label position="stacked">Bizonyosság</ion-label>
+                <ion-text>{{ diagnosis.diagnosis.certaintyPct }}</ion-text>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6" *ngIf="diagnosis.diagnosis.severity">
+              <ion-item>
+                <ion-label position="stacked">Súlyosság</ion-label>
+                <ion-text>{{ diagnosis.diagnosis.severity }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row *ngIf="diagnosis.diagnosis.differentials">
+            <ion-col size="12">
+              <ion-item>
+                <ion-label position="stacked">Differenciáldiagnózis(ok)</ion-label>
+                <ion-text>{{ diagnosis.diagnosis.differentials }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Plan / státuszok -->
+        <ion-item class="section-header">
+          <ion-label>Plan</ion-label>
+        </ion-item>
+        <ion-grid class="section-body">
+          <ion-row *ngIf="diagnosis.plan.planText">
+            <ion-col size="12">
+              <ion-item>
+                <ion-label position="stacked">Terápia / utasítások</ion-label>
+                <ion-text>{{ diagnosis.plan.planText }}</ion-text>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-label>Vörös zászlók megbeszélve</ion-label>
+                <ion-badge [color]="diagnosis.plan.redFlags ? 'success' : 'medium'">
+                  {{ diagnosis.plan.redFlags ? 'Igen' : 'Nem' }}
+                </ion-badge>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-label>Beteg tájékoztatása megtörtént</ion-label>
+                <ion-badge [color]="diagnosis.plan.informed ? 'success' : 'medium'">
+                  {{ diagnosis.plan.informed ? 'Igen' : 'Nem' }}
+                </ion-badge>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

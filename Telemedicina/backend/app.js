@@ -20,7 +20,6 @@ app.use('/api/patient', require('./routes/patient.routes'));
 app.use('/api/doctor', require('./routes/doctor.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/shared', require('./routes/shared.routes'));
-app.use('/api/aiConfig', require('./routes/aiConfig.routes'));
 
 const PORT = process.env.PORT;
 

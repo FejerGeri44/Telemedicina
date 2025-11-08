@@ -9,6 +9,7 @@ import {environment} from '../../../../../../../backend/config/enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../shared/user.service';
 import {NgOptimizedImage} from "@angular/common";
+import {mapLoggedToItem} from '../../../../shared/user.mapper';
 
 @Component({
   selector: 'app-admin-edit-profile-modal',
@@ -37,73 +38,57 @@ export class AdminEditProfileModalComponent {
     private http: HttpClient,
     private userService: UserService,
     private toast: ToastService
-  ) {
-  }
-
-  close() {
-    void this.modalCtrl.dismiss();
-  }
+  ) {}
 
   async save() {
     this.savingData = true;
-    const modifiedFields = this.getModifiedFields();
 
-    if (Object.keys(modifiedFields).length === 0 && !this.file) {
-      this.toast.show('Nincs kitöltve módosítandó mező!', 'warning');
-      return;
-    }
+    const modified = this.getModifiedFields();
 
     const id = this.user?.user?.id;
     if (!id) {
-      console.error('❌ Nincs felhasználó ID a payloadban!');
+      this.toast.show('Nincs user ID', 'danger');
+      this.savingData = false;
       return;
     }
 
-    if (this.file) {
-      const form = new FormData();
-      form.append('id', String(id));
-
-      Object.entries(modifiedFields).forEach(([k, v]) => {
-        form.append(k, typeof v === 'number' ? String(v) : (v ?? ''));
-      });
-
-      form.append('picture', this.file, this.file.name);
-
-      this.http.patch(`${environment.apiUrl}/admin/updateProfile`, form, {
-        withCredentials: true,
-      }).subscribe({
-        next: (res: any) => {
-          const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
-          console.log(updated)
-          this.savingData = false;
-          this.toast.show('Profil frissítve', 'success');
-          void this.modalCtrl.dismiss(updated, 'updated');
-        },
-        error: (err) => {
-          console.error('❌ Mentési hiba:', err);
-          this.toast.show('Mentés közben hiba történt.', 'danger');
-        }
-      });
-
-    } else {
-      const payload: any = { id, ...modifiedFields };
-
-      this.http.patch(`${environment.apiUrl}/admin/updateProfile`, payload, {
-        withCredentials: true,
-      }).subscribe({
-        next: (res: any) => {
-          const updated: LoggedUser = (res?.updated ?? res) as LoggedUser;
-          console.log(updated)
-          this.savingData = false;
-          this.toast.show('Profil frissítve', 'success');
-          void this.modalCtrl.dismiss(updated, 'updated');
-        },
-        error: (err) => {
-          console.error('❌ Mentési hiba:', err);
-          this.toast.show('Mentés közben hiba történt.', 'danger');
-        }
-      });
+    if (!this.file && Object.keys(modified).length === 0) {
+      this.toast.show('Nincs módosítandó mező.', 'warning');
+      this.savingData = false;
+      return;
     }
+
+    const form = new FormData();
+    form.append('id', String(id));
+
+    Object.entries(modified).forEach(([k, v]) => {
+      form.append(k, v != null ? String(v) : '');
+    });
+
+    if (this.file) {
+      form.append('picture', this.file, this.file.name);
+    }
+
+    this.http.patch<{ user: LoggedUser }>(`${environment.apiUrl}/admin/updateProfile`,
+      form,
+      {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res) => {
+          const updatedFrontend = mapLoggedToItem(res.user);
+          this.userService.setUser(updatedFrontend);
+
+          this.savingData = false;
+          this.toast.show('Profil frissítve', 'success');
+          void this.modalCtrl.dismiss({ user: updatedFrontend }, 'updated');
+        },
+        error: (err) => {
+          console.error('❌ Mentési hiba:', err);
+          this.savingData = false;
+          this.toast.show('Mentés közben hiba történt.', 'danger');
+        },
+      });
   }
 
   onFileSelected(event: Event): void {
@@ -153,6 +138,10 @@ export class AdminEditProfileModalComponent {
 
   private norm(val: any): any {
     return typeof val === 'string' ? val.trim() : val;
+  }
+
+  close() {
+    void this.modalCtrl.dismiss();
   }
 
   protected readonly formatPhoneNumber = formatPhoneNumber;

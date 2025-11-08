@@ -22,6 +22,6 @@ export interface PatientItem {
 
 export interface PatientTag {
   id: number;
-  name: string;
-  value: string;
+  tag_name: string;
+  tag_value: string;
 }

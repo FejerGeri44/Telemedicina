@@ -1,0 +1,82 @@
+.message-table-scroll{
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.message-table {
+  min-width: 1200px;
+  border-collapse: collapse;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(16, 24, 40, 0.08);
+  border: 1px solid #eef2f7;
+}
+
+.message-table .table-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  backdrop-filter: blur(6px);
+  background: linear-gradient(180deg, #f7f9fc 0%, #f2f6fb 100%);
+  border-bottom: 1px solid #e6edf5;
+}
+
+.message-table .th {
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 13px;
+}
+
+.message-table .table-row {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background .18s ease, box-shadow .18s ease;
+}
+.message-table .table-row:hover {
+  background: #f9fbff;
+}
+
+.message-table ion-col {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+}
+
+.message-column {
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.sort ion-icon {
+  cursor: pointer;
+}
+.doctor-info {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.avatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e6f4ff;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.avatar img {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #fff;
+  box-shadow: 0 0 0 3px #e6f4ff;
+}
+
+.chips-col {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}

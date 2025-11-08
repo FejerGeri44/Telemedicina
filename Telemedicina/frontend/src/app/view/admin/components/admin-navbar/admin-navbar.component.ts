@@ -1,9 +1,9 @@
 import {Component, HostListener, OnInit} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
-import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
+import {IonicModule, NavController} from '@ionic/angular';
+import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/router';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {filter, Subscription} from 'rxjs';
+import {delay, filter, firstValueFrom, Observable, Subscription, take} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {UserService} from '../../../../shared/user.service';
@@ -16,14 +16,15 @@ import {UserService} from '../../../../shared/user.service';
     RouterLinkActive,
     RouterModule,
     NgForOf,
-    NgOptimizedImage
+    NgOptimizedImage,
+    AsyncPipe
   ],
   templateUrl: './admin-navbar.component.html',
   standalone: true,
   styleUrl: './admin-navbar.component.scss'
 })
 export class AdminNavbarComponent implements OnInit{
-  user!: AdminItem;
+  user!: Observable<AdminItem | null>;
   profileOpen = false;
   mobileMenuOpen = false;
   private navSub?: Subscription;
@@ -39,22 +40,30 @@ export class AdminNavbarComponent implements OnInit{
   constructor(
     private http: HttpClient,
     private router: Router,
-    private userService: UserService,
+    private nav: NavController,
+    protected userService: UserService,
     private alert: AlertService
-  ) {}
+  ) {
+    this.user = this.userService.admin$();
+
+    (async () => {
+      const userValue = await firstValueFrom(
+        this.userService.admin$().pipe(
+          filter((u): u is AdminItem => !!u),
+          take(1),
+          delay(50)
+        )
+      );
+    })();
+  }
 
   ngOnInit() {
-    this.getUserData();
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {});
     this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => this.closeMobileMenu());
-  }
-
-  private getUserData() {
-
   }
 
   confirmLogout() {
@@ -66,7 +75,7 @@ export class AdminNavbarComponent implements OnInit{
   }
 
   logout() {
-    void this.userService.logout();
+    this.userService.logout().subscribe(() => this.nav.navigateRoot('/regist-login?tab=login'));
   }
 
   openMobileMenu() {

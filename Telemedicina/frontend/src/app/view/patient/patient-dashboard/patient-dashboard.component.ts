@@ -2,7 +2,7 @@ import {Component} from '@angular/core';
 import {PatientNavbarComponent} from '../components/patient-navbar/patient-navbar.component';
 import {IonicModule} from '@ionic/angular';
 import {RouterOutlet} from '@angular/router';
-import {ChatbotComponent} from '../../../shared/chatbot/chatbot.component';
+import {AiAssistantFabComponent} from '../../../shared/Ai-assistants/ai-assistant-fab/ai-assistant-fab.component';
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -10,7 +10,7 @@ import {ChatbotComponent} from '../../../shared/chatbot/chatbot.component';
     PatientNavbarComponent,
     IonicModule,
     RouterOutlet,
-    ChatbotComponent,
+    AiAssistantFabComponent
   ],
   templateUrl: './patient-dashboard.component.html',
   standalone: true,

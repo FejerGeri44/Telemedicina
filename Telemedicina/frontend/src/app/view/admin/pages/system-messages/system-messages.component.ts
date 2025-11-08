@@ -4,10 +4,14 @@ import {HttpClient} from '@angular/common/http';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
-import {NgForOf, NgIf} from '@angular/common';
+import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
+import {UserService} from '../../../../shared/user.service';
+import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {environment} from '../../../../../../../backend/config/enviroment';
 
 @Component({
   selector: 'app-system-messages',
@@ -15,14 +19,15 @@ import {AdminItem} from '../../../../utils/interfaces/admin.interface';
     FormsModule,
     IonicModule,
     NgIf,
-    NgForOf
+    NgForOf,
+    NgOptimizedImage
   ],
   templateUrl: './system-messages.component.html',
   standalone: true,
   styleUrl: './system-messages.component.scss'
 })
 export class SystemMessagesComponent implements OnInit {
-  user!: AdminItem;
+  user!: Observable<AdminItem | null>;
   activeTab: 'list' | 'create' = 'list';
   messages: SystemMessage[] = [];
   formData = {
@@ -33,80 +38,35 @@ export class SystemMessagesComponent implements OnInit {
     validUntil: ''
   };
 
+  isLoading: boolean = true;
+
   constructor(
     private http: HttpClient,
     private alert: AlertService,
     private toast: ToastService,
-    private modalCtrl: ModalController
-  ) {}
+    private modalCtrl: ModalController,
+    protected userService: UserService
+  ) {
+    this.user = this.userService.admin$();
+
+    (async () => {
+      const userValue = await firstValueFrom(
+        this.userService.doctor$().pipe(
+          filter((u): u is DoctorItem => !!u),
+          take(1),
+          delay(50)
+        )
+      );
+    })();
+  }
 
   ngOnInit() {
-    this.getMyData();
     this.loadMessages();
   }
 
-  getMyData() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get<AdminItem>('http://localhost:3000/api/getAdminMe', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).subscribe({
-      next: (res) => {
-        this.user = { user: res.user, admin: res.admin };
-      },
-      error: (err) => {
-        console.error('❌ Admin user lekérése sikertelen:', err);
-      }
-    });
-  }
-
-  loadMessages(): void {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get<SystemMessage[]>('http://localhost:3000/api/admin/getAllSystemMessage', {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: (res) => {
-        this.messages = res;
-      },
-      error: (err) => {
-        console.error('Rendszerüzenetek lekérése sikertelen:', err);
-      }
-    });
-  }
-
-  confirmDelete(message: any) {
-    void this.alert.show(
-      'Rendszerüzenet törlés',
-      'Biztosan törölni szeretnéd a kijelölt rendszerüzenetet?',
-      () => this.deleteMessage(message)
-    )
-  }
-
-  deleteMessage(message: SystemMessage) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const payload = {
-      messageId: message.id
-    };
-
-    this.http.delete('http://localhost:3000/api/admin/delete-system-message', {
-      body: payload,
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: () => {
-        this.toast.show('Sikeres rendszerüzenet törlés!', 'success');
-        this.loadMessages();
-      },
-      error: (err) => {
-        console.error('Hiba a törlés közben:', err);
-      }
-    });
+  private async getAdminId(): Promise<number | null> {
+    const user = await firstValueFrom(this.user);
+    return user?.admin.id ?? null;
   }
 
   onTabChange(value: 'list' | 'create') {
@@ -116,13 +76,10 @@ export class SystemMessagesComponent implements OnInit {
     }
   }
 
-  createMessage() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const adminId = this.user?.admin?.id;
+  async createMessage(): Promise<void> {
+    const adminId = await this.getAdminId();
     if (!adminId) {
-      this.toast.show('Hiányzik az admin azonosító (adminId).', 'warning');
+      this.toast.show('Hiányzik az admin azonosító.', 'danger');
       return;
     }
 
@@ -187,9 +144,9 @@ export class SystemMessagesComponent implements OnInit {
       validUntil
     };
 
-    this.http.post('http://localhost:3000/api/admin/system-messages', payload, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
+    this.http.post(`${environment.apiUrl}/admin/create-systemMessage`, payload,
+      { withCredentials: true }
+      ).subscribe({
       next: () => {
         this.toast.show('Rendszerüzenet elmentve.', 'success');
         this.resetForm();
@@ -200,14 +157,30 @@ export class SystemMessagesComponent implements OnInit {
     });
   }
 
-  async showPreview() {
+  resetForm(): void {
+    this.formData = {
+      title:'',
+      message:'',
+      type:'info',
+      audience:'all',
+      validUntil:''
+    };
+  }
+
+  async showPreview(): Promise<void> {
+    const adminId = await this.getAdminId();
+    if (!adminId) {
+      this.toast.show('Hiányzik az admin azonosító.', 'danger');
+      return;
+    }
+
     const raw = this.formData.validUntil;
     const s = String(raw);
     const validUntil = s.includes('T') ? s.split('T')[0] : s;
 
     const msg = {
       id: 0,
-      adminId: this.user?.admin?.id,
+      adminId: adminId,
       title: this.formData.title?.trim(),
       message: this.formData.message?.trim(),
       type: this.formData.type,
@@ -225,13 +198,47 @@ export class SystemMessagesComponent implements OnInit {
     await modal.present();
   }
 
-  resetForm()     {
-    this.formData = {
-      title:'',
-      message:'',
-      type:'info',
-      audience:'all',
-      validUntil:''
+  loadMessages(): void {
+    this.isLoading = true;
+    this.http.get<SystemMessage[]>(`${environment.apiUrl}/admin/getAllSystemMessage`,
+      { withCredentials: true }
+      ).subscribe({
+      next: (res) => {
+        this.messages = res;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Rendszerüzenetek lekérése sikertelen:', err);
+      }
+    });
+  }
+
+  confirmDelete(message: any) {
+    void this.alert.show(
+      'Rendszerüzenet törlés',
+      'Biztosan törölni szeretnéd a kijelölt rendszerüzenetet?',
+      () => this.deleteMessage(message)
+    )
+  }
+
+  deleteMessage(message: SystemMessage) {
+    const payload = {
+      messageId: message.id
     };
+
+    this.http.post(`${environment.apiUrl}/admin/delete-system-message`,
+      payload,
+      { withCredentials: true }
+      ).subscribe({
+      next: () => {
+        this.toast.show('Sikeres rendszerüzenet törlés!', 'success');
+        this.messages = this.messages.filter(m =>
+          String(m.id) !== String(message.id)
+        );
+      },
+      error: (err) => {
+        console.error('Hiba a törlés közben:', err);
+      }
+    });
   }
 }

@@ -18,56 +18,103 @@
   <div *ngIf="messages.length !== 0" class="message-table-scroll">
     <ion-grid class="message-table">
       <ion-row class="table-header">
-        <ion-col size="1"><span class="th">Admin ID</span></ion-col>
-        <ion-col size="2"><span class="th">Típus / Közönség</span></ion-col>
+        <ion-col size="2"><span class="th">Admin</span></ion-col>
+        <ion-col size="2"><span class="th">Típus</span></ion-col>
         <ion-col size="2" class="hide-sm"><span class="th">Cím</span></ion-col>
-        <ion-col size="4"><span class="th">Üzenet</span></ion-col>
+        <ion-col size="3"><span class="th">Üzenet</span></ion-col>
         <ion-col size="2"><span class="th">Érvényesség</span></ion-col>
         <ion-col size="1" class="text-center"><span class="th"></span></ion-col>
       </ion-row>
 
-      <ion-row *ngFor="let message of messages" class="table-row">
-        <ion-col size="1">
-          <div class="admin-id">{{ message.adminId }}</div>
-        </ion-col>
+      <ng-container *ngIf="isLoading">
+        <ion-row *ngFor="let i of [1, 2, 3]" class="table-row skeleton-row-wrapper"
+                 style="border-bottom: 1px solid #ccc; min-height: 70px;">
 
-        <ion-col size="2" class="chips-col">
-          <div class="type-chip" [class.info]="message.type==='info'"
-               [class.warning]="message.type==='warning'"
-               [class.error]="message.type==='error'">
-            <ion-icon [name]="message.type==='info' ? 'information-circle'
-                         : message.type==='warning' ? 'alert'
-                         : 'close-circle'"></ion-icon>
-            <span>{{ message.type }}</span>
-          </div>
-          <div class="aud-chip">
-            {{ message.audience }}
-          </div>
-        </ion-col>
+          <ion-col size="2" style="display: flex; align-items: center; padding: 10px 0;">
+            <div class="user-info" style="display: flex; align-items: center; gap: 10px;">
+              <ion-skeleton-text [animated]="true" style="width: 50px; height: 50px; border-radius: 50%;"></ion-skeleton-text>
+              <div class="name-block" style="display: flex; flex-direction: column; gap: 4px;">
+                <ion-skeleton-text [animated]="true" style="width: 30px; height: 12px;"></ion-skeleton-text>
+                <ion-skeleton-text [animated]="true" style="width: 80px; height: 16px;"></ion-skeleton-text>
+              </div>
+            </div>
+          </ion-col>
 
-        <ion-col size="2" class="hide-sm">
-          <div class="title-td" [title]="message.title">{{ message.title }}</div>
-        </ion-col>
+          <ion-col size="2" class="chips-col" style="display: flex; flex-direction: column; justify-content: center; gap: 4px; align-items: flex-start; padding: 10px 0;">
+            <ion-skeleton-text [animated]="true" style="width: 70px; height: 20px; border-radius: 999px;"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 50px; height: 20px; border-radius: 999px;"></ion-skeleton-text>
+          </ion-col>
 
-        <ion-col size="4" class="message-column">
-          <div class="message-td" [title]="message.message"><br>{{ message.message }}</div>
-        </ion-col>
+          <ion-col size="2" class="hide-sm" style="display: flex; align-items: center; padding: 10px 0;">
+            <ion-skeleton-text [animated]="true" style="width: 80%; height: 16px;"></ion-skeleton-text>
+          </ion-col>
 
-        <ion-col size="2">
-          <div class="date-chip" *ngIf="message.validUntil">{{ message.validUntil }}</div>
-        </ion-col>
+          <ion-col size="3" class="message-column" style="display: flex; align-items: center; padding: 10px 0;">
+            <ion-skeleton-text [animated]="true" style="width: 90%; height: 16px;"></ion-skeleton-text>
+          </ion-col>
 
-        <ion-col size="1" class="text-center actions">
-          <ion-button size="small" color="danger" fill="clear"
-                      (click)="confirmDelete(message)" class="ghost-btn">
-            <ion-icon name="trash" slot="icon-only"></ion-icon>
-          </ion-button>
-        </ion-col>
-      </ion-row>
+          <ion-col size="2" style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
+            <ion-skeleton-text [animated]="true" style="width: 100px; height: 20px; border-radius: 999px;"></ion-skeleton-text>
+          </ion-col>
+
+          <ion-col size="1" class="text-center actions" style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
+            <ion-skeleton-text [animated]="true" style="width: 32px; height: 32px; border-radius: 50%;"></ion-skeleton-text>
+          </ion-col>
+        </ion-row>
+      </ng-container>
+
+      <ng-container *ngIf="!isLoading">
+        <ion-row *ngFor="let message of messages" class="table-row">
+          <ion-col size="2">
+            <div class="user-info">
+              <div class="avatar">
+                <img ngSrc="{{ message.admin?.user?.pictureUrl }}" alt="Profilkép" draggable="false" priority fill/>
+              </div>
+              <div class="name-block">
+                <div class="id">#{{ message.admin?.admin?.id }}</div>
+                <div class="name">{{ message.admin?.user?.name }}</div>
+              </div>
+            </div>
+          </ion-col>
+
+          <ion-col size="2" class="chips-col">
+            <div class="type-chip" [class.info]="message.type==='info'"
+                 [class.warning]="message.type==='warning'"
+                 [class.error]="message.type==='error'">
+              <ion-icon [name]="message.type==='info' ? 'information-circle'
+                     : message.type==='warning' ? 'alert'
+                     : 'close-circle'"></ion-icon>
+              <span>{{ message.type }}</span>
+            </div>
+            <div class="aud-chip">
+              {{ message.audience }}
+            </div>
+          </ion-col>
+
+          <ion-col size="2" class="hide-sm">
+            <div class="title-td" [title]="message.title">{{ message.title }}</div>
+          </ion-col>
+
+          <ion-col size="3" class="message-column">
+            <div class="message-td" [title]="message.message"><br>{{ message.message }}</div>
+          </ion-col>
+
+          <ion-col size="2">
+            <div class="date-chip" *ngIf="message.validUntil">{{ message.validUntil }}</div>
+          </ion-col>
+
+          <ion-col size="1" class="text-center actions">
+            <ion-button size="small" color="danger" fill="clear"
+                        (click)="confirmDelete(message)" class="ghost-btn">
+              <ion-icon name="trash" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ng-container>
     </ion-grid>
   </div>
 
-  <div *ngIf="messages.length === 0" class="no-data">
+  <div *ngIf="!isLoading && messages.length === 0" class="no-data">
     <span class="no-data-text">(N/A)</span>
     <span class="no-data-sub">Jelenleg nincs elmentett rendszerüzenet.</span>
   </div>

@@ -1,0 +1,57 @@
+:host {
+  /* Alapvető beállítás: a komponens vegye fel a teljes rendelkezésre álló magasságot */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-container {
+  /* A tartalom belső konténere */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+}
+
+.chat-history-placeholder {
+  /* Üzenet előzmények helye */
+  flex-grow: 1; /* Kitölti a rendelkezésre álló teret, ami a kulcs az elrendezéshez */
+  overflow-y: auto; /* Görgetés, ha túl sok az üzenet */
+  margin-bottom: 15px;
+  color: var(--ion-color-medium);
+  font-style: italic;
+  font-size: 0.9em;
+  padding-bottom: 5px;
+}
+
+/* Az új chat beviteli terület stílusa */
+.input-area {
+  display: flex;
+  align-items: flex-end; /* A gomb és a textarea alja egy vonalban legyen */
+  gap: 8px; /* Kis térköz a mező és a gomb között */
+  padding-top: 10px;
+  border-top: 1px solid var(--ion-color-step-100, #f1f1f1);
+}
+
+.message-input {
+  flex-grow: 1; /* A textarea foglalja el a lehető legtöbb helyet */
+  margin: 0;
+
+  /* Egyedi stílus a textareához */
+  --background: var(--ion-color-light); /* Kicsit kiemelt háttér */
+  --border-radius: 20px; /* Lekerekített sarkok */
+  --padding-start: 15px;
+  --padding-end: 15px;
+}
+
+.send-button {
+  /* A gomb ne legyen túl nagy, csak az ikon férjen el rajta */
+  height: 48px;
+  width: 48px;
+  min-width: 48px;
+  --padding-start: 0;
+  --padding-end: 0;
+
+  /* Extra stilizálás a gombnak */
+  --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}

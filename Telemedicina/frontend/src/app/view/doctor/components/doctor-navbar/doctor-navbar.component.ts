@@ -37,7 +37,7 @@ export class DoctorNavbarComponent implements OnInit{
     { icon: 'home', label: 'Profil', route: 'doctor-home' },
     { icon: 'people', label: 'Pácienseim', route: 'my-patients' },
     { icon: 'clipboard', label: 'Új diagnózis', route: 'new-diagnosis' },
-    { icon: 'document-attach', label: 'Dokumentum feltöltés', route: 'orvos-kereso' },
+    { icon: 'document-attach', label: 'Dokumentum feltöltés', route: 'document-upload' },
     { icon: 'calendar', label: 'Rendelési időpontjaim', route: 'appointments' },
     { icon: 'chatbubbles', label: 'Üzenetek', route: 'doctor-messages' }
   ];

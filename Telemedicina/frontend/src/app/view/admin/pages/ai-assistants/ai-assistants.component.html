@@ -39,7 +39,7 @@
 </ion-card>
 
 <ion-card class="panel" *ngIf="mainTab==='doctor'">
-  <ion-segment [(ngModel)]="patientSubTab">
+  <ion-segment [(ngModel)]="doctorSubTab">
     <ion-segment-button value="rules">
       <ion-icon name="list-outline"></ion-icon>
       <ion-label>Szabályok</ion-label>
@@ -50,13 +50,13 @@
     </ion-segment-button>
   </ion-segment>
 
-  <div *ngIf="patientSubTab==='rules'">
+  <div *ngIf="doctorSubTab==='rules'">
     <app-ai-rules-card
       [role]="'doctor'">
     </app-ai-rules-card>
   </div>
 
-  <div *ngIf="patientSubTab==='demo'">
+  <div *ngIf="doctorSubTab==='demo'">
     <app-ai-demo-card
       [role]="'doctor'">
     </app-ai-demo-card>

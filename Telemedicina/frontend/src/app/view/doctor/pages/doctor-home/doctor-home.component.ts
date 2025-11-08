@@ -144,7 +144,7 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
 
     return new Promise<Appointment[] | null>((resolve) => {
       this.http.post<Appointment[]>(
-        `${environment.apiUrl}/doctor/myAppointments`,
+        `${environment.apiUrl}/doctor/getMyAppointments`,
         { id: doctorId },
         { withCredentials: true }
       ).subscribe({
@@ -183,7 +183,7 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
   }
 
   private isTodayAndNotPast(appt: Appointment, now = new Date()): boolean {
-    const dt = this.parseToDate(appt.from);
+    const dt = this.parseToDate(appt.starts_at);
     if (!dt) return false;
 
     const sameDay =

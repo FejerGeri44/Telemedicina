@@ -2,7 +2,7 @@
   <div class="pc-header">
     <div class="pc-left">
       <div class="pc-avatar">
-        <img ngSrc="{{user.user.pictureUrl}}" alt="Profilkép" draggable="false" fill/>
+        <img ngSrc="{{user.user.pictureUrl}}" alt="Profilkép" draggable="false" priority fill/>
       </div>
       <div class="pc-name">
         <div class="pc-fullname">{{ user.user.name }}</div>
@@ -57,9 +57,9 @@
   </div>
 
   <div class="pc-chips" *ngIf="user.patient.tags?.length">
-    <ion-chip class="chip" *ngFor="let t of user.patient.tags">
-      <ion-icon [name]="iconFor(t.name)" *ngIf="iconFor(t.name)"></ion-icon>
-      <ion-label><strong>{{ t.name }}:</strong> {{ t.value }}</ion-label>
+    <ion-chip class="chip" *ngFor="let tag of user.patient.tags">
+      <ion-icon [name]="iconFor(tag.tag_name)" *ngIf="iconFor(tag.tag_name)"></ion-icon>
+      <ion-label><strong>{{ tag.tag_name }}:</strong> {{ tag.tag_value }}</ion-label>
     </ion-chip>
   </div>
 

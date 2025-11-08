@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {ToastService} from '../../../../../../shared/toast/toast.service';
 import {environment} from '../../../../../../../../../backend/config/enviroment';
+import {AdminItem} from '../../../../../../utils/interfaces/admin.interface';
 
 @Component({
   selector: 'app-doctor-regist',
@@ -22,7 +23,7 @@ import {environment} from '../../../../../../../../../backend/config/enviroment'
 export class DoctorRegistComponent {
   @Input() title: string = 'Orvosi jelentkezés';
   @Input() calledByAdmin: boolean = false;
-  @Input() adminUser: any;
+  @Input() adminUser!: AdminItem;
 
   doctorForm: FormGroup;
 

@@ -36,7 +36,7 @@
                     <ion-select-option
                       *ngFor="let a of appointments; trackBy: trackByAppointmentId"
                       [value]="a.id">
-                      {{ formatTime(a.from) }} — {{ getUserNameByPatientId(a.patient_id) }}
+                      {{ formatTime(a.starts_at) }} — {{ getUserNameByPatientId(a.patient_id) }}
                     </ion-select-option>
                   </ion-select>
                 </ion-item>

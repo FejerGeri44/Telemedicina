@@ -8,12 +8,13 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.patch('/updateProfile', authGuard, requireRole('doctor'), upload.single('picture'), doctorController.updateProfile);
 router.post('/addAppointment', authGuard, requireRole('doctor'), doctorController.addAppointment);
-router.post('/myAppointments', authGuard, requireRole('doctor'), doctorController.listMyAppointments);
 router.post('/deleteAppointment', authGuard, requireRole('doctor'), doctorController.deleteAppointment);
+router.post('/getMyAppointments', authGuard, requireRole('doctor'), doctorController.myAppointments);
 router.post('/resolvePatientNames', authGuard, requireRole('doctor'), doctorController.resolvePatientNames);
-router.post('/getMyPatients', authGuard, requireRole('doctor'), doctorController.myAppointments);
-
+router.post('/getAllMyPatients', authGuard, requireRole('doctor'), doctorController.getAllMyPatients);
+router.post('/getUserDataForDiagnosis', authGuard, requireRole('doctor'), doctorController.getUserDataForDiagnosis);
 router.post('/newDiagnosis', authGuard, requireRole('doctor'), doctorController.newDiagnosis);
-router.get('/getAllPatients', authGuard, requireRole('doctor'), doctorController.getAllPatients);
+router.post('/appointmentsByPatient', authGuard, requireRole('doctor'), doctorController.appointmentsByPatient);
+router.post('/uploadUserFile', authGuard, requireRole('doctor'), upload.single('file'), doctorController.uploadUserFile);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {AdminProfileCardComponent} from '../../components/admin-profile-card/admin-profile-card.component';
 import {IonicModule, ModalController} from '@ionic/angular';
-import {DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
+import {DatePipe, NgClass, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
 import {AddUserComponent} from '../../components/add-user/add-user.component';
@@ -24,18 +24,20 @@ import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
+import {environment} from '../../../../../../../backend/config/enviroment';
 
 type UserSortKey = 'name' | 'role' | 'createdAt';
 
 @Component({
   selector: 'app-all-users',
-  imports: [
-    IonicModule,
-    NgForOf,
-    DatePipe,
-    NgClass,
-    NgIf
-  ],
+    imports: [
+        IonicModule,
+        NgForOf,
+        DatePipe,
+        NgClass,
+        NgIf,
+        NgOptimizedImage
+    ],
   templateUrl: './all-users.component.html',
   standalone: true,
   styleUrl: './all-users.component.scss'
@@ -59,6 +61,7 @@ export class AllUsersComponent implements OnInit{
 
   selectedIds = new Set<number>();
   error: string | null = null;
+  isLoading: boolean = true;
 
   constructor(
     private http: HttpClient,
@@ -78,15 +81,16 @@ export class AllUsersComponent implements OnInit{
   }
 
   loadPatients(): void {
-    const token = localStorage.getItem('token') ?? '';
-    this.http.get<PatientItem[]>('http://localhost:3000/api/admin/getAllPatients', {
-      headers: { Authorization: `Bearer ${token}` }
+    this.isLoading = true;
+    this.http.get<PatientItem[]>(`${environment.apiUrl}/admin/getAllPatients`, {
+      withCredentials: true
     }).subscribe({
       next: (res) => {
         this.patients = res;
         this.countsByRole.patient = this.patients.length;
         this.buildUsers();
         this.applyFilters();
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Páciensek lekérési hiba:', err);
@@ -95,15 +99,16 @@ export class AllUsersComponent implements OnInit{
   }
 
   loadDoctors(): void {
-    const token = localStorage.getItem('token') ?? '';
-    this.http.get<DoctorItem[]>('http://localhost:3000/api/admin/getAllDoctors', {
-      headers: { Authorization: `Bearer ${token}` }
+    this.isLoading = true;
+    this.http.get<DoctorItem[]>(`${environment.apiUrl}/admin/getAllDoctors`, {
+      withCredentials: true
     }).subscribe({
       next: (res) => {
         this.doctors = res;
         this.countsByRole.doctor = this.doctors.length;
         this.buildUsers();
         this.applyFilters();
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Orvosok lekérési hiba:', err);
@@ -112,15 +117,16 @@ export class AllUsersComponent implements OnInit{
   }
 
   loadAdmins(): void {
-    const token = localStorage.getItem('token') ?? '';
-    this.http.get<AdminItem[]>('http://localhost:3000/api/admin/getAllAdmins', {
-      headers: { Authorization: `Bearer ${token}` }
+    this.isLoading = true;
+    this.http.get<AdminItem[]>(`${environment.apiUrl}/admin/getAllAdmins`, {
+      withCredentials: true
     }).subscribe({
       next: (res) => {
         this.admins = res;
         this.countsByRole.admin = this.admins.length;
         this.buildUsers();
         this.applyFilters();
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Adminok lekérési hiba:', err);
@@ -151,62 +157,54 @@ export class AllUsersComponent implements OnInit{
       .normalize('NFD')
       .replace(/\p{Diacritic}/gu, '');
   }
+
   private digitsOnly(s: any): string {
     return (s ?? '').toString().replace(/\D+/g, '');
   }
+
   onSearch(ev: any) {
     this.query = ev?.detail?.value ?? ev?.target?.value ?? '';
     this.applyFilters();
   }
+
   onRole(role: string) {
     this.role = role;
     this.applyFilters();
   }
-  private getSortValue(u: any, key: UserSortKey) {
-    switch (key) {
-      case 'name':
-        return u.name ?? u.User?.name ?? `${u.User?.firstName || ''} ${u.User?.lastName || ''}`.trim();
-      case 'role':
-        return u.role ?? u.User?.role;
-      case 'createdAt':
-        return u.createdAt ?? u.registDate ?? u.User?.registDate ?? u.User?.createdAt;
-    }
-  }
-  private collator = new Intl.Collator('hu', { sensitivity: 'base', numeric: true });
-  private compareValues(a: any, b: any, key: UserSortKey): number {
-    if (a == null && b == null) return 0;
-    if (a == null) return 1;
-    if (b == null) return -1;
 
-    if (key === 'createdAt') {
-      const ta = new Date(a).getTime() || 0;
-      const tb = new Date(b).getTime() || 0;
-      return ta - tb;
-    }
-
-    if (typeof a === 'number' && typeof b === 'number') {
-      return a - b;
-    }
-
-    return this.collator.compare(String(a), String(b));
-  }
-  sortUsers(column: UserSortKey) {
+  sortUsers(column: 'name' | 'role' | 'createdAt') {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-
-    const key = this.sortColumn;
     const dir = this.sortDirection === 'asc' ? 1 : -1;
 
-    this.filtered = [...this.filtered].sort((x, y) => {
-      const vx = this.getSortValue(x, key);
-      const vy = this.getSortValue(y, key);
-      return this.compareValues(vx, vy, key) * dir;
+    const getValue = (row: any, col: string) => {
+      if (col === 'name') {
+        return row?.user?.name ?? '';
+      }
+      if (col === 'createdAt') {
+        const d =
+          row.role === 'patient' ? row.patient?.registDate :
+            row.role === 'doctor'  ? row.doctor?.registDate  :
+              row.admin?.registDate;
+        return d ? new Date(d).getTime() : 0;
+      }
+      return row[col];
+    };
+
+    this.filtered = [...this.filtered].sort((a, b) => {
+      const va = getValue(a, column);
+      const vb = getValue(b, column);
+      if (typeof va === 'number' && typeof vb === 'number') {
+        return (va - vb) * dir;
+      }
+      return String(va).localeCompare(String(vb)) * dir;
     });
   }
+
   applyFilters() {
     const qNorm   = this.normalize(this.query);
     const qDigits = this.digitsOnly(this.query);
@@ -230,6 +228,7 @@ export class AllUsersComponent implements OnInit{
       return roleMatch && (textMatch || phoneMatch);
     });
   }
+
   roleBadgeClass(param: string): string {
     const role = (param || '').toLowerCase().trim();
     switch (role) {
@@ -239,21 +238,23 @@ export class AllUsersComponent implements OnInit{
       default: return 'default-badge';
     }
   }
+
   onRoleCard(val: '' | 'patient' | 'doctor' | 'admin') {
     this.role = (this.role === val) ? '' : val;
     this.applyFilters();
   }
+
   onProfileClick(user: any, ev: Event) {
     ev.stopPropagation();
     void this.openProfile(user);
   }
+
   async openProfile(user: any) {
     if (user.role == 'patient') {
       const modal = await this.modalCtrl.create({
         component: PatientProfileCardComponent as any,
         componentProps: {
           user: user,
-          tags: user.tags,
           editable: false
         },
         cssClass: 'profile-view-modal',
@@ -284,18 +285,23 @@ export class AllUsersComponent implements OnInit{
       await modal.present();
     }
   }
+
   private getUserId(u: any): number | null {
     return (u?.User?.id ?? u?.id) ?? null;
   }
+
   isSelected(u: any): boolean {
     return this.selectedIds.has(u.user.id);
   }
+
   get hasSelection(): boolean {
     return this.selectedIds.size > 0;
   }
+
   get hasExactlyOneSelection(): boolean {
     return this.selectedIds.size === 1;
   }
+
   onRowClick(u: any, ev?: MouseEvent) {
     const el = ev?.target as HTMLElement;
     if (el && el.closest('ion-button, ion-checkbox')) {
@@ -303,6 +309,7 @@ export class AllUsersComponent implements OnInit{
     }
     this.toggleUser(u);
   }
+
   private toggleUser(u: any, makeSelected?: boolean) {
     const id = u.user.id;
     const shouldSelect = (makeSelected !== undefined)
@@ -313,29 +320,31 @@ export class AllUsersComponent implements OnInit{
     if (shouldSelect) { next.add(id); } else { next.delete(id); }
     this.selectedIds = next;
   }
+
   isIndeterminate(): boolean {
     const count = this.filtered.filter(u => this.selectedIds.has(u.user.id)).length;
     return count > 0 && count < this.filtered.length;
   }
+
   select(u: any) {
     const id = this.getUserId(u);
     if (id != null) this.selectedIds.add(id);
   }
+
   onCheckboxChange(u: any, checked: boolean) {
     this.toggleUser(u, checked);
   }
+
   areAllSelected(): boolean {
     return this.filtered.length > 0 && this.filtered.every(u => this.selectedIds.has(u.user.id));
   }
+
   getSingleSelectedUser() {
     if (this.selectedIds.size !== 1) return null;
     const id = Array.from(this.selectedIds)[0];
     return this.filtered.find(it => it.user?.id === id) ?? null;
   }
-  getSelectedItems() {
-    if (this.selectedIds.size === 0) return [];
-    return this.filtered.filter(it => this.selectedIds.has(it.user?.id));
-  }
+
   toggleSelectAll(checked: boolean) {
     const next = new Set(this.selectedIds);
     if (checked) {
@@ -345,6 +354,7 @@ export class AllUsersComponent implements OnInit{
     }
     this.selectedIds = next;
   }
+
   async editUser() {
     if (!this.hasExactlyOneSelection) return;
 
@@ -378,6 +388,7 @@ export class AllUsersComponent implements OnInit{
       this.loadAll();
     }
   }
+
   private getModalComponentByRole(role: string) {
     switch (role) {
       case 'patient': return PatientEditProfileModalComponent;
@@ -386,9 +397,11 @@ export class AllUsersComponent implements OnInit{
       default:        return null;
     }
   }
+
   private mapToModalProps(selected: any) {
     return { item: selected };
   }
+
   firstConfirmUserDelete() {
     void this.alert.show(
       'Felhasználó törlés',
@@ -396,6 +409,7 @@ export class AllUsersComponent implements OnInit{
       () => this.secondConfirmUserDelete()
     )
   }
+
   secondConfirmUserDelete() {
     void this.alert.show(
       'Biztos vagy döntésedben?',
@@ -403,12 +417,13 @@ export class AllUsersComponent implements OnInit{
       () => this.deleteUser()
     )
   }
+
   deleteUser() {
     if (this.selectedIds.size === 0) return;
 
-    const payload = { userIds: Array.from(this.selectedIds) };
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    const payload = {
+      userIds: Array.from(this.selectedIds)
+    };
 
     type DeleteResponse = {
       message?: string;
@@ -416,29 +431,52 @@ export class AllUsersComponent implements OnInit{
       roles?: string[];
     };
 
-    this.http.delete<DeleteResponse>('http://localhost:3000/api/admin/deleteUsers', {
-      body: payload,
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
+    this.http.post<DeleteResponse>(`${environment.apiUrl}/admin/deleteUsers`, payload,
+      { withCredentials: true }
+      ).subscribe({
       next: (res) => {
         this.toast.show('Sikeres felhasználó törlés!', 'success');
+
+        const removedIds = Array.from(this.selectedIds);
         this.selectedIds.clear();
 
-        const roles = (res?.roles ?? []).map(r => r?.toLowerCase?.()).filter(Boolean);
-        const set = new Set(roles);
+        const roles = (res?.roles ?? [])
+          .map(r => r?.toLowerCase?.())
+          .filter(Boolean) as string[];
 
-        if (set.size > 0) {
-          if (set.has('patient')) this.loadPatients();
-          if (set.has('doctor'))  this.loadDoctors();
-          if (set.has('admin'))   this.loadAdmins();
-        } else if ((res?.deletedCount ?? 0) > 0) {
-          this.loadAll();
-        }
+        this.removeUsersFromMemory(removedIds, roles);
       },
       error: (err) => {
         console.error('Hiba a törlés közben:', err);
       }
     });
+  }
+
+  private getId(row: any): string {
+    const u = row?.User ?? row?.user ?? row;
+    return String(u?.id ?? row?.id ?? '');
+  }
+
+  private pruneByIds<T = any>(items: T[], idSet: Set<string>): T[] {
+    return (items ?? []).filter(item => !idSet.has(this.getId(item)));
+  }
+
+  private removeUsersFromMemory(ids: (string|number)[], roles?: string[]) {
+    const idSet = new Set(ids.map(x => String(x)));
+
+    const hasRoles = Array.isArray(roles) && roles.length > 0;
+    const rset = new Set((roles ?? []).map(r => String(r).toLowerCase()));
+
+    if (!hasRoles || rset.has('patient')) this.patients = this.pruneByIds(this.patients, idSet);
+    if (!hasRoles || rset.has('doctor'))  this.doctors  = this.pruneByIds(this.doctors,  idSet);
+    if (!hasRoles || rset.has('admin'))   this.admins   = this.pruneByIds(this.admins,   idSet);
+
+    this.countsByRole.patient = this.patients.length;
+    this.countsByRole.doctor  = this.doctors.length;
+    this.countsByRole.admin   = this.admins.length;
+
+    this.buildUsers();
+    this.applyFilters();
   }
 
   async addUser() {
@@ -452,6 +490,7 @@ export class AllUsersComponent implements OnInit{
       this.loadAll();
     }
   }
+
   exportCsv() {
     const rows = this.filtered ?? [];
     if (!rows.length) return;

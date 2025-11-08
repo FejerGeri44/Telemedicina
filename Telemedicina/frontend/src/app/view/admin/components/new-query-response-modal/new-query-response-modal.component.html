@@ -1,49 +1,115 @@
-<ion-header class="modal-header">
-  <h2 class="modal-title">
-    {{ kind === 'intent' ? 'Új szabály' :
-        kind === 'greeting' ? 'Köszönés szöveg' :
-          kind === 'fallback' ? 'Fallback szöveg' : 'Beállítás' }}
-  </h2>
-  <ion-button class="close-btn" (click)="onCancel()" aria-label="Bezárás">
-    <ion-icon name="close"></ion-icon>
-  </ion-button>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ kind === 'intent' ? 'Új Intent (Szándék)' :
+      kind === 'greeting' ? 'Új QuickStart (Gyorsindító)' :
+        kind === 'fallback' ? 'Új Fallback Suggestion' : 'Új Szabály Létrehozása' }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
 </ion-header>
 
-<form #intentForm="ngForm" (ngSubmit)="onSave(intentForm)" *ngIf="kind === 'intent'">
-  <ion-item class="required" lines="none">
-    <ion-label position="stacked" class="section-label">
-      Patterns (vesszővel elválasztva)
-    </ion-label>
-    <ion-input
-      class="rounded"
-      fill="outline"
-      [(ngModel)]="model.intent.patterns"
-      name="intentPatterns"
-      placeholder="Hasmenés, fejfájás, láz..."
-      required>
-    </ion-input>
-  </ion-item>
+<section class="modal-content">
+  <div class="section" *ngIf="kind === 'greeting' || kind === 'fallback'">
+    <ion-label class="section-label">Ikon választó</ion-label>
 
-  <ion-item class="required" lines="none">
-    <ion-label position="stacked" class="section-label">Response</ion-label>
-    <ion-textarea
-      class="rounded"
-      fill="outline"
-      [(ngModel)]="model.intent.response"
-      name="intentResponse"
-      placeholder="Ez súlyos lehet, kérlek mielőbb keress fel egy szakorvost ezügyben!"
-      rows="5"
-      required>
-    </ion-textarea>
-  </ion-item>
+    <div class="icon-grid">
+      <ion-button
+        type="button"
+        class="icon-chip"
+        *ngFor="let ic of baseIcons"
+        [class.selected]="isIconSelected(ic)"
+        (click)="selectIcon(ic)">
+        <ion-icon [name]="ic"></ion-icon>
+      </ion-button>
+    </div>
 
-  <div class="actions">
-    <ion-button
-      class="btn-primary"
-      type="submit"
-      [disabled]="intentForm.invalid || isSaving">
-      Mentés
-    </ion-button>
+    <div class="more">
+      <button class="text-btn" type="button" (click)="toggleMoreIcons()">
+        {{ showMoreIcons ? 'Kevesebbet mutat' : 'Mutass többet' }}
+        <ion-icon [name]="showMoreIcons ? 'chevron-up' : 'chevron-down'"></ion-icon>
+      </button>
+    </div>
+
+    <div class="icon-grid" *ngIf="showMoreIcons">
+      <button
+        type="button"
+        class="icon-chip"
+        *ngFor="let ic of moreIcons"
+        [class.selected]="isIconSelected(ic)"
+        (click)="selectIcon(ic)">
+        <ion-icon [name]="ic"></ion-icon>
+      </button>
+    </div>
   </div>
-</form>
 
+  <form #ruleForm="ngForm" (ngSubmit)="onSave(ruleForm)">
+    <ng-container *ngIf="kind === 'intent'">
+      <ion-input
+        class="field"
+        label="Patterns"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="intentPatterns"
+        [(ngModel)]="model.intent.patterns">
+      </ion-input>
+
+      <ion-textarea
+        class="field"
+        label="Response"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="intentResponse"
+        [(ngModel)]="model.intent.response"
+        rows="6">
+      </ion-textarea>
+    </ng-container>
+
+    <ng-container *ngIf="kind === 'greeting' || kind === 'fallback'">
+      <ion-input
+        class="field"
+        label="Címke (Label)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemLabel"
+        [(ngModel)]="model.item.label">
+      </ion-input>
+
+      <ion-input
+        class="field"
+        label="Prompt (AI Kérés)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemPrompt"
+        [(ngModel)]="model.item.prompt">
+      </ion-input>
+
+      <ion-textarea
+        class="field"
+        label="Válasz (Reply)"
+        labelPlacement="floating"
+        fill="outline"
+        shape="round"
+        name="itemReply"
+        [(ngModel)]="model.item.reply"
+        rows="6">
+      </ion-textarea>
+    </ng-container>
+
+    <div class="actions">
+      <ion-button
+        class="btn-primary"
+        type="submit"
+        [disabled]="ruleForm.invalid || isSaving">
+        Mentés
+      </ion-button>
+    </div>
+  </form>
+</section>

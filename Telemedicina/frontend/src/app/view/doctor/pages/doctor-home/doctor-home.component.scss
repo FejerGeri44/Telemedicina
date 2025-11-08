@@ -2,13 +2,13 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: auto auto auto;
-  width: 90%;
+  width: 95%;
   flex-direction: column;
   --background: none;
   margin: 0 auto;
   justify-content: center;
   align-content: center;
-  padding: 3%;
+  padding: 10px;
 }
 
 .patients,

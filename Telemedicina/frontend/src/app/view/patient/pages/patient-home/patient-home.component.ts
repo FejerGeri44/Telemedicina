@@ -120,7 +120,7 @@ export class PatientHomeComponent implements OnInit {
       }
     ).subscribe({
       next: (res) => {
-        this.myAppointments = res;
+        this.limitAppointmentNumbers(res);
         this.isLoading = false;
       },
       error: (error) => {
@@ -128,6 +128,17 @@ export class PatientHomeComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  limitAppointmentNumbers(appointments: MyAppointment[]) {
+    const now = Date.now();
+
+    this.myAppointments = (appointments ?? [])
+      .map(a => ({ ...a, _ts: new Date(a.from).getTime() }))
+      .filter(a => Number.isFinite(a._ts) && a._ts >= now)
+      .sort((a, b) => a._ts - b._ts)
+      .slice(0, 2)
+      .map(({ _ts, ...a }) => a);
   }
 
   protected readonly formatAppointmentTime = formatAppointmentTime;

@@ -10,13 +10,13 @@ function replaceNullWithNA(obj) {
 }
 
 function mapTagRow(row) {
-  const name  = (row.tag_name ?? row.tagName ?? row.name ?? '').toString().trim();
-  const value = (row.tag_value ?? row.tagValue ?? row.value ?? '').toString().trim();
+  const tag_name  = (row.tag_name ?? row.tagName ?? row.name ?? '').toString().trim();
+  const tag_value = (row.tag_value ?? row.tagValue ?? row.value ?? '').toString().trim();
 
   return {
     id: row.id ?? row.docId ?? row._id?.toString?.(),
-    name,
-    value,
+    tag_name,
+    tag_value,
   };
 }
 

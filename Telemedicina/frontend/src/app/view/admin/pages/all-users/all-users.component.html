@@ -127,7 +127,47 @@
       <th>Profil</th>
     </tr>
     </thead>
-    <tbody>
+    <ng-container *ngIf="isLoading">
+      <tr *ngFor="let i of [1, 2, 3]" class="skeleton-row">
+        <td class="checkbox-col">
+          <ion-skeleton-text [animated]="true" style="width: 20px; height: 20px; border-radius: 4px;"></ion-skeleton-text>
+        </td>
+        <td>
+          <div class="user-info">
+            <div class="avatar" style="box-shadow: none;">
+              <ion-skeleton-text [animated]="true" style="width: 50px; height: 50px; border-radius: 50%; margin: 0;"></ion-skeleton-text>
+            </div>
+            <div class="name-block" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+              <div class="id">
+                <ion-skeleton-text [animated]="true" style="border-radius: 5px; width: 30px; height: 12px;"></ion-skeleton-text>
+              </div>
+              <div class="name">
+                <ion-skeleton-text [animated]="true" style="border-radius: 5px; width: 80px; height: 16px;"></ion-skeleton-text>
+              </div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <ion-skeleton-text [animated]="true" style="width: 70px; height: 24px; border-radius: 999px; margin: auto;"></ion-skeleton-text>
+        </td>
+        <td>
+          <ion-skeleton-text [animated]="true" style="border-radius: 5px; width: 80%; max-width: 150px; height: 16px; margin: auto;"></ion-skeleton-text>
+        </td>
+        <td>
+          <ion-skeleton-text [animated]="true" style="border-radius: 5px; width: 60%; max-width: 100px; height: 16px; margin: auto;"></ion-skeleton-text>
+        </td>
+        <td>
+          <ion-skeleton-text [animated]="true" style="border-radius: 5px; width: 90%; max-width: 180px; height: 16px; margin: auto;"></ion-skeleton-text>
+        </td>
+        <td>
+          <ion-skeleton-text [animated]="true" style="border-radius: 5px; width: 70%; max-width: 90px; height: 16px; margin: auto;"></ion-skeleton-text>
+        </td>
+        <td>
+          <ion-skeleton-text [animated]="true" style="width: 60px; height: 32px; border-radius: 5px; margin: auto;"></ion-skeleton-text>
+        </td>
+      </tr>
+    </ng-container>
+    <tbody *ngIf="!isLoading">
     <tr *ngFor="let user of filtered"
         (click)="onRowClick(user, $event)"
         [class.selected]="isSelected(user)">
@@ -140,9 +180,9 @@
       </td>
       <td>
         <div class="user-info">
-          <ion-avatar class="user-avatar">
-            <img [src]="user.user.pictureUrl" alt="avatar">
-          </ion-avatar>
+          <div class="avatar">
+            <img ngSrc="{{ user.user.pictureUrl }}" alt="Profilkép" draggable="false" priority fill/>
+          </div>
           <div class="name-block">
             <div class="id">#{{ user.user.id }}</div>
             <div class="name">{{ user.user.name }}</div>

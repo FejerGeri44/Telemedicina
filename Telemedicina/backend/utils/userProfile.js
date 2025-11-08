@@ -1,4 +1,3 @@
-// services/userProfile.service.js
 const sql           = require('../config/db.config');
 const UserRepo      = require('../repositories/user.repository');
 const PatientRepo   = require('../repositories/patient.repository');
@@ -49,7 +48,7 @@ async function createUserWithProfile({
       }, trx);
 
     } else if (role === 'admin') {
-      await AdminRepo.create({ userId: user.id }, trx);
+      await AdminRepo.create({ userId: user.id, registDate: profile.registDate }, trx);
     }
 
     return user;

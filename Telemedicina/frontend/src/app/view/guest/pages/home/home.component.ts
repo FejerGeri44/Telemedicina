@@ -3,8 +3,8 @@ import {Router} from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
-import { NavbarComponent } from '../../components/navbar/navbar.component';
-import { FooterComponent } from '../../../../shared/footer/footer.component';
+import { GuestNavbarComponent } from '../../components/guest-navbar/guest-navbar.component';
+import { GuestFooterComponent } from '../../components/guest-footer/guest-footer.component';
 
 @Component({
   selector: 'app-home',
@@ -13,8 +13,8 @@ import { FooterComponent } from '../../../../shared/footer/footer.component';
   imports: [
     CommonModule,
     IonicModule,
-    NavbarComponent,
-    FooterComponent
+    GuestNavbarComponent,
+    GuestFooterComponent
   ],
   styleUrls: ['./home.component.scss']
 })

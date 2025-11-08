@@ -37,7 +37,7 @@ export class PatientNavbarComponent implements OnInit{
     { icon: 'home', label: 'Profil', route: 'patient-home' },
     { icon: 'search', label: 'Orvos kereső', route: 'doctor-search' },
     { icon: 'calendar', label: 'Időpontjaim', route: 'appointment-list' },
-    { icon: 'fitness', label: 'Egészségügyi napló', route: 'naplo' },
+    { icon: 'fitness', label: 'Egészségügyi napló', route: 'health-diary' },
     { icon: 'chatbubbles', label: 'Üzenetek', route: 'patient-messages' },
   ];
 

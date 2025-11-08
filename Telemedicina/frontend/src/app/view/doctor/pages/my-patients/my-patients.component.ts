@@ -1,66 +1,100 @@
 import {Component, OnInit} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {HttpClient} from '@angular/common/http';
-import {NgForOf, NgIf} from '@angular/common';
+import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {
   PatientProfileCardComponent
 } from '../../../patient/components/patient-profile-card/patient-profile-card.component';
 import {Router} from '@angular/router';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
-import {MyPatientCard} from '../../../../utils/interfaces/commonInterfaces';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {UserService} from '../../../../shared/user.service';
+import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {ToastService} from '../../../../shared/toast/toast.service';
+import {environment} from '../../../../../../../backend/config/enviroment';
 
 @Component({
   selector: 'app-my-patients',
   imports: [
     IonicModule,
     NgIf,
-    NgForOf
+    NgForOf,
+    NgOptimizedImage
   ],
   templateUrl: './my-patients.component.html',
   standalone: true,
   styleUrl: './my-patients.component.scss'
 })
-export class MyPatientsComponent implements OnInit{
-  isLoading = false;
-  patients: MyPatientCard[] = [];
+export class MyPatientsComponent {
+  user!: Observable<DoctorItem | null>;
+
+  isLoading = true;
+  hasLoadedPatients = false;
+  patients: PatientItem[] = [];
 
   constructor(
     private router: Router,
     private http: HttpClient,
-    private modalCtrl: ModalController
-  ) {}
+    private modalCtrl: ModalController,
+    private userService: UserService,
+    private toast: ToastService
+  ) {
+    this.user = this.userService.doctor$();
 
-  ngOnInit() {
-    this.loadMyPatients();
+    (async () => {
+      const userValue = await firstValueFrom(
+        this.userService.doctor$().pipe(
+          filter((u): u is DoctorItem => !!u),
+          take(1),
+          delay(50)
+        )
+      );
+
+      await this.loadMyPatients();
+    })();
   }
 
-  loadMyPatients() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  private async getDoctorId(): Promise<number | null> {
+    const user = await firstValueFrom(this.user);
+    return user?.doctor.id ?? null;
+  }
+
+  async loadMyPatients() {
     this.isLoading = true;
 
-    this.http.get<MyPatientCard[]>(
-      'http://localhost:3000/api/getMyPatients',
-      { headers: { Authorization: `Bearer ${token}` } }
-    ).subscribe({
-      next: (res) => {
-        this.patients = res;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('❌ Nem sikerült lekérni a pácienseket:', err);
-        this.isLoading = false;
-      }
+    const doctorId = await this.getDoctorId();
+    if (!doctorId) {
+      this.toast.show('Hiányzik az orvos azonosító.', 'danger');
+      return null;
+    }
+    return new Promise<PatientItem[] | null>((resolve) => {
+      this.http.post<PatientItem[]>(
+        `${environment.apiUrl}/doctor/getAllMyPatients`,
+        { id: doctorId },
+        { withCredentials: true }
+      ).subscribe({
+        next: (res) => {
+          this.patients = res;
+          this.isLoading = false;
+          this.hasLoadedPatients = true;
+          resolve(res);
+        },
+        error: (err) => {
+          console.error('❌ Nem sikerült lekérni a pácienseket:', err);
+          this.isLoading = false;
+          this.patients = [];
+          resolve(null);
+        }
+      });
     });
   }
 
-  async openPatientModal(p: MyPatientCard) {
+  async openPatientModal(patient: PatientItem) {
     const modal = await this.modalCtrl.create({
       component: PatientProfileCardComponent as any,
       componentProps: {
-        user: p.user,
-        patient: p.patient,
-        tags: p.tags,
+        user: patient,
         editable: false
       },
       cssClass: 'profile-view-modal',
@@ -68,6 +102,7 @@ export class MyPatientsComponent implements OnInit{
     });
     await modal.present();
   }
+
   goToMessages(raw: any) {
     const normalized = this.normalizePatientForMessages(raw);
     void this.router.navigate(['/doctor-messages'], {

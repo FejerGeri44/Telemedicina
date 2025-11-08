@@ -5,10 +5,14 @@ import {NgForOf, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {Draft} from '../../../../utils/interfaces/commonInterfaces';
 import {formatPhoneNumber, formatTaj} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
+import {environment} from '../../../../../../../backend/config/enviroment';
+import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {UserService} from '../../../../shared/user.service';
+import {Diagnosis} from '../../../../utils/interfaces/diagnosis.interface';
 
 @Component({
   selector: 'app-new-diagnosis',
@@ -27,6 +31,7 @@ import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
 })
 
 export class NewDiagnosisComponent implements OnInit{
+  user!: Observable<DoctorItem | null>;
   steps = [
     { key: 'ids',           label: 'Alapok',            icon: 'person' },
     { key: 'exam',          label: 'Vizsgálat',         icon: 'medkit' },
@@ -42,8 +47,9 @@ export class NewDiagnosisComponent implements OnInit{
   selectedDate: string = new Date().toISOString().split('T')[0];
   showExam = false;
   vm: any = {};
+  isLoading = true;
 
-  draft: Draft = {
+  draft: Diagnosis = {
     appointmentId: null,
     patientId: null,
     status: 'draft',
@@ -91,37 +97,67 @@ export class NewDiagnosisComponent implements OnInit{
 
   constructor(
     private http: HttpClient,
+    private userService: UserService,
     private toast: ToastService,
     private alert: AlertService
-  ) {}
+  ) {
+    this.user = this.userService.doctor$();
+
+    (async () => {
+      const userValue = await firstValueFrom(
+        this.userService.doctor$().pipe(
+          filter((u): u is DoctorItem => !!u),
+          take(1),
+          delay(50)
+        )
+      );
+
+      await this.loadAppointments();
+    })();
+  }
 
   ngOnInit() {
-    this.loadAppointments();
     this.buildSummaryVM();
   }
 
-  loadAppointments() {
-    const token = localStorage.getItem('token');
-    this.http.get<any[]>('http://localhost:3000/api/myAppointments', {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: (appointments) => {
-        const today = new Date().toISOString().split('T')[0];
+  private async getDoctorId(): Promise<number | null> {
+    const user = await firstValueFrom(this.user);
+    return user?.doctor.id ?? null;
+  }
 
-        this.appointments = appointments.filter(appt => {
-          const apptDate = new Date(appt.from).toISOString().split('T')[0];
-          return apptDate === today && appt.status !== 'done';
-        });
+  async loadAppointments(): Promise<Appointment[] | null> {
+    const doctorId = await this.getDoctorId();
+    if (!doctorId) {
+      this.toast.show('Hiányzik az orvos azonosító.', 'danger');
+      return null;
+    }
 
-        this.loadUsersForDiagnosis(this.appointments);
-      },
-      error: (err) => console.error('❌ Hiba az időpontok lekérésekor:', err)
+    return new Promise<Appointment[] | null>((resolve) => {
+      this.http.post<Appointment[]>(
+        `${environment.apiUrl}/doctor/getMyAppointments`,
+        { id: doctorId  },
+        { withCredentials: true }
+      ).subscribe({
+        next: async (appointments) => {
+          this.appointments = this.filterTodayUpcomingAppointments(appointments);
+          await this.loadUsersForDiagnosis(appointments);
+          resolve(appointments);
+        },
+        error: (err) => {
+          console.error('❌ Hiba az időpontok lekérésekor:', err);
+          this.toast.show('Nem sikerült betölteni az időpontokat.', 'danger');
+          resolve(null);
+        }
+      });
     });
   }
 
-  loadUsersForDiagnosis(appointments: Appointment[]) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  async loadUsersForDiagnosis(appointments: Appointment[]): Promise<PatientItem[] | null> {
+    const doctorId = await this.getDoctorId();
+    if (!doctorId) {
+      this.toast.show('Hiányzik az orvos azonosító.', 'danger');
+      return null;
+    }
 
     const list = appointments ?? this.appointments ?? [];
 
@@ -137,25 +173,59 @@ export class NewDiagnosisComponent implements OnInit{
 
     if (patientIds.length === 0) {
       this.patients = [];
-      return;
+      return [];
     }
 
     this.isLoadingUsers = true;
 
-    this.http.post<PatientItem[]>(
-      'http://localhost:3000/api/getUserDataForDiagnosis',
-      { patientIds },
-      { headers: { Authorization: `Bearer ${token}` } }
-    ).subscribe({
-      next: (users: any) => {
-        this.patients = users;
-        this.isLoadingUsers = false;
-      },
-      error: (err) => {
-        console.error('❌ Hiba a beteg/ user adatok lekérésekor:', err);
-        this.isLoadingUsers = false;
-      }
+    return new Promise<PatientItem[] | null>((resolve) => {
+      this.http.post<PatientItem[]>(
+        `${environment.apiUrl}/doctor/getUserDataForDiagnosis`,
+        { patientIds },
+        { withCredentials: true }
+      ).subscribe({
+        next: (users) => {
+          this.patients = users;
+          this.isLoadingUsers = false;
+          resolve(users);
+        },
+        error: (err) => {
+          console.error('❌ Hiba a beteg/ user adatok lekérésekor:', err);
+          this.isLoadingUsers = false;
+          resolve(null);
+        }
+      });
     });
+  }
+
+  private pad(n: number) { return String(n).padStart(2, '0'); }
+
+  private localDateKey(d: Date): string {
+    return `${d.getFullYear()}-${this.pad(d.getMonth() + 1)}-${this.pad(d.getDate())}`;
+  }
+
+  private parseApptStart(appt: Appointment): Date | null {
+    try {
+      return appt?.starts_at ? new Date(appt.starts_at) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private filterTodayUpcomingAppointments(list: Appointment[]): Appointment[] {
+    const now = new Date();
+    const todayKey = this.localDateKey(now);
+
+    return (list || [])
+      .filter(a => a?.patient_id !== null && a?.patient_id !== undefined)
+      .filter(a => Number.isFinite(Number(a.patient_id)))
+      .filter(a => String(a?.status ?? '').toLowerCase().trim() !== 'done')
+      .map(a => ({ a, start: this.parseApptStart(a) }))
+      .filter(x => x.start instanceof Date && !isNaN(x.start.getTime()))
+      .filter(x => this.localDateKey(x.start!) === todayKey)
+      .filter(x => x.start! > now)
+      .sort((x, y) => x.start!.getTime() - y.start!.getTime())
+      .map(x => x.a);
   }
 
   get slideTransform(): string {
@@ -166,10 +236,14 @@ export class NewDiagnosisComponent implements OnInit{
     return Array.isArray(this.patients) ? this.patients : Object.values(this.patients ?? {});
   }
 
-  getUserNameByPatientId(uid: string): string {
-    const id = Number(uid);
+  getUserNameByPatientId(patient_id: number): string {
+    const id = Number(patient_id);
     if (!Number.isFinite(id)) return '';
-    return this.patientsList().find(it => it?.user?.id === id)?.user?.name ?? '';
+
+    const item = this.patientsList()
+      .find(it => Number(it?.patient?.id) === id);
+
+    return item?.user?.name ?? '';
   }
 
   formatTime(iso: any): string {
@@ -207,21 +281,22 @@ export class NewDiagnosisComponent implements OnInit{
     const appt = (this.appointments ?? []).find(a => Number(a?.id) === selId);
     if (!appt) return;
 
-    const item = this.patientsList()
-      .find(it => String(it?.patient?.id) === String(appt.patient_id));
-
+    const item = this.patientsList().find(it => String(it?.patient?.id) === String(appt.patient_id));
     const u = item?.user;
     const p = item?.patient;
 
-    this.draft.appointmentId      = appt.id ?? null;
-    this.draft.patientId          = appt.patient_id;
-    this.draft.patient.name       = u?.name ?? '';
-    this.draft.patient.email      = u?.email ?? '';
-    this.draft.patient.phone      = u?.phoneNumber ?? '';
-    this.draft.patient.address    = u?.address ?? '';
-    this.draft.patient.gender     = String(p?.gender ?? '');
-    this.draft.patient.homePhone  = p?.homePhone ?? '';
-    this.draft.patient.taj        = p?.taj ?? '';
+    this.draft.appointmentId = appt.id ?? null;
+    this.draft.patientId     = appt.patient_id ?? null;
+
+    this.draft.patient.id    = appt.patient_id ?? null;
+    this.draft.patient.taj   = p?.taj ?? '';
+
+    this.draft.patient.name      = u?.name ?? '';
+    this.draft.patient.email     = u?.email ?? '';
+    this.draft.patient.phone     = u?.phoneNumber ?? '';
+    this.draft.patient.address   = u?.address ?? '';
+    this.draft.patient.gender    = String(p?.gender ?? '');
+    this.draft.patient.homePhone = p?.homePhone ?? '';
   }
 
   buildSummaryVM() {
@@ -233,10 +308,9 @@ export class NewDiagnosisComponent implements OnInit{
 
     const appt = (this.appointments || []).find(a => a.id === this.selectedAppointmentId);
 
-    // helper formázók (ha már vannak ilyenjeid, használd azokat)
     const taj = this.formatTaj ? this.formatTaj(p.taj) : (p.taj || '');
     const phone = this.formatPhoneNumber ? this.formatPhoneNumber(p.phone) : (p.phone || '');
-    const apptTime = appt ? this.formatTime(appt.from) : '';
+    const apptTime = appt ? this.formatTime(appt.starts_at) : '';
 
     const bp = (e.bpSys && e.bpDia) ? `${e.bpSys}/${e.bpDia} mmHg` : '';
     const hr = e.heartRate ? `${e.heartRate} bpm` : '';
@@ -252,30 +326,25 @@ export class NewDiagnosisComponent implements OnInit{
         : d.severity === 'severe' ? 'Súlyos' : '';
 
     this.vm = {
-      // Páciens
       patientName: p.name || '',
       taj,
       phone,
       email: p.email || '',
       appointmentTime: apptTime,
 
-      // Tünetek
       onsetDate: s.onsetDate ? new Date(s.onsetDate).toLocaleDateString('hu-HU') : '',
       chiefComplaint: s.chiefComplaint || '',
       history: s.history || '',
 
-      // Vitálok
       bp, hr, temp, spo2, weight, height, bmi,
       examSummary: e.examSummary || '',
 
-      // Diagnózis
       diagnosisMain: d.primaryText || '',
       diagnosisCodeSystem: d.codeSystem || '',
       diagnosisCode: d.code || '',
       certainty, severity,
       differentials: d.differentials || '',
 
-      // Plan
       planText: plan.planText || '',
       redFlags: plan.redFlags,
       informed: plan.informed,
@@ -310,71 +379,111 @@ export class NewDiagnosisComponent implements OnInit{
     )
   }
 
-  save() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  async save(): Promise<void> {
+    this.isLoading = true;
 
-    const appt = (this.appointments || []).find(a => a.id === this.draft.appointmentId);
-
-    if (!appt?.patient_id) {
-      console.error('Hiányzik a patientId a mentéshez');
+    const doctorId = await this.getDoctorId();
+    if (!doctorId) {
+      this.toast.show('Hiányzik az orvos azonosító.', 'danger');
+      this.isLoading = false;
       return;
     }
 
-    const chiefComplaint = this.draft?.symptoms?.chiefComplaint?.trim();
-    const primaryText    = this.draft?.diagnosis?.primaryText?.trim();
+    const appt = (this.appointments || []).find(a => a.id === this.draft.appointmentId);
+    if (!appt?.patient_id) {
+      this.toast.show('Hiányzik a beteg (patient_id) az időponthoz.', 'danger');
+      this.isLoading = false;
+      return;
+    }
+
+    const chiefComplaint= this.draft?.symptoms?.chiefComplaint?.trim() || '';
+    const primaryText= this.draft?.diagnosis?.primaryText?.trim() || '';
+    const onsetDate= this.draft?.symptoms?.onsetDate?.trim() || '';
+
+    const redFlags= this.draft?.plan?.redFlags;
+    const informed= this.draft?.plan?.informed;
+
+    if (!chiefComplaint || !primaryText || !onsetDate) {
+      this.toast.show('Kérlek tölts ki minden kötelező mezőt!', 'warning');
+      this.isLoading = false;
+      return;
+    }
+
+    if (!redFlags || !informed) {
+      this.toast.show('Kérlek pipáld ki a kötelező elemeket!', 'warning');
+      this.isLoading = false;
+      return;
+    }
 
     const body = {
-      patient: appt?.patient_id,
-      appointmentId: this.selectedAppointmentId,
-
+      patient: appt.patient_id,
+      appointmentId: this.draft.appointmentId,
       symptoms: {
-        chiefComplaint: chiefComplaint,
+        chiefComplaint,
         onsetDate: this.draft?.symptoms?.onsetDate ?? null,
-        history: this.draft?.symptoms?.history ?? null
+        history:   this.draft?.symptoms?.history ?? null
       },
-
       exam: {
-        bpSys: this.draft?.exam?.bpSys ?? null,
-        bpDia: this.draft?.exam?.bpDia ?? null,
+        bpSys:     this.draft?.exam?.bpSys ?? null,
+        bpDia:     this.draft?.exam?.bpDia ?? null,
         heartRate: this.draft?.exam?.heartRate ?? null,
-        tempC: this.draft?.exam?.tempC ?? null,
-        spo2: this.draft?.exam?.spo2 ?? null,
-        weightKg: this.draft?.exam?.weightKg ?? null,
-        heightCm: this.draft?.exam?.heightCm ?? null,
-        bmi: this.draft?.exam?.bmi ?? null,
-        summary: this.draft?.exam?.examSummary ?? null
+        tempC:     this.draft?.exam?.tempC ?? null,
+        spo2:      this.draft?.exam?.spo2 ?? null,
+        weightKg:  this.draft?.exam?.weightKg ?? null,
+        heightCm:  this.draft?.exam?.heightCm ?? null,
+        bmi:       this.draft?.exam?.bmi ?? null,
+        summary:   this.draft?.exam?.examSummary ?? null
       },
-
       diagnosis: {
-        primaryText: primaryText,
-        codeSystem: this.draft?.diagnosis?.codeSystem ?? null,
-        code: this.draft?.diagnosis?.code ?? null,
-        certaintyPct: this.draft?.diagnosis?.certaintyPct ?? null,
-        severity: this.draft?.diagnosis?.severity ?? null,
+        primaryText,
+        codeSystem:    this.draft?.diagnosis?.codeSystem ?? null,
+        code:          this.draft?.diagnosis?.code ?? null,
+        certaintyPct:  this.draft?.diagnosis?.certaintyPct ?? null,
+        severity:      this.draft?.diagnosis?.severity ?? null,
         differentials: this.draft?.diagnosis?.differentials ?? null
       },
-
       plan: {
         assessment: this.draft?.plan?.assessment ?? null,
-        planText: this.draft?.plan?.planText ?? null,
-        redFlags: !!this.draft?.plan?.redFlags,
-        informed: !!this.draft?.plan?.informed
+        planText:   this.draft?.plan?.planText ?? null,
+        redFlags:   !!this.draft?.plan?.redFlags,
+        informed:   !!this.draft?.plan?.informed
       }
     };
 
-    this.http.post('http://localhost:3000/api/newDiagnosis', body, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: () => {
-        this.toast.show("Sikeres adat felvitel!", "success");
-        setTimeout(() => this.reset(), 100);
-        },
+    this.http.post(
+      `${environment.apiUrl}/doctor/newDiagnosis`,
+      body,
+      {withCredentials: true}
+    ).subscribe({
+      next: async () => {
+        await this.markAppointmentDoneAndRefresh(this.draft.appointmentId!);
+        this.isLoading = false;
+        this.reset();
+        this.toast.show('Sikeres adat felvitel!', 'success');
+      },
       error: (err) => {
         console.error('❌ Hiba diagnózis mentésekor:', err);
-        this.toast.show("Sikertelen adat felvitel!", "danger");
+        const msg = err?.error?.error || err?.error?.message || 'Sikertelen adat felvitel!';
+        this.toast.show(msg, 'danger');
+        this.isLoading = false;
       }
     });
+  }
+
+  private async markAppointmentDoneAndRefresh(appointmentId: number): Promise<void> {
+    const updated = (this.appointments || []).map(a =>
+      a.id === appointmentId ? { ...a, status: 'done' as any } : a
+    );
+
+    const filtered = this.filterTodayUpcomingAppointments(updated);
+
+    this.appointments = filtered;
+
+    await this.loadUsersForDiagnosis(filtered);
+
+    this.selectedAppointmentId = null;
+    this.draft.appointmentId = null;
+    this.buildSummaryVM();
   }
 
   reset() {

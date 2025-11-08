@@ -81,7 +81,7 @@
       <div *ngFor="let app of myAppointments" class="appointment-card">
         <div class="appointment-left">
           <div class="avatar">
-            <img ngSrc="{{app.doctor.user.pictureUrl}}" alt="Doktor" class="doctor-image" draggable="false" fill/>
+            <img ngSrc="{{app.doctor.user.pictureUrl}}" alt="Doktor" class="doctor-image" draggable="false" priority fill/>
           </div>
           <div class="doctor-info">
             <div class="doctor-name">{{ app.doctor.user.name }}</div>

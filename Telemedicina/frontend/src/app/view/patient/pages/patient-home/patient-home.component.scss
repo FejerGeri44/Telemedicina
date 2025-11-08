@@ -11,11 +11,11 @@ $gap: 20px;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto auto;
   gap: $gap;
-  width: 90%;
+  width: 95%;
   margin: 0 auto;
   justify-content: center;
   align-content: center;
-  padding: 3%;
+  padding: 10px;
 
   @media (max-width: 1000px) {
     display: flex;

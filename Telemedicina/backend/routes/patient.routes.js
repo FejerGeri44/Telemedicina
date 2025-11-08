@@ -10,7 +10,9 @@ router.patch('/updateProfile', authGuard, requireRole('patient'), upload.single(
 router.get('/doctors', authGuard, requireRole('patient'), patientController.listDoctors);
 router.post('/getDoctorsAppointments', authGuard, requireRole('patient'), patientController.getDoctorsAppointments);
 router.post('/registerToAppointment', authGuard, requireRole('patient'), patientController.registerToAppointment);
-router.post('/loadMyAppointments', authGuard, requireRole('patient'), patientController.loadMyAppointments);
 router.patch('/cancelAppointment', authGuard, requireRole('patient'), patientController.cancelAppointment);
+router.post('/loadMyAppointments', authGuard, requireRole('patient'), patientController.loadMyAppointments);
+router.post('/loadMyDiagnoses', authGuard, requireRole('patient'), patientController.loadMyDiagnoses);
+router.post('/loadMyDocuments', authGuard, requireRole('patient'), patientController.loadMyDocuments);
 
 module.exports = router;

@@ -1,0 +1,23 @@
+<div class="chat-container">
+  <p class="chat-history-placeholder">
+    Páciens Chat tartalom helye.
+  </p>
+
+  <div class="input-area">
+    <ion-textarea
+      class="message-input"
+      label="Üzenet küldése..."
+      labelPlacement="floating"
+      fill="outline"
+      rows="1"
+      autoGrow="true"
+      [(ngModel)]="message">
+    </ion-textarea>
+    <ion-button
+      class="send-button"
+      [disabled]="isSendButtonDisabled"
+      shape="round">
+      <ion-icon name="send" slot="icon-only"></ion-icon>
+    </ion-button>
+  </div>
+</div>

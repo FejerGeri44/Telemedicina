@@ -133,8 +133,9 @@ export class PatientEditProfileModalComponent {
       form.append('picture', this.file, this.file.name);
     }
 
-    this.http
-      .patch<{ user: LoggedUser }>(`${environment.apiUrl}/patient/updateProfile`, form, {
+    this.http.patch<{ user: LoggedUser }>(`${environment.apiUrl}/patient/updateProfile`,
+      form,
+      {
         withCredentials: true,
       })
       .subscribe({

@@ -1,39 +1,56 @@
+<ion-segment [value]="selectedTab" (ionChange)="onSegmentChange($event)" class="status-segment">
+  <ion-segment-button value="pending">
+    <ion-label>Pending</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="denied">
+    <ion-label>Denied</ion-label>
+  </ion-segment-button>
+</ion-segment>
+
 <div class="container">
-  <!-- SKELETON -->
   <ion-grid *ngIf="loading">
     <ion-row>
       <ion-col size="12" size-md="6" size-lg="4" *ngFor="let s of [1,2,3,4,5,6]">
         <ion-card>
           <ion-card-header class="card-header">
-            <ion-skeleton-text animated style="width:60px;height:60px;border-radius:50%;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width:100px;height:100px;border-radius:50%;"></ion-skeleton-text>
             <div class="header-text">
               <ion-skeleton-text animated style="width:120px;height:16px;"></ion-skeleton-text>
               <ion-skeleton-text animated style="width:80px;height:12px;margin-top:6px;"></ion-skeleton-text>
             </div>
           </ion-card-header>
           <ion-card-content>
-            <ion-skeleton-text animated style="width:90%;height:12px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width:100%;height:12px;margin-top:6px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width:90%;height:12px;margin-top:6px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width:80%;height:12px;margin-top:6px;"></ion-skeleton-text>
             <ion-skeleton-text animated style="width:70%;height:12px;margin-top:6px;"></ion-skeleton-text>
+          </ion-card-content>
+
+          <ion-card-content>
+            <ion-skeleton-text animated style="width:100%;height:30px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width:100%;height:30px;margin-top:6px;"></ion-skeleton-text>
           </ion-card-content>
         </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
 
-  <!-- ÜRES ÁLLAPOT -->
-  <div *ngIf="!loading && pendingDoctors.length === 0" class="no-data">
+  <div *ngIf="!loading && displayedDoctors.length === 0" class="no-data">
     <span class="no-data-text">(N/A)</span>
-    <span class="no-data-sub">Jelenleg nincs engelyékérésre várakozó Orvosi jelentkezés.</span>
+    <span class="no-data-sub">
+      {{ selectedTab === 'pending'
+      ? 'Jelenleg nincs engedélykérésre várakozó Orvosi jelentkezés.'
+      : 'Jelenleg nincs elutasított Orvosi jelentkezés.' }}
+    </span>
   </div>
 
-  <!-- GRID -->
-  <ion-grid *ngIf="!loading && pendingDoctors.length > 0">
+  <ion-grid *ngIf="!loading && displayedDoctors.length > 0">
     <ion-row>
-      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let doctor of pendingDoctors">
+      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let doctor of displayedDoctors">
         <ion-card>
           <ion-card-header class="card-header">
             <div class="avatar">
-              <img [src]="doctor.user.pictureUrl" alt="avatar" />
+              <img ngSrc="{{ doctor.user.pictureUrl }}" alt="avatar" priority fill/>
             </div>
             <div class="header-text">
               <ion-card-title>{{ doctor.user.name }}</ion-card-title>
@@ -48,7 +65,17 @@
           </ion-card-content>
 
           <div class="button-row">
-            <ion-button class="btn-secondary approval" (click)="confirmation(doctor)">Engedély megadása</ion-button>
+            <ion-button class="btn-secondary" (click)="approvalConfirmation(doctor)" *ngIf="selectedTab === 'pending'">
+              Engedély megadása
+            </ion-button>
+
+            <ion-button class="btn-accent" (click)="denialConfirmation(doctor)" *ngIf="selectedTab === 'pending'">
+              Elutasítás
+            </ion-button>
+
+            <ion-button class="btn-secondary" *ngIf="selectedTab === 'denied'" (click)="reconsiderationConfirmation(doctor)">
+              Újraértékelés
+            </ion-button>
           </div>
         </ion-card>
       </ion-col>

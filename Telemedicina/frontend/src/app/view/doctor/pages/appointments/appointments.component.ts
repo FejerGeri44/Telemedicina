@@ -95,14 +95,14 @@ export class AppointmentsComponent implements OnInit{
 
     return new Promise<Appointment[] | null>((resolve) => {
       this.http.post<Appointment[]>(
-        `${environment.apiUrl}/doctor/myAppointments`,
+        `${environment.apiUrl}/doctor/getMyAppointments`,
         { id: doctorId  },
         { withCredentials: true }
       ).subscribe({
         next: async (appointments) => {
           this.appointments = appointments;
           this.reindexAppointments();
-          this.appointmentDates = appointments.map(appt => appt.from);
+          this.appointmentDates = appointments.map(appt => appt.starts_at);
           try {
             await this.loadPatientNames(appointments);
           } catch {}
@@ -244,7 +244,7 @@ export class AppointmentsComponent implements OnInit{
   private reindexAppointments() {
     this.apptBySlot.clear();
     for (const a of this.appointments ?? []) {
-      const start = this.parseLocal(a.from as unknown as string);
+      const start = this.parseLocal(a.starts_at as unknown as string);
       const key = `${this.dateKey(start)}|${this.pad(start.getHours())}:${this.pad(start.getMinutes())}`;
       this.apptBySlot.set(key, a);
     }

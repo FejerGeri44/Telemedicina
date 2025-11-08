@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import {IonicModule} from '@ionic/angular';
 
 @Component({
-  selector: 'app-footer',
+  selector: 'app-guest-footer',
   standalone: true,
   imports: [CommonModule, IonicModule],
-  templateUrl: './footer.component.html',
-  styleUrls: ['./footer.component.scss']
+  templateUrl: './guest-footer.component.html',
+  styleUrls: ['./guest-footer.component.scss']
 })
-export class FooterComponent {}
+export class GuestFooterComponent {}
 

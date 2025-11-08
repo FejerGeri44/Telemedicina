@@ -2,7 +2,7 @@
   <div class="pc-header">
     <div class="pc-left">
       <div class="dpc-avatar">
-        <img ngSrc="{{ user.user.pictureUrl }}" alt="Profilkép" draggable="false" fill/>
+        <img ngSrc="{{ user.user.pictureUrl }}" alt="Profilkép" draggable="false" priority fill/>
       </div>
       <div class="pc-name">
         <div class="pc-fullname">{{ user.user.name }}</div>
@@ -17,7 +17,7 @@
 
   <div class="dpc-info">
     <div class="col">
-      <div class="row"><span class="lbl">Regisztráció dátuma:</span> <span class="val">{{ user.admin.registDate }}</span></div>
+      <div class="row"><span class="lbl">Regisztráció dátuma:</span> <span class="val">{{ user.admin.registDate | date:'yyyy-MM-dd' }}</span></div>
     </div>
   </div>
 

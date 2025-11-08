@@ -14,6 +14,34 @@
   gap: 12px;
 }
 
+.filter-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+
+  .btn-primary, .btn-accent {
+    width: 100%;
+    min-width: 250px;
+  }
+
+  .btn-accent {
+    --background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 5px;
+    color: var(--accent);
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
 ion-item {
   --inner-padding-top: 8px;
   --inner-padding-bottom: 8px;
@@ -43,6 +71,7 @@ ion-item.filter-input {
   border-collapse: collapse;
   border-radius: 10px;
   background: #fff;
+  margin-top: 20px;
   box-shadow: 0 10px 28px rgba(16, 24, 40, 0.08);
   border: 1px solid #eef2f7;
 }
@@ -168,3 +197,17 @@ ion-button.btn-primary::part(native) {
   border-radius: 0;
 }
 
+@media (max-width: 800px) {
+  .filter-container {
+    flex-direction: column;
+  }
+
+  .filter-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  ion-item.filter-input {
+    width: 100%;
+  }
+}

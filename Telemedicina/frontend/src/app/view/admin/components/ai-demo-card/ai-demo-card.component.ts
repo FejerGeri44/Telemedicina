@@ -1,14 +1,12 @@
 import {Component, Input} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
-import {ChatbotComponent} from '../../../../shared/chatbot/chatbot.component';
 
 @Component({
   selector: 'app-ai-demo-card',
   imports: [
     IonicModule,
-    FormsModule,
-    ChatbotComponent
+    FormsModule
   ],
   templateUrl: './ai-demo-card.component.html',
   standalone: true,

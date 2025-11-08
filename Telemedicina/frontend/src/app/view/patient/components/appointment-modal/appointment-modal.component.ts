@@ -194,7 +194,7 @@ export class AppointmentModalComponent implements OnInit{
   private reindexAppointments() {
     this.apptBySlot.clear();
     for (const a of this.appointments ?? []) {
-      const start = this.parseLocal(String(a.from));
+      const start = this.parseLocal(String(a.starts_at));
       const key = `${this.dateKey(start)}|${this.pad(start.getHours())}:${this.pad(start.getMinutes())}`;
       this.apptBySlot.set(key, a);
     }

@@ -1,10 +1,14 @@
 <div class="grid">
-  <app-admin-profile-card
+  <app-admin-profile-card  *ngIf="userService.admin$() | async as user; else profileCardSkeleton"
     class="profile-card"
     [user]="user"
     [editable]="true"
     (edit)="openEditModal()">
   </app-admin-profile-card>
+
+  <ng-template #profileCardSkeleton>
+
+  </ng-template>
 
   <ion-card class="patients">
     <div class="card-header">
@@ -54,7 +58,7 @@
     </div>
 
     <div class="count">
-      <span>{{ this.pendingDoctors.length }}</span>
+      <span>{{ pendingDoctors }}</span>
     </div>
   </ion-card>
 
@@ -69,15 +73,20 @@
     <div *ngIf="systemMessages.length !== 0" class="message-table-scroll">
       <ion-grid class="message-table">
         <ion-row class="table-header">
-          <ion-col size="3"><span class="th">Típus / Közönség</span></ion-col>
+          <ion-col size="3"><span class="th">Típus</span></ion-col>
           <ion-col size="6" class="hide-sm"><span class="th">Cím</span></ion-col>
           <ion-col size="3"><span class="th">Érvényesség</span></ion-col>
         </ion-row>
 
         <ion-row *ngFor="let message of systemMessages" class="table-row">
           <ion-col size="3" class="chips-col">
-            <div class="aud-chip">
-              {{ message.audience }}
+            <div class="type-chip" [class.info]="message.type==='info'"
+                 [class.warning]="message.type==='warning'"
+                 [class.error]="message.type==='error'">
+              <ion-icon [name]="message.type==='info' ? 'information-circle'
+                         : message.type==='warning' ? 'alert'
+                         : 'close-circle'"></ion-icon>
+              <span>{{ message.type }}</span>
             </div>
           </ion-col>
 

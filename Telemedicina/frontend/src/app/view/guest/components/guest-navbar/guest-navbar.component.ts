@@ -4,16 +4,16 @@ import {CommonModule} from '@angular/common';
 import {Router} from '@angular/router';
 
 @Component({
-  selector: 'app-navbar',
+  selector: 'app-guest-navbar',
   standalone: true,
   imports: [
     IonicModule,
     CommonModule,
   ],
-  templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.scss'
+  templateUrl: './guest-navbar.component.html',
+  styleUrl: './guest-navbar.component.scss'
 })
-export class NavbarComponent implements OnInit, OnDestroy {
+export class GuestNavbarComponent implements OnInit, OnDestroy {
   isMobile = false;
   private resizeListener!: () => void;
 

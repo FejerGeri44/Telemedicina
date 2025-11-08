@@ -1,0 +1,51 @@
+<div class="message-table-scroll">
+  <ion-grid class="message-table">
+    <ion-row class="table-header">
+      <ion-col size="2"><span class="th">Orvos</span></ion-col>
+      <ion-col size="2"><span class="th">Specialitás</span></ion-col>
+      <ion-col size="2"><span class="th">Cím</span></ion-col>
+      <ion-col size="2"><span class="th"></span></ion-col>
+      <ion-col size="2"><span class="th"></span></ion-col>
+      <ion-col size="2"><span class="th"></span></ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let diagnosis of myDiagnoses" class="table-row">
+      <ion-col size="2">
+        <div class="doctor-info">
+          <div class="avatar">
+            <img ngSrc="{{ diagnosis.doctor.user.pictureUrl }}" alt="Profilkép" draggable="false" fill/>
+          </div>
+          <span>Dr. {{ diagnosis.doctor.user.name }}</span>
+        </div>
+      </ion-col>
+
+      <ion-col size="2">
+        {{ diagnosis.doctor.doctor.speciality }}
+      </ion-col>
+
+      <ion-col size="2">
+        {{ diagnosis.doctor.user.address }}
+      </ion-col>
+
+      <ion-col size="2">
+        <ion-button class="btn-primary" (click)="openDoctorProfileModal(diagnosis.doctor)">Profil megtekintése</ion-button>
+      </ion-col>
+
+
+      <ion-col size="2">
+        <ion-button class="btn-secondary" (click)="openSummary(diagnosis)">
+          <ion-icon name="eye-outline" slot="start"></ion-icon>
+          Megtekintése
+        </ion-button>
+      </ion-col>
+
+
+      <ion-col size="2">
+        <ion-button class="btn-secondary" (click)="downloadDiagnosis(diagnosis)">
+          <ion-icon name="download-outline" slot="start"></ion-icon>
+          Letöltése
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</div>

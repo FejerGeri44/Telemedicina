@@ -1,267 +1,215 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
-import {NgForOf, NgIf, NgSwitch} from '@angular/common';
 import {
-  AIFallback,
-  AIGreeting,
-  DecomposedAIConfig, DoctorAIConfig, DoctorAIIntent, Intent,
-  PatientAIConfig, PatientAIIntent, QuickStart, Suggestion
-} from '../../../../utils/interfaces/AIInterfaces';
-import {HttpClient} from '@angular/common/http';
-import {NewQueryResponseModalComponent} from '../new-query-response-modal/new-query-response-modal.component';
-import {UpdateQueryResponseModalComponent} from '../update-query-response-modal/update-query-response-modal.component';
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy
+} from '@angular/core';
+import { Subscription } from 'rxjs';
+import {IonicModule, ModalController} from '@ionic/angular';
+import {NgFor, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
+
+import type {
+  AssistantConfig,
+  FallbackConfig,
+  GreetingConfig,
+  Intent,
+  MetaConfig,
+  QuickStartItem,
+  ItemID
+} from '../../../../shared/Ai-assistants/AIInterfaces';
+import {AiConfigService} from '../../../../shared/Ai-assistants/AiConfigService';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
+import {UpdateQueryResponseModalComponent} from '../update-query-response-modal/update-query-response-modal.component';
+import {NewQueryResponseModalComponent} from '../new-query-response-modal/new-query-response-modal.component';
+import {environment} from '../../../../../../../backend/config/enviroment';
+import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 
-type RowKind = 'choose' | 'intents' | 'greeting' | 'fallback';
-type AIRule =
-  | { kind: 'greeting'; data: AIGreeting | QuickStart }
-  | { kind: 'intent';   data: PatientAIIntent | DoctorAIIntent }
-  | { kind: 'fallback'; data: Suggestion }
-  | { kind: 'greetingText'; data: string }
-  | { kind: 'fallbackText'; data: string };
+type BotKind = 'patient' | 'doctor';
+type RuleType = 'choose' | 'greeting' | 'intent' | 'fallback';
 
 @Component({
   selector: 'app-ai-rules-card',
   imports: [
     IonicModule,
-    NgForOf,
-    NgIf,
-    NgSwitch
+    NgIf, NgFor, NgSwitch, NgSwitchCase
   ],
   templateUrl: './ai-rules-card.component.html',
   standalone: true,
-  styleUrl: './ai-rules-card.component.scss'
+  styleUrl: './ai-rules-card.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AiRulesCardComponent implements OnInit {
-  @Input({ required: true }) role!: 'patient' | 'doctor';
-  @Output() create = new EventEmitter<AIRule['kind']>();
-  @Output() edit = new EventEmitter<AIRule>();
-  @Output() remove = new EventEmitter<AIRule>();
+export class AiRulesCardComponent implements OnInit, OnDestroy {
+  @Input({ required: true }) role: BotKind = 'patient';
 
-  searchText = '';
-  selectedType: RowKind = 'choose';
+  meta: MetaConfig | null = null;
+  greeting: GreetingConfig | null = null;
+  intents: Intent[] = [];
+  fallback: FallbackConfig | null = null;
+
+  cardTitle: string = 'Szabályzatok Kezelése';
+  selectedType: RuleType = 'choose';
+  searchText: string = '';
+
+  readonly pageSize = 10;
   pageIndex = 0;
-  pageSize = 6;
+  totalPages = 0;
+  pagesArray: number[] = [];
 
-  aiGreeting!: AIGreeting;
-  aiIntents: PatientAIIntent[] | DoctorAIIntent[] = [];
-  aiFallback!: AIFallback;
+  aiGreetingFiltered: QuickStartItem[] = [];
+  aiFallbackFiltered: QuickStartItem[] = [];
+  currentPageIntents: Intent[] = [];
 
-  aiGreetingFiltered: QuickStart[] = [];
-  aiIntentsFiltered: PatientAIIntent[] | DoctorAIIntent[] = [];
-  aiFallbackFiltered: Suggestion[] = [];
+  loading = true;
+  error: string | null = null;
 
-  showGreetingText: boolean = true;
-  showFallbackText: boolean = true;
-
-  get cardTitle() {
-    if (this.role == 'patient') {
-      return "Páciensi M.I. Szabályok";
-    } else if (this.role == 'doctor') {
-      return "Orvosi M.I. Szabályok";
-    } else {
-      return this.role;
-    }
-  }
+  private sub?: Subscription;
 
   constructor(
     private http: HttpClient,
     private modalCtrl: ModalController,
-    private toast: ToastService,
-    private alert: AlertService
-  ) {
+    private ai: AiConfigService,
+    private cdr: ChangeDetectorRef,
+    private alert: AlertService,
+    private toast: ToastService
+    ) {}
+
+  async ngOnInit(): Promise<void> {
+    try {
+      await this.ai.whenReady();
+
+      const initialDraft = this.ai.getDraft(this.role);
+      this.splitDraft(initialDraft);
+      this.updateCardTitle();
+
+      this.sub = (this.role === 'patient' ? this.ai.patientDraft$ : this.ai.doctorDraft$)
+        .subscribe(d => {
+          if (d) {
+            this.splitDraft(d);
+            this.updateCardTitle();
+            this.applyFiltersAndPagination();
+            this.cdr.detectChanges();
+          }
+        });
+
+      this.loading = false;
+      this.cdr.detectChanges();
+    } catch (e) {
+      this.error = e instanceof Error ? e.message : 'Ismeretlen hiba az inicializáláskor.';
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
   }
 
-  ngOnInit() {
-    this.applyFilter();
-    this.fetchAIVersion(this.role);
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
   }
 
-  fetchAIVersion(role: 'patient' | 'doctor') {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  private splitDraft(draft: AssistantConfig | null): void {
+    if (!draft) {
+      this.meta = null;
+      this.greeting = null;
+      this.intents = [];
+      this.fallback = null;
+      return;
+    }
 
-    const urlMap = {
-      patient: 'http://localhost:3000/api/ai-config/patient-assistant',
-      doctor:  'http://localhost:3000/api/ai-config/doctor-assistant'
-    } as const;
+    const clonedDraft = JSON.parse(JSON.stringify(draft)) as AssistantConfig;
 
-    const url = urlMap[role];
+    this.meta = clonedDraft.meta;
+    this.greeting = clonedDraft.greeting;
+    this.intents = clonedDraft.intents;
+    this.fallback = clonedDraft.fallback;
 
-    this.http.get<PatientAIConfig | DoctorAIConfig>(url, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: (res) => {
-        const decomposed = this.decomposeAIConfig(res as any);
-        this.aiGreeting = decomposed.greeting!;
-        this.aiIntents  = decomposed.intents;
-        this.aiFallback = decomposed.fallback!;
-        this.applyFilter?.();
-      },
-      error: (err) => console.error('❌ AI config lekérése sikertelen:', err)
-    });
+    this.applyFiltersAndPagination();
   }
 
-  decomposeAIConfig(cfg: PatientAIConfig): DecomposedAIConfig {
-    const greeting: AIGreeting | null = cfg.greeting
-      ? {
-        quickStarts: cfg.greeting.quickStarts,
-        quickStartText: (cfg.greeting.quickStartText)
-      }
-      : null;
-
-    const fallback: AIFallback | null = cfg.fallback
-      ? {
-        suggestions: cfg.fallback.suggestions,
-        suggestionText: (cfg.fallback.suggestionText)
-      }
-      : null;
-
-    const intents: Intent[] = Array.isArray(cfg.intents)
-      ? (cfg.intents as any[]).map(this.toFlatIntent)
-      : [];
-
-    return <DecomposedAIConfig>{intents, greeting, fallback};
-  }
-
-  private toFlatIntent = (raw: any, index: number): Intent => {
-    const id: number =
-      typeof raw?.id === 'number' ? raw.id
-        : Number.isFinite(Number(raw?.id)) ? Number(raw.id)
-          : index + 1;
-
-    return {
-      id,
-      patterns: this.extractPatterns(raw?.patterns),
-      response: this.normalizeResponse(raw?.response),
+  private updateCardTitle(): void {
+    const roleMap = {
+      patient: 'Páciens Asszisztens',
+      doctor: 'Orvosi Asszisztens'
     };
-  };
-
-  private extractPatterns = (src: unknown): string[] => {
-    if (src == null) return [];
-
-    if (typeof src === 'object' && !Array.isArray(src)) {
-      const maybeList = (src as any).list;
-      if (Array.isArray(maybeList)) {
-        return maybeList.map(this.toCleanString).filter(Boolean);
-      }
-    }
-
-    if (Array.isArray(src)) {
-      if (src.every(x => typeof x === 'string')) {
-        return (src as unknown[]).map(this.toCleanString).filter(Boolean);
-      }
-      const collected: string[] = [];
-      for (const item of src) {
-        if (item && typeof item === 'object' && Array.isArray((item as any).list)) {
-          collected.push(
-            ...(item as any).list.map(this.toCleanString).filter(Boolean)
-          );
-        } else if (typeof item === 'string') {
-          collected.push(this.toCleanString(item));
-        }
-      }
-      return collected.filter(Boolean);
-    }
-
-    if (typeof src === 'string') {
-      return src.split(/[,\n;]+/g).map(s => s.trim()).filter(Boolean);
-    }
-
-    return [];
-  };
-
-  private normalizeResponse = (resp: unknown): string => {
-    if (typeof resp === 'string') return resp.trim();
-    if (resp && typeof (resp as any).text === 'string') return (resp as any).text.trim();
-    return '';
-  };
-
-  private toCleanString = (v: unknown): string => (v ?? '').toString().trim();
-
-  onSelectType(t: RowKind) {
-    this.selectedType = t;
-    this.pageIndex = 0;
-    this.applyFilter();
+    this.cardTitle = `${roleMap[this.role]} Szabályzatok (${this.meta?.version || 'nincs verzió'})`;
   }
 
-  private norm(v: unknown): string {
-    return (v ?? '').toString().toLowerCase().trim();
-  }
+  private applyFiltersAndPagination(): void {
 
-  onSearchInput(ev: any) {
-    this.searchText = (ev?.detail?.value ?? '').toString();
-    this.applyFilter();
-  }
+    const quickStartsList: QuickStartItem[] = this.greeting?.quickStarts ?? [];
 
-  applyFilter() {
-    const q = this.norm(this.searchText);
+    this.aiGreetingFiltered = quickStartsList.filter(item =>
+      !this.searchText ||
+      item.label.toLowerCase().includes(this.searchText) ||
+      item.prompt.toLowerCase().includes(this.searchText) ||
+      item.reply.toLowerCase().includes(this.searchText)
+    );
 
-    switch (this.selectedType) {
-      case 'greeting': {
-        const qs = this.aiGreeting?.quickStarts ?? [];
-        this.aiGreetingFiltered = q
-          ? qs.filter(x => [x.label, x.prompt].some(v => this.norm(v).includes(q)))
-          : qs.slice();
-        this.showGreetingText = (q === '');
-        break;
-      }
+    const fallbackList: QuickStartItem[] = this.fallback?.suggestions ?? [];
 
-      case 'intents': {
-        const intents = (this.aiIntents ?? []) as Array<PatientAIIntent | DoctorAIIntent>;
-        this.aiIntentsFiltered = q
-          ? intents.filter(it => {
-            const pats = this.extractPatterns((it as any).patterns);
-            const matchPat = pats.some(p => this.norm(p).includes(q));
-            const matchResp = this.norm((it as any).response).includes(q);
-            return matchPat || matchResp;
-          })
-          : intents.slice();
-        break;
-      }
+    this.aiFallbackFiltered = fallbackList.filter(item =>
+      !this.searchText ||
+      item.label.toLowerCase().includes(this.searchText) ||
+      item.prompt.toLowerCase().includes(this.searchText) ||
+      item.reply.toLowerCase().includes(this.searchText)
+    );
 
-      case 'fallback': {
-        const fb = (this.aiFallback?.suggestions as Suggestion[] | undefined) ?? [];
-        this.aiFallbackFiltered = q
-          ? fb.filter(x => this.norm(x.label).includes(q))
-          : fb.slice();
-        this.showFallbackText = (q === '');
+    const filteredIntents = this.intents.filter(intent =>
+      !this.searchText ||
+      intent.response.toLowerCase().includes(this.searchText) ||
+      intent.patterns.some(p => p.toLowerCase().includes(this.searchText))
+    );
 
-        break;
-      }
+    this.totalPages = Math.ceil(filteredIntents.length / this.pageSize);
+    this.pagesArray = Array(this.totalPages).fill(0).map((x, i) => i);
+
+    if (this.pageIndex >= this.totalPages && this.totalPages > 0) {
+      this.pageIndex = this.totalPages - 1;
+    } else if (this.totalPages === 0) {
+      this.pageIndex = 0;
     }
-  }
 
-  get currentPageIntents() {
-    if (this.selectedType !== 'intents') return [];
     const start = this.pageIndex * this.pageSize;
-    return this.aiIntentsFiltered.slice(start, start + this.pageSize);
+    const end = start + this.pageSize;
+    this.currentPageIntents = filteredIntents.slice(start, end);
+
+    this.cdr.detectChanges();
   }
 
-  get totalPages(): number {
-    if (this.selectedType !== 'intents') return 1;
-    const n = this.aiIntentsFiltered.length;
-    return Math.max(1, Math.ceil(n / this.pageSize));
+  onSearchInput(event: any): void {
+    this.searchText = event.detail.value.toLowerCase();
+    this.pageIndex = 0;
+    this.applyFiltersAndPagination();
   }
 
-  get pagesArray(): number[] {
-    return Array.from({length: this.totalPages}, (_, i) => i);
+  onSelectType(type: RuleType): void {
+    this.selectedType = type;
+    this.pageIndex = 0;
+    this.applyFiltersAndPagination();
   }
 
-  prevPage() {
-    if (this.pageIndex > 0) this.pageIndex--;
+  goToPage(index: number): void {
+    if (index >= 0 && index < this.totalPages) {
+      this.pageIndex = index;
+      this.applyFiltersAndPagination();
+    }
   }
 
-  nextPage() {
-    if (this.pageIndex < this.totalPages - 1) this.pageIndex++;
+  prevPage(): void {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.applyFiltersAndPagination();
+    }
   }
 
-  goToPage(i: number) {
-    if (i >= 0 && i < this.totalPages) this.pageIndex = i;
+  nextPage(): void {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.applyFiltersAndPagination();
+    }
   }
 
-  async onCreate(kind: string) {
+  async onCreate(kind: 'greeting' | 'intent' | 'fallback'): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: NewQueryResponseModalComponent as any,
       componentProps: {
@@ -272,146 +220,81 @@ export class AiRulesCardComponent implements OnInit {
     });
 
     await modal.present();
-    const { data, role } = await modal.onDidDismiss<{ updated?: boolean }>();
-
-    if (role === 'updated' || data?.updated) {
-      this.fetchAIVersion(this.role);
-    }
   }
 
-  async onEdit(rule: AIRule) {
+  async onEdit(item: { kind: string, data: any, id?: ItemID }): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: UpdateQueryResponseModalComponent as any,
       componentProps: {
-        kind: rule.kind,
-        value: rule.data,
+        kind: item.kind,
+        value: item.data,
         role: this.role
       },
       cssClass: 'admin-ai-modal'
     });
 
     await modal.present();
-    const { data, role } = await modal.onDidDismiss<{ updated?: boolean }>();
-
-    if (role === 'updated' || data?.updated) {
-      this.fetchAIVersion(this.role);
-    }
   }
 
-  onDeleteConfirmation(rule: AIRule) {
+  onDeleteConfirmation(item: { kind: string, data: any, id: ItemID }): void {
     void this.alert.show(
       'Szabály törlése',
       'Biztosan törölni szeretnéd a kijelölt szabályt?',
-      () => this.onDelete(rule)
+      () => this.onDelete(item.kind, item.id)
     )
   }
 
-  onDelete(rule: AIRule) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  async onDelete(kind: string, id: ItemID): Promise<void> {
+    try {
+      switch (kind) {
+        case 'quickStart':
+          await this.ai.removeQuickStart(this.role, id);
+          break;
+        case 'intent':
+          await this.ai.removeIntent(this.role, id);
+          break;
+        case 'fallback':
+          await this.ai.removeFallbackSuggestion(this.role, id);
+          break;
+        default:
+          console.error(`Ismeretlen törlendő típus: ${kind}`);
+          return;
+      }
+    } catch (error) {
+      console.error(`Hiba a(z) ${kind} törlésekor:`, error);
+    }
+  }
 
-    let type: 'intent' | 'quickStart' | 'suggestion' | null = null;
-    let id: number | null = null;
+  onPublishConfirmation(): void {
+    let AlertTitle = this.role === "patient" ? "Páciens M.I. Asszisztens" : "Orvos M.I. Asszisztens";
+    void this.alert.show(
+      `${AlertTitle}`,
+      `Biztosan publikálni szeretnéd a ${AlertTitle} verziót?`,
+      () => this.onPublish()
+    )
+  }
 
-    if (rule.kind === 'intent') {
-      type = 'intent'; id = (rule.data as any).id;
-    } else if (rule.kind === 'greeting') {
-      type = 'quickStart'; id = (rule.data as any).id ?? (rule.data as any).label;
-    } else if (rule.kind === 'fallback') {
-      type = 'suggestion'; id = (rule.data as any).id ?? (rule.data as any).label;
-    } else {
-      return;
+  async onPublish(): Promise<void> {
+    const draftConfig = this.ai.getDraft(this.role);
+
+    const payload = {
+      role: this.role,
+      config: draftConfig
     }
 
-    const body = { role: this.role, type, id };
+    this.http.post(`${environment.apiUrl}/admin/publish-ai-config`,
+      payload,
+      { withCredentials: true }
+    ).subscribe({
+      next: async () => {
+        this.ai.resyncDraft(this.role, draftConfig);
 
-    let rollback = () => {};
-    if (type === 'intent') {
-      rollback = this.removeIntentById(id!).restore;
-    } else if (type === 'quickStart') {
-      rollback = this.removeQuickStartById(id!).restore;
-    } else if (type === 'suggestion') {
-      rollback = this.removeSuggestionById(id!).restore;
-    }
-
-    // 2) Backend hívás
-    this.http.post('http://localhost:3000/api/ai-config/ai-rules/delete', body, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: () => {
-        this.toast?.show?.('Sikeres törlés!', 'success');
-        this.fixPaginationAfterDelete();
+        await this.toast.show("A konfiguráció publikálva lett!", 'success');
       },
       error: (err) => {
-        console.error('❌ Törlés sikertelen, visszaállítom:', err);
-        rollback();
-        this.fixPaginationAfterDelete();
-        this.toast?.show?.('A törlés nem sikerült.', 'danger');
+        console.error('❌ Publikálási hiba:', err);
+        this.toast.show('A publikálás sikertelen. Lásd a konzolt.', 'danger');
       }
     });
-  }
-
-  private eqId(a: any, b: any) { return String(a) === String(b); }
-
-  private removeIntentById(id: number) {
-    const idx = (this.aiIntents as any[]).findIndex(it => this.eqId(it?.id, id));
-    if (idx < 0) return { removed: null, restore: () => {} };
-
-    const removed = (this.aiIntents as any[])[idx];
-    const next = [...(this.aiIntents as any[])];
-    next.splice(idx, 1);
-    this.aiIntents = next;
-    return {
-      removed,
-      restore: () => {
-        const back = [...(this.aiIntents as any[])];
-        back.splice(idx, 0, removed);
-        this.aiIntents = back;
-      }
-    };
-  }
-
-  private removeQuickStartById(id: number) {
-    const list = this.aiGreeting?.quickStarts ?? [];
-    const idx = list.findIndex(qs => this.eqId(qs?.id, id) || this.eqId(qs?.label, id));
-    if (idx < 0) return { removed: null, restore: () => {} };
-
-    const removed = list[idx];
-    const next = [...list]; next.splice(idx, 1);
-    this.aiGreeting = { ...(this.aiGreeting as any), quickStarts: next };
-    return {
-      removed,
-      restore: () => {
-        const back = [...(this.aiGreeting?.quickStarts ?? [])];
-        back.splice(idx, 0, removed);
-        this.aiGreeting = { ...(this.aiGreeting as any), quickStarts: back };
-      }
-    };
-  }
-
-  private removeSuggestionById(id: number) {
-    const list = this.aiFallback?.suggestions ?? [];
-    const idx = list.findIndex(s => this.eqId(s?.id, id) || this.eqId(s?.label, id));
-    if (idx < 0) return { removed: null, restore: () => {} };
-
-    const removed = list[idx];
-    const next = [...list]; next.splice(idx, 1);
-    this.aiFallback = { ...(this.aiFallback as any), suggestions: next };
-    return {
-      removed,
-      restore: () => {
-        const back = [...(this.aiFallback?.suggestions ?? [])];
-        back.splice(idx, 0, removed);
-        this.aiFallback = { ...(this.aiFallback as any), suggestions: back };
-      }
-    };
-  }
-
-  private fixPaginationAfterDelete() {
-    if (this.selectedType === 'intents') {
-      const total = this.totalPages;
-      if (this.pageIndex >= total) this.pageIndex = Math.max(0, total - 1);
-    }
-    this.applyFilter();
   }
 }

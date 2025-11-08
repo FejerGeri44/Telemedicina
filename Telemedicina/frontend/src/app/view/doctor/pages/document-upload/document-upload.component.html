@@ -1,0 +1,152 @@
+<ion-card class="container">
+  <ion-card-header>
+    <ion-card-title>Dokumentum feltöltése</ion-card-title>
+    <ion-card-subtitle>Válaszd ki a pácienst és a dokumentumtípust, majd tölts fel egy fájlt.</ion-card-subtitle>
+  </ion-card-header>
+
+  <ion-card-content>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+      <ion-grid class="patient-chooser">
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-item class="search-item outlined" lines="none">
+              <ion-icon name="search-outline" slot="start"></ion-icon>
+              <ion-input
+                placeholder="Keresés névre vagy TAJ-ra…"
+                [(ngModel)]="searchTerm"
+                [ngModelOptions]="{standalone: true}"
+                clearInput="true">
+              </ion-input>
+              <ion-button fill="clear" slot="end" *ngIf="searchTerm" (click)="clearSearch()">
+                <ion-icon name="close-circle-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="12" size-md="6">
+            <ion-item class="select-item" lines="none">
+              <ion-label position="stacked">Páciens</ion-label>
+              <ion-select
+                placeholder="Válassz pácienst"
+                formControlName="patientId"
+                interface="popover"
+                (ionChange)="onPatientSelected($event.detail.value)">
+                <ion-select-option
+                  *ngFor="let p of filteredPatients"
+                  [value]="p.patient.id">
+                  {{ p.user.name }} <ng-container *ngIf="p.patient.taj">— {{ formatTaj(p.patient.taj) }}</ng-container>
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="12" size-md="6">
+            <ion-item class="select-item" lines="none">
+              <ion-label position="stacked">Időpont</ion-label>
+
+              <ion-select
+                placeholder="Válassz időpontot"
+                formControlName="appointmentId"
+                interface="popover"
+                [disabled]="!appointments.length">
+
+                <ion-select-option
+                  *ngFor="let appointment of appointments"
+                  [value]="appointment.id">
+                  {{ appointment.starts_at | date:'yyyy.MM.dd. HH:mm' }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <ion-item class="file-type">
+        <ion-segment formControlName="docType" class="doc-type-segment" scrollable="true">
+          <ion-segment-button *ngFor="let t of docTypes" [value]="t.value">
+            <div class="seg-inner">
+              <ion-icon [name]="t.icon"></ion-icon>
+              <ion-label>{{ t.label }}</ion-label>
+            </div>
+          </ion-segment-button>
+        </ion-segment>
+      </ion-item>
+
+      <div class="uploader-area">
+        <ion-grid class="uploader-grid ion-margin-top">
+          <ion-row class="ion-align-items-stretch">
+            <ion-col size="12" size-md="6">
+              <div class="dropzone"
+                   [class.dragging]="isDragging"
+                   (dragover)="onDragOver($event)"
+                   (dragleave)="onDragLeave()"
+                   (drop)="onDrop($event)">
+
+                <ion-icon name="cloud-upload-outline" class="dz-icon"></ion-icon>
+                <div class="dz-text">
+                  Húzd ide a fájlt
+                  <span class="dz-sep">vagy</span>
+                  <button type="button" class="linklike" (click)="fileInput.click()">Válassz fájlt</button>
+                </div>
+
+                <input #fileInput type="file"
+                       accept=".pdf,image/*,.txt,.csv"
+                       (change)="onSelectFile($event)"
+                       hidden />
+
+                <div class="dz-hint">PDF, képek (JPG/PNG), TXT/CSV • max {{maxFileSizeMb}} MB</div>
+              </div>
+
+              <div class="file-pill" *ngIf="file">
+                <ion-icon name="document-attach-outline"></ion-icon>
+                <span class="name">{{ file.name }}</span>
+                <span class="size">{{ (file.size/1024/1024) | number:'1.1-1' }} MB</span>
+                <ion-button size="small" fill="clear" (click)="clearFile()">
+                  <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-col>
+
+            <ion-col size="12" size-md="6">
+              <ion-card class="preview" *ngIf="previewKind">
+                <ion-card-header>
+                  <ion-card-title>Élő előnézet</ion-card-title>
+                </ion-card-header>
+                <ion-card-content>
+                  <ng-container [ngSwitch]="previewKind">
+                    <div *ngSwitchCase="'pdf'" class="pdf-wrap">
+                      <iframe [src]="safePreviewUrl" title="PDF előnézet" class="pdf-frame"></iframe>
+                    </div>
+                    <div *ngSwitchCase="'image'" class="image-wrap">
+                      <img ngSrc="{{ safePreviewUrl }}" alt="Kép előnézet" fill>
+                    </div>
+                    <div *ngSwitchCase="'text'" class="text-wrap">
+                      <pre>{{ textPreview }}</pre>
+                    </div>
+                    <div *ngSwitchCase="'other'" class="other-wrap">
+                      <ion-icon name="document-outline"></ion-icon>
+                      <p>Ez a fájltípus nem előnézhető, de csatoljuk a feltöltéshez.</p>
+                    </div>
+                  </ng-container>
+                </ion-card-content>
+              </ion-card>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+
+      <div class="actions">
+        <ion-button fill="clear" (click)="reset()">
+          <ion-icon name="refresh-outline" slot="start"></ion-icon>
+          Törlés
+        </ion-button>
+        <span class="spacer"></span>
+        <ion-button type="submit" [disabled]="form.invalid">
+          Feltöltés
+          <ion-icon name="send-outline" slot="end"></ion-icon>
+        </ion-button>
+      </div>
+    </form>
+  </ion-card-content>
+</ion-card>

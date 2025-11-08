@@ -7,12 +7,14 @@ import {
 import {RouterLink} from '@angular/router';
 import {AdminProfileCardComponent} from '../../components/admin-profile-card/admin-profile-card.component';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
-import {NgForOf, NgIf} from '@angular/common';
+import {AsyncPipe, NgForOf, NgIf} from '@angular/common';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {UserService} from '../../../../shared/user.service';
+import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
+import {environment} from '../../../../../../../backend/config/enviroment';
 
 @Component({
   selector: 'app-admin-home',
@@ -21,18 +23,19 @@ import {UserService} from '../../../../shared/user.service';
     RouterLink,
     AdminProfileCardComponent,
     NgForOf,
-    NgIf
+    NgIf,
+    AsyncPipe
   ],
   templateUrl: './admin-home.component.html',
   standalone: true,
   styleUrl: './admin-home.component.scss'
 })
 export class AdminHomeComponent implements OnInit{
-  user!: AdminItem;
+  user!: Observable<AdminItem | null>;
   patientsCount: number = 0;
   doctorsCount: number = 0;
   adminsCount: number = 0;
-  pendingDoctors: DoctorItem[] = [];
+  pendingDoctors: number = 0;
   loading: boolean = false;
   systemMessagesForMe: SystemMessage[] = [];
   systemMessages: SystemMessage[] = [];
@@ -40,15 +43,26 @@ export class AdminHomeComponent implements OnInit{
   constructor(
     private http: HttpClient,
     private modalCtrl: ModalController,
-    private userService: UserService
-  ) {}
+    protected userService: UserService
+  ) {
+    this.user = this.userService.admin$();
+
+    (async () => {
+      const userValue = await firstValueFrom(
+        this.userService.doctor$().pipe(
+          filter((u): u is DoctorItem => !!u),
+          take(1),
+          delay(50)
+        )
+      );
+    })();
+  }
 
   ngOnInit() {
     this.loadSystemMessagesOnceAfterLogin();
-    this.getUserData();
-    this.getAllPatients();
-    this.getAllDoctors();
-    this.getAllAdmins();
+    this.countPatients();
+    this.countDoctors();
+    this.countAdmins();
     this.loadPendingDoctors();
     this.loadMessages();
   }
@@ -102,76 +116,67 @@ export class AdminHomeComponent implements OnInit{
     }
   }
 
-  private getUserData() {
-
-  }
-
-  getAllPatients() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get<PatientItem[]>('http://localhost:3000/api/admin/getAllPatients', {
-      headers: { Authorization: `Bearer ${token}` }
+  countPatients(): void {
+    this.http.get<PatientItem[]>(`${environment.apiUrl}/admin/getAllPatients`, {
+      withCredentials: true
     }).subscribe({
       next: (res) => {
         this.patientsCount = res.length;
       },
-      error: (err) => console.error('❌ Páciensek lekérése sikertelen:', err)
+      error: (err) => {
+        console.error('Páciensek lekérési hiba:', err);
+      }
     });
   }
 
-  getAllDoctors() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get<DoctorItem[]>('http://localhost:3000/api/admin/getAllDoctors', {
-      headers: { Authorization: `Bearer ${token}` }
+  countDoctors(): void {
+    this.http.get<DoctorItem[]>(`${environment.apiUrl}/admin/getAllDoctors`, {
+      withCredentials: true
     }).subscribe({
       next: (res) => {
         this.doctorsCount = res.length;
       },
-      error: (err) => console.error('❌ Páciensek lekérése sikertelen:', err)
+      error: (err) => {
+        console.error('Orvosok lekérési hiba:', err);
+      }
     });
   }
 
-  getAllAdmins() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get<AdminItem[]>('http://localhost:3000/api/admin/getAllAdmins', {
-      headers: { Authorization: `Bearer ${token}` }
+  countAdmins(): void {
+    this.http.get<AdminItem[]>(`${environment.apiUrl}/admin/getAllAdmins`, {
+      withCredentials: true
     }).subscribe({
       next: (res) => {
         this.adminsCount = res.length;
       },
-      error: (err) => console.error('❌ Páciensek lekérése sikertelen:', err)
+      error: (err) => {
+        console.error('Adminok lekérési hiba:', err);
+      }
     });
   }
 
   loadPendingDoctors() {
-    this.loading = true;
-    const token = localStorage.getItem('token') ?? '';
-    this.http.get<DoctorItem[]>('http://localhost:3000/api/admin/pendingDoctors', {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
+    const payload = {
+      status: "Pending"
+    }
+
+    this.http.post<DoctorItem[]>(`${environment.apiUrl}/admin/loadPendingOrDeniedDoctors`,
+      payload,
+      { withCredentials: true }
+    ).subscribe({
       next: (res) => {
-        this.pendingDoctors = res;
-        this.loading = false;
+        this.pendingDoctors = res.length;
       },
       error: (err) => {
-        this.loading = false;
         console.error('Pending orvosok lekérési hiba:', err);
       }
     });
   }
 
   loadMessages(): void {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.get<SystemMessage[]>('http://localhost:3000/api/admin/getAllSystemMessage', {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
+    this.http.get<SystemMessage[]>(`${environment.apiUrl}/admin/getAllSystemMessage`,
+      { withCredentials: true }
+    ).subscribe({
       next: (res) => {
         this.systemMessages = res;
       },
@@ -182,11 +187,13 @@ export class AdminHomeComponent implements OnInit{
   }
 
   async openEditModal() {
+    const user = await firstValueFrom(this.user.pipe(take(1)));
+
     const modal = await this.modalCtrl.create({
       component: AdminEditProfileModalComponent as any,
       cssClass: 'Admin-profile-edit-modal',
       componentProps: {
-        user: this.user
+        user
       }
     });
 
@@ -195,7 +202,6 @@ export class AdminHomeComponent implements OnInit{
     const {role} = await modal.onDidDismiss();
 
     if (role === 'updated') {
-      this.getUserData();
     }
   }
 }

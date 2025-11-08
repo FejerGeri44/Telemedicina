@@ -21,7 +21,7 @@
   </ion-segment>
 
   <!-- Komponensek váltása -->
-  <div class="form-container">
+  <div class="form-container" *ngIf="userService.admin$() | async as user">
     <app-patient-regist
       *ngIf="selectedRole === 'patient'"
       [title]="'Páciens felvitele'"
@@ -38,7 +38,6 @@
 
     <app-admin-regist
       *ngIf="selectedRole === 'admin'"
-      [calledByAdmin]=true
       [adminUser]="user">
     </app-admin-regist>
   </div>

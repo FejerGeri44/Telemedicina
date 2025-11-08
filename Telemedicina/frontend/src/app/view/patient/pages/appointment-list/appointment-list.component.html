@@ -40,7 +40,7 @@
       </ion-col>
 
       <ion-col size="2">
-        {{ appointment.doctor.user.phoneNumber }}
+        {{ formatPhoneNumber(appointment.doctor.user.phoneNumber) }}
       </ion-col>
 
       <ion-col size="2">
@@ -57,7 +57,54 @@
   </ion-grid>
 </div>
 
-<div *ngIf="myAppointments.length === 0" class="no-data">
-  <span class="no-data-text">(N/A)</span>
-  <span class="no-data-sub">Jelenleg nincs elmentett rendszerüzenet.</span>
+<div *ngIf="isLoading" class="message-table-scroll">
+  <ion-grid class="message-table">
+    <ion-row class="table-header">
+      <ion-col size="1.5"><span class="th">Orvos</span></ion-col>
+      <ion-col size="1.5"><span class="th">Specialitás</span></ion-col>
+      <ion-col size="2"><span class="th">Időpont</span></ion-col>
+      <ion-col size="2"><span class="th">Cím</span></ion-col>
+      <ion-col size="2"><span class="th">Telefonszám</span></ion-col>
+      <ion-col size="2" class="text-center"><span class="th">Email</span></ion-col>
+      <ion-col size="1" class="text-center"><span class="th"></span></ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let i of [1, 2, 3, 4, 5, 6]" class="table-row skeleton-row">
+
+      <ion-col size="1.5">
+        <div class="doctor-info">
+          <div class="avatar">
+            <ion-skeleton-text animated style="width: 40px; height: 40px; border-radius: 50%;"></ion-skeleton-text>
+          </div>
+          <div class="stack">
+            <ion-skeleton-text animated style="border-radius: 5px; width: 60px; height: 10px;"></ion-skeleton-text>
+          </div>
+        </div>
+      </ion-col>
+
+      <ion-col size="1.5" class="chips-col">
+        <ion-skeleton-text animated style="border-radius: 5px;width: 90%; height: 16px;"></ion-skeleton-text>
+      </ion-col>
+
+      <ion-col size="2">
+        <ion-skeleton-text animated style="border-radius: 5px;width: 80%; height: 16px;"></ion-skeleton-text>
+      </ion-col>
+
+      <ion-col size="2" class="message-column">
+        <ion-skeleton-text animated style="border-radius: 5px;width: 90%; height: 16px;"></ion-skeleton-text>
+      </ion-col>
+
+      <ion-col size="2">
+        <ion-skeleton-text animated style="border-radius: 5px;width: 70%; height: 16px;"></ion-skeleton-text>
+      </ion-col>
+
+      <ion-col size="2">
+        <ion-skeleton-text animated style="border-radius: 5px;width: 95%; height: 16px;"></ion-skeleton-text>
+      </ion-col>
+
+      <ion-col size="1" class="actions">
+        <ion-skeleton-text animated class="skeleton-icon-button"></ion-skeleton-text>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </div>

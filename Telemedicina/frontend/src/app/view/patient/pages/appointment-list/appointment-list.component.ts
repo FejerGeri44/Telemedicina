@@ -8,7 +8,7 @@ import {MyAppointment} from '../../../../utils/interfaces/appointment.inteface';
 import {environment} from '../../../../../../../backend/config/enviroment';
 import {UserService} from '../../../../shared/user.service';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
-import {formatAppointmentTime} from '../../../../utils/formatProfileData';
+import {formatAppointmentTime, formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 
 @Component({
@@ -130,4 +130,5 @@ export class AppointmentListComponent {
   }
 
   protected readonly formatAppointmentTime = formatAppointmentTime;
+    protected readonly formatPhoneNumber = formatPhoneNumber;
 }

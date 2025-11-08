@@ -1,0 +1,35 @@
+<app-guest-navbar></app-guest-navbar>
+
+<ion-content>
+  <div class="error-container">
+
+    <div class="error-card">
+      <div class="code-block">
+        <h1 class="error-code">404</h1>
+        <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+      </div>
+
+      <h2 class="error-title">Hoppá! Az oldal nem található.</h2>
+
+      <p class="error-message">
+        Sajnáljuk, de a kért erőforrás (URL) nem létezik. Lehetséges, hogy rossz címet adott meg, vagy az oldal már nem elérhető.
+      </p>
+
+      <ion-button
+        (click)="goToHome()"
+        class="home-button"
+        fill="solid"
+        expand="block"
+        size="large">
+        <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+        Vissza a kezdőlapra
+      </ion-button>
+
+      <div class="contact-info">
+        <p>Ha a probléma továbbra is fennáll, kérjük, lépjen kapcsolatba a rendszergazdával.</p>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<app-guest-footer></app-guest-footer>
