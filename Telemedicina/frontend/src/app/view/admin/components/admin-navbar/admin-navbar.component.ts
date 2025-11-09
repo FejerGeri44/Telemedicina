@@ -6,7 +6,7 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {delay, filter, firstValueFrom, Observable, Subscription, take} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 
 @Component({
   selector: 'app-admin-navbar',

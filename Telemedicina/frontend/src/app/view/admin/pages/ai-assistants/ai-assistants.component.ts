@@ -4,7 +4,7 @@ import {FormsModule} from '@angular/forms';
 import {AiRulesCardComponent} from '../../components/ai-rules-card/ai-rules-card.component';
 import {AiDemoCardComponent} from '../../components/ai-demo-card/ai-demo-card.component';
 import {NgIf} from '@angular/common';
-import {AiConfigService} from '../../../../shared/Ai-assistants/AiConfigService';
+import {AiConfigService} from '../../../../services/Ai-assistants/AiConfigService';
 
 @Component({
   selector: 'app-ai-assistants',

@@ -10,8 +10,8 @@ import {
   Intent,
   ItemID,
   QuickStartItem
-} from '../../../../shared/Ai-assistants/AIInterfaces';
-import {AiConfigService} from '../../../../shared/Ai-assistants/AiConfigService';
+} from '../../../../services/Ai-assistants/AIInterfaces';
+import {AiConfigService} from '../../../../services/Ai-assistants/AiConfigService';
 
 type UpdateKind = 'greeting' | 'intent' | 'fallback' | 'greetingText' | 'fallbackText';
 type Incoming = string | Intent | QuickStartItem | FallbackSuggestion;

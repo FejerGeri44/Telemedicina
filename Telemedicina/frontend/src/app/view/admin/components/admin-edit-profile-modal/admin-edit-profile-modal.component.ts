@@ -7,9 +7,9 @@ import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {environment} from '../../../../../../../backend/config/enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {NgOptimizedImage} from "@angular/common";
-import {mapLoggedToItem} from '../../../../shared/user.mapper';
+import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 
 @Component({
   selector: 'app-admin-edit-profile-modal',

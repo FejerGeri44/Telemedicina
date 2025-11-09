@@ -8,7 +8,7 @@ import {
 import {Router} from '@angular/router';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {ToastService} from '../../../../shared/toast/toast.service';

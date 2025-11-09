@@ -5,7 +5,7 @@ import {IonicModule} from '@ionic/angular';
 import {DatePipe, DecimalPipe, NgForOf, NgIf, NgOptimizedImage, NgSwitch, NgSwitchCase} from '@angular/common';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {environment} from '../../../../../../../backend/config/enviroment';

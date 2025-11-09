@@ -7,7 +7,7 @@ import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {UnreadMessage} from '../../../../utils/interfaces/commonInterfaces';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 
 @Component({
   selector: 'app-doctor-navbar',

@@ -2,7 +2,7 @@ import {Component} from '@angular/core';
 import {PatientNavbarComponent} from '../components/patient-navbar/patient-navbar.component';
 import {IonicModule} from '@ionic/angular';
 import {RouterOutlet} from '@angular/router';
-import {AiAssistantFabComponent} from '../../../shared/Ai-assistants/ai-assistant-fab/ai-assistant-fab.component';
+import {AiAssistantFabComponent} from '../../../shared/ai-assistant-fab/ai-assistant-fab.component';
 
 @Component({
   selector: 'app-patient-dashboard',

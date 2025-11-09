@@ -18,8 +18,8 @@ import type {
   MetaConfig,
   QuickStartItem,
   ItemID
-} from '../../../../shared/Ai-assistants/AIInterfaces';
-import {AiConfigService} from '../../../../shared/Ai-assistants/AiConfigService';
+} from '../../../../services/Ai-assistants/AIInterfaces';
+import {AiConfigService} from '../../../../services/Ai-assistants/AiConfigService';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {UpdateQueryResponseModalComponent} from '../update-query-response-modal/update-query-response-modal.component';
 import {NewQueryResponseModalComponent} from '../new-query-response-modal/new-query-response-modal.component';

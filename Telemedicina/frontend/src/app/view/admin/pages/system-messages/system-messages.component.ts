@@ -8,7 +8,7 @@ import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {environment} from '../../../../../../../backend/config/enviroment';

@@ -5,7 +5,7 @@ import {MyDiagnosis} from '../../../../utils/interfaces/diagnosis.interface';
 import {Document} from '../../../../utils/interfaces/document.interface';
 import {environment} from '../../../../../../../backend/config/enviroment';
 import {HttpClient} from '@angular/common/http';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';

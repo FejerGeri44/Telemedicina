@@ -9,7 +9,7 @@ import {DoctorProfileCardComponent} from '../../components/doctor-profile-card/d
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
 import {environment} from '../../../../../../../backend/config/enviroment';
 import {AlertService} from '../../../../shared/alert/alert.service.component';

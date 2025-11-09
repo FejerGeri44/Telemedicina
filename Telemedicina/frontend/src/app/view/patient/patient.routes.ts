@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import {PatientRoleGuard} from '../../shared/guards/patientRole.guard';
+import {PatientRoleGuard} from '../../guards/patientRole.guard';
 
 export const PATIENT_ROUTES: Routes = [
   {
@@ -7,7 +7,7 @@ export const PATIENT_ROUTES: Routes = [
     loadComponent: () =>
       import('./patient-dashboard/patient-dashboard.component')
         .then(m => m.PatientDashboardComponent),
-      canActivate: [PatientRoleGuard],
+    canActivate: [PatientRoleGuard],
     children: [
       {
         path: 'patient-home',

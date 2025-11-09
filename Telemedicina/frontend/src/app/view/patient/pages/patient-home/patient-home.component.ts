@@ -9,7 +9,7 @@ import { PatientEditProfileModalComponent } from '../../components/patient-edit-
 import { SystemMessageModalComponent } from '../../../../shared/system-message-modal/system-message-modal.component';
 
 import { SystemMessage } from '../../../../utils/interfaces/commonInterfaces';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {MyAppointment} from '../../../../utils/interfaces/appointment.inteface';
 import {environment} from '../../../../../../../backend/config/enviroment';
 import {ToastService} from '../../../../shared/toast/toast.service';

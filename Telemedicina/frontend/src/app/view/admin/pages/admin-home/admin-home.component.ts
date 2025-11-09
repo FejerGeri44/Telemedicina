@@ -12,7 +12,7 @@ import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {environment} from '../../../../../../../backend/config/enviroment';
 

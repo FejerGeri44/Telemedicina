@@ -1,7 +1,7 @@
-import {Patient, PatientItem, PatientTag} from '../utils/interfaces/patient.interface';
-import {Doctor, DoctorItem} from '../utils/interfaces/doctor.interface';
-import {Admin, AdminItem} from '../utils/interfaces/admin.interface';
-import {User} from '../utils/interfaces/user.interface';
+import {Patient, PatientItem, PatientTag} from '../../utils/interfaces/patient.interface';
+import {Doctor, DoctorItem} from '../../utils/interfaces/doctor.interface';
+import {Admin, AdminItem} from '../../utils/interfaces/admin.interface';
+import {User} from '../../utils/interfaces/user.interface';
 
 export type LoggedUser =
   | { user: User; related: Patient }

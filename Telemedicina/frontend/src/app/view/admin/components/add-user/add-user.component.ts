@@ -6,7 +6,7 @@ import {PatientRegistComponent} from '../../../guest/pages/regist-login/forms/pa
 import {DoctorRegistComponent} from '../../../guest/pages/regist-login/forms/doctor-regist/doctor-regist.component';
 import {AdminRegistComponent} from '../../../guest/pages/regist-login/forms/admin-regist/admin-regist.component';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 
 @Component({

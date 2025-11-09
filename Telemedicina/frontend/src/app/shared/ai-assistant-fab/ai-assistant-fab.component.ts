@@ -2,7 +2,7 @@ import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {NgIf, AsyncPipe, NgComponentOutlet} from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import {BehaviorSubject, Subscription, timer} from 'rxjs';
-import {AiConfigService} from '../AiConfigService';
+import {AiConfigService} from '../../services/Ai-assistants/AiConfigService';
 import { PatientChatComponent } from './patient-chat/patient-chat.component';
 import { DoctorChatComponent } from './doctor-chat/doctor-chat.component';
 

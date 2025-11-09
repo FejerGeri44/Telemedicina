@@ -7,7 +7,7 @@ import localeHu from '@angular/common/locales/hu';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {Appointment, newAppointment} from '../../../../utils/interfaces/appointment.inteface';
 import {environment} from '../../../../../../../backend/config/enviroment';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';

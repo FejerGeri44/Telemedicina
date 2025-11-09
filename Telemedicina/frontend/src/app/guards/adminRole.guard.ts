@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router, UrlTree } from '@angular/router';
 import { Observable, map, first, filter } from 'rxjs';
-import { UserService } from '../user.service';
+import { UserService } from '../services/user/user.service';
 
 @Injectable({ providedIn: 'root' })
-export class PatientRoleGuard implements CanActivate {
+export class AdminRoleGuard implements CanActivate {
 
   constructor(
     private userService: UserService,
@@ -16,7 +16,7 @@ export class PatientRoleGuard implements CanActivate {
     state: RouterStateSnapshot
   ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
-    const requiredRole = "patient";
+    const requiredRole = "admin";
 
     return this.userService.user$().pipe(
       filter(user => !!user),

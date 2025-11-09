@@ -6,7 +6,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CustomToastComponent } from '../../../../../../shared/toast/toast.component';
 import {ToastService} from '../../../../../../shared/toast/toast.service';
-import {UserService} from '../../../../../../shared/user.service';
+import {UserService} from '../../../../../../services/user/user.service';
 import {LoggedUser} from '../../../../../../utils/interfaces/logged-user.interface';
 import { createClient } from '@supabase/supabase-js';
 import {environment} from '../../../../../../../../../backend/config/enviroment';
@@ -100,14 +100,14 @@ export class LoginFormComponent implements OnInit{
       const accessToken = data.session.access_token;
 
       const resp = await firstValueFrom(
-        this.http.post<{ message: string; user: LoggedUser }>(
+        this.http.post<{ message: string; user: LoggedUser; expiresIn: number }>(
           `${environment.apiUrl}/auth/login`,
           { accessToken },
           { withCredentials: true }
         )
       );
 
-      this.userService.setUserFromBackend(resp.user);
+      this.userService.setUserFromBackend(resp.user, resp.expiresIn);
       const role = resp.user.user.role;
       switch (role) {
         case 'doctor':  void this.router.navigate(['/doctor/doctor-home']); break;

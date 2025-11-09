@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import {PatientRoleGuard} from '../../shared/guards/patientRole.guard';
+import {AdminRoleGuard} from '../../guards/adminRole.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -7,42 +7,43 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () =>
       import('./admin-dashboard/admin-dashboard.component')
         .then(m => m.AdminDashboardComponent),
-    canActivate: [PatientRoleGuard],
+    canActivate: [AdminRoleGuard],
     children: [
       {
         path: 'admin-home',
         pathMatch: 'full',
         loadComponent: () =>
           import('./pages/admin-home/admin-home.component')
-            .then(m => m.AdminHomeComponent)
+            .then(m => m.AdminHomeComponent),
+        canActivate: [AdminRoleGuard],
       },
       {
         path: 'all-users',
         loadComponent: () =>
           import('./pages/all-users/all-users.component')
             .then(m => m.AllUsersComponent),
-        canActivate: [PatientRoleGuard]
+        canActivate: [AdminRoleGuard],
       },
       {
         path: 'doctor-approvals',
         loadComponent: () =>
           import('./pages/doctor-approvals/doctor-approvals.component')
             .then(m => m.DoctorApprovalsComponent),
-        canActivate: [PatientRoleGuard]
+        canActivate: [AdminRoleGuard],
       },
       {
         path: 'system-messages',
         loadComponent: () =>
           import('./pages/system-messages/system-messages.component')
             .then(m => m.SystemMessagesComponent),
-        canActivate: [PatientRoleGuard]
+        canActivate: [AdminRoleGuard],
       },
       {
         path: 'ai-assistants',
         loadComponent: () =>
           import('./pages/ai-assistants/ai-assistants.component')
             .then(m => m.AiAssistantsComponent),
-        canActivate: [PatientRoleGuard]
+        canActivate: [AdminRoleGuard],
       }
     ],
   },

@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { RouterOutlet } from '@angular/router';
-import {UserService} from './shared/user.service';
+import {UserService} from './services/user/user.service';
 
 @Component({
   selector: 'app-root',

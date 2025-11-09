@@ -3,13 +3,13 @@ import {FormsModule, NgForm, ReactiveFormsModule} from '@angular/forms';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {NgForOf, NgIf} from '@angular/common';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {AiConfigService} from '../../../../shared/Ai-assistants/AiConfigService';
+import {AiConfigService} from '../../../../services/Ai-assistants/AiConfigService';
 import type {
   Intent,
   QuickStartItem,
   FallbackSuggestion,
   ItemID
-} from '../../../../shared/Ai-assistants/AIInterfaces';
+} from '../../../../services/Ai-assistants/AIInterfaces';
 
 type UpdateKind = 'greeting' | 'intent' | 'fallback';
 type ItemForm = { label: string; prompt: string; reply: string; icon: string };

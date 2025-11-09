@@ -6,7 +6,7 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {MyAppointment} from '../../../../utils/interfaces/appointment.inteface';
 import {environment} from '../../../../../../../backend/config/enviroment';
-import {UserService} from '../../../../shared/user.service';
+import {UserService} from '../../../../services/user/user.service';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {formatAppointmentTime, formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';

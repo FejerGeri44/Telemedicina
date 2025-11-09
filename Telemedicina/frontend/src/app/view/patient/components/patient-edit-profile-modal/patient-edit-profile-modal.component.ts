@@ -7,8 +7,8 @@ import {NgForOf, NgIf} from '@angular/common';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {environment} from '../../../../../../../backend/config/enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
-import {UserService} from '../../../../shared/user.service';
-import {mapLoggedToItem} from '../../../../shared/user.mapper';
+import {UserService} from '../../../../services/user/user.service';
+import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 
 @Component({
   selector: 'app-edit-profile-modal',

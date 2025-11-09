@@ -205,10 +205,11 @@ const login = async (req, res) => {
       }
     }
 
+    const TOKEN_EXPIRY_SECONDS = 3600;
     const appToken = jwt.sign(
       { id: existingUser.id, role: existingUser.role },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: TOKEN_EXPIRY_SECONDS + 's' }
     );
 
     res.cookie(process.env.COOKIE_NAME, appToken, {
@@ -224,7 +225,8 @@ const login = async (req, res) => {
 
     return res.status(200).json({
       message: 'Sikeres bejelentkezés.',
-      user: loggedUser
+      user: loggedUser,
+      expiresIn: TOKEN_EXPIRY_SECONDS
     });
   } catch (err) {
     console.error('Bejelentkezési hiba (Supabase token):', err);
