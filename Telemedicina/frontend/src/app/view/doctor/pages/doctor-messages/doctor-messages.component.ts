@@ -9,7 +9,7 @@ import {Router} from '@angular/router';
 import {
   UnreadMessage,
   PatientUnreadSummary
-} from '../../../../utils/interfaces/commonInterfaces';
+} from '../../../../utils/interfaces/message.interface';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 

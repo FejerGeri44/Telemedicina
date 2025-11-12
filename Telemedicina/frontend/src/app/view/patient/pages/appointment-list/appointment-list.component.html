@@ -21,30 +21,30 @@
       <ion-col size="1.5">
         <div class="doctor-info">
           <div class="avatar">
-            <img ngSrc="{{appointment.doctor.user.pictureUrl}}" alt="Profilkép" draggable="false" fill/>
+            <img ngSrc="{{appointment.doctor?.user?.pictureUrl}}" alt="Profilkép" draggable="false" fill/>
           </div>
-          <span>Dr. {{ appointment.doctor.user.name }}</span>
+          <span>Dr. {{ appointment.doctor?.user?.name }}</span>
         </div>
       </ion-col>
 
       <ion-col size="1.5" class="chips-col">
-        {{ appointment.doctor.doctor.speciality }}
+        {{ appointment.doctor?.doctor?.speciality }}
       </ion-col>
 
       <ion-col size="2" class="hide-sm">
-        {{ formatAppointmentTime(appointment.from, appointment.to) }}
+        {{ formatAppointmentTime(appointment.starts_at, appointment.ends_at) }}
       </ion-col>
 
       <ion-col size="2" class="message-column">
-        {{ appointment.doctor.user.address }}
+        {{ appointment.doctor?.user?.address }}
       </ion-col>
 
       <ion-col size="2">
-        {{ formatPhoneNumber(appointment.doctor.user.phoneNumber) }}
+        {{ formatPhoneNumber(appointment.doctor?.user?.phoneNumber) }}
       </ion-col>
 
       <ion-col size="2">
-        {{ appointment.doctor.user.email }}
+        {{ appointment.doctor?.user?.email }}
       </ion-col>
 
       <ion-col size="1" class="actions">

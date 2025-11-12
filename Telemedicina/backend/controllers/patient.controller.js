@@ -251,7 +251,7 @@ exports.registerToAppointment = async (req, res) => {
     if (Number.isNaN(doctorIdNorm)) {
       return res.status(400).json({ message: 'doctorId nem konvertálható számmá.' });
     }
-    const patientIdStr = String(patientId).trim(); // ha int4, használhatsz Number(patientId)-t
+    const patientIdStr = String(patientId).trim();
     const fromStr = String(from).trim();
     const toStr   = String(to).trim();
 
@@ -259,7 +259,7 @@ exports.registerToAppointment = async (req, res) => {
       .from('appointments')
       .update({
         patient_id: patientIdStr,
-        status: 'accepted'
+        status: 'pending'
       })
       .eq('doctor_id', doctorIdNorm)
       .eq('starts_at', fromStr)
@@ -470,8 +470,8 @@ exports.loadMyAppointments = async (req, res) => {
       return {
         id: Number.isFinite(apptId) ? apptId : null,
         doctor: doctorItem,
-        from: String(appt.starts_at),
-        to: String(appt.ends_at),
+        starts_at: String(appt.starts_at),
+        ends_at: String(appt.ends_at),
         status: String(appt.status || ''),
       };
     });
@@ -590,6 +590,61 @@ exports.loadMyDiagnoses = async (req, res) => {
       return res.status(200).json([]);
     }
 
+    const patientIds = Array.from(
+      new Set(
+        diagnoses
+          .map(d => d.patient_id)
+          .filter(v => v !== null && v !== undefined)
+      )
+    );
+
+    let patientsById = new Map();
+    let patientUsersById = new Map();
+    let patientObj = { user: null, patient: null };
+
+    if (patientIds.length > 0) {
+      const { data: patients, error: patientsError } = await supabaseAdmin
+        .from('patients')
+        .select('*')
+        .in('id', patientIds);
+
+      if (patientsError) {
+        console.error('❌ Supabase patients lekérdezés hiba:', patientsError);
+        return res.status(500).json({ message: 'Server error: Páciens adatok lekérése sikertelen.', error: String(patientsError.message || patientsError) });
+      }
+
+      patientsById = new Map((patients || []).map(p => [p.id, p]));
+
+      const patientUserIds = Array.from(
+        new Set(
+          (patients || [])
+            .map(p => p?.userId)
+            .filter(v => v !== null && v !== undefined)
+        )
+      );
+
+      if (patientUserIds.length > 0) {
+        const { data: pUsers, error: pUsersError } = await supabaseAdmin
+          .from('users')
+          .select('*')
+          .in('id', patientUserIds);
+
+        if (pUsersError) {
+          console.error('❌ Supabase patient users lekérdezés hiba:', pUsersError);
+          return res.status(500).json({ message: 'Server error: Páciens felhasználói adatok lekérése sikertelen.', error: String(pUsersError.message || pUsersError) });
+        }
+        patientUsersById = new Map((pUsers || []).map(u => [u.id, u]));
+      }
+
+      const patientData = patientsById.get(patientIds[0]) || null;
+      const patientUserData = patientData ? patientUsersById.get(patientData.userId) || null : null;
+
+      patientObj = {
+        user: patientUserData,
+        patient: patientData
+      };
+    }
+
     const doctorIds = Array.from(
       new Set(
         diagnoses
@@ -598,8 +653,15 @@ exports.loadMyDiagnoses = async (req, res) => {
       )
     );
 
+    let doctorsById = new Map();
+    let doctorUsersById = new Map();
+
     if (doctorIds.length === 0) {
-      const enriched = diagnoses.map(d => ({ ...d, doctor: { user: null, doctor: null } }));
+      const enriched = diagnoses.map(d => ({
+        ...d,
+        doctor: { user: null, doctor: null },
+        patient: patientObj
+      }));
       return res.status(200).json(enriched);
     }
 
@@ -613,7 +675,7 @@ exports.loadMyDiagnoses = async (req, res) => {
       return res.status(500).json({ message: 'Server error', error: String(doctorsError.message || doctorsError) });
     }
 
-    const userIds = Array.from(
+    const doctorUserIds = Array.from(
       new Set(
         (doctors || [])
           .map(doc => doc?.userId)
@@ -621,33 +683,33 @@ exports.loadMyDiagnoses = async (req, res) => {
       )
     );
 
-    let usersById = new Map();
-    if (userIds.length > 0) {
+    if (doctorUserIds.length > 0) {
       const { data: users, error: usersError } = await supabaseAdmin
         .from('users')
         .select('*')
-        .in('id', userIds);
+        .in('id', doctorUserIds);
 
       if (usersError) {
         console.error('❌ Supabase users lekérdezés hiba:', usersError);
         return res.status(500).json({ message: 'Server error', error: String(usersError.message || usersError) });
       }
 
-      usersById = new Map((users || []).map(u => [u.id, u]));
+      doctorUsersById = new Map((users || []).map(u => [u.id, u]));
     }
 
-    const doctorsById = new Map((doctors || []).map(doc => [doc.id, doc]));
+    doctorsById = new Map((doctors || []).map(doc => [doc.id, doc]));
 
     const result = diagnoses.map(d => {
       const doctorObj = doctorsById.get(d.doctor_id) || null;
-      const userObj = doctorObj ? usersById.get(doctorObj.userId) || null : null;
+      const userObj = doctorObj ? doctorUsersById.get(doctorObj.userId) || null : null;
 
       return {
         ...d,
-        doctor: {
+        doctor_data: {
           user: userObj,
           doctor: doctorObj
-        }
+        },
+        patient_data: patientObj
       };
     });
 
@@ -680,28 +742,29 @@ exports.loadMyDocuments = async (req, res) => {
       ? await fetchDocsByPatient(patientIdNum)
       : await fetchDocsByPatient(patientIdStr);
 
+    if (error) {
+      console.error('❌ user_documents lekérdezés hiba:', error);
+      return res.status(500).json({ message: 'Server error', error: String(error.message || error) });
+    }
+
     if ((!docs || docs.length === 0) && Number.isFinite(patientIdNum)) {
       const retry = await fetchDocsByPatient(patientIdStr);
       if (retry.error) {
         console.error('❌ user_documents retry hiba:', retry.error);
-        return res.status(500).json({ message: 'Server error', error: String(retry.error.message || retry.error) });
       }
       docs = retry.data || [];
-    }
-
-    if (error) {
-      console.error('❌ user_documents lekérdezés hiba:', error);
-      return res.status(500).json({ message: 'Server error', error: String(error.message || error) });
     }
 
     if (!docs || docs.length === 0) {
       return res.status(200).json([]);
     }
 
-    const doctorIds = Array.from(new Set(docs.map(d => d.doctor_id).filter(v => v !== null && v !== undefined)));
-    const encounterIds = Array.from(new Set(docs.map(d => d.encounter_id).filter(v => v !== null && v !== undefined)));
+    const doctorIds = Array.from(new Set(docs.map(d => d.doctor_id).filter(v => v)));
+    const encounterIds = Array.from(new Set(docs.map(d => d.encounter_id).filter(v => v)));
 
     let doctorsById = new Map();
+    let usersById = new Map();
+
     if (doctorIds.length > 0) {
       const { data: doctors, error: doctorsError } = await supabaseAdmin
         .from('doctors')
@@ -710,93 +773,165 @@ exports.loadMyDocuments = async (req, res) => {
 
       if (doctorsError) {
         console.error('❌ doctors lekérdezés hiba:', doctorsError);
-        return res.status(500).json({ message: 'Server error', error: String(doctorsError.message || doctorsError) });
+        return res.status(500).json({ message: 'Server error (doctors)', error: String(doctorsError.message || doctorsError) });
       }
       doctorsById = new Map((doctors || []).map(doc => [doc.id, doc]));
-    }
 
-    let usersById = new Map();
-    const userIds = Array.from(
-      new Set(
-        Array.from(doctorsById.values())
-          .map(doc => doc?.userId)
-          .filter(v => v !== null && v !== undefined)
-      )
-    );
+      const userIds = Array.from(
+        new Set(
+          Array.from(doctorsById.values())
+            .map(doc => doc?.userId)
+            .filter(v => v)
+        )
+      );
 
-    if (userIds.length > 0) {
-      const { data: users, error: usersError } = await supabaseAdmin
-        .from('users')
-        .select('*')
-        .in('id', userIds);
+      if (userIds.length > 0) {
+        const { data: users, error: usersError } = await supabaseAdmin
+          .from('users')
+          .select('*')
+          .in('id', userIds);
 
-      if (usersError) {
-        console.error('❌ users lekérdezés hiba:', usersError);
-        return res.status(500).json({ message: 'Server error', error: String(usersError.message || usersError) });
+        if (usersError) {
+          console.error('❌ users lekérdezés hiba:', usersError);
+          return res.status(500).json({ message: 'Server error (users)', error: String(usersError.message || usersError) });
+        }
+        usersById = new Map((users || []).map(u => [u.id, u]));
       }
-      usersById = new Map((users || []).map(u => [u.id, u]));
     }
 
-    let encountersById = new Map();
+    let diagnosesById = new Map();
     if (encounterIds.length > 0) {
       const { data: encounters, error: encountersError } = await supabaseAdmin
         .from('encounters')
-        .select('*')
+        .select('id, diagnosis_id')
         .in('id', encounterIds);
 
       if (encountersError) {
         console.error('❌ encounters lekérdezés hiba:', encountersError);
-        return res.status(500).json({ message: 'Server error', error: String(encountersError.message || encountersError) });
+        return res.status(500).json({ message: 'Server error (encounters)', error: String(encountersError.message || encountersError) });
       }
-      encountersById = new Map((encounters || []).map(e => [e.id, e]));
-    }
 
-    let apptsById = new Map();
-    const appointmentIds = Array.from(
-      new Set(
-        Array.from(encountersById.values())
-          .map(e => e?.appointment_id)
-          .filter(v => v !== null && v !== undefined)
-      )
-    );
+      const diagnosisIds = Array.from(
+        new Set(
+          (encounters || [])
+            .map(e => e?.diagnosis_id)
+            .filter(v => v)
+        )
+      );
 
-    if (appointmentIds.length > 0) {
-      const { data: appts, error: apptsError } = await supabaseAdmin
-        .from('appointments')
-        .select('id, starts_at, ends_at')
-        .in('id', appointmentIds);
+      const encountersById = new Map((encounters || []).map(e => [e.id, e]));
 
-      if (apptsError) {
-        console.error('❌ appointments lekérdezés hiba:', apptsError);
-        return res.status(500).json({ message: 'Server error', error: String(apptsError.message || apptsError) });
+      if (diagnosisIds.length > 0) {
+        const { data: diagnoses, error: diagnosesError } = await supabaseAdmin
+          .from('diagnoses')
+          .select('id, diagnosis_date')
+          .in('id', diagnosisIds);
+
+        if (diagnosesError) {
+          console.error('❌ diagnoses lekérdezés hiba:', diagnosesError);
+          return res.status(500).json({ message: 'Server error (diagnoses)', error: String(diagnosesError.message || diagnosesError) });
+        }
+        diagnosesById = new Map((diagnoses || []).map(d => [d.id, d.diagnosis_date]));
       }
-      apptsById = new Map((appts || []).map(a => [a.id, a]));
+
+      encountersById.forEach((encounter, id) => {
+        const diagnosisDate = diagnosesById.get(encounter.diagnosis_id);
+        if (diagnosisDate) {
+          encountersById.set(id, { ...encounter, diagnosis_date: diagnosisDate });
+        } else {
+          encountersById.set(id, { ...encounter, diagnosis_date: null });
+        }
+      });
+      docs = docs.map(d => {
+        const encounterData = encountersById.get(d.encounter_id);
+        return {
+          ...d,
+          diagnosis_date: encounterData?.diagnosis_date || null,
+        };
+      });
     }
 
     const result = docs.map(d => {
       const doctorObj = doctorsById.get(d.doctor_id) || null;
       const userObj = doctorObj ? usersById.get(doctorObj.userId) || null : null;
 
-      const encounterObj = encountersById.get(d.encounter_id) || null;
-      const apptObj = encounterObj ? apptsById.get(encounterObj.appointment_id) || null : null;
-
-      const appointment = apptObj
-        ? { starts_at: apptObj.starts_at, ends_at: apptObj.ends_at }
-        : { starts_at: null, ends_at: null };
-
       return {
         ...d,
         doctor: {
           user: userObj,
-          doctor: doctorObj
+          doctor: doctorObj,
         },
-        appointment
       };
     });
 
     return res.status(200).json(result);
   } catch (err) {
     console.error('❌ loadMyDocuments hiba:', err);
+    return res.status(500).json({ message: 'Szerver hiba', error: String(err?.message || err) });
+  }
+};
+
+exports.getSignedDocumentUrl = async (req, res) => {
+  try {
+    const { storagePath } = req.body;
+    const authenticatedPatientId = req.user.id;
+
+    const bucketName = 'user-documents';
+    const expiresIn = 300;
+
+    if (!storagePath) {
+      return res.status(400).json({ message: 'Hiányzó storagePath.' });
+    }
+    if (!authenticatedPatientId) {
+      return res.status(401).json({ message: 'A felhasználó nincs hitelesítve.' });
+    }
+
+    const { data: documentData, error: dbError } = await supabaseAdmin
+      .from('user_documents')
+      .select('id')
+      .eq('storage_path', storagePath)
+      .eq('patient_id', authenticatedPatientId)
+      .single();
+
+    if (dbError) {
+      if (dbError.code === 'PGRST116') {
+        return res.status(403).json({ message: 'Nincs jogosultsága ehhez a dokumentumhoz.' });
+      }
+      console.error('❌ Adatbázis hiba (Tulajdonjog ellenőrzése):', dbError);
+      return res.status(500).json({ message: 'Adatbázis hiba a tulajdonjog ellenőrzésekor.' });
+    }
+
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucketName)
+      .createSignedUrl(storagePath, expiresIn);
+
+    if (error) {
+      console.error('❌ Supabase Storage hiba:', error);
+
+      const safeStatus = (parseInt(error.statusCode || 500, 10) >= 400) ? parseInt(error.statusCode || 500, 10) : 500;
+
+      if (safeStatus === 401) {
+        return res.status(401).json({ message: 'Hitelesítési hiba a Storage-ban. Ellenőrizd a Service Role kulcsot!' });
+      }
+
+      const errorMessage = safeStatus === 404 ?
+        'A dokumentum nem található a tárolóban. Ellenőrizd az elérési utat.' :
+        'A fájl elérésének hibája.';
+
+      return res.status(safeStatus).json({
+        message: errorMessage,
+        error: String(error.message || error)
+      });
+    }
+
+    if (!data || !data.signedUrl) {
+      return res.status(500).json({ message: 'Nem sikerült aláírt URL-t generálni.' });
+    }
+
+    return res.status(200).json({ signedUrl: data.signedUrl });
+
+  } catch (err) {
+    console.error('❌ getSignedDocumentUrl ÁLTALÁNOS hiba (catch blokk):', err);
     return res.status(500).json({ message: 'Szerver hiba', error: String(err?.message || err) });
   }
 };

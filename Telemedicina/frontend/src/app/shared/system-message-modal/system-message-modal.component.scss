@@ -40,6 +40,45 @@
   margin-bottom: 10px;
 }
 
+ion-badge {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 5px 15px;
+  border-radius: 6px;
+  --border-width: 1px;
+  --border-style: solid;
+  --background: #DBEAFE;
+  --color: #1E40AF;
+  border: 1px solid #93C5FD;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    cursor: pointer;
+  }
+}
+
+
+.badge-info {
+  --background: #67A8FF7F;
+  --color: #1E40AF;
+  border: 1px solid #5c7ce7;
+}
+
+.badge-warning {
+  --background: #FEF3C7;
+  --color: #B45309;
+  border: 1px solid #FCD34D;
+}
+
+.badge-error {
+  --background: #FEE2E2;
+  --color: #B91C1C;
+  border: 1px solid #F87171;
+}
+
 .title {
   margin: 5px 0;
   font-size: 20px;

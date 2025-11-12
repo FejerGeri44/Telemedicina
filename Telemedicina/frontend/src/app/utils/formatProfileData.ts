@@ -49,3 +49,19 @@ export function formatAppointmentTime(from: string, to: string): string {
 
   return `${yyyy}.${mm}.${dd}. ${fromHour}:${fromMin} - ${toHour}:${toMin}`;
 }
+
+export function formatTimestamp(isoString: string): string {
+  if (!isoString) return '';
+  let formatted = isoString.replace('T', ' ');
+  const lastColonIndex = formatted.lastIndexOf(':');
+  if (lastColonIndex > 0) {
+    formatted = formatted.substring(0, lastColonIndex + 3).trim();
+    formatted = formatted.substring(0, formatted.length - 3).trim();
+  }
+
+  if (formatted.length >= 16) {
+    return formatted.substring(0, 16);
+  }
+
+  return formatted;
+}

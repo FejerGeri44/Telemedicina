@@ -1,41 +1,35 @@
 <div class="filter-bar">
   <div class="filter-bar__left">
-    <input
-      type="text"
-      class="search-input"
+    <ion-searchbar
+      [debounce]="500"
       [value]="query"
       placeholder="Keresés az adatok között..."
       aria-label="Szabad szöveges kereső"
-    />
+      class="custom-search-bar"
+      (ionInput)="query = $event.detail.value || ''"
+      inputmode="text"
+    ></ion-searchbar>
   </div>
 
   <div class="filter-bar__right">
-    <button
-      type="button"
-      class="badge"
-      [class.badge--active]="activeTab === 'appointments'"
-      (click)="setTab('appointments')"
+    <ion-segment
+      [value]="activeTab"
+      (ionChange)="setTab($event.detail.value)"
+      mode="md"
+      class="custom-segment"
     >
-      Időpontjaim
-    </button>
+      <ion-segment-button value="appointments">
+        <ion-label>Időpontjaim</ion-label>
+      </ion-segment-button>
 
-    <button
-      type="button"
-      class="badge"
-      [class.badge--active]="activeTab === 'documents'"
-      (click)="setTab('documents')"
-    >
-      Dokumentumaim
-    </button>
+      <ion-segment-button value="documents">
+        <ion-label>Dokumentumaim</ion-label>
+      </ion-segment-button>
 
-    <button
-      type="button"
-      class="badge"
-      [class.badge--active]="activeTab === 'diagnoses'"
-      (click)="setTab('diagnoses')"
-    >
-      Diagnózisaim
-    </button>
+      <ion-segment-button value="diagnoses">
+        <ion-label>Diagnózisaim</ion-label>
+      </ion-segment-button>
+    </ion-segment>
   </div>
 </div>
 
@@ -45,7 +39,7 @@
 </app-appointment-table>
 
 <app-appointment-table-skeleton
-  *ngIf="activeTab === 'appointments' && !myAppointmentCalledAndLoaded">
+  *ngIf="activeTab === 'appointments' && isLoading">
 </app-appointment-table-skeleton>
 
 <app-diagnoses-table
@@ -54,5 +48,14 @@
 </app-diagnoses-table>
 
 <app-diagnoses-table-skeleton
-  *ngIf="activeTab === 'diagnoses' && !myDiagnosesCalledAndLoaded">
+  *ngIf="activeTab === 'diagnoses' && isLoading">
 </app-diagnoses-table-skeleton>
+
+<app-document-table
+  *ngIf="activeTab === 'documents' && myDocumentCalledAndLoaded"
+  [myDocuments]="myDocuments">
+</app-document-table>
+
+<app-document-table-skeleton
+  *ngIf="activeTab === 'documents' && isLoading">
+</app-document-table-skeleton>

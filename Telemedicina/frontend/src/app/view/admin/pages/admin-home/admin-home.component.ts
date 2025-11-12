@@ -10,11 +10,11 @@ import {SystemMessageModalComponent} from '../../../../shared/system-message-mod
 import {AsyncPipe, NgForOf, NgIf} from '@angular/common';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
-import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
+import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
 
 @Component({
   selector: 'app-admin-home',
@@ -67,52 +67,51 @@ export class AdminHomeComponent implements OnInit{
     this.loadMessages();
   }
 
-  loadSystemMessagesOnceAfterLogin() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
+  loadSystemMessagesOnceAfterLogin(): void {
     const key = `System-Messages`;
-    const alreadyShown = localStorage.getItem(key) === '1';
-    if (alreadyShown) return;
+    if (sessionStorage.getItem(key) === '1') return;
 
-    const payload = { audiences: ['all', 'admin'] };
+    const payload = {
+      audiences: ['all', 'admin']
+    }
+
     this.http.post<SystemMessage[]>(
-      'http://localhost:3000/api/system-messages-for-me',
+      `${environment.apiUrl}/shared/system-messages-for-me`,
       payload,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { withCredentials: true }
     ).subscribe({
       next: (res) => {
-        this.systemMessagesForMe = res;
+        console.log(res)
+        this.systemMessages = res;
         void this.presentSystemMessagesModalsOnce();
         localStorage.setItem(key, '1');
       },
-      error: (err) => console.error('❌ Rendszerüzenetek lekérése sikertelen:', err)
+      error: (err) => console.error('❌ Rendszerüzenetek hiba:', err)
     });
   }
 
-  async presentSystemMessagesModalsOnce() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const messages = this.systemMessagesForMe;
+  async presentSystemMessagesModalsOnce(): Promise<void> {
+    const messages = this.systemMessages ?? [];
     if (!messages.length) return;
-    const unseen = messages.filter(m => !localStorage.getItem(`System-Messages`));
+
+    const unseen = messages.filter(message => !sessionStorage.getItem(`System-Messages-${message.id}`));
     if (!unseen.length) return;
 
     for (const message of unseen) {
       const modal = await this.modalCtrl.create({
         component: SystemMessageModalComponent as any,
         componentProps: {
-          messages: [message],
+          messages: [message]
         },
+
         cssClass: 'system-message-modal',
         canDismiss: true,
         backdropDismiss: true,
       });
-
       await modal.present();
       await modal.onDidDismiss();
 
-      localStorage.setItem(`System-Messages`, '1');
+      sessionStorage.setItem(`System-Messages-${message.id}`, '1');
     }
   }
 

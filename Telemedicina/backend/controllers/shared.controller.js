@@ -1,9 +1,10 @@
 const {
   User,
   Message,
-  sequelize, SystemMessage
+  sequelize
 } = require('../repositories');
 const {Op} = require("sequelize");
+const {findForAudiences} = require("../repositories/systemMessage.repository");
 
 exports.sendMessage = async (req, res) => {
   try {
@@ -261,12 +262,7 @@ exports.getSystemMessagesForMe = async (req, res) => {
     const normalized = [...new Set(audiences.map(a => String(a).trim().toLowerCase()))];
     const effectiveAudiences = normalized.length ? [...new Set([...normalized, 'all'])] : ['all'];
 
-    const rows = await SystemMessage.findAll({
-      where: { audience: { [Op.in]: effectiveAudiences } },
-      attributes: ['id','adminId','title','message','audience','type','createdAt','validUntil'],
-      order: [['createdAt', 'DESC']],
-      raw: true
-    });
+    const rows = await findForAudiences(effectiveAudiences);
 
     const messages = rows.map(row => ({
       id: row.id,
@@ -275,14 +271,13 @@ exports.getSystemMessagesForMe = async (req, res) => {
       message: row.message,
       audience: row.audience,
       type: row.type,
-      createdAt: new Date(row.createdAt).toISOString(),
-      validUntil: row.validUntil ? new Date(row.validUntil).toISOString() : null
+      created_at: new Date(row.createdAt).toISOString(),
+      valid_until: row.validUntil ? new Date(row.validUntil).toISOString() : null
     }));
 
-    return res.status(200).json(messages)
+    return res.status(200).json(messages);
   } catch (err) {
     console.error('❌ getSystemMessagesForMe hiba:', err);
     return res.status(500).json({ message: 'Szerverhiba.' });
   }
 };
-

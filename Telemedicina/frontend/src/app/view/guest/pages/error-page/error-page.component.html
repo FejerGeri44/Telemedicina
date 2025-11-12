@@ -5,28 +5,29 @@
 
     <div class="error-card">
       <div class="code-block">
-        <h1 class="error-code">404</h1>
-        <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+        <h1 class="error-code">HOZZÁFÉRÉS ELUTASÍTVA</h1>
+        <ion-icon name="lock-closed-outline" class="error-icon"></ion-icon>
       </div>
 
-      <h2 class="error-title">Hoppá! Az oldal nem található.</h2>
+      <h2 class="error-title">Nincs jogosultsága az oldal megtekintéséhez.</h2>
 
       <p class="error-message">
-        Sajnáljuk, de a kért erőforrás (URL) nem létezik. Lehetséges, hogy rossz címet adott meg, vagy az oldal már nem elérhető.
+        Sajnáljuk, de az oldal eléréséhez **nincs megfelelő jogosultsága** vagy **nincs bejelentkezve** a rendszerbe.
+        <br><br>
+        Kérjük, ellenőrizze, hogy a megfelelő felhasználói fiókkal van-e bejelentkezve.
       </p>
 
       <ion-button
-        (click)="goToHome()"
-        class="home-button"
+        (click)="goBack()"  class="home-button"
         fill="solid"
         expand="block"
         size="large">
         <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
-        Vissza a kezdőlapra
+        Vissza az előző oldalra
       </ion-button>
 
       <div class="contact-info">
-        <p>Ha a probléma továbbra is fennáll, kérjük, lépjen kapcsolatba a rendszergazdával.</p>
+        <p>Ha bejelentkezett és a probléma továbbra is fennáll, kérjük, lépjen kapcsolatba a rendszergazdával.</p>
       </div>
     </div>
   </div>

@@ -1,28 +1,17 @@
-.slide {
-  min-width: 100%;
-  opacity: .85;
-  transition: opacity 350ms ease-in-out;
+.summary-list {
+  padding: 10px;
+  margin-bottom: 65px;
 }
-
-.summary-list .section-header {
-  --inner-padding-end: 0;
-  --inner-padding-start: 0;
-  --min-height: 44px;
-  background: var(--ion-color-light, #f4f5f8);
-  border-radius: 8px;
-  margin-top: 8px;
-}
-.summary-list .section-header ion-label {
-  font-weight: 600;
-}
-
 .section-body ion-item {
   --padding-start: 0;
   --inner-padding-end: 0;
+  --item-inner-align-items: flex-start;
 }
 
-.summary-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
+.summary-content-wrap {
+  white-space: normal;
+  overflow-wrap: break-word;
+  min-width: 100%;
+  width: 100%;
+  flex-shrink: 1;
 }

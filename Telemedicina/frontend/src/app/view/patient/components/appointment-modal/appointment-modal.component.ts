@@ -8,7 +8,7 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
 import {UserService} from '../../../../services/user/user.service';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {firstValueFrom, Observable} from 'rxjs';
 

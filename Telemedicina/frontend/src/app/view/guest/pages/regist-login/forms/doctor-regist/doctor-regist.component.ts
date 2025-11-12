@@ -5,8 +5,9 @@ import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {ToastService} from '../../../../../../shared/toast/toast.service';
-import {environment} from '../../../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../../../enviroment';
 import {AdminItem} from '../../../../../../utils/interfaces/admin.interface';
+import {PASSWORD_PATTERN, PHONE_PATTERN, TEXT_PATTERN} from '../../../../../../utils/validation-patterns';
 
 @Component({
   selector: 'app-doctor-regist',
@@ -40,12 +41,12 @@ export class DoctorRegistComponent {
     private toast: ToastService
   ) {
     this.doctorForm = this.fb.group({
-      fullName: ['', Validators.required],
+      fullName: ['', [Validators.required, Validators.pattern(TEXT_PATTERN)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-      password_again: ['', Validators.required],
-      phoneNumber: ['', Validators.required],
-      speciality: ['', Validators.required],
+      password: ['', [Validators.required, Validators.pattern(PASSWORD_PATTERN)]],
+      password_again: ['', [Validators.required, Validators.pattern(PASSWORD_PATTERN)]],
+      phoneNumber: ['', [Validators.required, Validators.pattern(PHONE_PATTERN)]],
+      speciality: ['', [Validators.required, Validators.pattern(TEXT_PATTERN)]],
     });
   }
 
@@ -90,7 +91,7 @@ export class DoctorRegistComponent {
     if (!this.calledByAdmin) {
       this.http.post(`${environment.apiUrl}/auth/register/doctor`, payloadBase)
         .subscribe({
-          next: (res) => {
+          next: () => {
             setTimeout(() => {
               void this.router.navigate(['/regist-login'], {
                 queryParams: {

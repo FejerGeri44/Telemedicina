@@ -5,10 +5,10 @@ import {NgForOf, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {formatPhoneNumber, formatTaj} from '../../../../utils/formatProfileData';
+import {formatPhoneNumber, formatTaj, formatTimestamp} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
@@ -53,6 +53,7 @@ export class NewDiagnosisComponent implements OnInit{
     appointmentId: null,
     patientId: null,
     status: 'draft',
+    diagnosis_date: '',
     patient: {
       id: null,
       name: '',
@@ -63,36 +64,28 @@ export class NewDiagnosisComponent implements OnInit{
       address: '',
       taj: ''
     },
-    symptoms: {
-      chiefComplaint: '',
-      onsetDate: '',
-      history: null
-    },
-    exam: {
-      bpSys: null,
-      bpDia: null,
-      heartRate: null,
-      tempC: null,
-      spo2: null,
-      weightKg: null,
-      heightCm: null,
-      bmi: null,
-      examSummary: null
-    },
-    diagnosis: {
-      primaryText: '',
-      codeSystem: 'ICD-10',
-      code: null,
-      certaintyPct: 50,
-      severity: 'moderate',
-      differentials: null
-    },
-    plan: {
-      assessment: null,
-      planText: null,
-      redFlags: false,
-      informed: false
-    }
+    chief_complaint: '',
+    onset_date: '',
+    history: null,
+    bp_sys: null,
+    bp_dia: null,
+    heart_rate: null,
+    temp_c: null,
+    spo2: null,
+    weight_kg: null,
+    height_cm: null,
+    bmi: null,
+    exam_summary: null,
+    primary_text: '',
+    code_system: 'ICD-10',
+    code: null,
+    certainty_pct: 50,
+    severity: 'moderate',
+    differentials: null,
+    assessment: null,
+    plan_text: null,
+    red_flags: false,
+    informed: false
   };
 
   constructor(
@@ -254,13 +247,13 @@ export class NewDiagnosisComponent implements OnInit{
   }
 
   recomputeBmi() {
-    const w = Number(this.draft?.exam?.weightKg);
-    const hCm = Number(this.draft?.exam?.heightCm);
+    const w = Number(this.draft?.weight_kg);
+    const hCm = Number(this.draft?.height_cm);
     if (w > 0 && hCm > 0) {
       const hM = hCm / 100;
-      this.draft.exam.bmi = +(w / (hM * hM)).toFixed(1);
+      this.draft.bmi = +(w / (hM * hM)).toFixed(1);
     } else {
-      this.draft.exam.bmi = null;
+      this.draft.bmi = null;
     }
   }
 
@@ -301,10 +294,10 @@ export class NewDiagnosisComponent implements OnInit{
 
   buildSummaryVM() {
     const p = this.draft.patient
-    const s = this.draft.symptoms;
-    const e = this.draft.exam;
-    const d = this.draft.diagnosis;
-    const plan = this.draft.plan;
+    const s = { chiefComplaint: this.draft.chief_complaint, onsetDate: this.draft.onset_date, history: this.draft.history };
+    const e = { bpSys: this.draft.bp_sys, bpDia: this.draft.bp_dia, heartRate: this.draft.heart_rate, tempC: this.draft.temp_c, spo2: this.draft.spo2, weightKg: this.draft.weight_kg, heightCm: this.draft.height_cm, bmi: this.draft.bmi, examSummary: this.draft.exam_summary };
+    const d = { primaryText: this.draft.primary_text, codeSystem: this.draft.code_system, code: this.draft.code, certaintyPct: this.draft.certainty_pct, severity: this.draft.severity, differentials: this.draft.differentials };
+    const plan = { assessment: this.draft.assessment, planText: this.draft.plan_text, redFlags: this.draft.red_flags, informed: this.draft.informed };
 
     const appt = (this.appointments || []).find(a => a.id === this.selectedAppointmentId);
 
@@ -331,6 +324,8 @@ export class NewDiagnosisComponent implements OnInit{
       phone,
       email: p.email || '',
       appointmentTime: apptTime,
+
+      diagnosisDate: formatTimestamp(this.draft.diagnosis_date),
 
       onsetDate: s.onsetDate ? new Date(s.onsetDate).toLocaleDateString('hu-HU') : '',
       chiefComplaint: s.chiefComplaint || '',
@@ -396,12 +391,12 @@ export class NewDiagnosisComponent implements OnInit{
       return;
     }
 
-    const chiefComplaint= this.draft?.symptoms?.chiefComplaint?.trim() || '';
-    const primaryText= this.draft?.diagnosis?.primaryText?.trim() || '';
-    const onsetDate= this.draft?.symptoms?.onsetDate?.trim() || '';
+    const chiefComplaint= this.draft?.chief_complaint?.trim() || '';
+    const primaryText= this.draft?.primary_text?.trim() || '';
+    const onsetDate= this.draft?.onset_date?.trim() || '';
 
-    const redFlags= this.draft?.plan?.redFlags;
-    const informed= this.draft?.plan?.informed;
+    const redFlags= this.draft?.red_flags;
+    const informed= this.draft?.informed;
 
     if (!chiefComplaint || !primaryText || !onsetDate) {
       this.toast.show('Kérlek tölts ki minden kötelező mezőt!', 'warning');
@@ -420,33 +415,33 @@ export class NewDiagnosisComponent implements OnInit{
       appointmentId: this.draft.appointmentId,
       symptoms: {
         chiefComplaint,
-        onsetDate: this.draft?.symptoms?.onsetDate ?? null,
-        history:   this.draft?.symptoms?.history ?? null
+        onsetDate: this.draft?.onset_date ?? null,
+        history:   this.draft?.history ?? null
       },
       exam: {
-        bpSys:     this.draft?.exam?.bpSys ?? null,
-        bpDia:     this.draft?.exam?.bpDia ?? null,
-        heartRate: this.draft?.exam?.heartRate ?? null,
-        tempC:     this.draft?.exam?.tempC ?? null,
-        spo2:      this.draft?.exam?.spo2 ?? null,
-        weightKg:  this.draft?.exam?.weightKg ?? null,
-        heightCm:  this.draft?.exam?.heightCm ?? null,
-        bmi:       this.draft?.exam?.bmi ?? null,
-        summary:   this.draft?.exam?.examSummary ?? null
+        bpSys:     this.draft?.bp_sys ?? null,
+        bpDia:     this.draft?.bp_dia ?? null,
+        heartRate: this.draft?.heart_rate ?? null,
+        tempC:     this.draft?.temp_c ?? null,
+        spo2:      this.draft?.spo2 ?? null,
+        weightKg:  this.draft?.weight_kg ?? null,
+        heightCm:  this.draft?.height_cm ?? null,
+        bmi:       this.draft?.bmi ?? null,
+        summary:   this.draft?.exam_summary ?? null
       },
       diagnosis: {
         primaryText,
-        codeSystem:    this.draft?.diagnosis?.codeSystem ?? null,
-        code:          this.draft?.diagnosis?.code ?? null,
-        certaintyPct:  this.draft?.diagnosis?.certaintyPct ?? null,
-        severity:      this.draft?.diagnosis?.severity ?? null,
-        differentials: this.draft?.diagnosis?.differentials ?? null
+        codeSystem:    this.draft?.code_system ?? null,
+        code:          this.draft?.code ?? null,
+        certaintyPct:  this.draft?.certainty_pct ?? null,
+        severity:      this.draft?.severity ?? null,
+        differentials: this.draft?.differentials ?? null
       },
       plan: {
-        assessment: this.draft?.plan?.assessment ?? null,
-        planText:   this.draft?.plan?.planText ?? null,
-        redFlags:   !!this.draft?.plan?.redFlags,
-        informed:   !!this.draft?.plan?.informed
+        assessment: this.draft?.assessment ?? null,
+        planText:   this.draft?.plan_text ?? null,
+        redFlags:   !!this.draft?.red_flags,
+        informed:   !!this.draft?.informed
       }
     };
 
@@ -491,6 +486,7 @@ export class NewDiagnosisComponent implements OnInit{
       appointmentId: null,
       patientId: null,
       status: 'draft',
+      diagnosis_date: '',
       patient: {
         id: null,
         name: '',
@@ -501,36 +497,28 @@ export class NewDiagnosisComponent implements OnInit{
         address: '',
         taj: ''
       },
-      symptoms: {
-        chiefComplaint: '',
-        onsetDate: null,
-        history: null
-      },
-      exam: {
-        bpSys: null,
-        bpDia: null,
-        heartRate: null,
-        tempC: null,
-        spo2: null,
-        weightKg: null,
-        heightCm: null,
-        bmi: null,
-        examSummary: null
-      },
-      diagnosis: {
-        primaryText: '',
-        codeSystem: 'ICD-10',
-        code: null,
-        certaintyPct: 50,
-        severity: 'moderate',
-        differentials: null
-      },
-      plan: {
-        assessment: null,
-        planText: null,
-        redFlags: false,
-        informed: false
-      }
+      chief_complaint: '',
+      onset_date: '',
+      history: null,
+      bp_sys: null,
+      bp_dia: null,
+      heart_rate: null,
+      temp_c: null,
+      spo2: null,
+      weight_kg: null,
+      height_cm: null,
+      bmi: null,
+      exam_summary: null,
+      primary_text: '',
+      code_system: 'ICD-10',
+      code: null,
+      certainty_pct: 50,
+      severity: 'moderate',
+      differentials: null,
+      assessment: null,
+      plan_text: null,
+      red_flags: false,
+      informed: false
     };
     this.goTo(0);
   }
@@ -541,10 +529,10 @@ export class NewDiagnosisComponent implements OnInit{
     return !!(
       d?.appointmentId &&
       (d?.patient?.id || (d?.patient?.name && d?.patient?.taj)) &&
-      d?.symptoms?.chiefComplaint && d?.symptoms?.chiefComplaint.trim() &&
-      d?.diagnosis?.primaryText && d?.diagnosis?.primaryText.trim() &&
-      (typeof d?.plan?.informed === 'boolean') &&
-      (typeof d?.plan?.redFlags === 'boolean')
+      d?.chief_complaint && d?.chief_complaint.trim() &&
+      d?.primary_text && d?.primary_text.trim() &&
+      (typeof d?.informed === 'boolean') &&
+      (typeof d?.red_flags === 'boolean')
     );
   }
 

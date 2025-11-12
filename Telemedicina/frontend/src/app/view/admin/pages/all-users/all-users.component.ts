@@ -24,7 +24,7 @@ import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 
 type UserSortKey = 'name' | 'role' | 'createdAt';
 

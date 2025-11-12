@@ -1,9 +1,11 @@
 import {DoctorItem} from './doctor.interface';
+import {PatientItem} from './patient.interface';
 
 export interface Diagnosis {
   appointmentId: number | null;
   patientId: number | null;
   status: 'draft' | string;
+  diagnosis_date: string;
 
   patient: {
     id: number | null;
@@ -16,41 +18,34 @@ export interface Diagnosis {
     taj: string;
   };
 
-  symptoms: {
-    chiefComplaint: string;
-    onsetDate: string | null;
-    history: string | null;
-  };
+  chief_complaint: string;
+  onset_date: string | null;
+  history: string | null;
 
-  exam: {
-    bpSys: number | null;
-    bpDia: number | null;
-    heartRate: number | null;
-    tempC: number | null;
-    spo2: number | null;
-    weightKg: number | null;
-    heightCm: number | null;
-    bmi: number | null;
-    examSummary: string | null;
-  };
+  bp_sys: number | null;
+  bp_dia: number | null;
+  heart_rate: number | null;
+  temp_c: number | null;
+  spo2: number | null;
+  weight_kg: number | null;
+  height_cm: number | null;
+  bmi: number | null;
+  exam_summary: string | null;
 
-  diagnosis: {
-    primaryText: string | null;
-    codeSystem: 'ICD-10' | string;
-    code: string | null;
-    certaintyPct: number;
-    severity: 'mild' | 'moderate' | 'severe' | string;
-    differentials: string | null;
-  };
+  primary_text: string | null;
+  code_system: 'ICD-10' | string;
+  code: string | null;
+  certainty_pct: number;
+  severity: 'mild' | 'moderate' | 'severe' | string;
+  differentials: string | null;
 
-  plan: {
-    assessment: string | null;
-    planText: string | null;
-    redFlags: boolean;
-    informed: boolean;
-  };
+  assessment: string | null;
+  plan_text: string | null;
+  red_flags: boolean;
+  informed: boolean;
 }
 
 export interface MyDiagnosis extends Diagnosis {
-  doctor: DoctorItem
+  doctor_data: DoctorItem;
+  patient_data: PatientItem;
 }

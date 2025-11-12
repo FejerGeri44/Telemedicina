@@ -1,1 +1,45 @@
-<p>document-table works!</p>
+<div class="message-table-scroll">
+  <ion-grid class="message-table">
+    <ion-row class="table-header">
+      <ion-col size="2"><span class="th">Orvos</span></ion-col>
+      <ion-col size="2"><span class="th">Specialitás</span></ion-col>
+      <ion-col size="4"><span class="th">Diagnózis ideje</span></ion-col>
+      <ion-col size="2"><span class="th"></span></ion-col>
+      <ion-col size="2"><span class="th"></span></ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let document of myDocuments" class="table-row">
+      <ion-col size="2">
+        <div class="doctor-info">
+          <div class="avatar" (click)="openDoctorProfileModal(document.doctor)">
+            <img ngSrc="{{ document.doctor.user.pictureUrl || 'https://placehold.co/40x40/e6f4ff/1f2937?text=DR' }}"
+                 alt="Profilkép" draggable="false" fill/>
+          </div>
+          <span>Dr. {{ document.doctor.user.name }}</span>
+        </div>
+      </ion-col>
+
+      <ion-col size="2">
+        <span>{{ document.doctor.doctor.speciality || 'Nincs specialitás' }}</span>
+      </ion-col>
+
+      <ion-col size="4">
+        <span>{{ formatTimestamp(document.diagnosis_date) }}</span>
+      </ion-col>
+
+      <ion-col size="2">
+        <ion-button class="btn-secondary" (click)="viewDocument(document)">
+          <ion-icon name="eye-outline" slot="start"></ion-icon>
+          Megtekintése
+        </ion-button>
+      </ion-col>
+
+      <ion-col size="2">
+        <ion-button class="btn-secondary" (click)="downloadDocument(document)">
+          <ion-icon name="download-outline" slot="start"></ion-icon>
+          Letöltése
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</div>

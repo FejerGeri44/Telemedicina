@@ -18,8 +18,8 @@ import {PatientItem} from '../../../../utils/interfaces/patient.interface';
   styleUrl: './patient-profile-card.component.scss'
 })
 export class PatientProfileCardComponent {
-  @Input() user!: PatientItem;
-  @Input() editable = false;
+  @Input({ required: true }) user!: PatientItem | undefined;
+  @Input({ required: true }) editable = false;
   @Output() edit = new EventEmitter<void>();
 
   iconFor(name: string): string | null {

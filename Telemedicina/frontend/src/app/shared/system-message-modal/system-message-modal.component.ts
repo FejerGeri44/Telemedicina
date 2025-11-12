@@ -1,6 +1,7 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
-import {NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from '@angular/common';
+import {DatePipe, NgClass, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault, UpperCasePipe} from '@angular/common';
+import {SystemMessage} from '../../utils/interfaces/system-message.interface';
 
 @Component({
   selector: 'app-system-message-modal',
@@ -10,13 +11,16 @@ import {NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from '@angular/common';
     NgSwitch,
     NgSwitchCase,
     NgSwitchDefault,
+    DatePipe,
+    UpperCasePipe,
+    NgClass,
   ],
   templateUrl: './system-message-modal.component.html',
   standalone: true,
   styleUrl: './system-message-modal.component.scss'
 })
-export class SystemMessageModalComponent {
-  @Input() messages: any[] = [];
+export class SystemMessageModalComponent implements OnInit {
+  @Input() messages: SystemMessage[] = [];
 
   currentIndex = 0;
 
@@ -28,5 +32,9 @@ export class SystemMessageModalComponent {
 
   dismiss(): void {
     void this.modalCtrl.dismiss();
+  }
+
+  ngOnInit(): void {
+    console.log(this.messages)
   }
 }

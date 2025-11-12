@@ -2,11 +2,11 @@
   <div class="pc-header">
     <div class="pc-left">
       <div class="pc-avatar">
-        <img ngSrc="{{user.user.pictureUrl}}" alt="Profilkép" draggable="false" priority fill/>
+        <img ngSrc="{{user?.user?.pictureUrl}}" alt="Profilkép" draggable="false" fill priority/>
       </div>
       <div class="pc-name">
-        <div class="pc-fullname">{{ user.user.name }}</div>
-        <div class="pc-role">{{ user.user.role }}</div>
+        <div class="pc-fullname">{{ user?.user?.name }}</div>
+        <div class="pc-role">{{ user?.user?.role }}</div>
       </div>
     </div>
 
@@ -17,14 +17,14 @@
 
   <div class="pc-details">
     <div class="pc-item"><span class="label">Születési idő:</span>
-      <span class="value">{{ user.patient.birthDate | date:'yyyy-MM-dd' }} <ng-container *ngIf=" getAge(user.patient.birthDate) as age">({{ age }} év)</ng-container></span>
+      <span class="value">{{ user?.patient?.birthDate | date:'yyyy-MM-dd' }} <ng-container *ngIf=" getAge(user?.patient?.birthDate) as age">({{ age }} év)</ng-container></span>
     </div>
-    <div class="pc-item"><span class="label">Cím:</span><span class="value">{{ user.user.address }}</span></div>
+    <div class="pc-item"><span class="label">Cím:</span><span class="value">{{ user?.user?.address }}</span></div>
 
     <div class="pc-item">
       <span class="label">Súly:</span>
-      <span *ngIf="user.patient.weight != null && user.patient.weight !== 'N/A'; else noWeight" class="value">
-      {{ user.patient.weight }} kg
+      <span *ngIf="user?.patient?.weight != null && user?.patient?.weight !== 'N/A'; else noWeight" class="value">
+      {{ user?.patient?.weight }} kg
     </span>
       <ng-template #noWeight>
         <span class="value">N/A</span>
@@ -34,21 +34,21 @@
     <div class="pc-item">
       <span class="label">Nem:</span>
       <span class="value">
-        {{ user.patient.gender || 'N/A' }}
-        <ion-icon *ngIf="user.patient.gender === 'férfi'" name="male"></ion-icon>
-        <ion-icon *ngIf="user.patient.gender === 'nő'" name="female"></ion-icon>
+        {{ user?.patient?.gender || 'N/A' }}
+        <ion-icon *ngIf="user?.patient?.gender === 'férfi'" name="male"></ion-icon>
+        <ion-icon *ngIf="user?.patient?.gender === 'nő'" name="female"></ion-icon>
       </span>
     </div>
 
     <div class="pc-item">
       <span class="label">TAJ:</span>
-      <span class="value">{{ formatTaj(user.patient.taj) }}</span>
+      <span class="value">{{ formatTaj(user?.patient?.taj) }}</span>
     </div>
 
     <div class="pc-item">
       <span class="label">Magasság:</span>
-      <span *ngIf="user.patient.height != null && user.patient.height !== 'N/A'; else noHeight" class="value">
-      {{ user.patient.weight }} cm
+      <span *ngIf="user?.patient?.height != null && user?.patient?.height !== 'N/A'; else noHeight" class="value">
+      {{ user?.patient?.weight }} cm
       </span>
       <ng-template #noHeight>
         <span class="value">N/A</span>
@@ -56,17 +56,17 @@
     </div>
   </div>
 
-  <div class="pc-chips" *ngIf="user.patient.tags?.length">
-    <ion-chip class="chip" *ngFor="let tag of user.patient.tags">
+  <div class="pc-chips" *ngIf="user?.patient?.tags?.length">
+    <ion-chip class="chip" *ngFor="let tag of user?.patient?.tags">
       <ion-icon [name]="iconFor(tag.tag_name)" *ngIf="iconFor(tag.tag_name)"></ion-icon>
       <ion-label><strong>{{ tag.tag_name }}:</strong> {{ tag.tag_value }}</ion-label>
     </ion-chip>
   </div>
 
   <div class="pc-stats">
-    <div class="stat"><span class="label">Email:</span><span class="value">{{ user.user.email }}</span></div>
-    <div class="stat"><span class="label">Mobil:</span><span class="value">{{ formatPhoneNumber(user.user.phoneNumber) }}</span></div>
-    <div class="stat"><span class="label">Otthoni:</span><span class="value">{{ user.patient.homePhone ? formatPhoneNumber(user.patient.homePhone) : 'N/A' }}</span></div>
+    <div class="stat"><span class="label">Email:</span><span class="value">{{ user?.user?.email }}</span></div>
+    <div class="stat"><span class="label">Mobil:</span><span class="value">{{ formatPhoneNumber(user?.user?.phoneNumber) }}</span></div>
+    <div class="stat"><span class="label">Otthoni:</span><span class="value">{{ user?.patient?.homePhone ? formatPhoneNumber(user?.patient?.homePhone) : 'N/A' }}</span></div>
   </div>
 
   <div class="pc-edit-bottom-wrap" *ngIf="editable">

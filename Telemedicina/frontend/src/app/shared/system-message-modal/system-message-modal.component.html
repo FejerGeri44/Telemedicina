@@ -10,9 +10,9 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content *ngIf="current as msg">
+<ion-content *ngIf="current as message">
   <div class="card">
-    <div class="hero" [ngSwitch]="msg?.type">
+    <div class="hero" [ngSwitch]="message?.type">
       <img *ngSwitchCase="'info'" src="pictures/system-message-pictures/information-heroImg.png" alt="info hero">
       <img *ngSwitchCase="'warning'" src="pictures/system-message-pictures/warning-heroImg.png" alt="warning hero">
       <img *ngSwitchCase="'error'" src="pictures/system-message-pictures/error-heroImg.png" alt="error hero">
@@ -21,14 +21,24 @@
 
     <div class="body">
       <div class="badges">
-        <ion-badge color="light" *ngIf="msg.validUntil">Érvényes: {{ msg.validUntil }}</ion-badge>
+        <ion-badge
+          [ngClass]="{
+            'badge-info': message.type === 'info',
+            'badge-warning': message.type === 'warning',
+            'badge-error': message.type === 'error'
+          }">
+          {{ message.type | uppercase }}
+        </ion-badge>
+
+        <ion-badge *ngIf="message.valid_until">
+          Érvényes: {{ message.created_at | date: 'yyyy.MM.dd' }} - {{ message.valid_until | date: 'yyyy.MM.dd' }}
+        </ion-badge>
       </div>
 
-      <h2 class="title">{{ msg.title }}</h2>
-
+      <h2 class="title">{{ message.title }}</h2>
       <p class="message">
-        {{ msg.message }}
-      </p><br><br>
+        {{ message.message }}
+      </p>
     </div>
   </div>
 </ion-content>

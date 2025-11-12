@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
+import {IonicModule, ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {DatePipe, NgClass, NgForOf, NgIf, registerLocaleData} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
@@ -8,9 +8,12 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
-import {Appointment, newAppointment} from '../../../../utils/interfaces/appointment.inteface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {Appointment, MyAppointment, newAppointment} from '../../../../utils/interfaces/appointment.inteface';
+import {environment} from '../../../../../../enviroment';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
+import {
+  AppointmentReviewModalComponent
+} from '../../components/appointment-review-modal/appointment-review-modal.component';
 
 registerLocaleData(localeHu);
 
@@ -30,7 +33,7 @@ registerLocaleData(localeHu);
 })
 
 export class AppointmentsComponent implements OnInit{
-  appointments: Appointment[] = [];
+  appointments: MyAppointment[] = [];
   appointmentDates: string[] = [];
   newAppointment: newAppointment = {
     date: '',
@@ -38,7 +41,7 @@ export class AppointmentsComponent implements OnInit{
     to: ''
   };
   user!: Observable<DoctorItem | null>;
-  private apptBySlot = new Map<string, Appointment>();
+  private apptBySlot = new Map<string, MyAppointment>();
   selectedDate = new Date();
   weekStart!: Date;
   weekEnd!: Date;
@@ -56,6 +59,7 @@ export class AppointmentsComponent implements OnInit{
     private http: HttpClient,
     private userService: UserService,
     private cdr: ChangeDetectorRef,
+    private modalCtrl: ModalController,
     private alert: AlertService,
     private toast: ToastService
   ) {
@@ -86,15 +90,15 @@ export class AppointmentsComponent implements OnInit{
     return user?.doctor.id ?? null;
   }
 
-  async loadAppointments(): Promise<Appointment[] | null> {
+  async loadAppointments(): Promise<MyAppointment[] | null> {
     const doctorId = await this.getDoctorId();
     if (!doctorId) {
       this.toast.show('Hiányzik az orvos azonosító.', 'danger');
       return null;
     }
 
-    return new Promise<Appointment[] | null>((resolve) => {
-      this.http.post<Appointment[]>(
+    return new Promise<MyAppointment[] | null>((resolve) => {
+      this.http.post<MyAppointment[]>(
         `${environment.apiUrl}/doctor/getMyAppointments`,
         { id: doctorId  },
         { withCredentials: true }
@@ -119,7 +123,7 @@ export class AppointmentsComponent implements OnInit{
     });
   }
 
-  private async loadPatientNames(appts: Appointment[]): Promise<void> {
+  private async loadPatientNames(appts: MyAppointment[]): Promise<void> {
 
     const patientIds = [...new Set(
       appts.map(a => a.patient_id).filter((x): x is number => !!x)
@@ -153,11 +157,29 @@ export class AppointmentsComponent implements OnInit{
     });
   }
 
-  patientName(appt: { patient_id: string | number }): string {
-    const pid = appt?.patient_id;
-    if (pid == null) return 'Szabad';
-    const key = String(pid).trim();
-    return <string>this.appointmentUserDataMap[key]?.name;
+  getApptStatusClass(appt: MyAppointment): string {
+    type AppointmentWithPatientInfo = MyAppointment & {
+      patient_id?: string | number | null;
+      status?: string;
+    };
+
+    const appointment = appt as AppointmentWithPatientInfo;
+
+    if (appointment && appointment.status) {
+      const status = appointment.status.toLowerCase();
+      switch (status) {
+        case 'pending': return 'cell--pending';
+        case 'accepted': return 'cell--accepted';
+        case 'done': return 'cell--done';
+        case 'free':
+        default: return 'cell--free';
+      }
+    }
+
+    if (appointment.patient_id != null) {
+      return 'cell--pending';
+    }
+    return 'cell--free';
   }
 
   onTabChange(ev: any) {
@@ -344,8 +366,8 @@ export class AppointmentsComponent implements OnInit{
 
     this.savingData = true;
 
-    return new Promise<Appointment | null>((resolve) => {
-      this.http.post<Appointment>(
+    return new Promise<MyAppointment | null>((resolve) => {
+      this.http.post<MyAppointment>(
         `${environment.apiUrl}/doctor/addAppointment`,
         appointmentPayload,
         { withCredentials: true }
@@ -369,7 +391,44 @@ export class AppointmentsComponent implements OnInit{
     });
   }
 
-  async confirmDeleteAppointment(appointment: Appointment) {
+  async reviewAppointment(appointment: MyAppointment) {
+    const modal = await this.modalCtrl.create({
+      component: AppointmentReviewModalComponent as any,
+      componentProps: {
+        appointment: appointment
+      },
+      cssClass: 'profile-view-modal'
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+
+    if (data && data.dismissed) {
+      const { action, appointmentId } = data;
+
+      const index = this.appointments.findIndex(a => a.id === appointmentId);
+
+      if (index !== -1) {
+        if (action === 'approved') {
+          this.appointments[index].status = 'accepted';
+          console.log(`✅ Appointment ID ${appointmentId} sikeresen jóváhagyva a frontenden.`);
+        } else if (action === 'rejected') {
+          this.appointments[index].status = 'free';
+          this.appointments[index].patient_id = null;
+          this.appointments[index].patient = undefined;
+          console.log(`❌ Appointment ID ${appointmentId} sikeresen elutasítva és felszabadítva a frontenden.`);
+        }
+
+        this.appointments = [...this.appointments];
+
+        this.reindexAppointments();
+        this.cdr.markForCheck();
+      }
+    }
+  }
+
+  async confirmDeleteAppointment(appointment: MyAppointment) {
 
     await this.alert.show(
       'Megerősítés',
@@ -380,7 +439,7 @@ export class AppointmentsComponent implements OnInit{
     );
   }
 
-  async deleteAppointment(appointment: Appointment | null): Promise<boolean> {
+  async deleteAppointment(appointment: MyAppointment | null): Promise<boolean> {
     if (!appointment) return false;
 
     return new Promise<boolean>((resolve) => {

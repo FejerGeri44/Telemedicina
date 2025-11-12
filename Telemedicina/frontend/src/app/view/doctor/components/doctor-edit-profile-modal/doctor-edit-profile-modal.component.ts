@@ -1,15 +1,16 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule, FormGroup, Validators, FormBuilder} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../services/user/user.service';
-import {NgOptimizedImage} from '@angular/common';
+import {NgIf, NgOptimizedImage} from '@angular/common';
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
+import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -18,19 +19,17 @@ import {mapLoggedToItem} from '../../../../services/user/user.mapper';
   imports: [
     IonicModule,
     FormsModule,
+    ReactiveFormsModule,
     NgOptimizedImage,
+    NgIf,
   ],
   styleUrls: ['./doctor-edit-profile-modal.component.scss']
 })
-export class DoctorEditProfileModalComponent {
+export class DoctorEditProfileModalComponent implements OnInit {
   @Input() user!: DoctorItem;
-  editForm = {
-    name: '',
-    address: '',
-    phoneNumber: '',
-    speciality: '',
-    introduction: ''
-  };
+
+  editProfileForm!: FormGroup;
+
   file: File | null = null;
   tempPreviewUrl: string | null = null;
   savingData: boolean = false;
@@ -38,9 +37,20 @@ export class DoctorEditProfileModalComponent {
   constructor(
     private modalCtrl: ModalController,
     private http: HttpClient,
+    private fb: FormBuilder,
     private userService: UserService,
     private toast: ToastService
   ) {}
+
+  ngOnInit() {
+    this.editProfileForm = this.fb.group({
+      name: [this.user.user.name || '', [Validators.pattern(TEXT_PATTERN)]],
+      address: [this.user.user.address || '', [Validators.pattern(TEXT_PATTERN)]],
+      phoneNumber: [this.user.user.phoneNumber || '', [Validators.pattern(PHONE_PATTERN)]],
+      speciality: [this.user.doctor.speciality || '', [Validators.pattern(TEXT_PATTERN)]],
+      introduction: [this.user.doctor.introduction || '', [Validators.pattern(TEXT_PATTERN)]]
+    });
+  }
 
   close() {
     void this.modalCtrl.dismiss();
@@ -48,6 +58,12 @@ export class DoctorEditProfileModalComponent {
 
   async save() {
     this.savingData = true;
+
+    if (this.editProfileForm.invalid) {
+      this.toast.show('Kérjük, ellenőrizze az űrlapon lévő hibákat.', 'warning');
+      this.savingData = false;
+      return;
+    }
 
     const modified = this.getModifiedFields();
 
@@ -116,32 +132,32 @@ export class DoctorEditProfileModalComponent {
   }
 
   private getModifiedFields(): Record<string, any> {
+    if (!this.editProfileForm) return {};
+
     const modified: Record<string, any> = {};
+
+    const currentFormValues = this.editProfileForm.getRawValue();
 
     const baselineUser: any = this.user?.user ?? {};
     const baselineDoctor: any = this.user?.doctor ?? {};
 
-    const userAllowed = ['name', 'address', 'phoneNumber'];
-    const doctorAllowed = ['speciality', 'introduction'];
+    const fields = [
+      { key: 'name', source: baselineUser },
+      { key: 'address', source: baselineUser },
+      { key: 'phoneNumber', source: baselineUser },
+      { key: 'speciality', source: baselineDoctor },
+      { key: 'introduction', source: baselineDoctor }
+    ];
 
-    for (const key of userAllowed) {
-      const oldValue = this.norm(baselineUser[key]);
-      const newValueRaw = (this.editForm as any)[key];
+    for (const field of fields) {
+      const oldValue = this.norm(field.source[field.key]);
+      const newValueRaw = (currentFormValues as any)[field.key];
       const newValue = this.norm(newValueRaw);
 
       if (this.isMeaningful(newValue) && newValue !== oldValue) {
-        modified[key] = newValue;
-      }
-    }
-
-    for (const key of doctorAllowed) {
-      const oldValue = this.norm(baselineDoctor[key]);
-
-      let newValue: any = (this.editForm as any)[key];
-      newValue = this.norm(newValue);
-
-      if (this.isMeaningful(newValue) && newValue !== oldValue) {
-        modified[key] = newValue;
+        modified[field.key] = newValue;
+      } else if (!this.isMeaningful(newValue) && this.isMeaningful(oldValue)) {
+        modified[field.key] = '';
       }
     }
 

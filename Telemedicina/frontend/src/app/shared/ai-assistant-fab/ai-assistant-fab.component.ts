@@ -1,10 +1,10 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {NgIf, AsyncPipe, NgComponentOutlet} from '@angular/common';
+import {NgIf, AsyncPipe} from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import {BehaviorSubject, Subscription, timer} from 'rxjs';
 import {AiConfigService} from '../../services/Ai-assistants/AiConfigService';
-import { PatientChatComponent } from './patient-chat/patient-chat.component';
-import { DoctorChatComponent } from './doctor-chat/doctor-chat.component';
+import { ChatComponent } from './chat-component/chat.component';
+import type { QuickStartItem } from '../../services/Ai-assistants/AIInterfaces';
 
 type BotRole = 'patient' | 'doctor';
 
@@ -17,9 +17,7 @@ type BotRole = 'patient' | 'doctor';
     IonicModule,
     NgIf,
     AsyncPipe,
-    NgComponentOutlet,
-    PatientChatComponent,
-    DoctorChatComponent
+    ChatComponent
   ],
 })
 export class AiAssistantFabComponent implements OnInit, OnDestroy {
@@ -27,6 +25,7 @@ export class AiAssistantFabComponent implements OnInit, OnDestroy {
 
   isOpen = new BehaviorSubject<boolean>(false);
   quickStartText: string = 'Miben tudok segíteni?';
+  quickStarts: QuickStartItem[] = [];
 
   showInitialMessage: boolean = false;
 
@@ -41,6 +40,7 @@ export class AiAssistantFabComponent implements OnInit, OnDestroy {
     try {
       const config = this.aiConfig.getDraft(this.role);
       this.quickStartText = config.greeting.quickStartText;
+      this.quickStarts = config.greeting.quickStarts;
     } catch (e) {
       console.error(`Hiba a ${this.role} QuickStart szöveg lekérdezésekor.`, e);
     }

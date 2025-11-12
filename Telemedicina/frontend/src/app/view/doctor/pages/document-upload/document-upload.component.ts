@@ -8,7 +8,7 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 import {HttpClient} from '@angular/common/http';
 import {formatTaj} from '../../../../utils/formatProfileData';
 import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
@@ -43,7 +43,7 @@ export class UploadDocumentComponent {
 
   docTypes = [
     { value: 'recept' as DocType,        label: 'Recept',         icon: 'document-text-outline' },
-    { value: 'beutalo' as DocType,       label: 'Beutaló',        icon: 'trail-sign-outline' },
+    { value: 'beutalo' as DocType,       label: 'Beutaló',        icon: 'send-outline' },
     { value: 'teszteredmeny' as DocType, label: 'Teszteredmény',  icon: 'flask-outline' },
     { value: 'egyeb' as DocType,         label: 'Egyéb',          icon: 'folder-outline' },
   ];

@@ -7,16 +7,17 @@ import {
 import {RouterLink} from '@angular/router';
 import {DoctorProfileCardComponent} from '../../components/doctor-profile-card/doctor-profile-card.component';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
-import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AsyncPipe, DecimalPipe, NgForOf, NgIf} from '@angular/common';
 import {buildStarIcons, roundToHalf} from '../../../../utils/formatDoctorRating';
 import {delay, filter, firstValueFrom, Observable, Subject, take, takeUntil} from 'rxjs';
+import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
+import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 
 @Component({
   selector: 'app-doctor-home',
@@ -39,6 +40,11 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
   systemMessages: SystemMessage[] = [];
 
   todaysAppointments: number = 0;
+  myPatients: number = 0;
+  unreadMessages: number = 0;
+  pendingAppointments: number = 0;
+  rejectedAppointments: number = 0;
+
   roundedRating = 0;
   starIcons: string[] = [];
   private destroy$ = new Subject<void>();
@@ -62,7 +68,10 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
         )
       );
 
+      await void this.countRejectedApplications();
+      await void this.countNewApplications();
       await void this.loadAppointments();
+      await void this.loadMyPatients();
     })();
   }
 
@@ -85,53 +94,49 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
   }
 
   loadSystemMessagesOnceAfterLogin(): void {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
     const key = `System-Messages`;
-    const alreadyShown = localStorage.getItem(key) === '1';
-    if (alreadyShown) return;
+    if (sessionStorage.getItem(key) === '1') return;
 
-    const payload = { audiences: ['all', 'doctor'] };
+    const payload = {
+      audiences: ['all', 'doctor']
+    }
+
     this.http.post<SystemMessage[]>(
-      'http://localhost:3000/api/system-messages-for-me',
+      `${environment.apiUrl}/shared/system-messages-for-me`,
       payload,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { withCredentials: true }
     ).subscribe({
       next: (res) => {
-        this.systemMessages = res ?? [];
+        this.systemMessages = res;
         void this.presentSystemMessagesModalsOnce();
         localStorage.setItem(key, '1');
       },
-      error: (err) => console.error('❌ Rendszerüzenetek lekérése sikertelen:', err)
+      error: (err) => console.error('❌ Rendszerüzenetek hiba:', err)
     });
   }
 
   async presentSystemMessagesModalsOnce(): Promise<void> {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
     const messages = this.systemMessages ?? [];
     if (!messages.length) return;
 
-    const unseen = messages.filter(m => !localStorage.getItem(`System-Messages`));
+    const unseen = messages.filter(message => !sessionStorage.getItem(`System-Messages-${message.id}`));
     if (!unseen.length) return;
 
     for (const message of unseen) {
       const modal = await this.modalCtrl.create({
         component: SystemMessageModalComponent as any,
         componentProps: {
-          messages: [message],
+          messages: [message]
         },
+
         cssClass: 'system-message-modal',
         canDismiss: true,
         backdropDismiss: true,
       });
-
       await modal.present();
       await modal.onDidDismiss();
 
-      localStorage.setItem(`System-Messages`, '1');
+      sessionStorage.setItem(`System-Messages-${message.id}`, '1');
     }
   }
 
@@ -158,6 +163,78 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
         error: (err) => {
           console.error('❌ Hiba az időpontok lekérésekor:', err);
           this.toast.show('Nem sikerült betölteni az időpontokat.', 'danger');
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  async loadMyPatients() {
+    const doctorId = await this.getDoctorId();
+    if (!doctorId) {
+      this.toast.show('Hiányzik az orvos azonosító.', 'danger');
+      return null;
+    }
+    return new Promise<PatientItem[] | null>((resolve) => {
+      this.http.post<PatientItem[]>(
+        `${environment.apiUrl}/doctor/getAllMyPatients`,
+        { id: doctorId },
+        { withCredentials: true }
+      ).subscribe({
+        next: (res) => {
+          this.myPatients = res.length;
+          resolve(res);
+        },
+        error: (err) => {
+          console.error('❌ Nem sikerült lekérni a pácienseket:', err);
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  async countNewApplications() {
+    const doctorId = await this.getDoctorId();
+    if (!doctorId) {
+      this.toast.show('Hiányzik az orvos azonosító.', 'danger');
+      return null;
+    }
+    return new Promise<number | null>((resolve) => {
+      this.http.post<number>(
+        `${environment.apiUrl}/doctor/countMyPendingAppointments`,
+        { id: doctorId },
+        { withCredentials: true }
+      ).subscribe({
+        next: (res) => {
+          this.pendingAppointments = res;
+          resolve(res);
+        },
+        error: (err) => {
+          console.error('❌ Nem sikerült lekérni a pácienseket:', err);
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  async countRejectedApplications() {
+    const doctorId = await this.getDoctorId();
+    if (!doctorId) {
+      this.toast.show('Hiányzik az orvos azonosító.', 'danger');
+      return null;
+    }
+    return new Promise<number | null>((resolve) => {
+      this.http.post<number>(
+        `${environment.apiUrl}/doctor/countMyRejections`,
+        { id: doctorId },
+        { withCredentials: true }
+      ).subscribe({
+        next: (res) => {
+          this.rejectedAppointments = res;
+          resolve(res);
+        },
+        error: (err) => {
+          console.error('❌ Nem sikerült lekérni a pácienseket:', err);
           resolve(null);
         }
       });

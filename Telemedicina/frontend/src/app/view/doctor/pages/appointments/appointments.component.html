@@ -77,25 +77,43 @@
 
               <ng-container *ngFor="let d of weekDays; trackBy: trackByDate">
                 <ng-container *ngIf="getAppt(d, t) as appt; else freeCell">
-                  <div class="day-col cell" [ngClass]="appt.patient_id != null ? 'cell--booked' : 'cell--free'">
-                    <div class="cell-title">
-                      {{ patientName(appt) }}
+                  <div class="day-col cell" [ngClass]="getApptStatusClass(appt)">
+                    <div class="cell-title" *ngIf="getApptStatusClass(appt) === 'cell--pending'">
+                      Elbírálásra vár
+                    </div>
+                    <div class="cell-title" *ngIf="getApptStatusClass(appt) === 'cell--accepted'">
+                      Jóváhagyva
+                    </div>
+                    <div class="cell-title" *ngIf="getApptStatusClass(appt) === 'cell--done'">
+                      Diagnosztizálva
+                    </div>
+                    <div class="cell-title" *ngIf="getApptStatusClass(appt) === 'cell--free'">
+                      Szabad
                     </div>
 
                     <div class="cell-actions">
-                      <ion-button
-                        size="small"
-                        class="delete"
-                        (click)="confirmDeleteAppointment(appt)"
-                        [disabled]="appt.patient_id != null">
-                        Törlés
-                      </ion-button>
+                      <ng-container *ngIf="getApptStatusClass(appt) === 'cell--pending'">
+                        <ion-button
+                          size="small"
+                          class="pending-action"
+                          (click)="reviewAppointment(appt)"> Elbírálás
+                        </ion-button>
+                      </ng-container>
+
+                      <ng-container *ngIf="getApptStatusClass(appt) !== 'cell--pending'">
+                        <ion-button *ngIf="appt.patient_id == null && getApptStatusClass(appt) == 'cell--free'"
+                          size="small"
+                          class="delete"
+                          (click)="confirmDeleteAppointment(appt)">
+                          Törlés
+                        </ion-button>
+                      </ng-container>
                     </div>
                   </div>
                 </ng-container>
 
                 <ng-template #freeCell>
-                  <div class="day-col cell">
+                  <div class="day-col cell cell--free">
                     <div class="cell-subtle">Szabad</div>
                   </div>
                 </ng-template>

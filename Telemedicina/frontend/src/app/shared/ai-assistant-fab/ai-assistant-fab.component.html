@@ -27,8 +27,10 @@
     </ion-header>
 
     <ion-content>
-      <app-patient-chat *ngIf="role === 'patient'"></app-patient-chat>
-      <app-doctor-chat *ngIf="role === 'doctor'"></app-doctor-chat>
+      <app-fab-chat
+        [quickStarts]="quickStarts"
+        [mode]="this.role">
+      </app-fab-chat>
     </ion-content>
   </div>
 </ng-template>

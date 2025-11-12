@@ -63,3 +63,10 @@ export interface AssistantRepository {
   updateFallbackSuggestion(id: ItemID, patch: Partial<FallbackSuggestion>): Promise<void>;
   removeFallbackSuggestion(id: ItemID): Promise<void>;
 }
+
+export interface ChatMessage {
+  id: number;
+  sender: 'user' | 'assistant';
+  text: string;
+  timestamp: number;
+}

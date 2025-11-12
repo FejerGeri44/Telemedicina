@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router, UrlTree } from '@angular/router';
-import { Observable, map, first, filter } from 'rxjs';
+import { Observable, map, first } from 'rxjs';
 import { UserService } from '../services/user/user.service';
 
 @Injectable({ providedIn: 'root' })
@@ -18,10 +18,13 @@ export class AdminRoleGuard implements CanActivate {
 
     const requiredRole = "admin";
 
-    return this.userService.user$().pipe(
-      filter(user => !!user),
-      first(),
+    return this.userService.userWithInitialLoad$().pipe(
       map(user => {
+        if (!user) {
+          void this.router.navigate(['/']);
+          return false;
+        }
+
         const actualRole = user.user.role;
 
         if (actualRole === requiredRole) {

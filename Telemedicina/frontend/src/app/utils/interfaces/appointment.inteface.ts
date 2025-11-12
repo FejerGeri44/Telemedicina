@@ -1,9 +1,10 @@
 import {DoctorItem} from './doctor.interface';
+import {PatientItem} from './patient.interface';
 
 export interface Appointment {
   id: number;
   doctor_id: number;
-  patient_id: number;
+  patient_id: number | null;
   starts_at: string;
   ends_at: string;
   status: string;
@@ -15,19 +16,7 @@ export interface newAppointment {
   to: string;
 }
 
-export interface MyAppointment {
-  id: number;
-  doctor: DoctorItem;
-  from: string;
-  to: string;
-  status: string;
-}
-
-export interface prevAppointment {
-  id: number;
-  doctor_id: number;
-  patient_id: number | null;
-  from: string;
-  to: string;
-  status: string;
+export interface MyAppointment extends Appointment{
+  doctor?: DoctorItem;
+  patient?: PatientItem;
 }

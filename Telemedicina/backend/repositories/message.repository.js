@@ -1,12 +1,6 @@
 const sql = require('../config/db.config');
 
 const MessageRepository = {
-  /**
-   * list – üzenetek listázása szűrőkkel.
-   * Szűrők: userId (bevonódó user – sender vagy receiver),
-   * senderUserId, receiverUserId, onlyUnreadFor ('patient'|'doctor'),
-   * since (iso/Date), until (iso/Date)
-   */
   async list({ userId, senderUserId, receiverUserId, onlyUnreadFor, since, until, limit = 50, offset = 0 } = {}) {
     const where = [];
     if (userId != null) where.push(sql`(sender_user_id = ${userId} OR receiver_user_id = ${userId})`);

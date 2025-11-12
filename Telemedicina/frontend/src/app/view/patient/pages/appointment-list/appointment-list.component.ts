@@ -5,7 +5,7 @@ import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {MyAppointment} from '../../../../utils/interfaces/appointment.inteface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 import {UserService} from '../../../../services/user/user.service';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {formatAppointmentTime, formatPhoneNumber} from '../../../../utils/formatProfileData';
@@ -74,7 +74,7 @@ export class AppointmentListComponent {
       }
     ).subscribe({
       next: (res) => {
-        this.myAppointments = res;
+        this.myAppointments = this.filterFutureAppointments(res);
         this.isLoading = false;
       },
       error: (error) => {
@@ -82,6 +82,16 @@ export class AppointmentListComponent {
         this.isLoading = false;
       }
     });
+  }
+
+  private filterFutureAppointments(appointments: MyAppointment[]): MyAppointment[] {
+    const now = Date.now();
+
+    return (appointments ?? [])
+      .filter(appointment => {
+        const appointmentTime = new Date(appointment.starts_at).getTime();
+        return Number.isFinite(appointmentTime) && appointmentTime >= now;
+      });
   }
 
   sortAppointments(): void {
@@ -95,8 +105,8 @@ export class AppointmentListComponent {
     const dir = this.sortDirection === 'asc' ? 1 : -1;
 
     this.myAppointments = [...this.myAppointments].sort((a, b) => {
-      const A = Date.parse(a.from);
-      const B = Date.parse(b.from);
+      const A = Date.parse(a.starts_at);
+      const B = Date.parse(b.ends_at);
       return (A - B) * dir;
     });
   }

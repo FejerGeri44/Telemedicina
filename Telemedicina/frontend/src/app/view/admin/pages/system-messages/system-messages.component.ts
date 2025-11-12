@@ -6,12 +6,12 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {SystemMessage} from '../../../../utils/interfaces/commonInterfaces';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
+import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
 
 @Component({
   selector: 'app-system-messages',
@@ -204,6 +204,7 @@ export class SystemMessagesComponent implements OnInit {
       { withCredentials: true }
       ).subscribe({
       next: (res) => {
+        console.log(res)
         this.messages = res;
         this.isLoading = false;
       },

@@ -89,7 +89,7 @@
     </div>
 
     <div class="appointment-count">
-      <span>{{ todaysAppointments }}</span>
+      <span>{{ myPatients }}</span>
     </div>
   </ion-card>
 
@@ -108,14 +108,14 @@
 
   <ion-card class="new-appointments">
     <div class="card-header">
-      <h2 class="header-title">Új időpontjaim</h2>
+      <h2 class="header-title">Függőben lévő időpontjaim</h2>
       <ion-button class="expand-btn" [routerLink]="['/appointments']">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
     </div>
 
     <div class="appointment-count">
-      <span>{{ todaysAppointments }}</span>
+      <span>{{ pendingAppointments }}</span>
     </div>
   </ion-card>
 
@@ -128,7 +128,7 @@
     </div>
 
     <div class="appointment-count">
-      <span>{{ todaysAppointments }}</span>
+      <span>{{ rejectedAppointments }}</span>
     </div>
   </ion-card>
 </div>

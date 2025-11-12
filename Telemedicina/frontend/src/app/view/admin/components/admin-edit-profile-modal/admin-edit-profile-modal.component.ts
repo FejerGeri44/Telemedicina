@@ -1,34 +1,33 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {NgOptimizedImage} from "@angular/common";
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
+import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
 
 @Component({
   selector: 'app-admin-edit-profile-modal',
-    imports: [
-        IonicModule,
-        FormsModule,
-        NgOptimizedImage
-    ],
+  imports: [
+    IonicModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgOptimizedImage
+  ],
   templateUrl: './admin-edit-profile-modal.component.html',
   standalone: true,
   styleUrl: './admin-edit-profile-modal.component.scss'
 })
-export class AdminEditProfileModalComponent {
+export class AdminEditProfileModalComponent implements OnInit {
   @Input() user!: AdminItem;
-  editForm = {
-    name: '',
-    address: '',
-    phoneNumber: '',
-  };
+  editProfileForm!: FormGroup;
+
   file: File | null = null;
   tempPreviewUrl: string | null = null;
   savingData: boolean = false;
@@ -37,15 +36,35 @@ export class AdminEditProfileModalComponent {
     private modalCtrl: ModalController,
     private http: HttpClient,
     private userService: UserService,
-    private toast: ToastService
+    private toast: ToastService,
+    private fb: FormBuilder
   ) {}
+
+  ngOnInit() {
+    this.editProfileForm = this.fb.group({
+      name: [this.user.user.name || '', [Validators.pattern(TEXT_PATTERN)]],
+      address: [this.user.user.address || '', [Validators.pattern(TEXT_PATTERN)]],
+      phoneNumber: [this.user.user.phoneNumber || '', [Validators.pattern(PHONE_PATTERN)]],
+    });
+  }
+
+  close() {
+    void this.modalCtrl.dismiss();
+  }
 
   async save() {
     this.savingData = true;
 
+    if (this.editProfileForm.invalid) {
+      this.toast.show('Kérjük, ellenőrizze az űrlapon lévő hibákat.', 'warning');
+      this.savingData = false;
+      return;
+    }
+
     const modified = this.getModifiedFields();
 
     const id = this.user?.user?.id;
+
     if (!id) {
       this.toast.show('Nincs user ID', 'danger');
       this.savingData = false;
@@ -111,7 +130,11 @@ export class AdminEditProfileModalComponent {
   }
 
   private getModifiedFields(): Record<string, any> {
+    if (!this.editProfileForm) return {};
+
     const modified: Record<string, any> = {};
+
+    const currentFormValues = this.editProfileForm.getRawValue();
 
     const baselineUser: any = this.user?.user ?? {};
 
@@ -119,11 +142,13 @@ export class AdminEditProfileModalComponent {
 
     for (const key of userAllowed) {
       const oldValue = this.norm(baselineUser[key]);
-      const newValueRaw = (this.editForm as any)[key];
+      const newValueRaw = (currentFormValues as any)[key];
       const newValue = this.norm(newValueRaw);
 
       if (this.isMeaningful(newValue) && newValue !== oldValue) {
         modified[key] = newValue;
+      } else if (!this.isMeaningful(newValue) && this.isMeaningful(oldValue)) {
+        modified[key] = '';
       }
     }
 
@@ -138,10 +163,6 @@ export class AdminEditProfileModalComponent {
 
   private norm(val: any): any {
     return typeof val === 'string' ? val.trim() : val;
-  }
-
-  close() {
-    void this.modalCtrl.dismiss();
   }
 
   protected readonly formatPhoneNumber = formatPhoneNumber;

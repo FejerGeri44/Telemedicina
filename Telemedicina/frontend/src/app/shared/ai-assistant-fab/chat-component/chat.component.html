@@ -1,0 +1,47 @@
+<div class="chat-container">
+
+  <ion-list class="message-list" lines="none">
+    <ng-container *ngFor="let msg of messages; index as i">
+
+      <ion-item
+        class="chat-message-item"
+        [ngClass]="{'user-message': msg.sender === 'user', 'assistant-message': msg.sender === 'assistant'}">
+        <div class="message-bubble">
+          <p>{{ msg.text }}</p>
+          <ion-note slot="end" class="message-timestamp">
+            {{ msg.timestamp | date:'HH:mm' }}
+          </ion-note>
+        </div>
+      </ion-item>
+
+      <div
+        class="quick-starts-area"
+        *ngIf="i === 0 && showQuickStarts"> <ion-chip
+        *ngFor="let item of quickStarts"
+        (click)="handleQuickStart(item)">
+        <ion-icon [name]="item.icon"></ion-icon>
+        <ion-label>{{ item.label }}</ion-label>
+      </ion-chip>
+      </div>
+
+    </ng-container>
+  </ion-list>
+
+  <div class="input-area">
+    <ion-textarea
+      class="message-input"
+      label="Üzenet küldése..."
+      labelPlacement="floating"
+      fill="outline"
+      rows="1"
+      autoGrow="true"
+      [(ngModel)]="message"
+      (keyup.enter)="sendMessage()"> </ion-textarea>
+    <ion-button
+      class="send-button"
+      [disabled]="isSendButtonDisabled"
+      (click)="sendMessage()" shape="round">
+      <ion-icon name="send" slot="icon-only"></ion-icon>
+    </ion-button>
+  </div>
+</div>

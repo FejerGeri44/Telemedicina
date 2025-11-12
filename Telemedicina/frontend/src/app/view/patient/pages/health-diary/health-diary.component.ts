@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import {MyAppointment} from '../../../../utils/interfaces/appointment.inteface';
 import {NgIf} from '@angular/common';
 import {MyDiagnosis} from '../../../../utils/interfaces/diagnosis.interface';
-import {Document} from '../../../../utils/interfaces/document.interface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {DocumentItem} from '../../../../utils/interfaces/document.interface';
+import {environment} from '../../../../../../enviroment';
 import {HttpClient} from '@angular/common/http';
 import {UserService} from '../../../../services/user/user.service';
 import {ToastService} from '../../../../shared/toast/toast.service';
@@ -17,6 +17,11 @@ import {DiagnosesTableComponent} from './components/diagnoses-table/diagnoses-ta
 import {
   DiagnosesTableSkeletonComponent
 } from './components/diagnoses-table/diagnoses-table-skeleton/diagnoses-table-skeleton.component';
+import {IonicModule} from '@ionic/angular';
+import {DocumentTableComponent} from './components/document-table/document-table.component';
+import {
+  DocumentTableSkeletonComponent
+} from './components/document-table/document-table-skeleton/document-table-skeleton.component';
 
 type DiaryTab = 'appointments' | 'documents' | 'diagnoses';
 
@@ -27,7 +32,10 @@ type DiaryTab = 'appointments' | 'documents' | 'diagnoses';
     AppointmentTableComponent,
     AppointmentTableSkeletonComponent,
     DiagnosesTableComponent,
-    DiagnosesTableSkeletonComponent
+    DiagnosesTableSkeletonComponent,
+    IonicModule,
+    DocumentTableComponent,
+    DocumentTableSkeletonComponent
   ],
   templateUrl: './health-diary.component.html',
   standalone: true,
@@ -37,7 +45,7 @@ export class HealthDiaryComponent {
   user!: Observable<PatientItem | null>;
   myAppointments: MyAppointment[] = [];
   myDiagnoses: MyDiagnosis[] = [];
-  myDocuments: Document[] = [];
+  myDocuments: DocumentItem[] = [];
   isLoading = true;
 
   myAppointmentCalledAndLoaded: boolean = false;
@@ -72,12 +80,14 @@ export class HealthDiaryComponent {
     return user?.patient.id ?? null;
   }
 
-  setTab(tab: DiaryTab): void {
-    if (this.activeTab === tab) return;
+  setTab(tabValue: string | number | null | undefined): void {
+    if (typeof tabValue !== 'string') return;
+    const newTab = tabValue as DiaryTab;
+    if (!['appointments', 'documents', 'diagnoses'].includes(newTab)) return;
+    if (this.activeTab === newTab) return;
+    this.activeTab = newTab;
 
-    this.activeTab = tab;
-
-    switch (tab) {
+    switch (newTab) {
       case 'diagnoses':
         if (!this.myDiagnosesCalledAndLoaded) {
           void this.fetchDiagnoses();
@@ -134,7 +144,7 @@ export class HealthDiaryComponent {
       return;
     }
 
-    this.http.post<Document[]>(
+    this.http.post<DocumentItem[]>(
       `${environment.apiUrl}/patient/loadMyDocuments`,
       { patientId },
       {

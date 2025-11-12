@@ -23,7 +23,7 @@ import {AiConfigService} from '../../../../services/Ai-assistants/AiConfigServic
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {UpdateQueryResponseModalComponent} from '../update-query-response-modal/update-query-response-modal.component';
 import {NewQueryResponseModalComponent} from '../new-query-response-modal/new-query-response-modal.component';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 

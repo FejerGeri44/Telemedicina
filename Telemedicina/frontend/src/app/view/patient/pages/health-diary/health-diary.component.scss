@@ -3,14 +3,17 @@ $border-strong: rgba(0, 0, 0, 0.12);
 $text: #1d1d1f;
 $text-muted: #6b7280;
 $bg: #ffffff;
-$bg-soft: #f9fafb;
+$bg-soft: #f9fafb; // Inaktív badge alap háttér
 $primary: #2563eb;
+$primary-dark-active: #1e40af; // Mélyebb kék szín az aktív badge szövegének
+$primary-light-bg: rgba(192, 220, 255, 0.5); // Aktív badge világos háttér
 
 :host {
   display: block;
   color: $text;
   font-size: 14px;
   line-height: 1.4;
+  margin: -10px;
 }
 
 .filter-bar {
@@ -21,60 +24,78 @@ $primary: #2563eb;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 16px;
+  padding: 20px 15px;
   background: $bg;
   border-bottom: 1px solid $border;
 
   &__left {
     flex: 1 1 auto;
 
-    .search-input {
+    // IONIC SEARCHBAR STÍLUSOK
+    .custom-search-bar {
+      --background: #{$bg-soft};
+      --border-radius: 12px;
+      --box-shadow: none;
+      height: 40px;
+      padding: 0;
+      max-width: 600px;
       width: 100%;
-      height: 38px;
-      padding: 0 12px;
-      border: 1px solid $border;
-      border-radius: 12px;
-      outline: none;
-      background: $bg-soft;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
-      &:focus {
-        border-color: $border-strong;
-        box-shadow: 0 0 0 4px rgba($primary, 0.08);
-        background: $bg;
-      }
+      --color: #{$text};
+      --placeholder-color: #{$text-muted};
     }
   }
 
   &__right {
     flex: 0 0 auto;
-    display: flex;
-    gap: 8px;
 
-    .badge {
-      height: 32px;
-      padding: 0 12px;
-      border: 1px solid $border;
-      border-radius: 999px;
-      background: $bg;
-      color: $text;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    // IONIC SEGMENT ÁTALAKÍTVA BADGE STÍLUSRA
+    .custom-segment {
+      --background: transparent;
+      --border-radius: 999px;
+      border: none;
+      height: auto;
+      padding: 0;
+      display: flex;
+      gap: 8px; // Térköz a gombok között
 
-      &:hover {
-        background: $bg-soft;
+      ion-segment-button {
+        // Eltávolítjuk az Ionic default indicator stílusokat
+        --indicator-height: 0px;
+        --border-radius: 999px;
+
+        // --- INAKTÍV ÁLLAPOT ---
+        background: #D1DCF37F;
+        border: 1px solid rgba(104, 175, 187, 0.5);
+
+        --border-width: 1px;
+        --border-color: #{$border}; // Inaktív szegély
+
+        --color: #{$text}; // Inaktív szöveg színe
+        --color-checked: #{$primary-dark-active}; // Mélyebb kék az aktív szövegnek
+
+        font-weight: 500;
+        text-transform: none;
+        font-size: 14px;
+        height: 20px;
+        min-width: 0;
+        padding: 0 15px;
+
+        &::part(indicator), &::part(indicator-background) {
+          display: none;
+        }
       }
 
-      &--active {
-        border-color: rgba($primary, 0.25);
-        background: rgba($primary, 0.08);
-        color: $primary;
+      ion-segment-button.segment-button-checked {
+        border: 2px solid rgba(15, 82, 189, 0.8);
+        background: rgba(38, 112, 232, 0.8);
+        color: var(--light-text-color);
       }
     }
   }
 }
 
+// AZ EREDETI KÓD TÖBBI RÉSZE VÁLTOZATLAN MARAD
 .diary-list {
   margin: 12px 16px 24px;
   background: $bg;
@@ -172,7 +193,7 @@ $primary: #2563eb;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 800px) {
   .filter-bar {
     flex-wrap: wrap;
     gap: 10px;
@@ -181,8 +202,8 @@ $primary: #2563eb;
       flex: 1 1 100%;
     }
 
-    &__right {
-      justify-content: space-between;
+    .custom-segment {
+      width: 100%;
     }
   }
 

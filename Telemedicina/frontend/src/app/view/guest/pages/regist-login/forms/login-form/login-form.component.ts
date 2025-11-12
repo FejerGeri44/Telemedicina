@@ -9,8 +9,9 @@ import {ToastService} from '../../../../../../shared/toast/toast.service';
 import {UserService} from '../../../../../../services/user/user.service';
 import {LoggedUser} from '../../../../../../utils/interfaces/logged-user.interface';
 import { createClient } from '@supabase/supabase-js';
-import {environment} from '../../../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../../../enviroment';
 import {firstValueFrom} from 'rxjs';
+import {PASSWORD_PATTERN} from '../../../../../../utils/validation-patterns';
 const supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
 
 @Component({
@@ -42,7 +43,9 @@ export class LoginFormComponent implements OnInit{
     ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
+      password: ['', [Validators.required,
+        //Validators.pattern(PASSWORD_PATTERN)
+      ]],
     });
   }
 

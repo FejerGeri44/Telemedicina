@@ -1,33 +1,53 @@
-import { Injectable } from '@angular/core';
+import {Injectable, OnInit} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {BehaviorSubject, first, Observable, Subscription, timer} from 'rxjs';
+import {BehaviorSubject, first, Observable, Subscription, switchMap, timer} from 'rxjs';
 import { map, shareReplay, tap } from 'rxjs/operators';
 
 import { FrontendUser, LoggedUser, mapLoggedToItem, isPatientItem, isDoctorItem, isAdminItem } from './user.mapper';
 import {AdminItem} from '../../utils/interfaces/admin.interface';
 import {DoctorItem} from '../../utils/interfaces/doctor.interface';
 import {PatientItem} from '../../utils/interfaces/patient.interface';
-import {environment} from '../../../../../backend/config/enviroment';
+import {environment} from '../../../../enviroment';
 import {Router} from '@angular/router';
 import {ToastService} from '../../shared/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private readonly _user$ = new BehaviorSubject<FrontendUser | null>(null);
+  private readonly _isLoaded$ = new BehaviorSubject<boolean>(false);
+  private initialLoad$!: Observable<FrontendUser | null>;
   private sessionTimer: Subscription | null = null;
 
   constructor(
     private http: HttpClient,
     private router: Router,
     private toast: ToastService
-  ) {}
+  ) {
+    this.initialLoad$ = this.http
+      .get<{ user: LoggedUser }>(`${environment.apiUrl}/auth/me`, { withCredentials: true })
+      .pipe(
+        map(payload => (payload ? mapLoggedToItem(payload.user) : null)),
+        tap(user => {
+          this._user$.next(user);
+          this._isLoaded$.next(true);
+        }),
+        first(),
+        shareReplay(1)
+      );
+  }
 
   user$(): Observable<FrontendUser | null> {
     return this._user$.asObservable();
   }
 
-  snapshot(): FrontendUser | null {
-    return this._user$.value;
+  userWithInitialLoad$(): Observable<FrontendUser | null> {
+    if (!this._isLoaded$.value) {
+      return this.initialLoad$.pipe(
+        switchMap(() => this.user$()),
+        first()
+      );
+    }
+    return this.user$().pipe(first());
   }
 
   setUser(u: FrontendUser | null): void {
@@ -58,7 +78,24 @@ export class UserService {
       .pipe(tap(() => {
         this.stopSessionTimer();
         this._user$.next(null);
+        this.clearSystemMessagesFromSessionStorage();
       }));
+  }
+
+  clearSystemMessagesFromSessionStorage(): void {
+    const prefix = 'System-Messages';
+    const keysToRemove: string[] = [];
+
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && key.startsWith(prefix)) {
+        keysToRemove.push(key);
+      }
+    }
+
+    for (const key of keysToRemove) {
+      sessionStorage.removeItem(key);
+    }
   }
 
   private autoLogout(): void {

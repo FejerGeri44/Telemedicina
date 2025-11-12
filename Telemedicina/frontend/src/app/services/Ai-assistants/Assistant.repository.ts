@@ -7,7 +7,7 @@ import type {
   ItemID,
   QuickStartItem,
 } from './AIInterfaces';
-import {environment} from '../../../../../backend/config/enviroment';
+import {environment} from '../../../../enviroment';
 
 function deepMerge<T>(target: T, patch: Partial<T>): T {
   if (patch === null || patch === undefined) return target;

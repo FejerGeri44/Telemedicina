@@ -5,7 +5,8 @@ import {HttpClient} from "@angular/common/http";
 import {Router} from "@angular/router";
 import {ToastService} from "../../../../../../shared/toast/toast.service";
 import {AdminItem} from '../../../../../../utils/interfaces/admin.interface';
-import {environment} from '../../../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../../../enviroment';
+import {PASSWORD_PATTERN, PHONE_PATTERN, TEXT_PATTERN} from '../../../../../../utils/validation-patterns';
 
 @Component({
   selector: 'app-admin-regist',
@@ -20,13 +21,6 @@ import {environment} from '../../../../../../../../../backend/config/enviroment'
 })
 export class AdminRegistComponent {
   @Input() adminUser!: AdminItem;
-
-  fullName: string = '';
-  email: string = '';
-  password: string = '';
-  password_again: string = '';
-  phoneNumber: string = '';
-  address: string = '';
 
   adminForm: FormGroup;
 
@@ -43,12 +37,12 @@ export class AdminRegistComponent {
       private toast: ToastService
   ) {
     this.adminForm = this.fb.group({
-      fullName: ['', Validators.required],
+      fullName: ['', [Validators.required, Validators.pattern(TEXT_PATTERN)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-      password_again: ['', Validators.required],
-      phoneNumber: ['', Validators.required],
-      address: ['', Validators.required],
+      password: ['', [Validators.required, Validators.pattern(PASSWORD_PATTERN)]],
+      password_again: ['', [Validators.required, Validators.pattern(PASSWORD_PATTERN)]],
+      phoneNumber: ['', [Validators.required, Validators.pattern(PHONE_PATTERN)]],
+      address: ['', [Validators.required, Validators.pattern(TEXT_PATTERN)]],
     });
   }
 

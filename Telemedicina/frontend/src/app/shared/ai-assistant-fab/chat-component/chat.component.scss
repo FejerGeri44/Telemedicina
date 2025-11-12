@@ -1,0 +1,148 @@
+/* chat.component.scss (Optimalizált és Felcserélt Stílusok) */
+
+:host {
+  /* Alapvető beállítás: a komponens vegye fel a teljes rendelkezésre álló magasságot */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-container {
+  /* A tartalom belső konténere */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+}
+
+/* --- CHAT ÜZENETEK LISTÁJA --- */
+
+.message-list {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: auto; /* A görgethetőség biztosítása */
+}
+
+.chat-message-item {
+  /* Alapvető ion-item stílusok a keret eltávolításához */
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  --inner-border-width: 0;
+  margin-bottom: 8px;
+  align-items: flex-start;
+}
+
+.message-bubble {
+  padding: 8px 12px;
+  border-radius: 20px;
+  max-width: 80%;
+  position: relative;
+  word-wrap: break-word;
+}
+
+.message-bubble p {
+  margin: 0;
+  padding: 0;
+}
+
+.message-timestamp {
+  display: block;
+  font-size: 0.7em;
+  margin-top: 4px;
+}
+
+/* --- 1. Felhasználó/Orvos Üzenet (Bal oldal) --- */
+.user-message {
+  justify-content: flex-start; /* Balra igazítás */
+
+  .message-bubble {
+    background: var(--ion-color-primary, #3880ff); /* MÓDOSÍTVA: Standard kék/primary szín */
+    border-top-left-radius: 5px;
+    p {
+      color: white; /* Világos szöveg */
+    }
+  }
+  .message-timestamp {
+    text-align: left;
+    color: var(--ion-color-step-300);
+  }
+}
+
+/* --- 2. AI Asszisztens Üzenet (Jobb oldal) --- */
+.assistant-message {
+  justify-content: flex-end; /* Jobbra igazítás (Kérésnek megfelelően) */
+
+  .message-bubble {
+    background: var(--ion-color-light, #e4e4e4); /* MÓDOSÍTVA: Világos szürke/light szín */
+    border-top-right-radius: 5px;
+    p {
+      color: var(--ion-color-dark, #000000); /* Sötét szöveg */
+    }
+  }
+  .message-timestamp {
+    text-align: right;
+    color: var(--ion-color-medium);
+  }
+}
+
+/* Az ion-item tartalmának flex igazítása az elrendezéshez */
+.user-message > .item-inner {
+  justify-content: flex-start;
+}
+.assistant-message > .item-inner {
+  justify-content: flex-end;
+}
+
+/* --- QUICK START TERÜLET STÍLUSO Kiemelés és Buborék stílus --- */
+.quick-starts-area {
+  padding: 10px 10px 15px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-starts-area ion-chip {
+  /* ÚJ: Quick Start Chip stílus (mintha üzenet buborék lenne) */
+  --background: var(--ion-color-step-100, #f1f1f1); /* Világosabb háttér */
+  --color: var(--ion-color-dark); /* Sötét szöveg */
+  --border-radius: 20px;
+  padding: 10px 15px;
+  transition: background-color 0.2s ease-in-out;
+
+  /* Interaktív: hover (csak desktopon látható) */
+  &:hover {
+    --background: var(--ion-color-step-150, #e0e0e0); /* Sötétebb árnyalat hoverre */
+    cursor: pointer;
+  }
+}
+
+/* --- INPUT TERÜLET --- */
+
+.input-area {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px; /* Padding a beviteli mező körül */
+  border-top: 1px solid var(--ion-color-step-150, #d7d8da);
+  background: var(--ion-background-color, #ffffff); /* Fehér háttér, hogy elváljon a görgethető tartalomtól */
+}
+
+.message-input {
+  flex-grow: 1;
+  margin: 0;
+
+  --background: var(--ion-color-light);
+  --border-radius: 20px;
+  --padding-start: 15px;
+  --padding-end: 15px;
+}
+
+.send-button {
+  height: 48px;
+  width: 48px;
+  min-width: 48px;
+  --padding-start: 0;
+  --padding-end: 0;
+  --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}

@@ -10,43 +10,44 @@
 </ion-header>
 
 <ion-content class="epm-content">
-  <!-- Fejléc: avatar + név -->
-  <section class="epm-header">
-    <div class="epm-avatar">
-      <img
-        ngSrc="{{tempPreviewUrl || user.user.pictureUrl}}"
-        alt="Profilkép"
-        class="avatar-img"
-        draggable="false"
-        priority
-        fill/>
-      <label class="avatar-edit">
-        <ion-icon name="camera"></ion-icon>
-        <input
-          type="file"
-          hidden
-          (change)="onFileSelected($event)"
-          accept="image/*" />
-      </label>
-    </div>
-    <div class="epm-headline">
-      <h2>Dr. {{ user.user.name }}</h2>
-      <p class="muted">{{ user.user.email }}</p>
-    </div>
-  </section>
+  <form [formGroup]="editProfileForm" (ngSubmit)="save()">
+    <section class="epm-header">
+      <div class="epm-avatar">
+        <img
+          ngSrc="{{tempPreviewUrl || user.user.pictureUrl}}"
+          alt="Profilkép"
+          class="avatar-img"
+          draggable="false"
+          priority
+          fill/>
+        <label class="avatar-edit">
+          <ion-icon name="camera"></ion-icon>
+          <input
+            type="file"
+            hidden
+            (change)="onFileSelected($event)"
+            accept="image/*" />
+        </label>
+      </div>
+      <div class="epm-headline">
+        <h2>{{ user.user.name }}</h2>
+        <p class="muted">{{ user.user.email }}</p>
+      </div>
+    </section>
 
-  <!-- Törzs: 2 oszlop nagy kijelzőn -->
-  <section class="epm-flex">
+    <section class="epm-flex">
       <ion-item>
         <ion-label class="custom-label" position="stacked">Név</ion-label>
         <ion-input
           class="custom-input"
           type="text"
-          [(ngModel)]="editForm.name"
-          [placeholder]="user.user.name"
+          formControlName="name" [placeholder]="user.user.name"
           fill="outline"
           clearInput>
         </ion-input>
+        <ion-note slot="error" *ngIf="editProfileForm.get('name')?.invalid && editProfileForm.get('name')?.touched">
+          A név nem érvényes.
+        </ion-note>
       </ion-item>
 
       <ion-item>
@@ -54,8 +55,7 @@
         <ion-input
           class="custom-input"
           type="text"
-          [(ngModel)]="editForm.address"
-          [placeholder]="user.user.address || 'N/A'"
+          formControlName="address" [placeholder]="user.user.address || 'N/A'"
           fill="outline"
           clearInput>
         </ion-input>
@@ -66,19 +66,20 @@
         <ion-input
           class="custom-input"
           type="tel"
-          [(ngModel)]="editForm.phoneNumber"
-          [placeholder]="formatPhoneNumber(user.user.phoneNumber)"
+          formControlName="phoneNumber" [placeholder]="formatPhoneNumber(user.user.phoneNumber)"
           fill="outline"
           clearInput>
         </ion-input>
+        <ion-note slot="error" *ngIf="editProfileForm.get('phoneNumber')?.invalid && editProfileForm.get('phoneNumber')?.touched">
+          A telefonszám nem érvényes.
+        </ion-note>
       </ion-item>
-  </section>
+    </section>
 
-  <!-- Sticky action sáv -->
-  <div class="epm-actions">
-    <ion-button
-      class="btn-accent"
-      (click)="save()"
-      [disabled]="savingData">Mentés</ion-button>
-  </div>
+    <div class="epm-actions">
+      <ion-button
+        class="btn-accent"
+        type="submit" [disabled]="savingData || editProfileForm.invalid"> Mentés</ion-button>
+    </div>
+  </form>
 </ion-content>

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
 import {HttpClient} from '@angular/common/http';
 import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
@@ -12,7 +12,7 @@ import {UserService} from '../../../../services/user/user.service';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 
 @Component({
   selector: 'app-my-patients',
@@ -32,6 +32,9 @@ export class MyPatientsComponent {
   isLoading = true;
   hasLoadedPatients = false;
   patients: PatientItem[] = [];
+
+  searchTerm: string = '';
+  currentSearchTerm: string = ''
 
   constructor(
     private router: Router,
@@ -88,6 +91,31 @@ export class MyPatientsComponent {
         }
       });
     });
+  }
+
+  get filteredPatients(): PatientItem[] {
+    if (!this.searchTerm || this.searchTerm.trim() === '') {
+      return this.patients;
+    }
+
+    const lowerCaseTerm = this.searchTerm.toLowerCase().trim();
+
+    return this.patients.filter(patient =>
+      patient.user.name.toLowerCase().includes(lowerCaseTerm)
+    );
+  }
+
+  onSearchChange(event: any) {
+    this.searchTerm = event.detail.value;
+  }
+
+  applySearch() {
+    this.currentSearchTerm = this.searchTerm;
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.currentSearchTerm = '';
   }
 
   async openPatientModal(patient: PatientItem) {

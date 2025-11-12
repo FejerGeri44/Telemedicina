@@ -1,6 +1,6 @@
 .tabs {
   width: 100%;
-  margin: 20px auto 10px;
+  margin: auto;
 }
 
 .segment-button {
@@ -21,7 +21,6 @@
   margin: 0 auto;
   justify-content: center;
   align-content: center;
-  padding: 3% 3% 3% 12%;
 }
 
 ion-card {
@@ -124,20 +123,50 @@ ion-card {
   gap: 5px;
 }
 
-.cell--booked {
-  background: #fceaea;
-  border: 1px solid rgba(255, 149, 149, 0.5);
-}
-
 .cell--free {
-  background: #eafcea;
-  border: 1px solid rgba(143, 255, 143, 0.5);
+  background: #ffffff;
+  border: 1px solid rgba(227, 227, 227, 0.5);
 
+  .cell-title {
+    font-weight: 600;
+    line-height: 1.2;
+  }
 }
 
-.cell-title {
-  font-weight: 600;
-  line-height: 1.2;
+.cell--pending {
+  background: rgba(220, 211, 116, 0.25);
+  border: 1px solid rgba(206, 175, 44, 0.5);
+
+  .cell-title {
+    font-weight: 600;
+    line-height: 1.2;
+  }
+}
+
+.cell--accepted {
+  background: rgba(141, 236, 117, 0.15);
+  border: 1px solid rgba(47, 210, 47, 0.5);
+
+  .cell-title {
+    font-weight: 600;
+    line-height: 1.2;
+    margin: auto;
+  }
+}
+
+.cell--done {
+  background: #cdd8ff;
+  border: 1px solid rgba(52, 96, 131, 0.5);
+  opacity: 0.7;
+
+  .cell-title {
+    font-weight: 600;
+    line-height: 1.2;
+    margin: auto;
+  }
+}
+.cell--done .cell-title {
+  color: #666;
 }
 
 .cell-subtle {
@@ -155,7 +184,7 @@ ion-card {
 
 .view-container {
   width: 95%;
-  margin: auto auto 50px;
+  margin: auto;
 }
 
 
@@ -254,13 +283,29 @@ ion-datetime::part(calendar-day) {
   border-radius: 5px;
   font-size: 0.75rem;
   width: 100px;
-  transition: hover 0.5s ease-in-out;
+  transition: all 0.5s ease-in-out;
 }
 
 .delete:hover {
+  scale: 1.05;
   --background: transparent;
   border: var(--accent) 1px solid;
   color: var(--accent);
+}
+
+.pending-action {
+  --background: #3880ff;
+  border: #3880ff 1px solid;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  width: 100px;
+  color: white;
+  transition: all 0.5s ease-in-out;
+}
+
+.pending-action:hover {
+  scale: 1.05;
+  --background: #5c9eff;
 }
 
 @media (max-width: 768px) {

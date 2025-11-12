@@ -10,14 +10,14 @@
 </ion-header>
 
 <ion-content class="epm-content">
-  <!-- Fejléc: avatar + név -->
   <section class="epm-header">
-    <div class="epm-avatar">
+    <div class="pc-avatar">
       <img
-        [src]="tempPreviewUrl || user.user.pictureUrl"
+        ngSrc="{{ tempPreviewUrl || user.user.pictureUrl }}"
         alt="Profilkép"
-        class="avatar-img"
         draggable="false"
+        fill
+        priority
       />
       <label class="avatar-edit">
         <ion-icon name="camera"></ion-icon>
@@ -34,148 +34,141 @@
     </div>
   </section>
 
-  <!-- Törzs: 2 oszlop nagy kijelzőn -->
-  <section class="epm-grid">
-    <div class="col">
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Név</ion-label>
-        <ion-input
-          class="custom-input"
-          type="text"
-          [(ngModel)]="editForm.name"
-          [placeholder]="user.user.name"
-          fill="outline"
-          clearInput>
-        </ion-input>
-      </ion-item>
+  <form [formGroup]="editProfileForm" (ngSubmit)="save()">
+    <section class="epm-grid">
+      <div class="col">
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Név</ion-label>
+          <ion-input
+            class="custom-input"
+            type="text"
+            formControlName="name"  [placeholder]="user.user.name"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Cím</ion-label>
-        <ion-input
-          class="custom-input"
-          type="text"
-          [(ngModel)]="editForm.address"
-          [placeholder]="user.user.address"
-          fill="outline"
-          clearInput>
-        </ion-input>
-      </ion-item>
-    </div>
-
-    <div class="col">
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Mobil</ion-label>
-        <ion-input
-          class="custom-input"
-          type="tel"
-          [(ngModel)]="editForm.phoneNumber"
-          [placeholder]="user.user.phoneNumber"
-          fill="outline"
-          clearInput>
-        </ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Otthoni telefon</ion-label>
-        <ion-input
-          class="custom-input"
-          type="tel"
-          [(ngModel)]="editForm.homePhone"
-          [placeholder]="user.patient.homePhone"
-          fill="outline"
-          clearInput>
-        </ion-input>
-      </ion-item>
-    </div>
-
-    <div class="row">
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Magasság (cm)</ion-label>
-        <ion-input
-          class="custom-input"
-          type="number"
-          inputmode="numeric"
-          [(ngModel)]="editForm.height"
-          [placeholder]="user.patient.height"
-          fill="outline"
-          clearInput>
-        </ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Testsúly (kg)</ion-label>
-        <ion-input
-          class="custom-input"
-          type="number"
-          inputmode="numeric"
-          [(ngModel)]="editForm.weight"
-          [placeholder]="user.patient.weight"
-          fill="outline"
-          clearInput>
-        </ion-input>
-      </ion-item>
-    </div>
-  </section>
-
-  <section class="epm-tags-section">
-    <h3>Különleges adatok</h3>
-
-    <!-- Új tag kiválasztása/megadása -->
-    <div class="tag-editor">
-      <!-- Tag típusa -->
-      <ion-item class="tag-item">
-        <ion-label position="stacked">Adattípus</ion-label>
-        <ion-select
-          interface="popover"
-          placeholder="Válassz típust"
-          [(ngModel)]="newTag.key"
-          (ionChange)="onTagTypeChange()">
-          <ion-select-option *ngFor="let opt of tagOptions" [value]="opt.key">
-            {{ opt.label }}
-          </ion-select-option>
-        </ion-select>
-      </ion-item>
-
-      <!-- Tag értéke (dinamikus) -->
-      <ion-item class="tag-item" *ngIf="newTag.key">
-        <ion-label position="stacked">Érték</ion-label>
-
-        <!-- Vértípus: lenyíló -->
-        <ion-select *ngIf="currentTagDef?.type === 'select'"
-                    interface="popover"
-                    placeholder="Válassz vércsoportot"
-                    [(ngModel)]="newTag.value">
-          <ion-select-option *ngFor="let v of currentTagDef?.options" [value]="v">{{ v }}</ion-select-option>
-        </ion-select>
-
-        <!-- Szabad szöveg: allergia, krónikus betegség, gyógyszer, diéta, megjegyzés -->
-        <ion-input *ngIf="currentTagDef?.type === 'text'"
-                   type="text"
-                   [placeholder]="currentTagDef?.placeholder"
-                   [(ngModel)]="newTag.value"
-                   clearInput></ion-input>
-      </ion-item>
-
-      <div class="tag-actions">
-        <ion-button size="small" fill="outline" (click)="resetNewTag()">Mégse</ion-button>
-        <ion-button size="small" (click)="addTag()" [disabled]="!canAddTag()">Hozzáadás</ion-button>
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Cím</ion-label>
+          <ion-input
+            class="custom-input"
+            type="text"
+            formControlName="address" [placeholder]="user.user.address"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
       </div>
-    </div>
 
-    <!-- Jelenleg hozzáadott tagek (csak frontenden) -->
-    <div class="tags-preview" *ngIf="editForm.tagsDraft?.length">
-      <ion-chip *ngFor="let t of editForm.tagsDraft; let i = index" outline>
-        <ion-label><strong>{{ t.label }}:</strong> {{ t.value }}</ion-label>
-        <ion-icon name="close" (click)="removeTag(i)"></ion-icon>
-      </ion-chip>
-    </div>
-  </section>
+      <div class="col">
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Mobil</ion-label>
+          <ion-input
+            class="custom-input"
+            type="tel"
+            formControlName="phoneNumber" [placeholder]="user.user.phoneNumber"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
 
-  <!-- Sticky action sáv -->
-  <div class="epm-actions">
-    <ion-button
-      class="btn-accent"
-      (click)="save()"
-      [disabled]="savingData">Mentés</ion-button>
-  </div>
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Otthoni telefon</ion-label>
+          <ion-input
+            class="custom-input"
+            type="tel"
+            formControlName="homePhone" [placeholder]="user.patient.homePhone"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <div class="row">
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Magasság (cm)</ion-label>
+          <ion-input
+            class="custom-input"
+            type="number"
+            inputmode="numeric"
+            formControlName="height"
+            [placeholder]="user.patient.height"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label class="custom-label" position="stacked">Testsúly (kg)</ion-label>
+          <ion-input
+            class="custom-input"
+            type="number"
+            inputmode="numeric"
+            formControlName="weight" [placeholder]="user.patient.weight"
+            fill="outline"
+            clearInput>
+          </ion-input>
+        </ion-item>
+      </div>
+    </section>
+
+    <section class="epm-tags-section">
+      <h3>Különleges adatok</h3>
+
+      <div class="tag-editor">
+        <ion-item class="tag-item">
+          <ion-label position="stacked">Adattípus</ion-label>
+          <ion-select
+            interface="popover"
+            placeholder="Válassz típust"
+            [(ngModel)]="newTagKey"
+            name="newTagKey"
+            [ngModelOptions]="{standalone: true}" (ionChange)="onTagTypeChange()"> <ion-select-option *ngFor="let opt of tagOptions" [value]="opt.key"> {{ opt.label }}
+          </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item class="tag-item" *ngIf="newTagKey"> <ion-label position="stacked">Érték</ion-label>
+
+          <ion-select *ngIf="currentTagDef?.type === 'select'"
+                      interface="popover"
+                      placeholder="Válassz vércsoportot"
+                      [(ngModel)]="newTag.tag_value"
+                      name="tagValueSelect"
+                      [ngModelOptions]="{standalone: true}"> <ion-select-option *ngFor="let v of currentTagDef?.options" [value]="v">{{ v }}</ion-select-option>
+          </ion-select>
+
+          <ion-input *ngIf="currentTagDef?.type === 'text'"
+                     type="text"
+                     [placeholder]="currentTagDef?.placeholder"
+                     [(ngModel)]="newTag.tag_value"
+                     name="tagValueInput"
+                     [ngModelOptions]="{standalone: true}" clearInput></ion-input>
+        </ion-item>
+
+        <div class="tag-actions">
+          <ion-button size="small" fill="outline" (click)="resetNewTag()">Mégse</ion-button>
+          <ion-button size="small" (click)="addTag()" [disabled]="!canAddTag()">Hozzáadás</ion-button>
+        </div>
+      </div>
+
+      <div class="tags-preview" formArrayName="tags" *ngIf="tagsFormArray.length">
+        <ion-chip *ngFor="let tagGroup of tagsFormArray.controls; let i = index" [formGroupName]="i" outline>
+          <ion-label>
+            <strong>{{ tagGroup.value.tag_name }}:</strong> {{ tagGroup.value.tag_value }}
+          </ion-label>
+          <ion-icon name="close" (click)="removeTag(i)"></ion-icon>
+        </ion-chip>
+      </div>
+    </section>
+
+    <div class="epm-actions">
+      <ion-button
+        class="btn-accent"
+        type="submit"
+        [disabled]="savingData || editProfileForm.invalid">
+        Mentés
+      </ion-button>
+    </div>
+  </form>
 </ion-content>

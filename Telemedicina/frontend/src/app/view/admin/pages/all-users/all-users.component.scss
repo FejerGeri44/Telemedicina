@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
-  padding: 10px;
+  padding: 0 10px 20px;
 }
 
 ion-card {
@@ -45,6 +45,7 @@ ion-card-title {
   justify-content: space-between;
   align-items: center;
   padding: 10px 10px 0 10px;
+  margin: -10px;
   box-shadow: -1px 0 4px 2px var(--primary);
 }
 .filter-left {
@@ -74,6 +75,10 @@ ion-card-title {
   --padding-start: 12px;
   --padding-end: 12px;
   background: #f6f7f9;
+}
+
+.users-table-wrap {
+  margin: -10px;
 }
 
 .users-table {
@@ -286,7 +291,7 @@ ion-card-title {
   .stats .card-admin   { grid-area: admin; }
 
   .users-table-wrap {
-    width: 100%;
+    margin: -10px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }

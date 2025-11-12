@@ -1,14 +1,15 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {IonicModule, ModalController} from '@ionic/angular';
-import {FormsModule} from '@angular/forms';
+import {FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
-import {NgForOf, NgIf} from '@angular/common';
-import {PatientItem} from '../../../../utils/interfaces/patient.interface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
+import {PatientItem, PatientTag} from '../../../../utils/interfaces/patient.interface';
+import {environment} from '../../../../../../enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
+import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -18,34 +19,22 @@ import {mapLoggedToItem} from '../../../../services/user/user.mapper';
     IonicModule,
     FormsModule,
     NgIf,
-    NgForOf
+    NgForOf,
+    ReactiveFormsModule,
+    NgOptimizedImage
   ],
   styleUrls: ['./patient-edit-profile-modal.component.scss']
 })
-export class PatientEditProfileModalComponent {
+export class PatientEditProfileModalComponent implements  OnInit {
   @Input() user!: PatientItem;
-  editForm = {
-    name: '',
-    address: '',
-    birthDate: '',
-    phoneNumber: '',
-    homePhone: '',
-    height: null as number | null,
-    weight: null as number | null,
-    tagsDraft: [] as { key: string; label: string; value: string }[]
-  };
+
+  editProfileForm!: FormGroup;
+  newTagKey: string = '';
+  newTag: PatientTag = { id: 0, tag_name: '', tag_value: '' };
   currentTagDef: any = null;
-  newTag: {
-    key: string;
-    label: string;
-    value: string
-  } = {
-    key: '',
-    label: '',
-    value: ''
-  };
   file: File | null = null;
   tempPreviewUrl: string | null = null;
+
   savingData: boolean = false;
 
   tagOptions = [
@@ -59,51 +48,97 @@ export class PatientEditProfileModalComponent {
   constructor(
     private modalCtrl: ModalController,
     private http: HttpClient,
+    private fb: FormBuilder,
     private userService: UserService,
     private toast: ToastService
   ) {}
 
+  ngOnInit() {
+    this.editProfileForm = this.fb.group({
+      name: [this.user.user.name || '', [Validators.pattern(TEXT_PATTERN)]],
+      address: [this.user.user.address || '', [Validators.pattern(TEXT_PATTERN)]],
+      phoneNumber: [this.user.user.phoneNumber || '', [Validators.pattern(PHONE_PATTERN)]],
+      homePhone: [this.user.patient.homePhone || '', [Validators.pattern(PHONE_PATTERN)]],
+      height: [this.user.patient.height || null, [Validators.min(50), Validators.max(300)]],
+      weight: [this.user.patient.weight || null, [Validators.min(10), Validators.max(500)]],
+      tags: this.fb.array(this.user.patient.tags?.map(t => this.createTagGroup(t.id, t.tag_name, t.tag_value)) || [])
+    });
+  }
+
+  private createTagGroup(id: number, tag_name: string, tag_value: string): FormGroup {
+    return this.fb.group({
+      id: [id],
+      tag_name: [tag_name, []],
+      tag_value: [tag_value, []],
+    });
+  }
+
   onTagTypeChange() {
-    this.currentTagDef = this.tagOptions.find(o => o.key === this.newTag.key) || null;
-    this.newTag.label = this.currentTagDef?.label || '';
-    this.newTag.value = '';
+    this.currentTagDef = this.tagOptions.find(o => o.key === this.newTagKey) || null;
+    this.newTag.tag_name = this.currentTagDef?.label || '';
+    this.newTag.tag_value = '';
+  }
+
+  get tagsFormArray() {
+    return this.editProfileForm.get('tags') as FormArray;
   }
 
   canAddTag(): boolean {
-    if (!this.newTag.key || !this.newTag.value) return false;
+    if (!this.newTagKey || !this.newTag.tag_value.trim()) return false;
 
-    return !(this.newTag.key === 'bloodType' && this.editForm.tagsDraft.some(t => t.key === 'bloodType'));
+    if (this.newTagKey === 'bloodType') {
+      const bloodTypeTagLabel = this.tagOptions.find(o => o.key === 'bloodType')?.label;
+      const currentTags = this.tagsFormArray.value as PatientTag[];
+      return !currentTags.some(t => t.tag_name === bloodTypeTagLabel);
+    }
+
+    return true;
   }
 
   addTag() {
-    if (!this.canAddTag()) return;
-    const value = String(this.newTag.value).trim();
-    if (!value) return;
+    if (!this.canAddTag() || !this.newTag.tag_value.trim()) return;
 
-    this.editForm.tagsDraft.push({
-      key: this.newTag.key,
-      label: this.newTag.label,
-      value
-    });
+    const value = String(this.newTag.tag_value).trim();
+
+    const newTagGroup = this.createTagGroup(0, this.newTag.tag_name, value);
+
+    newTagGroup.get('tag_name')?.setValidators([Validators.required, Validators.pattern(TEXT_PATTERN)]);
+    newTagGroup.get('tag_value')?.setValidators([Validators.required, Validators.pattern(TEXT_PATTERN)]);
+
+    newTagGroup.get('tag_name')?.updateValueAndValidity();
+    newTagGroup.get('tag_value')?.updateValueAndValidity();
+
+    this.tagsFormArray.push(newTagGroup);
+
     this.resetNewTag();
   }
 
   removeTag(index: number) {
-    this.editForm.tagsDraft.splice(index, 1);
+    this.tagsFormArray.removeAt(index);
   }
 
   resetNewTag() {
-    this.newTag = { key: '', label: '', value: '' };
+    this.newTagKey = '';
+    this.newTag = { id: 0, tag_name: '', tag_value: '' };
     this.currentTagDef = null;
   }
 
   async save() {
+    if (this.editProfileForm.invalid) {
+      this.toast.show('Kérlek javítsd a jelölt mezőket.', 'danger');
+      this.savingData = false;
+      this.editProfileForm.markAllAsTouched();
+      return;
+    }
+
     this.savingData = true;
 
-    const modified = this.getModifiedFields();
-    const tags = (this.editForm.tagsDraft || [])
-      .filter((t: any) => t && t.label && t.value)
-      .map((t: any) => ({ name: String(t.label).trim(), value: String(t.value).trim() }));
+    const formValues = this.editProfileForm.value;
+
+    const modified = this.getModifiedFields(formValues);
+    const tags = (formValues.tags || [])
+      .filter((t: any) => t && t.tag_name && t.tag_value)
+      .map((t: any) => ({ name: String(t.tag_name).trim(), value: String(t.tag_value).trim() }));
 
     const id = this.user?.user?.id;
     if (!id) {
@@ -174,18 +209,18 @@ export class PatientEditProfileModalComponent {
     (this as any).file = file;
   }
 
-  private getModifiedFields(): Record<string, any> {
+  private getModifiedFields(formValues: any): Record<string, any> {
     const modified: Record<string, any> = {};
 
     const baselineUser: any = this.user?.user ?? {};
     const baselinePatient: any = this.user?.patient ?? {};
 
     const userAllowed = ['name', 'address', 'phoneNumber'] as const;
-    const patientAllowed = ['gender', 'height', 'weight', 'homePhone'] as const;
+    const patientAllowed = ['height', 'weight', 'homePhone'] as const;
 
     for (const key of userAllowed) {
       const oldValue = this.norm(baselineUser[key]);
-      const newValueRaw = (this.editForm as any)[key];
+      const newValueRaw = formValues[key];
       const newValue = this.norm(newValueRaw);
 
       if (this.isMeaningful(newValue) && newValue !== oldValue) {
@@ -196,7 +231,7 @@ export class PatientEditProfileModalComponent {
     for (const key of patientAllowed) {
       const oldValue = this.norm(baselinePatient[key]);
 
-      let newValue: any = (this.editForm as any)[key];
+      let newValue: any = formValues[key];
       if (key === 'height' || key === 'weight') {
         newValue = this.toNumberOrUndef(newValue);
       } else {

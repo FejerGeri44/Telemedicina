@@ -14,5 +14,6 @@ router.patch('/cancelAppointment', authGuard, requireRole('patient'), patientCon
 router.post('/loadMyAppointments', authGuard, requireRole('patient'), patientController.loadMyAppointments);
 router.post('/loadMyDiagnoses', authGuard, requireRole('patient'), patientController.loadMyDiagnoses);
 router.post('/loadMyDocuments', authGuard, requireRole('patient'), patientController.loadMyDocuments);
+router.post('/getSignedDocumentUrl', authGuard, requireRole('patient'), patientController.getSignedDocumentUrl);
 
 module.exports = router;

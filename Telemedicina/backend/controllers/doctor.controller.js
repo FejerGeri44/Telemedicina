@@ -2,6 +2,7 @@ const {supabaseAdmin} = require("../utils/supabaseAdmin");
 const {buildProfile} = require("../utils/profileBuilder");
 const mime = require('mime-types');
 const crypto = require('crypto');
+const AppointmentRejectionRepository = require("../repositories/appointmentRejection.repository");
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -184,6 +185,80 @@ exports.addAppointment = async (req, res) => {
   }
 };
 
+exports.approveOrRejectAppointment = async (req, res) => {
+  try {
+    const { appointmentId, status } = req.body;
+    const allowedStatuses = ['approved', 'rejected'];
+
+    if (!appointmentId) {
+      return res.status(400).json({ message: 'Hiányzó appointmentId.' });
+    }
+    if (!status || !allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Érvénytelen vagy hiányzó status. Értékek: approved, rejected.' });
+    }
+
+    const { data: doctorRow, error: docErr } = await supabaseAdmin
+      .from('doctors')
+      .select('id')
+      .eq('userId', req.user.id)
+      .single();
+
+    if (docErr || !doctorRow) {
+      return res.status(403).json({ message: 'Nem sikerült azonosítani az orvost.' });
+    }
+    const doctorId = doctorRow.id;
+
+    const { data: appt, error: apptErr } = await supabaseAdmin
+      .from('appointments')
+      .select('id, doctor_id, patient_id')
+      .eq('id', appointmentId)
+      .single();
+
+    if (apptErr || !appt) {
+      return res.status(404).json({ message: 'Időpont nem található.' });
+    }
+    if (appt.doctor_id !== doctorId) {
+      return res.status(403).json({ message: 'Az időpont nem ehhez az orvoshoz tartozik.' });
+    }
+
+    const newStatus = status === 'approved' ? 'accepted' : 'free';
+    const { data: updatedAppt, error: updErr } = await supabaseAdmin
+      .from('appointments')
+      .update({ status: newStatus })
+      .eq('id', appointmentId)
+      .select('id, status, patient_id')
+      .single();
+
+    if (updErr) {
+      console.error('❌ Supabase update error (appointment status):', updErr);
+      return res.status(500).json({ message: 'Server error', error: String(updErr.message || updErr) });
+    }
+
+    if (status === 'rejected') {
+      const patientId = updatedAppt.patient_id;
+      if (patientId) {
+        const rejection = await AppointmentRejectionRepository.create({
+          doctorId,
+          patientId: patientId,
+        });
+        console.log(`✅ Appointment rejected and recorded: ${rejection.id}`);
+      } else {
+        console.warn(`⚠️ Appointment rejected, but patient_id was null: ${appointmentId}`);
+      }
+    }
+
+    return res.status(200).json({
+      message: `Appointment ${status === 'approved' ? 'elfogadva' : 'elutasítva'} sikeresen.`,
+      id: updatedAppt.id,
+      newStatus: updatedAppt.status
+    });
+
+  } catch (err) {
+    console.error('❌ approveOrRejectAppointment error:', err);
+    return res.status(500).json({ message: 'Server error', error: String(err?.message || err) });
+  }
+};
+
 exports.deleteAppointment = async (req, res) => {
   try {
     const rawId = req.body?.id;
@@ -291,12 +366,26 @@ exports.myAppointments = async (req, res) => {
     const idNum = Number(raw);
     const idStr = String(raw).trim();
 
+    const selectStatement = `
+      id,
+      doctor_id,
+      starts_at,
+      ends_at,
+      status,
+      patient:patient_id (
+        id, userId, height, weight, birthDate, taj, gender, homePhone, registDate,
+        user:userId (
+          id, name, email, role, address, phoneNumber, pictureUrl
+        )
+      )
+    `;
+
     async function fetchByDoctorId(value) {
       return supabaseAdmin
         .from('appointments')
-        .select('id, doctor_id, patient_id, starts_at, ends_at, status')
+        .select(selectStatement)
         .eq('doctor_id', value)
-        .order('starts_at', {ascending: true});
+        .order('starts_at', { ascending: true });
     }
 
     let { data: appts, error: aErr } =
@@ -316,7 +405,64 @@ exports.myAppointments = async (req, res) => {
       appts = retry.data || [];
     }
 
-    return res.status(200).json(appts ?? []);
+    const apptPatientIds = [...new Set(
+      appts
+        .map(appt => appt.patient?.id)
+        .filter(id => id !== null && id !== undefined)
+    )];
+
+    const tagsByPatientId = new Map();
+    if (apptPatientIds.length > 0) {
+      const { data: tagRows, error: tagsError } = await supabaseAdmin
+        .from('patient_tags')
+        .select('id, patient_id, tag_name, tag_value')
+        .in('patient_id', apptPatientIds);
+
+      if (tagsError) {
+        console.error('❌ Supabase patient_tags lekérdezés hiba:', tagsError);
+      }
+
+      (tagRows ?? []).forEach(t => {
+        if (!tagsByPatientId.has(t.patient_id)) tagsByPatientId.set(t.patient_id, []);
+        tagsByPatientId.get(t.patient_id).push({
+          id: t.id,
+          patient_id: t.patient_id,
+          tag_name: t.tag_name,
+          tag_value: t.tag_value
+        });
+      });
+    }
+
+    const transformedAppts = appts.map(appt => {
+      if (!appt.patient) {
+        return {
+          ...appt,
+          patient_id: null,
+          patient: null,
+        };
+      }
+
+      const { user, ...patientData } = appt.patient;
+      const patientId = patientData.id;
+
+      const tags = tagsByPatientId.get(patientId) ?? [];
+
+      delete appt.patient;
+
+      return {
+        ...appt,
+        patient_id: patientId,
+        patient: {
+          user,
+          patient: {
+            ...patientData,
+            tags: tags
+          }
+        },
+      };
+    });
+
+    return res.status(200).json(transformedAppts ?? []);
   } catch (err) {
     console.error('❌ myAppointments error:', err);
     return res.status(500).json({ message: 'Szerver hiba', error: String(err?.message || err) });
@@ -325,6 +471,50 @@ exports.myAppointments = async (req, res) => {
 
 exports.getAllMyPatients = async (req, res) => {
   try {
+    const currentUserId = req.user?.id;
+    if (!currentUserId) {
+      return res.status(401).json({ message: 'A felhasználó nem hitelesített.' });
+    }
+
+    const { data: doc, error: docErr } = await supabaseAdmin
+      .from('doctors')
+      .select('id')
+      .eq('userId', currentUserId)
+      .maybeSingle();
+
+    if (docErr) {
+      console.error('❌ Supabase doctors lekérdezés hiba (doctorId):', docErr);
+      return res.status(500).json({ message: 'Server error', error: String(docErr.message || docErr) });
+    }
+    if (!doc) {
+      return res.status(200).json([]);
+    }
+    const doctorId = doc.id;
+
+
+    const acceptedStatuses = ['accepted', 'done'];
+
+    const { data: appointments, error: apptError } = await supabaseAdmin
+      .from('appointments')
+      .select('patient_id')
+      .eq('doctor_id', doctorId)
+      .in('status', acceptedStatuses);
+
+    if (apptError) {
+      console.error('❌ Supabase appointments lekérdezés hiba:', apptError);
+      return res.status(500).json({ message: 'Server error (appointments)', error: String(apptError.message || apptError) });
+    }
+
+    const requiredPatientIds = [...new Set(
+      (appointments || [])
+        .map(a => a.patient_id)
+        .filter(id => id !== null)
+    )];
+
+    if (requiredPatientIds.length === 0) {
+      return res.status(200).json([]);
+    }
+
     const { data: patientsData, error: patientsError } = await supabaseAdmin
       .from('patients')
       .select(`
@@ -333,7 +523,9 @@ exports.getAllMyPatients = async (req, res) => {
           id, name, email, role, phoneNumber, address, pictureUrl
         )
       `)
+      .in('id', requiredPatientIds)
       .order('id', { ascending: true });
+
 
     if (patientsError) {
       console.error('❌ Supabase patients lekérdezés hiba:', patientsError);
@@ -341,21 +533,12 @@ exports.getAllMyPatients = async (req, res) => {
     }
 
     const patients = Array.isArray(patientsData) ? patientsData : [];
-    if (patients.length === 0) {
-      return res.status(200).json([]);
-    }
-
     const patientIds = [...new Set(patients.map(p => p.id))];
 
     const { data: tagRows, error: tagsError } = await supabaseAdmin
       .from('patient_tags')
       .select('id, patient_id, tag_name, tag_value')
       .in('patient_id', patientIds);
-
-    if (tagsError) {
-      console.error('❌ Supabase patient_tags lekérdezés hiba:', tagsError);
-      return res.status(500).json({ message: 'Server error (patient_tags)', error: String(tagsError.message || tagsError) });
-    }
 
     const tagsByPatientId = new Map();
     (tagRows ?? []).forEach(t => {
@@ -502,10 +685,13 @@ exports.newDiagnosis = async (req, res) => {
       return res.status(403).json({ error: 'Az időpont nem ehhez az orvoshoz tartozik.' });
     }
 
+    const currentTimestamp = new Date().toISOString();
+
     const payload = {
       doctor_id: doctorRow?.id ?? req.user.doctorId ?? null,
       patient_id: patientId,
       appointment_id: appointmentId,
+      diagnosis_date: currentTimestamp,
 
       chief_complaint: chiefComplaint,
       onset_date: req.body?.symptoms?.onsetDate ?? null,
@@ -781,6 +967,61 @@ exports.uploadUserFile = async (req, res) => {
     });
   } catch (err) {
     console.error('❌ uploadUserFile error:', err);
+    return res.status(500).json({ message: 'Server error', error: String(err?.message || err) });
+  }
+};
+
+exports.countMyPendingAppointments = async (req, res) => {
+  try {
+    const rawId = req.body?.id;
+    if (rawId === undefined || rawId === null) {
+      return res.status(400).json({ message: 'Hiányzó doctor id.' });
+    }
+
+    const doctorId = Number.isFinite(Number(rawId)) ? Number(rawId) : String(rawId).trim();
+
+    const { count, error } = await supabaseAdmin
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .eq('doctor_id', doctorId)
+      .eq('status', 'pending');
+
+    if (error) {
+      console.error('❌ Supabase pending count error:', error);
+      return res.status(500).json({ message: 'Server error', error: String(error.message || error) });
+    }
+
+    return res.status(200).json(count ?? 0);
+
+  } catch (err) {
+    console.error('❌ countMyPendingAppointments error:', err);
+    return res.status(500).json({ message: 'Server error', error: String(err?.message || err) });
+  }
+};
+
+exports.countMyRejections = async (req, res) => {
+  try {
+    const rawId = req.body?.id;
+    if (rawId === undefined || rawId === null) {
+      return res.status(400).json({ message: 'Hiányzó doctor id.' });
+    }
+
+    const doctorId = Number.isFinite(Number(rawId)) ? Number(rawId) : String(rawId).trim();
+
+    const { count, error } = await supabaseAdmin
+      .from('appointment_rejection')
+      .select('id', { count: 'exact', head: true })
+      .eq('doctor_id', doctorId);
+
+    if (error) {
+      console.error('❌ Supabase rejection count error:', error);
+      return res.status(500).json({ message: 'Server error', error: String(error.message || error) });
+    }
+
+    return res.status(200).json(count ?? 0);
+
+  } catch (err) {
+    console.error('❌ countMyRejections error:', err);
     return res.status(500).json({ message: 'Server error', error: String(err?.message || err) });
   }
 };

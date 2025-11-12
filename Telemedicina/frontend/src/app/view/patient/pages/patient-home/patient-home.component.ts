@@ -2,32 +2,39 @@ import {Component, OnInit} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
-import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
+import {AsyncPipe, DatePipe, NgForOf, NgIf, NgOptimizedImage, TitleCasePipe} from '@angular/common';
 
 import { PatientProfileCardComponent } from '../../components/patient-profile-card/patient-profile-card.component';
 import { PatientEditProfileModalComponent } from '../../components/patient-edit-profile-modal/patient-edit-profile-modal.component';
 import { SystemMessageModalComponent } from '../../../../shared/system-message-modal/system-message-modal.component';
 
-import { SystemMessage } from '../../../../utils/interfaces/commonInterfaces';
 import {UserService} from '../../../../services/user/user.service';
 import {MyAppointment} from '../../../../utils/interfaces/appointment.inteface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {formatAppointmentTime} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {firstValueFrom, Observable, take} from 'rxjs';
+import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
+import {DocumentItem} from '../../../../utils/interfaces/document.interface';
 
 @Component({
   selector: 'app-patient-home',
   standalone: true,
-  imports: [PatientProfileCardComponent, IonicModule, RouterLink, NgIf, NgForOf, NgOptimizedImage, AsyncPipe],
+  imports: [PatientProfileCardComponent, IonicModule, RouterLink, NgIf, NgForOf, NgOptimizedImage, AsyncPipe, DatePipe, TitleCasePipe],
   templateUrl: './patient-home.component.html',
   styleUrl: './patient-home.component.scss'
 })
 export class PatientHomeComponent implements OnInit {
   user: Observable<PatientItem | null>;
   myAppointments: MyAppointment[] = [];
-  isLoading = true;
+  myDocuments: DocumentItem[] = [];
+
+  isAppointmentsLoading: boolean = true;
+  isAppointmentsLoaded: boolean = false;
+  isDocumentsLoading: boolean = true;
+  isDocumentsLoaded: boolean = false;
+
   systemMessages: SystemMessage[] = [];
 
   constructor(
@@ -42,6 +49,7 @@ export class PatientHomeComponent implements OnInit {
   ngOnInit() {
     this.loadSystemMessagesOnceAfterLogin();
     void this.fetchAppointments();
+    void this.fetchDocuments();
   }
 
   private async getPatientId(): Promise<number | null> {
@@ -50,18 +58,24 @@ export class PatientHomeComponent implements OnInit {
   }
 
   loadSystemMessagesOnceAfterLogin(): void {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
     const key = `System-Messages`;
-    if (localStorage.getItem(key) === '1') return;
+    if (sessionStorage.getItem(key) === '1') return;
+
+    const payload = {
+      audiences: ['all', 'patient']
+    }
 
     this.http.post<SystemMessage[]>(
-      'http://localhost:3000/api/system-messages-for-me',
-      { audiences: ['all', 'patient'] },
-      { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+      `${environment.apiUrl}/shared/system-messages-for-me`,
+      payload,
+      { withCredentials: true }
     ).subscribe({
-      next: (res) => { this.systemMessages = res; void this.presentSystemMessagesModalsOnce(); localStorage.setItem(key, '1'); },
+      next: (res) => {
+        console.log(res)
+        this.systemMessages = res;
+        void this.presentSystemMessagesModalsOnce();
+        localStorage.setItem(key, '1');
+        },
       error: (err) => console.error('❌ Rendszerüzenetek hiba:', err)
     });
   }
@@ -70,20 +84,24 @@ export class PatientHomeComponent implements OnInit {
     const messages = this.systemMessages ?? [];
     if (!messages.length) return;
 
-    const unseen = messages.filter(() => !localStorage.getItem(`System-Messages`));
+    const unseen = messages.filter(message => !sessionStorage.getItem(`System-Messages-${message.id}`));
     if (!unseen.length) return;
 
     for (const message of unseen) {
       const modal = await this.modalCtrl.create({
         component: SystemMessageModalComponent as any,
-        componentProps: { messages: [message] },
+        componentProps: {
+          messages: [message]
+        },
+
         cssClass: 'system-message-modal',
         canDismiss: true,
         backdropDismiss: true,
       });
       await modal.present();
       await modal.onDidDismiss();
-      localStorage.setItem(`System-Messages`, '1');
+
+      sessionStorage.setItem(`System-Messages-${message.id}`, '1');
     }
   }
 
@@ -104,7 +122,7 @@ export class PatientHomeComponent implements OnInit {
   }
 
   async fetchAppointments(): Promise<void> {
-    this.isLoading = true;
+    this.isAppointmentsLoading = true;
 
     const patientId = await this.getPatientId();
     if (!patientId) {
@@ -121,24 +139,100 @@ export class PatientHomeComponent implements OnInit {
     ).subscribe({
       next: (res) => {
         this.limitAppointmentNumbers(res);
-        this.isLoading = false;
+        this.isAppointmentsLoading = false;
+        this.isAppointmentsLoaded = true;
       },
       error: (error) => {
         console.error('❌ Nem sikerült betölteni az időpontokat:', error);
-        this.isLoading = false;
+        this.isAppointmentsLoading = false;
+        this.isAppointmentsLoaded = true;
       }
     });
+  }
+
+  async fetchDocuments(): Promise<void> {
+    this.isDocumentsLoading = true;
+
+    const patientId = await this.getPatientId();
+    if (!patientId) {
+      this.toast.show('Hiányzik a páciens azonosító. Jelentkezz be újra.', 'danger');
+      return;
+    }
+
+    this.http.post<DocumentItem[]>(
+      `${environment.apiUrl}/patient/loadMyDocuments`,
+      { patientId },
+      {
+        withCredentials: true,
+      }
+    ).subscribe({
+      next: (res) => {
+        console.log(res)
+        this.limitDocuments(res);
+        this.isDocumentsLoading = false;
+        this.isDocumentsLoaded = true;
+      },
+      error: (error) => {
+        console.error('❌ Nem sikerült betölteni a dokumentumokat:', error);
+        this.isDocumentsLoading = false;
+        this.isDocumentsLoaded = true;
+      }
+    });
+  }
+
+  getDocumentTypeFromPath(storagePath: string): string | null {
+    if (!storagePath) {
+      return null;
+    }
+
+    const parts = storagePath.split('/');
+    const fileNameWithId = parts[parts.length - 1];
+    if (!fileNameWithId) {
+      return null;
+    }
+
+    const firstHyphenIndex = fileNameWithId.indexOf('-');
+    if (firstHyphenIndex === -1) {
+      return null;
+    }
+
+    const docType = fileNameWithId.substring(0, firstHyphenIndex);
+    return docType.trim() || null;
+  }
+
+  getDocumentIcon(docType: string | null): string {
+    if (!docType) return 'document-outline';
+
+    switch (docType.toLowerCase()) {
+      case 'recept':
+        return 'document-text-outline';
+      case 'beutalo':
+        return 'send-outline';
+      case 'lelet':
+        return 'flask-outline';
+      default:
+        return 'folder-outline';
+    }
   }
 
   limitAppointmentNumbers(appointments: MyAppointment[]) {
     const now = Date.now();
 
     this.myAppointments = (appointments ?? [])
-      .map(a => ({ ...a, _ts: new Date(a.from).getTime() }))
+      .map(a => ({ ...a, _ts: new Date(a.starts_at).getTime() }))
       .filter(a => Number.isFinite(a._ts) && a._ts >= now)
       .sort((a, b) => a._ts - b._ts)
       .slice(0, 2)
       .map(({ _ts, ...a }) => a);
+  }
+
+  limitDocuments(documents: DocumentItem[]) {
+    this.myDocuments = (documents ?? [])
+      .map(d => ({ ...d, _ts: new Date(d.diagnosis_date).getTime() }))
+      .filter(d => Number.isFinite(d._ts))
+      .sort((a, b) => b._ts - a._ts)
+      .slice(0, 2)
+      .map(({ _ts, ...d }) => d as DocumentItem);
   }
 
   protected readonly formatAppointmentTime = formatAppointmentTime;

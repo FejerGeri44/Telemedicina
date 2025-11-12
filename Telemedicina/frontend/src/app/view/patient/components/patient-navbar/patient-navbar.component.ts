@@ -5,7 +5,7 @@ import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/ro
 import {filter, finalize, firstValueFrom, Observable, Subscription, take} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {UnreadMessage} from '../../../../utils/interfaces/commonInterfaces';
+import {UnreadMessage} from '../../../../utils/interfaces/message.interface';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {UserService} from '../../../../services/user/user.service';
 

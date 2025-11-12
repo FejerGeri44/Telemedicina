@@ -18,10 +18,13 @@ export class DoctorRoleGuard implements CanActivate {
 
     const requiredRole = "doctor";
 
-    return this.userService.user$().pipe(
-      filter(user => !!user),
-      first(),
+    return this.userService.userWithInitialLoad$().pipe(
       map(user => {
+        if (!user) {
+          void this.router.navigate(['/']);
+          return false;
+        }
+
         const actualRole = user.user.role;
 
         if (actualRole === requiredRole) {

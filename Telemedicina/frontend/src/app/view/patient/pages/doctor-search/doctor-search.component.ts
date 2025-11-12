@@ -8,7 +8,7 @@ import { AppointmentModalComponent } from '../../components/appointment-modal/ap
 import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
-import {environment} from '../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../enviroment';
 import {buildStarIcons, roundToHalf, StarIcon} from '../../../../utils/formatDoctorRating';
 
 @Component({
@@ -28,13 +28,17 @@ import {buildStarIcons, roundToHalf, StarIcon} from '../../../../utils/formatDoc
 
 export class DoctorSearchComponent implements OnInit{
   doctors: DoctorItem[] = [];
+
   currentPage = 1;
   pageSize = 6;
+
+  searchTerm: string = '';
+  inputSearchTerm: string = '';
   showFilters = false;
   selectedSpecialties: string[] = [];
   specialties: string[] = [];
-  searchTerm: string = '';
   filteredDoctors: DoctorItem[] = [];
+
   visiblePages: number[] = [];
   isLoading: boolean = true;
   totalCount = 0;
@@ -154,7 +158,18 @@ export class DoctorSearchComponent implements OnInit{
     this.updateVisiblePages();
   }
 
-  onSearchChange() {
+  onSearchInput(event: any) {
+    this.inputSearchTerm = event.detail.value;
+  }
+
+  applySearch() {
+    this.searchTerm = this.inputSearchTerm;
+    this.applyFilters();
+  }
+
+  clearSearch() {
+    this.inputSearchTerm = '';
+    this.searchTerm = '';
     this.applyFilters();
   }
 

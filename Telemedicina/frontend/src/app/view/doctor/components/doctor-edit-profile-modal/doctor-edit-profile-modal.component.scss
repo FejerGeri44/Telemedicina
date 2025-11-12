@@ -131,4 +131,6 @@ ion-textarea.custom-textarea {
   min-height: 160px;
   line-height: 1.5;
   margin-bottom: 10px;
+  overflow-y: auto;
+  --inner-scroll: auto;
 }

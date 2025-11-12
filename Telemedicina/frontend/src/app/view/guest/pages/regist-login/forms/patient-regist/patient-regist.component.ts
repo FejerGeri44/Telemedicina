@@ -5,8 +5,9 @@ import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {ToastService} from '../../../../../../shared/toast/toast.service';
-import {environment} from '../../../../../../../../../backend/config/enviroment';
+import {environment} from '../../../../../../../../enviroment';
 import {AdminItem} from '../../../../../../utils/interfaces/admin.interface';
+import {PASSWORD_PATTERN, PHONE_PATTERN, TAJ_PATTERN, TEXT_PATTERN} from '../../../../../../utils/validation-patterns';
 
 @Component({
   selector: 'app-patient-regist',
@@ -41,14 +42,14 @@ export class PatientRegistComponent {
     private toast: ToastService
   ) {
     this.patientForm = this.fb.group({
-      fullName: ['', Validators.required],
+      fullName: ['', [Validators.required, Validators.pattern(TEXT_PATTERN)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-      password_again: ['', Validators.required],
-      phoneNumber: ['', Validators.required],
-      address: ['', Validators.required],
+      password: ['', [Validators.required, Validators.pattern(PASSWORD_PATTERN)]],
+      password_again: ['', [Validators.required, Validators.pattern(PASSWORD_PATTERN)]],
+      phoneNumber: ['', [Validators.required, Validators.pattern(PHONE_PATTERN)]],
+      address: ['', [Validators.required, Validators.pattern(TEXT_PATTERN)]],
       birthDate: ['', Validators.required],
-      taj: ['', Validators.required],
+      taj: ['', [Validators.required, Validators.pattern(TAJ_PATTERN)]],
       gender: ['', Validators.required]
     });
   }

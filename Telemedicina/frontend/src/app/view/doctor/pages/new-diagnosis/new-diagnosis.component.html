@@ -137,7 +137,7 @@
                       <ion-label position="stacked">Fő panasz</ion-label>
                       <ion-input
                         placeholder="pl. Láz és torokfájás"
-                        [(ngModel)]="draft.symptoms.chiefComplaint"
+                        [(ngModel)]="draft.chief_complaint"
                         [ngModelOptions]="{standalone: true}">
                       </ion-input>
                     </ion-item>
@@ -165,7 +165,7 @@
                       <ion-label position="stacked">Kezdet dátuma</ion-label>
                       <ion-datetime
                         presentation="date"
-                        [(ngModel)]="draft.symptoms.onsetDate"
+                        [(ngModel)]="draft.onset_date"
                         [ngModelOptions]="{standalone: true}"
                         (ionChange)="onDateChange($event)"
                         [value]="selectedDate"
@@ -188,7 +188,7 @@
                               <ion-label position="stacked">Vérnyomás (SYS)</ion-label>
                               <ion-input type="number" inputmode="numeric" placeholder="mmHg"
                                          min="80" max="240"
-                                         [(ngModel)]="draft.exam.bpSys" [ngModelOptions]="{standalone: true}">
+                                         [(ngModel)]="draft.bp_sys" [ngModelOptions]="{standalone: true}">
                               </ion-input>
                               <ion-note slot="end">mmHg</ion-note>
                             </ion-item>
@@ -199,7 +199,7 @@
                               <ion-label position="stacked">Vérnyomás (DIA)</ion-label>
                               <ion-input type="number" inputmode="numeric" placeholder="mmHg"
                                          min="40" max="140"
-                                         [(ngModel)]="draft.exam.bpDia" [ngModelOptions]="{standalone: true}">
+                                         [(ngModel)]="draft.bp_dia" [ngModelOptions]="{standalone: true}">
                               </ion-input>
                               <ion-note slot="end">mmHg</ion-note>
                             </ion-item>
@@ -210,7 +210,7 @@
                               <ion-label position="stacked">Pulzus</ion-label>
                               <ion-input type="number" inputmode="numeric" placeholder="bpm"
                                          min="30" max="220"
-                                         [(ngModel)]="draft.exam.heartRate" [ngModelOptions]="{standalone: true}">
+                                         [(ngModel)]="draft.heart_rate" [ngModelOptions]="{standalone: true}">
                               </ion-input>
                               <ion-note slot="end">bpm</ion-note>
                             </ion-item>
@@ -221,7 +221,7 @@
                               <ion-label position="stacked">Testhő</ion-label>
                               <ion-input type="number" step="0.1" inputmode="decimal" placeholder="°C"
                                          min="34" max="42"
-                                         [(ngModel)]="draft.exam.tempC" [ngModelOptions]="{standalone: true}">
+                                         [(ngModel)]="draft.temp_c" [ngModelOptions]="{standalone: true}">
                               </ion-input>
                               <ion-note slot="end">°C</ion-note>
                             </ion-item>
@@ -232,7 +232,7 @@
                               <ion-label position="stacked">SpO₂</ion-label>
                               <ion-input type="number" inputmode="numeric" placeholder="%"
                                          min="50" max="100"
-                                         [(ngModel)]="draft.exam.spo2" [ngModelOptions]="{standalone: true}">
+                                         [(ngModel)]="draft.spo2" [ngModelOptions]="{standalone: true}">
                               </ion-input>
                               <ion-note slot="end">%</ion-note>
                             </ion-item>
@@ -243,7 +243,7 @@
                               <ion-label position="stacked">Súly</ion-label>
                               <ion-input type="number" step="0.1" inputmode="decimal" placeholder="kg"
                                          min="2" max="500"
-                                         [(ngModel)]="draft.exam.weightKg" [ngModelOptions]="{standalone: true}"
+                                         [(ngModel)]="draft.weight_kg" [ngModelOptions]="{standalone: true}"
                                          (ionChange)="recomputeBmi()">
                               </ion-input>
                               <ion-note slot="end">kg</ion-note>
@@ -255,7 +255,7 @@
                               <ion-label position="stacked">Magasság</ion-label>
                               <ion-input type="number" step="0.1" inputmode="decimal" placeholder="cm"
                                          min="30" max="250"
-                                         [(ngModel)]="draft.exam.heightCm" [ngModelOptions]="{standalone: true}"
+                                         [(ngModel)]="draft.height_cm" [ngModelOptions]="{standalone: true}"
                                          (ionChange)="recomputeBmi()">
                               </ion-input>
                               <ion-note slot="end">cm</ion-note>
@@ -265,7 +265,7 @@
                           <ion-col size="6">
                             <ion-item>
                               <ion-label position="stacked">BMI</ion-label>
-                              <ion-input [value]="draft.exam.bmi ?? '—'" readonly></ion-input>
+                              <ion-input [value]="draft.bmi ?? '—'" readonly></ion-input>
                             </ion-item>
                           </ion-col>
                         </ion-row>
@@ -301,7 +301,7 @@
                 <ion-item class="required">
                   <ion-label position="stacked">Fő diagnózis (szöveg)</ion-label>
                   <ion-input placeholder="pl. Akut pharyngitis"
-                             [(ngModel)]="draft.diagnosis.primaryText" [ngModelOptions]="{standalone: true}">
+                             [(ngModel)]="draft.primary_text" [ngModelOptions]="{standalone: true}">
                   </ion-input>
                 </ion-item>
 
@@ -312,7 +312,7 @@
                         <ion-label position="stacked">Kódrendszer</ion-label>
                         <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
                         <ion-select placeholder="ICD-10"
-                                    [(ngModel)]="draft.diagnosis.codeSystem" [ngModelOptions]="{standalone: true}">
+                                    [(ngModel)]="draft.code_system" [ngModelOptions]="{standalone: true}">
                           <ion-select-option value="ICD-10">ICD-10</ion-select-option>
                           <ion-select-option value="BNO-10">BNO-10</ion-select-option>
                         </ion-select>
@@ -323,7 +323,7 @@
                         <ion-label position="stacked">Kód</ion-label>
                         <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
                         <ion-input placeholder="pl. J02.9"
-                                   [(ngModel)]="draft.diagnosis.code" [ngModelOptions]="{standalone: true}">
+                                   [(ngModel)]="draft.code" [ngModelOptions]="{standalone: true}">
                         </ion-input>
                       </ion-item>
                     </ion-col>
@@ -334,7 +334,7 @@
                   <ion-label position="stacked">Bizonyosság (%)</ion-label>
                   <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
                   <ion-range min="0" max="100" step="1" snaps="true" ticks="true"
-                             [(ngModel)]="draft.diagnosis.certaintyPct" [ngModelOptions]="{standalone: true}">
+                             [(ngModel)]="draft.certainty_pct" [ngModelOptions]="{standalone: true}">
                     <ion-label slot="start">0</ion-label>
                     <ion-label slot="end">100</ion-label>
                   </ion-range>
@@ -344,7 +344,7 @@
                   <ion-label position="stacked">Súlyosság</ion-label>
                   <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
                   <ion-select placeholder="Válassz"
-                              [(ngModel)]="draft.diagnosis.severity" [ngModelOptions]="{standalone: true}">
+                              [(ngModel)]="draft.severity" [ngModelOptions]="{standalone: true}">
                     <ion-select-option value="mild">Enyhe</ion-select-option>
                     <ion-select-option value="moderate">Középsúlyos</ion-select-option>
                     <ion-select-option value="severe">Súlyos</ion-select-option>
@@ -355,7 +355,7 @@
                   <ion-label position="stacked">Differenciáldiagnózis(ok)</ion-label>
                   <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
                   <ion-textarea rows="4" placeholder="Vesszővel elválasztva: Influenza, COVID-19, …"
-                                [(ngModel)]="draft.diagnosis.differentials" [ngModelOptions]="{standalone: true}">
+                                [(ngModel)]="draft.differentials" [ngModelOptions]="{standalone: true}">
                   </ion-textarea>
                 </ion-item>
 
@@ -364,7 +364,7 @@
                   <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
                   <ion-textarea rows="6"
                                 placeholder="Terápia, beavatkozások, életmód…"
-                                [(ngModel)]="draft.plan.planText"
+                                [(ngModel)]="draft.plan_text"
                                 [ngModelOptions]="{standalone: true}">
                   </ion-textarea>
                 </ion-item>
@@ -372,7 +372,7 @@
                 <ion-item class="required">
                   <ion-label>Vörös zászlók megbeszélve</ion-label>
                   <ion-checkbox slot="end"
-                                [(ngModel)]="draft.plan.redFlags"
+                                [(ngModel)]="draft.red_flags"
                                 [ngModelOptions]="{standalone: true}">
                   </ion-checkbox>
                 </ion-item>
@@ -380,7 +380,7 @@
                 <ion-item class="required">
                   <ion-label>Beteg tájékoztatása megtörtént</ion-label>
                   <ion-checkbox slot="end"
-                                [(ngModel)]="draft.plan.informed"
+                                [(ngModel)]="draft.informed"
                                 [ngModelOptions]="{standalone: true}">
                   </ion-checkbox>
                 </ion-item>

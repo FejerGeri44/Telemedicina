@@ -1,0 +1,35 @@
+.pending-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: calc(100% - 20px);
+  padding: 0 10px 10px;
+  gap: 20px;
+}
+
+.btn-accent, .btn-primary {
+  width: 100%;
+  max-width: 300px;
+
+}
+
+.btn-accent {
+  --background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 800px) {
+  .pending-actions {
+    width: calc(100% - 40px);
+    flex-direction: column-reverse;
+    padding: 0 20px 20px;
+    gap: 10px;
+  }
+
+  .pending-actions ion-button {
+    width: 100%;
+    max-width: unset;
+  }
+}
