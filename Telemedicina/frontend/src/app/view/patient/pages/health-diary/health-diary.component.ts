@@ -126,7 +126,6 @@ export class HealthDiaryComponent {
         this.myAppointments = res;
         this.isLoading = false;
         this.myAppointmentCalledAndLoaded = true;
-        console.log("Appointments:", res)
       },
       error: (error) => {
         console.error('❌ Nem sikerült betölteni az időpontokat:', error);
@@ -155,7 +154,6 @@ export class HealthDiaryComponent {
         this.myDocuments = res;
         this.isLoading = false;
         this.myDocumentCalledAndLoaded = true;
-        console.log("Documents:", res)
       },
       error: (error) => {
         console.error('❌ Nem sikerült betölteni a dokumentumokat:', error);
@@ -184,7 +182,6 @@ export class HealthDiaryComponent {
         this.myDiagnoses = res;
         this.isLoading = false;
         this.myDiagnosesCalledAndLoaded = true;
-        console.log("Diagnoses:", res)
       },
       error: (error) => {
         console.error('❌ Nem sikerült betölteni a diagnózisokat:', error);

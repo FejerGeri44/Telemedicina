@@ -1,77 +1,95 @@
-<div class="card">
-  <div class="pc-header">
-    <div class="pc-left">
+<ion-card class="patient-card">
+  <ion-toolbar class="pc-header">
+    <div slot="start" class="pc-left">
       <div class="pc-avatar">
         <img ngSrc="{{user?.user?.pictureUrl}}" alt="Profilkép" draggable="false" fill priority/>
       </div>
-      <div class="pc-name">
-        <div class="pc-fullname">{{ user?.user?.name }}</div>
-        <div class="pc-role">{{ user?.user?.role }}</div>
+      <div class="pc-name-info">
+        <ion-label>
+          <div class="pc-fullname">{{ user?.user?.name }}</div>
+          <ion-chip class="pc-role">{{ user?.user?.role }}</ion-chip>
+        </ion-label>
       </div>
     </div>
 
-    <ion-button class="btn-accent pc-edit-top" (click)="edit.emit()" *ngIf="editable">
+    <ion-buttons slot="end">
+      <ion-button class="btn-accent" (click)="edit.emit()" *ngIf="editable" fill="outline">
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        Módosítás
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-card-content>
+    <div class="pc-details">
+      <ion-item lines="none" class="pc-item">
+        <ion-label class="label">Születési idő:</ion-label>
+        <span class="value">{{ user?.patient?.birthDate | date:'yyyy-MM-dd' }} <ng-container *ngIf=" getAge(user?.patient?.birthDate) as age">({{ age }} év)</ng-container></span>
+      </ion-item>
+
+      <ion-item lines="none" class="pc-item">
+        <ion-label class="label">Cím:</ion-label>
+        <span class="value">{{ user?.user?.address }}</span>
+      </ion-item>
+
+      <ion-item lines="none" class="pc-item">
+        <ion-label class="label">Súly:</ion-label>
+        <ng-container *ngIf="user?.patient?.weight != null && user?.patient?.weight !== 'N/A'; else noWeight">
+          <span class="value">{{ user?.patient?.weight }} kg</span>
+        </ng-container>
+        <ng-template #noWeight><span class="value">N/A</span></ng-template>
+      </ion-item>
+
+      <ion-item lines="none" class="pc-item">
+        <ion-label class="label">Nem:</ion-label>
+        <span class="value">
+          {{ user?.patient?.gender || 'N/A' }}
+          <ion-icon *ngIf="user?.patient?.gender === 'Férfi'" name="male-outline" color="primary"></ion-icon>
+          <ion-icon *ngIf="user?.patient?.gender === 'Nő'" name="female-outline" color="tertiary"></ion-icon>
+        </span>
+      </ion-item>
+
+      <ion-item lines="none" class="pc-item">
+        <ion-label class="label">TAJ:</ion-label>
+        <span class="value">{{ formatTaj(user?.patient?.taj) }}</span>
+      </ion-item>
+
+      <ion-item lines="none" class="pc-item">
+        <ion-label class="label">Magasság:</ion-label>
+        <ng-container *ngIf="user?.patient?.height != null && user?.patient?.height !== 'N/A'; else noHeight">
+          <span class="value">{{ user?.patient?.height }} cm</span>
+        </ng-container>
+        <ng-template #noHeight><span class="value">N/A</span></ng-template>
+      </ion-item>
+    </div>
+
+    <div class="pc-chips" *ngIf="user?.patient?.tags?.length">
+      <ion-chip *ngFor="let tag of user?.patient?.tags">
+        <ion-icon [name]="iconFor(tag.tag_name)" *ngIf="iconFor(tag.tag_name)"></ion-icon>
+        <ion-label><strong>{{ tag.tag_name }}:</strong> {{ tag.tag_value }}</ion-label>
+      </ion-chip>
+    </div>
+
+    <ion-list lines="none" class="pc-stats">
+      <ion-item class="stat">
+        <ion-label class="label">Email:</ion-label>
+        <span class="value">{{ user?.user?.email }}</span>
+      </ion-item>
+      <ion-item class="stat">
+        <ion-label class="label">Mobil:</ion-label>
+        <span class="value">{{ formatPhoneNumber(user?.user?.phoneNumber) }}</span>
+      </ion-item>
+      <ion-item class="stat">
+        <ion-label class="label">Otthoni:</ion-label>
+        <span class="value">{{ user?.patient?.homePhone ? formatPhoneNumber(user?.patient?.homePhone) : 'N/A' }}</span>
+      </ion-item>
+    </ion-list>
+  </ion-card-content>
+
+  <ion-footer *ngIf="editable" class="pc-edit-bottom-wrap">
+    <ion-button class="btn-accent" (click)="edit.emit()">
+      <ion-icon name="create-outline" slot="start"></ion-icon>
       Módosítás
     </ion-button>
-  </div>
-
-  <div class="pc-details">
-    <div class="pc-item"><span class="label">Születési idő:</span>
-      <span class="value">{{ user?.patient?.birthDate | date:'yyyy-MM-dd' }} <ng-container *ngIf=" getAge(user?.patient?.birthDate) as age">({{ age }} év)</ng-container></span>
-    </div>
-    <div class="pc-item"><span class="label">Cím:</span><span class="value">{{ user?.user?.address }}</span></div>
-
-    <div class="pc-item">
-      <span class="label">Súly:</span>
-      <span *ngIf="user?.patient?.weight != null && user?.patient?.weight !== 'N/A'; else noWeight" class="value">
-      {{ user?.patient?.weight }} kg
-    </span>
-      <ng-template #noWeight>
-        <span class="value">N/A</span>
-      </ng-template>
-    </div>
-
-    <div class="pc-item">
-      <span class="label">Nem:</span>
-      <span class="value">
-        {{ user?.patient?.gender || 'N/A' }}
-        <ion-icon *ngIf="user?.patient?.gender === 'férfi'" name="male"></ion-icon>
-        <ion-icon *ngIf="user?.patient?.gender === 'nő'" name="female"></ion-icon>
-      </span>
-    </div>
-
-    <div class="pc-item">
-      <span class="label">TAJ:</span>
-      <span class="value">{{ formatTaj(user?.patient?.taj) }}</span>
-    </div>
-
-    <div class="pc-item">
-      <span class="label">Magasság:</span>
-      <span *ngIf="user?.patient?.height != null && user?.patient?.height !== 'N/A'; else noHeight" class="value">
-      {{ user?.patient?.weight }} cm
-      </span>
-      <ng-template #noHeight>
-        <span class="value">N/A</span>
-      </ng-template>
-    </div>
-  </div>
-
-  <div class="pc-chips" *ngIf="user?.patient?.tags?.length">
-    <ion-chip class="chip" *ngFor="let tag of user?.patient?.tags">
-      <ion-icon [name]="iconFor(tag.tag_name)" *ngIf="iconFor(tag.tag_name)"></ion-icon>
-      <ion-label><strong>{{ tag.tag_name }}:</strong> {{ tag.tag_value }}</ion-label>
-    </ion-chip>
-  </div>
-
-  <div class="pc-stats">
-    <div class="stat"><span class="label">Email:</span><span class="value">{{ user?.user?.email }}</span></div>
-    <div class="stat"><span class="label">Mobil:</span><span class="value">{{ formatPhoneNumber(user?.user?.phoneNumber) }}</span></div>
-    <div class="stat"><span class="label">Otthoni:</span><span class="value">{{ user?.patient?.homePhone ? formatPhoneNumber(user?.patient?.homePhone) : 'N/A' }}</span></div>
-  </div>
-
-  <div class="pc-edit-bottom-wrap" *ngIf="editable">
-    <ion-button class="btn-accent pc-edit-bottom" (click)="edit.emit()">
-      Módosítás
-    </ion-button>
-  </div>
-</div>
+  </ion-footer>
+</ion-card>

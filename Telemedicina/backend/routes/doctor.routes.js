@@ -19,5 +19,6 @@ router.post('/appointmentsByPatient', authGuard, requireRole('doctor'), doctorCo
 router.post('/uploadUserFile', authGuard, requireRole('doctor'), upload.single('file'), doctorController.uploadUserFile);
 router.post('/countMyPendingAppointments', authGuard, requireRole('doctor'), doctorController.countMyPendingAppointments);
 router.post('/countMyRejections', authGuard, requireRole('doctor'), doctorController.countMyRejections);
+router.get('/patients', authGuard, requireRole('doctor'), doctorController.getAllPatients);
 
 module.exports = router;

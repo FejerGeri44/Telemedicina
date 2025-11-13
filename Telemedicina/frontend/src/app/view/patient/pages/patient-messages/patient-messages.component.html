@@ -1,35 +1,79 @@
 <div class="chat-layout">
-  <aside class="sidebar">
+  <aside class="sidebar" [class.chat-visible]="isChatPaneVisible">
     <ion-list>
-      <ion-list-header>
+      <ion-list-header class="sidebar-header">
         <ion-label>Elérhető Orvosok</ion-label>
         <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
       </ion-list-header>
 
+      <ion-searchbar
+        [(ngModel)]="filterText"
+        (ionChange)="filterDoctors()"
+        placeholder="Keresés név alapján..."
+        debounce="300"
+        mode="ios"
+        class="doctor-search"
+      ></ion-searchbar>
       <ion-item
+        lines="none"
         *ngFor="let doctor of doctors"
-        (click)="selectDoctor(doctor.id)"
+        (click)="selectDoctor(doctor.user.id)"
         [detail]="false"
         button
-        [class.selected]="selectedDoctorId === doctor.id"
+        [class.selected]="selectedDoctorId === doctor.user.id"
       >
+        <ion-avatar class="avatar" slot="start">
+          <img ngSrc="{{ doctor.user.pictureUrl }}" [alt]="doctor.user.name" fill priority>
+        </ion-avatar>
+
         <ion-label>
-          <h2>{{ doctor.user.lastName }} {{ doctor.user.firstName }}</h2>
-          <p>Online/Utolsó üzenet...</p>
+          <h2>{{ doctor.user.name }}</h2>
+          <p>{{ doctor.doctor.speciality }}</p>
         </ion-label>
+
+        <ion-badge
+          slot="end"
+          class="unread-badge"
+          *ngIf="getUnreadCount(doctor.user.id) > 0">
+          {{ getUnreadCount(doctor.user.id) }}
+        </ion-badge>
+      </ion-item>
+      <ion-item *ngIf="!doctors?.length && !isLoading" lines="none">
+        <ion-label>Nincs elérhető orvos.</ion-label>
       </ion-item>
     </ion-list>
-
-    <ion-item *ngIf="!doctors?.length && !isLoading" lines="none">
-      <ion-label>Nincs elérhető orvos.</ion-label>
-    </ion-item>
   </aside>
 
-  <section class="chat-pane">
-    <ion-header *ngIf="selectedDoctorId" class="ion-padding-horizontal ion-padding-vertical chat-header">
-      <ion-label>
-        <h1>Beszélgetés: {{ doctors.find(d => d.id === selectedDoctorId)?.user.lastName }} {{ doctors.find(d => d.id === selectedDoctorId)?.user.firstName }}</h1>
-      </ion-label>
+  <section class="chat-pane" [class.visible]="isChatPaneVisible">
+    <ion-header *ngIf="selectedDoctorId" class="chat-header">
+      <div class="header-content">
+        <div class="doctor-info-wrapper">
+          <ion-button fill="clear" color="medium" size="small" (click)="back()" class="back-to-list-button">
+            <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+
+          <ion-avatar class="avatar" slot="start">
+            <img
+              ngSrc="{{ selectedDoctor?.user?.pictureUrl }}"
+              [alt]="selectedDoctor?.user?.name"
+              fill priority>
+          </ion-avatar>
+
+          <ion-label>
+            <h1>{{ getSelectedDoctorName() }}</h1>
+            <p>{{ selectedDoctor?.doctor?.speciality }}</p>
+          </ion-label>
+        </div>
+
+        <div class="action-buttons">
+          <ion-button fill="clear" color="danger" size="small" (click)="confirmDelete()">
+            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" color="medium" size="small">
+            <ion-icon name="ellipsis-vertical-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
     </ion-header>
 
     <div class="messages-container">
@@ -48,39 +92,49 @@
           [class.my-message]="isMyMessage(message)"
           [class.other-message]="!isMyMessage(message)"
         >
+          <ion-avatar *ngIf="!isMyMessage(message)" class="chat-avatar">
+            <img
+              ngSrc="{{ selectedDoctor?.user?.pictureUrl }}"
+              alt="profile" fill priority>
+          </ion-avatar>
+
           <div class="message-bubble">
             <div class="message-content">{{ message.content }}</div>
-            <div class="message-timestamp">
-              {{ message.sendDate | date: 'HH:mm' }}
-              <ion-icon
-                *ngIf="isMyMessage(message) && message.isReadDoctor"
-                name="checkmark-done"
-                color="success"
-              ></ion-icon>
-            </div>
           </div>
+
+          <ion-avatar *ngIf="isMyMessage(message)" class="chat-avatar">
+            <img
+              ngSrc="{{ patientPictureUrl }}"
+              alt="Saját profilkép"
+              fill priority>
+          </ion-avatar>
         </div>
       </div>
     </div>
 
     <ion-footer *ngIf="selectedDoctorId" class="ion-padding">
       <form (submit)="sendMessage($event)" class="message-input-form">
-        <ion-item>
-          <ion-input
-            type="text"
+        <div class="input-area">
+          <ion-textarea
+            class="message-input"
+            label="Üzenet küldése..."
+            labelPlacement="floating"
+            fill="outline"
+            rows="1"
+            autoGrow="true"
             [(ngModel)]="newMessageContent"
             name="messageContent"
-            placeholder="Írj üzenetet..."
             (keydown.enter)="sendMessage($event)"
             [disabled]="!patientId"
-          ></ion-input>
+          ></ion-textarea>
+
           <ion-button
+            class="send-button"
             type="submit"
-            [disabled]="!newMessageContent.trim() || !patientId"
-          >
-            <ion-icon name="send"></ion-icon>
+            [disabled]="!newMessageContent.trim() || !patientId">
+            <ion-icon name="send" slot="icon-only"></ion-icon>
           </ion-button>
-        </ion-item>
+        </div>
       </form>
     </ion-footer>
   </section>

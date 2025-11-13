@@ -43,6 +43,11 @@
 
 ion-card {
   max-width: 600px;
+  --background: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  margin: 16px;
+  overflow: hidden;
 }
 
 .header {
@@ -102,17 +107,12 @@ ion-icon {
   font-weight: bold;
 }
 
-ion-card {
-  margin: 10px 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-}
-
 .doctor-card-header {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .doctor-header-info {
@@ -136,30 +136,32 @@ ion-col {
   padding: 15px;
 }
 
-ion-avatar {
+.avatar {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   background: #e6f4ff;
   display: grid;
   place-items: center;
-  overflow: visible;
-  box-shadow: 0 4px 12px rgba(0,0,0,.08);
-}
+  overflow: hidden;
+  box-shadow: 0 0 0 4px #e6f4ff;
 
-ion-avatar .doctor-avatar {
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #fff;
-  box-shadow: 0 0 0 3px #e6f4ff;
+  img {
+    border-radius: 50%;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .doctor-rating {
   display: flex;
   justify-content: center;
-  padding: 0;
   gap: 10px;
+  background: rgba(0, 0, 0, 0.025);
+  padding: 25px 0 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .rating {

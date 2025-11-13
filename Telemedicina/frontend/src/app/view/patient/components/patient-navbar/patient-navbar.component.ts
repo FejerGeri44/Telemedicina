@@ -1,13 +1,13 @@
 import {Component, HostListener, OnInit} from '@angular/core';
 import {IonicModule, NavController} from '@ionic/angular';
-import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
+import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage, NgTemplateOutlet} from '@angular/common';
 import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/router';
-import {filter, finalize, firstValueFrom, Observable, Subscription, take} from 'rxjs';
+import {filter, Observable, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {UnreadMessage} from '../../../../utils/interfaces/message.interface';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {UserService} from '../../../../services/user/user.service';
+import {Message} from '../../../../utils/interfaces/message.interface';
 
 @Component({
   selector: 'app-patient-navbar',
@@ -18,7 +18,8 @@ import {UserService} from '../../../../services/user/user.service';
     RouterModule,
     NgForOf,
     NgOptimizedImage,
-    AsyncPipe
+    AsyncPipe,
+    NgTemplateOutlet
   ],
   templateUrl: './patient-navbar.component.html',
   standalone: true,
@@ -30,7 +31,7 @@ export class PatientNavbarComponent implements OnInit{
   mobileMenuOpen = false;
   private navSub?: Subscription;
 
-  unreadMessages: UnreadMessage[] = [];
+  unreadMessages: Message[] = [];
   unreadCount = 0;
 
   menuItems = [
@@ -128,5 +129,17 @@ export class PatientNavbarComponent implements OnInit{
   toggleProfileMenu(event?: MouseEvent) {
     event?.stopPropagation();
     this.profileOpen = !this.profileOpen;
+  }
+
+  confirmAccountDelete() {
+    void this.alert.show(
+      'Fiók törlése',
+      'Biztosan törölni szeretnéd a fiókodat? Ez a funkció visszafordíthatatlan!', // <-- Megmarad a \n
+      () => this.deleteAccount()
+    )
+  }
+
+  deleteAccount() {
+    this.userService.deleteAccount().subscribe(() => this.nav.navigateRoot('/regist-login?tab=login'));
   }
 }

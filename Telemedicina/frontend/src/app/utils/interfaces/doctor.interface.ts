@@ -8,7 +8,15 @@ export interface Doctor {
   registDate: string;
 }
 
+export interface DoctorRating {
+  id: number;
+  doctor_id: number;
+  patient_id: number;
+  value: number;
+}
+
 export interface DoctorItem {
   user: User;
   doctor: Doctor;
+  ratings?: DoctorRating[];
 }

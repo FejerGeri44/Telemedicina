@@ -16,10 +16,12 @@
 .today-appointments,
 .new-appointments,
 .declined-appointments {
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  padding: 1rem;
-  background-color: #ffffff;
+  --background: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  margin: 16px;
+  padding: 20px;
+  overflow: hidden;
 }
 
 .profile-card, .dpc{

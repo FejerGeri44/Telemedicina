@@ -39,7 +39,6 @@ export class DocumentTableComponent implements OnInit {
         { withCredentials: true }
       ).toPromise();
 
-      console.log(response)
       return response?.signedUrl || null;
 
     } catch (error) {

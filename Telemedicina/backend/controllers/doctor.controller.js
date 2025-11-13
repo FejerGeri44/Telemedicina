@@ -1025,3 +1025,98 @@ exports.countMyRejections = async (req, res) => {
     return res.status(500).json({ message: 'Server error', error: String(err?.message || err) });
   }
 };
+
+exports.getAllPatients = async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    const limit = Math.min(parseInt(req.query.limit || '100', 10), 500);
+    const offset = Math.max(parseInt(req.query.offset || '0', 10), 0);
+
+    // 1) Patients
+    const { data: patients, error: pErr } = await supabaseAdmin
+      .from('patients')
+      .select('id,userId,height,weight,taj,homePhone,registDate,gender')
+      .range(offset, offset + limit - 1);
+
+    if (pErr) throw pErr;
+
+    const list = patients ?? [];
+    if (!list.length) return res.status(200).json([]);
+
+    const userIds = Array.from(new Set(list.map(r => r.userId).filter(Boolean)));
+    let users = [];
+    if (userIds.length) {
+      let userQuery = supabaseAdmin
+        .from('users')
+        .select('id,name,email,role,phoneNumber,address,pictureUrl')
+        .in('id', userIds);
+
+      if (q) userQuery = userQuery.or(`name.ilike.%${q}%,email.ilike.%${q}%`);
+
+      const { data: uData, error: uErr } = await userQuery;
+      if (uErr) throw uErr;
+      users = uData ?? [];
+    }
+
+    const userMap = new Map(users.map(u => [u.id, u]));
+    const filteredPatients = q ? list.filter(p => userMap.has(p.userId)) : list;
+    if (!filteredPatients.length) return res.status(200).json([]);
+
+    const patientIds = filteredPatients.map(p => p.id);
+    let tagsByPatient = new Map();
+    if (patientIds.length) {
+      const { data: tags, error: tErr } = await supabaseAdmin
+        .from('patient_tags')
+        .select('id, patientId:patient_id, tag_name, tag_value')
+        .in('patient_id', patientIds);
+
+      if (tErr) throw tErr;
+
+      tagsByPatient = new Map();
+      for (const t of (tags ?? [])) {
+        if (!tagsByPatient.has(t.patientId)) tagsByPatient.set(t.patientId, []);
+        tagsByPatient.get(t.patientId).push({
+          id: t.id,
+          tag_name: t.tag_name,
+          tag_value: t.tag_value
+        });
+      }
+    }
+
+    const assembled = filteredPatients.map(p => {
+      const u = userMap.get(p.userId);
+      return {
+        user: {
+          id: u?.id,
+          name: u?.name,
+          email: u?.email,
+          role: u?.role,
+          phoneNumber: u?.phoneNumber,
+          address: u?.address ?? undefined,
+          pictureUrl: u?.pictureUrl ?? undefined
+        },
+        patient: {
+          id: p.id,
+          userId: p.userId,
+          height: p.height,
+          weight: p.weight,
+          taj: p.taj,
+          homePhone: p.homePhone,
+          registDate: p.registDate,
+          gender: p.gender,
+          tags: tagsByPatient.get(p.id) ?? []
+        }
+      };
+    });
+
+    assembled.sort((a, b) => (a.user?.name || '').localeCompare(b.user?.name || ''));
+
+    return res.status(200).json(assembled);
+  } catch (err) {
+    console.error('❌ Páciensek lekérdezési hiba (Supabase, több lépés):', err);
+    return res.status(500).json({
+      message: 'Hiba történt a páciensek lekérdezésekor.',
+      error: err.message || String(err)
+    });
+  }
+};

@@ -17,7 +17,7 @@ const DoctorRatingRepository = {
       SELECT id, doctor_id AS "doctor_id", patient_id AS "patient_id", value
       FROM doctor_ratings
       WHERE doctor_id = ${doctorId} AND patient_id = ${patientId}
-      `;
+    `;
     return row || null;
   },
 

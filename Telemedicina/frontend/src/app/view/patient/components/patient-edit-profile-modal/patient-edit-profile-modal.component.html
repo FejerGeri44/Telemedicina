@@ -37,7 +37,7 @@
   <form [formGroup]="editProfileForm" (ngSubmit)="save()">
     <section class="epm-grid">
       <div class="col">
-        <ion-item>
+        <ion-item lines="none">
           <ion-label class="custom-label" position="stacked">Név</ion-label>
           <ion-input
             class="custom-input"
@@ -48,7 +48,7 @@
           </ion-input>
         </ion-item>
 
-        <ion-item>
+        <ion-item lines="none">
           <ion-label class="custom-label" position="stacked">Cím</ion-label>
           <ion-input
             class="custom-input"
@@ -61,7 +61,7 @@
       </div>
 
       <div class="col">
-        <ion-item>
+        <ion-item lines="none">
           <ion-label class="custom-label" position="stacked">Mobil</ion-label>
           <ion-input
             class="custom-input"
@@ -72,7 +72,7 @@
           </ion-input>
         </ion-item>
 
-        <ion-item>
+        <ion-item lines="none">
           <ion-label class="custom-label" position="stacked">Otthoni telefon</ion-label>
           <ion-input
             class="custom-input"
@@ -85,7 +85,7 @@
       </div>
 
       <div class="row">
-        <ion-item>
+        <ion-item lines="none">
           <ion-label class="custom-label" position="stacked">Magasság (cm)</ion-label>
           <ion-input
             class="custom-input"
@@ -98,7 +98,7 @@
           </ion-input>
         </ion-item>
 
-        <ion-item>
+        <ion-item lines="none">
           <ion-label class="custom-label" position="stacked">Testsúly (kg)</ion-label>
           <ion-input
             class="custom-input"
@@ -116,35 +116,36 @@
       <h3>Különleges adatok</h3>
 
       <div class="tag-editor">
-        <ion-item class="tag-item">
-          <ion-label position="stacked">Adattípus</ion-label>
-          <ion-select
-            interface="popover"
-            placeholder="Válassz típust"
-            [(ngModel)]="newTagKey"
-            name="newTagKey"
-            [ngModelOptions]="{standalone: true}" (ionChange)="onTagTypeChange()"> <ion-select-option *ngFor="let opt of tagOptions" [value]="opt.key"> {{ opt.label }}
-          </ion-select-option>
-          </ion-select>
-        </ion-item>
+        <div class="tag-inputs-group">
+          <ion-item class="tag-item">
+            <ion-label position="stacked">Adattípus</ion-label>
+            <ion-select
+              interface="popover"
+              placeholder="Válassz típust"
+              [(ngModel)]="newTagKey"
+              name="newTagKey"
+              [ngModelOptions]="{standalone: true}" (ionChange)="onTagTypeChange()">
+              <ion-select-option *ngFor="let opt of tagOptions" [value]="opt.key"> {{ opt.label }}</ion-select-option>
+            </ion-select>
+          </ion-item>
 
-        <ion-item class="tag-item" *ngIf="newTagKey"> <ion-label position="stacked">Érték</ion-label>
-
-          <ion-select *ngIf="currentTagDef?.type === 'select'"
-                      interface="popover"
-                      placeholder="Válassz vércsoportot"
-                      [(ngModel)]="newTag.tag_value"
-                      name="tagValueSelect"
-                      [ngModelOptions]="{standalone: true}"> <ion-select-option *ngFor="let v of currentTagDef?.options" [value]="v">{{ v }}</ion-select-option>
-          </ion-select>
-
-          <ion-input *ngIf="currentTagDef?.type === 'text'"
-                     type="text"
-                     [placeholder]="currentTagDef?.placeholder"
-                     [(ngModel)]="newTag.tag_value"
-                     name="tagValueInput"
-                     [ngModelOptions]="{standalone: true}" clearInput></ion-input>
-        </ion-item>
+          <ion-item class="tag-item" *ngIf="newTagKey">
+            <ion-label position="stacked">Érték</ion-label>
+            <ion-select *ngIf="currentTagDef?.type === 'select'"
+                        interface="popover"
+                        placeholder="Válassz vércsoportot"
+                        [(ngModel)]="newTag.tag_value"
+                        name="tagValueSelect"
+                        [ngModelOptions]="{standalone: true}"> <ion-select-option *ngFor="let v of currentTagDef?.options" [value]="v">{{ v }}</ion-select-option>
+            </ion-select>
+            <ion-input *ngIf="currentTagDef?.type === 'text'"
+                       type="text"
+                       [placeholder]="currentTagDef?.placeholder"
+                       [(ngModel)]="newTag.tag_value"
+                       name="tagValueInput"
+                       [ngModelOptions]="{standalone: true}" clearInput></ion-input>
+          </ion-item>
+        </div>
 
         <div class="tag-actions">
           <ion-button size="small" fill="outline" (click)="resetNewTag()">Mégse</ion-button>
@@ -153,12 +154,11 @@
       </div>
 
       <div class="tags-preview" formArrayName="tags" *ngIf="tagsFormArray.length">
-        <ion-chip *ngFor="let tagGroup of tagsFormArray.controls; let i = index" [formGroupName]="i" outline>
+        <ion-chip *ngFor="let tagGroup of tagsFormArray.controls; let i = index" [formGroupName]="i">
           <ion-label>
             <strong>{{ tagGroup.value.tag_name }}:</strong> {{ tagGroup.value.tag_value }}
           </ion-label>
-          <ion-icon name="close" (click)="removeTag(i)"></ion-icon>
-        </ion-chip>
+          <ion-icon name="close-circle" (click)="removeTag(i)"></ion-icon> </ion-chip>
       </div>
     </section>
 
@@ -166,7 +166,7 @@
       <ion-button
         class="btn-accent"
         type="submit"
-        [disabled]="savingData || editProfileForm.invalid">
+        [disabled]="savingData || editProfileForm.invalid || (!editProfileForm.dirty && !file)">
         Mentés
       </ion-button>
     </div>

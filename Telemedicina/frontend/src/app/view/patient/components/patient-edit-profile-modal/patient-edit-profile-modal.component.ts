@@ -34,7 +34,7 @@ export class PatientEditProfileModalComponent implements  OnInit {
   currentTagDef: any = null;
   file: File | null = null;
   tempPreviewUrl: string | null = null;
-
+  private tagsManuallyModified: boolean = false;
   savingData: boolean = false;
 
   tagOptions = [
@@ -84,7 +84,7 @@ export class PatientEditProfileModalComponent implements  OnInit {
   }
 
   canAddTag(): boolean {
-    if (!this.newTagKey || !this.newTag.tag_value.trim()) return false;
+    if (!this.newTagKey || !String(this.newTag.tag_value).trim()) return false;
 
     if (this.newTagKey === 'bloodType') {
       const bloodTypeTagLabel = this.tagOptions.find(o => o.key === 'bloodType')?.label;
@@ -96,25 +96,29 @@ export class PatientEditProfileModalComponent implements  OnInit {
   }
 
   addTag() {
-    if (!this.canAddTag() || !this.newTag.tag_value.trim()) return;
+    if (!this.canAddTag()) return;
 
     const value = String(this.newTag.tag_value).trim();
 
     const newTagGroup = this.createTagGroup(0, this.newTag.tag_name, value);
 
-    newTagGroup.get('tag_name')?.setValidators([Validators.required, Validators.pattern(TEXT_PATTERN)]);
-    newTagGroup.get('tag_value')?.setValidators([Validators.required, Validators.pattern(TEXT_PATTERN)]);
+    newTagGroup.get('tag_name')?.setValidators([Validators.required]);
+    newTagGroup.get('tag_value')?.setValidators([Validators.required]);
 
     newTagGroup.get('tag_name')?.updateValueAndValidity();
     newTagGroup.get('tag_value')?.updateValueAndValidity();
 
     this.tagsFormArray.push(newTagGroup);
 
+    this.editProfileForm.markAsDirty();
+    this.tagsManuallyModified = true;
     this.resetNewTag();
   }
 
   removeTag(index: number) {
     this.tagsFormArray.removeAt(index);
+    this.editProfileForm.markAsDirty();
+    this.tagsManuallyModified = true;
   }
 
   resetNewTag() {
@@ -147,12 +151,6 @@ export class PatientEditProfileModalComponent implements  OnInit {
       return;
     }
 
-    if (!this.file && Object.keys(modified).length === 0 && tags.length === 0) {
-      this.toast.show('Nincs módosítandó mező.', 'warning');
-      this.savingData = false;
-      return;
-    }
-
     const form = new FormData();
     form.append('id', String(id));
 
@@ -160,7 +158,7 @@ export class PatientEditProfileModalComponent implements  OnInit {
       form.append(k, v != null ? String(v) : '');
     });
 
-    if (tags.length > 0) {
+    if (tags.length > 0 || this.tagsManuallyModified) {
       form.append('tags', JSON.stringify(tags));
     }
 

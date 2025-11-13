@@ -1,6 +1,6 @@
 import {User} from './user.interface';
 
-export type genders = 'nő' | 'férfi';
+export type genders = 'Nő' | 'Férfi';
 
 export interface Patient {
   id: number;

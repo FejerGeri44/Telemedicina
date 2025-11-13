@@ -1,388 +1,368 @@
-import {Component, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit, OnDestroy} from '@angular/core';
+import {IonicModule} from '@ionic/angular';
+import {FormsModule} from '@angular/forms';
+import {NgForOf, NgIf, DatePipe, NgOptimizedImage} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
-import {IonicModule} from '@ionic/angular';
-import {NgForOf, NgIf} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {Router} from '@angular/router';
-import {
-  UnreadMessage,
-  PatientUnreadSummary
-} from '../../../../utils/interfaces/message.interface';
-import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {UserService} from '../../../../services/user/user.service';
+import {firstValueFrom, Observable} from 'rxjs';
+import {environment} from '../../../../../../enviroment';
+import { Message } from '../../../../utils/interfaces/message.interface';
+import { RealtimeChannel } from '@supabase/supabase-js';
+import {SupabaseService} from '../../../../services/chat/supabase.service';
+import {formatTaj} from '../../../../utils/formatProfileData';
 
 @Component({
-  selector: 'app-doctor-messages',
+  selector: 'app-patient-messages',
   imports: [
     IonicModule,
-    NgForOf,
     FormsModule,
-    NgIf
+    NgIf,
+    NgForOf,
+    DatePipe,
+    NgOptimizedImage
   ],
   templateUrl: './doctor-messages.component.html',
   standalone: true,
   styleUrl: './doctor-messages.component.scss'
 })
-export class DoctorMessagesComponent implements OnInit, OnDestroy{
-  user!: DoctorItem;
+export class DoctorMessagesComponent implements OnInit, OnDestroy {
+  user!: Observable<DoctorItem | null>;
+  doctorId: number | null = null;
+  doctorPictureUrl: string | null = null;
+  unreadSummary: Map<number, number> = new Map();
+  isChatPaneVisible: boolean = false;
+
   patients!: PatientItem[];
-  filteredPatients: PatientItem[] = [];
-  patientQuery = '';
-  searchOpen = false;
+  allPatients: PatientItem[] = [];
+  filterText: string = '';
 
-  allMessages: any[] = [];
-  messages: any[] = [];
-  unreadMessages: UnreadMessage[] = [];
-  unreadByPatient: PatientUnreadSummary[] = [];
+  messages: Message[] = [];
+  isLoading = true;
 
-  selectedPatient!: PatientItem;
-  draftText = '';
-  isOnline = false;
-  isLoading= true;
-  isSmall = window.innerWidth <= 1024;
-  showChatOnMobile = false;
+  selectedPatientId: number | null = null;
+  selectedPatient: PatientItem | null = null;
 
-  private pollTimer: any = null;
+  newMessageContent: string = '';
+  private chatChannel: RealtimeChannel | null = null;
 
   constructor(
-    private router: Router,
     private http: HttpClient,
+    protected userService: UserService,
     private toast: ToastService,
-    private alert: AlertService
-  ) {}
-
-  ngOnInit(): void {
-    this.getMyData();
-    this.getAllPatients();
-    this.isOnline = true;
-
-    const patientFromState = history.state?.selectedPatient;
-    if (patientFromState) {
-      console.log(patientFromState);
-      this.selectPatient(patientFromState);
-    }
+    private alert: AlertService,
+    private supabaseService: SupabaseService
+  ) {
+    this.user = this.userService.doctor$();
   }
 
-  getAllPatients() {
-    const token = localStorage.getItem('token');
-    this.http.get<PatientItem[]>('http://localhost:3000/api/getAllPatients', {
-      headers: {
-        Authorization: `Bearer ${token}`
+  async ngOnInit(): Promise<void> {
+    this.doctorId = await this.getDoctorId();
+    this.user.subscribe(u => {
+      if (u) {
+        this.doctorPictureUrl = u.user.pictureUrl;
       }
-    }).subscribe({
-      next: (res) => {
-        console.log(res);
-        this.patients = res;
-        this.isLoading = false;
-        console.log(res);
-      },
-      error: (err) =>
-        console.error('getAllPatients error', err)
     });
-  }
-
-  @ViewChild('messageScroll') messageScroll: any;
-  private scrollToBottom() {
-    setTimeout(() => {
-      const el = this.messageScroll?.nativeElement;
-      if (el) el.scrollTop = el.scrollHeight;
-    });
-  }
-
-  @HostListener('window:resize')
-  onResize() {
-    this.isSmall = window.innerWidth <= 1024;
-    if (!this.isSmall) this.showChatOnMobile = false;
+    void this.getDoctors();
+    void this.getUnreadSummary();
   }
 
   ngOnDestroy(): void {
-    if (this.pollTimer) clearInterval(this.pollTimer);
+    if (this.chatChannel) {
+      void this.supabaseService.client.removeChannel(this.chatChannel);
+      this.chatChannel = null;
+    }
   }
 
-  trackByDoctorId = (_: number, d: any) => d.id;
-  trackByMsgId = (_: number, m: any) => m.id;
-  isMine(m: any) {
-    const s = m.senderUserId ?? m.sender_user_id ?? m.senderId;
-    return s === this.user.user.id;
+  private async getDoctorId(): Promise<number | null> {
+    const user = await firstValueFrom(this.user);
+    return user?.user.id ?? null;
   }
 
-  selectPatient(patient: PatientItem) {
-    this.selectedPatient = patient;
-    if (this.isSmall) this.showChatOnMobile = true;
-    this.applyConversationFilter();
-    this.markConversationReadAsDoctor(this.selectedPatient?.user?.id);
-    setTimeout(() => {
-      this.getUnreadMessages();
-    }, 0);
+  async getUnreadSummary(): Promise<void> {
+    if (!this.doctorId) return;
+
+    try {
+      const summary: Array<{ partnerId: number, unreadCount: number }> =
+        await firstValueFrom(this.http.get<any>(
+          `${environment.apiUrl}/messages/unreadSummary`,
+          { withCredentials: true }
+        ));
+
+      this.unreadSummary = new Map(summary.map(s => [s.partnerId, s.unreadCount]));
+
+    } catch (err) {
+      console.error('❌ Olvasatlan összegzés lekérése sikertelen:', err);
+    }
   }
 
-  applyConversationFilter() {
-    const otherId = this.selectedPatient?.user?.id;
-    if (!this.user.user.id || !otherId) { this.messages = []; return; }
-
-    const rows = (this.allMessages || []).filter((m: any) => {
-      const s = m.senderUserId ?? m.sender_user_id ?? m.senderId;
-      const r = m.receiverUserId ?? m.receiver_user_id ?? m.receiverId;
-      return (s === this.user.user.id && r === otherId) || (s === otherId && r === this.user.user.id);
-    });
-
-    this.messages = rows.map((r: any) => ({
-      id: r.id,
-      text: r.text ?? r.content ?? '',
-      createdAt: r.createdAt ?? r.sendDate ?? new Date().toISOString(),
-      senderUserId: r.senderUserId ?? r.sender_user_id,
-      receiverUserId: r.receiverUserId ?? r.receiver_user_id,
-      delivered: r.delivered ?? true
-    }));
-
-    setTimeout(() => this.scrollToBottom?.(), 0);
+  getUnreadCount(doctorId: number): number {
+    return this.unreadSummary.get(doctorId) ?? 0;
   }
 
-  markConversationReadAsDoctor(patientUserId: number | undefined) {
-    const myUserId = this.user?.user.id;
-    const token = localStorage.getItem('token');
-    if (!token || !myUserId || !patientUserId) return;
-
-    this.http.post<void>('http://localhost:3000/api/mark-conversation-as-read',
-      {
-        myUserId: myUserId,
-        withUserId: patientUserId,
-        role: 'doctor'
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
+  async getDoctors(): Promise<PatientItem[] | null> {
+    return new Promise((resolve) => {
+      this.http.get<PatientItem[]>(
+        `${environment.apiUrl}/doctor/patients`,
+        { withCredentials: true }
+      ).subscribe({
+        next: (res) => {
+          this.allPatients = res;
+          this.patients = res;
+          this.isLoading = false;
+          resolve(res);
+        },
+        error: (err) => {
+          console.error('❌ Orvosok lekérése sikertelen:', err);
+          this.toast.show('Nem sikerült betölteni a pácienseket.', 'danger');
+          this.isLoading = false;
+          resolve(null);
         }
-      }
-    ).subscribe({
-      next: () => {},
-      error: (e) => console.error('markConversationReadAsDoctor error', e)
+      });
     });
   }
 
-  backToList() {
-    this.showChatOnMobile = false;
+  async markConversationAsRead(patientId: number): Promise<void> {
+    if (!this.doctorId || !patientId) return;
+
+    const payload = { patientId };
+
+    try {
+      await firstValueFrom(this.http.post(
+        `${environment.apiUrl}/messages/markConversationAsRead`,
+        payload,
+        { withCredentials: true }
+      ));
+    } catch (err) {
+      console.error('❌ Beszélgetés olvasottnak jelölése sikertelen:', err);
+    }
   }
 
-  getMyData() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  filterPatients(): void {
+    if (!this.filterText.trim()) {
+      this.patients = this.allPatients;
+      return;
+    }
 
-    this.http.get<DoctorItem>('http://localhost:3000/api/getPatientMe', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).subscribe({
+    const searchTerm = this.filterText.trim().toLowerCase();
+    this.patients = this.allPatients.filter(patient => {
+      const name = patient.user.name.toLowerCase();
+      const speciality = patient.patient.taj ? patient.patient.taj.toLowerCase() : '';
+
+      return name.includes(searchTerm) || speciality.includes(searchTerm);
+    });
+  }
+
+  async selectPatient(userId: number): Promise<void> {
+    this.selectedPatient = this.allPatients.find(p => p.user.id === userId) ?? null;
+
+    if (this.selectedPatientId === userId) return;
+
+    this.selectedPatientId = userId;
+    this.messages = [];
+    this.newMessageContent = '';
+
+    if (this.chatChannel) {
+      void this.supabaseService.client.removeChannel(this.chatChannel);
+      this.chatChannel = null;
+    }
+
+    if (this.doctorId) {
+      await this.markConversationAsRead(userId);
+      this.unreadSummary.set(userId, 0);
+      await this.loadConversation(userId);
+      this.setupRealtime(userId);
+      this.isChatPaneVisible = true;
+      this.scrollToBottom();
+    }
+  }
+
+  getSelectedDoctorName(): string {
+    if (this.selectedPatient) {
+      return this.selectedPatient.user.name;
+    }
+    return 'Nincs kiválasztva';
+  }
+
+  async loadConversation(patientId: number): Promise<void> {
+    const doctorId = this.doctorId as number;
+
+    const payload = {
+      patientId,
+      doctorId
+    }
+    this.http.post<Message[]>(
+      `${environment.apiUrl}/messages/conversation`,
+      payload,
+      { withCredentials: true }
+    ).subscribe({
       next: (res) => {
-        this.user = { user: res.user, doctor: res.doctor };
-        this.loadAllMyMessages();
+        this.messages = res;
+        this.scrollToBottom();
       },
       error: (err) => {
-        console.error('❌ Felhasználó lekérése sikertelen:', err);
+        console.error('❌ Beszélgetés lekérése sikertelen:', err);
+        this.toast.show('Nem sikerült betölteni a beszélgetést.', 'danger');
       }
     });
   }
 
-  loadAllMyMessages() {
-    const token = localStorage.getItem('token');
-    const myUserId = this.user?.user.id;
-    if (!myUserId) return;
+  setupRealtime(patientId: number): void {
+    const doctorId = this.doctorId as number;
+    const channelName = `chat_${patientId}_${doctorId}`;
 
-    this.http.post<any[]>(
-      'http://localhost:3000/api/getMyMessages',
+    this.chatChannel = this.supabaseService.client.channel(channelName);
+
+    this.chatChannel.on('postgres_changes',
       {
-        userId: myUserId,
-        role: 'doctor',
-        limit: 200
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `receiver_user_id=eq.${doctorId}`
       },
-      { headers: { Authorization: `Bearer ${token}` } }
-    ).subscribe({
-      next: (rows) => {
-        this.allMessages = rows;
-        this.applyConversationFilter();
-        this.getUnreadMessages();
-      },
-      error: (e) => console.error('messages-byUser error', e)
-    });
-  }
+      (payload) => {
+        const newMessage = payload.new as Message;
 
-  applyDoctorFilter(q?: string) {
-    const query = (q ?? this.patientQuery ?? '').trim().toLowerCase();
+        const isRelevantSender = newMessage.senderUserId === patientId;
+        const isRelevantReceiver = newMessage.receiverUserId === doctorId;
 
-    const base = !query
-      ? this.patients.slice()
-      : this.patients.filter((doctor: any) => {
-        const name = (doctor?.User?.name || '').trim().toLowerCase();
-        const spec = (doctor?.speciality || '').trim().toLowerCase();
-        return name.includes(query) || spec.includes(query);
-      });
-
-    if (query && base.length) {
-      const exactIdx = base.findIndex((d: any) =>
-        (d?.User?.name || '').trim().toLowerCase() === query
-      );
-      if (exactIdx > 0) {
-        const [hit] = base.splice(exactIdx, 1);
-        base.unshift(hit);
-      }
-    }
-
-    this.filteredPatients = base;
-  }
-
-  toggleSearch() {
-    this.searchOpen = !this.searchOpen;
-    if (!this.searchOpen) {
-      this.patientQuery = '';
-      this.applyDoctorFilter();
-    }
-  }
-
-  trySend(ev: Event) {
-    const e = ev as KeyboardEvent;
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault?.();
-      if (this.draftText.trim()) this.send();
-    }
-  }
-
-  send() {
-    const text = this.draftText.trim();
-    if (!text || !this.selectedPatient?.user?.id) return;
-
-    const token = localStorage.getItem('token');
-
-    const temp = {
-      id: 'tmp-' + Date.now(),
-      sender: 'patient',
-      text,
-      createdAt: new Date().toISOString(),
-      delivered: false
-    };
-    this.allMessages = [...this.allMessages, temp];
-    this.applyConversationFilter();
-    this.scrollToBottom();
-    this.draftText = '';
-
-    this.http.post<any>('http://localhost:3000/api/sendMessage', {
-      toUserId: this.selectedPatient.user.id,
-      content: text,
-      role: 'doctor'
-    }, { headers: { Authorization: `Bearer ${token}` }})
-      .subscribe({
-        next: (saved) => {
-          const savedVm = {
-            id: saved.id,
-            sender: 'patient',
-            text: saved.content,
-            delivered: true
-          };
-          this.allMessages = this.allMessages.map(m => m.id === temp.id ? savedVm : m);
-          this.loadAllMyMessages();
-          this.applyConversationFilter();
+        if (isRelevantSender && isRelevantReceiver) {
+          console.log('Realtime INSERT: Új üzenet érkezett a beszélgetéshez.');
+          this.messages = [...this.messages, newMessage];
           this.scrollToBottom();
-        },
-        error: (e) => {
-          console.error('sendMessage error', e);
-          this.allMessages = this.allMessages.filter(m => m.id !== temp.id);
         }
-      });
-  }
-
-  confirmDelete() {
-    void this.alert.show(
-      'Beszélgetés Törlése',
-      'Biztosan törölni szeretnéd az összes eddigi beszélgetést?',
-      () => this.deleteConversation()
-    )
-  }
-
-  deleteConversation() {
-    const token = localStorage.getItem('token');
-    const meUserId = this.user.user.id;
-    const otherId = this.selectedPatient?.user?.id;
-    if (!token || !meUserId || !otherId) return;
-
-    this.http.post<any>('http://localhost:3000/api/deleteConversation', {
-      meUserId: meUserId,
-      otherUserId: otherId,
-      role: 'doctor'
-    }, { headers: { Authorization: `Bearer ${token}` }})
-      .subscribe({
-        next: () => {
-          this.allMessages = [];
-          this.loadAllMyMessages();
-          this.toast.show("Sikeres törlés!", "success");
-        },
-        error: (e) => {
-          console.error('deleteConversation error', e);
-          this.toast.show("Sikertelen törlés!", "warning");
-        }
-      });
-  }
-
-  moreActions(ev?: any) {
-    // TODO: action sheet / popover (pl. némítás, archiválás, profil megnyitása)
-    console.log('további műveletek', ev);
-  }
-
-  getUnreadMessages() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const userId = this.user?.user?.id;
-    if (!userId) return;
-
-    this.http.post<{unread:any[], count:number}>(
-      'http://localhost:3000/api/getUnreadMessages',
-      {
-        userId,
-        role: 'doctor',
-        limit: 200
-      },
-      {
-        headers:
-          { Authorization: `Bearer ${token}` }
       }
-    ).subscribe({
-      next: (res) => {
-        this.unreadMessages = res.unread;
-        this.unreadByPatient = this.computeUnreadByPatient(this.unreadMessages);
+    );
+
+    this.chatChannel.on('postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_user_id=eq.${doctorId}`
       },
-      error: (e) => console.error('getUnreadMessages error', e)
+      (payload) => {
+        const updatedMessage = payload.new as Message;
+
+        if (updatedMessage.receiverUserId === patientId) {
+          console.log('Realtime UPDATE: Üzenet olvasottsága frissült.');
+          this.messages = this.messages.map(m =>
+            m.id === updatedMessage.id ? updatedMessage : m
+          );
+        }
+      }
+    );
+
+    this.chatChannel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log(`✅ Realtime csatorna feliratkozva: ${channelName}`);
+      }
     });
   }
 
-  computeUnreadByPatient(unreadMessages: UnreadMessage[]): PatientUnreadSummary[] {
-    const map = new Map<number, { patientId: number; latest: any; count: number }>();
+  async sendMessage(event?: Event): Promise<void> {
+    event?.preventDefault();
 
-    for (const msg of unreadMessages) {
-      const patientId = msg.senderUserId;
-      const existing = map.get(patientId);
-
-      if (!existing) {
-        map.set(patientId, { patientId, latest: msg, count: 1 });
-        continue;
-      }
-
-      existing.count += 1;
-
-      const currTime = new Date(existing.latest.sendDate).getTime();
-      const newTime = new Date(msg.sendDate).getTime();
-      if (newTime > currTime) {
-        existing.latest = msg;
-      }
+    if (!this.selectedPatientId || !this.selectedPatient || this.newMessageContent.trim() === '') {
+      return;
     }
 
-    return Array.from(map.values()).sort(
-      (a, b) => new Date(b.latest.sendDate).getTime() - new Date(a.latest.sendDate).getTime()
+    const content = this.newMessageContent.trim();
+    const senderUserId = this.doctorId;
+    const receiverUserId = this.selectedPatientId;
+    this.newMessageContent = '';
+
+    const payload = {
+      senderUserId,
+      receiverUserId,
+      content
+    }
+
+    console.log(payload)
+
+    try {
+      const message = await firstValueFrom(this.http.post<Message>(
+        `${environment.apiUrl}/messages/create`,
+        payload,
+        { withCredentials: true }
+      ));
+
+      if (message && !this.messages.some(m => m.id === message.id)) {
+        this.messages = [...this.messages, message];
+      }
+      this.scrollToBottom();
+
+    } catch (err) {
+      console.error('❌ Üzenet küldése sikertelen:', err);
+      this.toast.show('Nem sikerült elküldeni az üzenetet.', 'danger');
+      this.newMessageContent = content;
+    }
+  }
+
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      const chatContainer = document.querySelector('.messages-container');
+      if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    }, 100);
+  }
+
+  isMyMessage(message: Message): boolean {
+    return message.senderUserId === this.doctorId;
+  }
+
+  async confirmDelete() {
+    await this.alert.show(
+      'Beszélgetés törlése',
+      'Biztosan törölni szeretnéd a beszélgetést?',
+      () => {
+        this.deleteConversation();
+      }
     );
   }
 
-  getUnreadSummary(patientUserId: number | undefined): PatientUnreadSummary | null {
-    if (!patientUserId) return null;
-    return this.unreadByPatient.find(u => u.patientId === patientUserId) ?? null;
+  async deleteConversation() {
+    if (!this.selectedPatientId || !this.doctorId) {
+      this.toast.show('Előbb válassz ki egy beszélgetést!', 'warning');
+      return;
+    }
+
+    const payload = {
+      patientId: this.selectedPatientId
+    };
+
+    try {
+      await firstValueFrom(this.http.post(
+        `${environment.apiUrl}/messages/deleteConversation`,
+        payload,
+        { withCredentials: true }
+      ));
+
+      this.toast.show('A beszélgetés törölve lett a listádról.', 'success');
+      this.messages = [];
+      this.selectedPatientId = null;
+      this.selectedPatient = null;
+
+      if (this.chatChannel) {
+        void this.supabaseService.client.removeChannel(this.chatChannel);
+        this.chatChannel = null;
+      }
+
+    } catch (err) {
+      console.error('❌ Beszélgetés törlése sikertelen:', err);
+      this.toast.show('Nem sikerült törölni a beszélgetést.', 'danger');
+    }
   }
+
+  back() {
+    this.isChatPaneVisible = false;
+    this.selectedPatient = null;
+    this.selectedPatientId = null;
+  }
+
+  protected readonly formatTaj = formatTaj;
 }

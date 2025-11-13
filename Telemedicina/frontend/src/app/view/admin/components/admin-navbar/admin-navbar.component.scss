@@ -148,15 +148,13 @@
 .logo-title {
   display: flex;
   align-items: center;
-  gap: 10px;
 }
 .logo-title img {
   height: 28px;
 }
 .site-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  letter-spacing: 1px;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
   color: var(--dark-text-color);
   user-select: none;
 }

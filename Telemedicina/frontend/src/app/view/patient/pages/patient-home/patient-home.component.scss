@@ -9,7 +9,6 @@ $secondary: var(--secondary);
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto auto;
-  gap: 10px;
   width: 100%;
   margin: auto;
   justify-content: center;
@@ -31,10 +30,11 @@ $secondary: var(--secondary);
   .appointments,
   .results,
   .prescriptions {
-    border-radius: $radius;
-    box-shadow: $shadow;
-    padding: 20px;
-    background-color: $card-bg;
+    --background: #ffffff;
+    --border-radius: 12px;
+    --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    margin: 16px;
+    overflow: hidden;
   }
 
   .appointments {
@@ -141,6 +141,7 @@ $secondary: var(--secondary);
 
     .appointment-count {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: calc(100% - 40px);
@@ -149,6 +150,12 @@ $secondary: var(--secondary);
         font-size: 3rem;
         color: $secondary;
         font-weight: bold;
+      }
+
+      p {
+        font-size: 1rem;
+        padding-bottom: 40px;
+        color: var(--smoke-color);
       }
     }
   }

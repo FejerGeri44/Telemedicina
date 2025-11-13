@@ -1,6 +1,7 @@
 const { supabaseAdmin } = require('../utils/supabaseAdmin');
 const { buildProfile } = require("../utils/profileBuilder");
 const PatientTagRepository = require("../repositories/patientTag.repository");
+const {findByDoctorAndPatient} = require("../repositories/doctorRating.repository");
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -130,9 +131,11 @@ exports.updateProfile = async (req, res) => {
 
 exports.listDoctors = async (req, res) => {
   try {
+    const patientId = req.patientId;
+
     const { data: doctors, error: docErr } = await supabaseAdmin
       .from('doctors')
-      .select('*')
+      .select('*, id')
       .eq('status', 'Approved')
       .order('id', { ascending: true });
 
@@ -148,11 +151,6 @@ exports.listDoctors = async (req, res) => {
       .map(d => d.user_id ?? d.userId)
       .filter((v) => v !== undefined && v !== null);
 
-    if (userIds.length === 0) {
-      const items = doctors.map(d => ({ user: null, doctor: d }));
-      return res.json(items);
-    }
-
     const { data: users, error: userErr } = await supabaseAdmin
       .from('users')
       .select('id, name, email, address, role, phoneNumber, pictureUrl')
@@ -165,10 +163,37 @@ exports.listDoctors = async (req, res) => {
 
     const usersById = new Map(users?.map(u => [u.id, u]) ?? []);
 
+    let patientRatingsMap = new Map();
+
+    if (patientId) {
+      const doctorIds = doctors.map(d => d.id).filter(id => id !== null);
+
+      if (doctorIds.length > 0) {
+        const ratingPromises = doctorIds.map(doctorId =>
+          findByDoctorAndPatient(doctorId, patientId)
+        );
+        const ratings = await Promise.all(ratingPromises);
+
+        ratings.forEach(rating => {
+          if (rating) {
+            patientRatingsMap.set(rating.doctor_id, rating);
+          }
+        });
+      }
+    }
+
     const items = doctors.map(d => {
       const uid = d.user_id ?? d.userId ?? null;
       const user = uid != null ? (usersById.get(uid) ?? null) : null;
-      return { user, doctor: d };
+
+      const doctorItem = { user, doctor: d };
+
+      const selfRating = patientRatingsMap.get(d.id);
+      if (selfRating) {
+        doctorItem.ratings = [selfRating];
+      }
+
+      return doctorItem;
     });
 
     return res.json(items);

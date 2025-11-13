@@ -56,7 +56,7 @@
 
   <ion-card class="review">
     <div class="card-header">
-      <h2 class="header-title">Értékelésem</h2>
+      <ion-title class="header-title">Értékelésem</ion-title>
     </div>
 
     <div class="rating">
@@ -69,8 +69,8 @@
 
   <ion-card class="today-appointments">
     <div class="card-header">
-      <h2 class="header-title">Mai időpontjaim</h2>
-      <ion-button class="expand-btn" [routerLink]="['/appointments']">
+      <ion-title class="header-title">Mai időpontjaim</ion-title>
+      <ion-button class="expand-btn" [routerLink]="['/doctor/appointments']">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
     </div>
@@ -82,8 +82,8 @@
 
   <ion-card class="patients">
     <div class="card-header">
-      <h2 class="header-title">Pácienseim</h2>
-      <ion-button class="expand-btn" [routerLink]="['/appointments']">
+      <ion-title class="header-title">Pácienseim</ion-title>
+      <ion-button class="expand-btn" [routerLink]="['/doctor/my-patients']">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
     </div>
@@ -95,21 +95,21 @@
 
   <ion-card class="messages">
     <div class="card-header">
-      <h2 class="header-title">Olvasatlan üzeneteim</h2>
-      <ion-button class="expand-btn" [routerLink]="['/appointments']">
+      <ion-title class="header-title">Olvasatlan üzeneteim</ion-title>
+      <ion-button class="expand-btn" [routerLink]="['/doctor/doctor-messages']">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
     </div>
 
-    <div class="appointment-count">
-      <span>{{ todaysAppointments }}</span>
+    <div class="appointment-count" *ngFor="let count of unreadCountsArray">
+      <span>{{ count }}</span>
     </div>
   </ion-card>
 
   <ion-card class="new-appointments">
     <div class="card-header">
-      <h2 class="header-title">Függőben lévő időpontjaim</h2>
-      <ion-button class="expand-btn" [routerLink]="['/appointments']">
+      <ion-title class="header-title">Függőben lévő időpontjaim</ion-title>
+      <ion-button class="expand-btn" [routerLink]="['/doctor/appointments']">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
     </div>
@@ -121,10 +121,7 @@
 
   <ion-card class="declined-appointments">
     <div class="card-header">
-      <h2 class="header-title">Elutasított időpontjaim</h2>
-      <ion-button class="expand-btn" [routerLink]="['/appointments']">
-        <ion-icon name="chevron-forward-outline"></ion-icon>
-      </ion-button>
+      <ion-title class="header-title">Elutasított időpontjaim</ion-title>
     </div>
 
     <div class="appointment-count">

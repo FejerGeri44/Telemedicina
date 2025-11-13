@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {DatePipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {formatPhoneNumber, formatTaj, getAge} from '../../../../utils/formatProfileData';

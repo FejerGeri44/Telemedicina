@@ -1,144 +1,107 @@
-<header class="navbar">
+<ion-header class="navbar" [class.mobile-open]="mobileMenuOpen">
   <ng-container *ngIf="userService.doctor$() | async as user; else navbarSkeleton">
-    <div class="navbar-top">
-      <div class="logo-title">
+    <ion-toolbar class="navbar-top" style="--z-index: 10002;">
+      <div class="logo-title" slot="start">
         <img src="pictures/logo.png" alt="CareLink" />
-        <span class="site-title">CareLink</span>
+        <ion-title class="site-title">CareLink</ion-title>
       </div>
 
-      <div class="top-right">
-        <button class="icon-btn notification" (click)="onNotifications()" aria-label="Értesítések">
-          <ion-icon name="notifications"></ion-icon>
-
-          <!-- Badge csak ha van olvasatlan -->
+      <ion-buttons slot="end" class="top-right-actions">
+        <ion-button class="icon-btn notification" (click)="onNotifications()" aria-label="Értesítések">
+          <ion-icon name="notifications-outline"></ion-icon>
           <span *ngIf="unreadCount > 0"
                 class="notif-badge"
                 aria-live="polite"
                 aria-label="Olvasatlan üzenetek száma">
               {{ unreadCount > 99 ? '99+' : unreadCount }}
-        </span>
-        </button>
+          </span>
+        </ion-button>
 
-        <!-- Profil blokk: csak desktopon -->
         <div class="profile-block desktop-only" (click)="toggleProfileMenu($event)">
-          <div class="epm-avatar">
-            <img
-              ngSrc="{{user.user.pictureUrl}}"
-              alt="Profilkép"
-              class="avatar-img"
-              draggable="false"
-              fill/>
-          </div>
-          <div class="profile-info">
-            <span class="name">{{ user.user.name }}</span>
-            <span class="role">{{ user.user.role }}</span>
-          </div>
-          <ion-icon class="chevron" name="chevron-down" [class.open]="profileOpen"></ion-icon>
-          <div class="profile-menu" *ngIf="profileOpen">
-            <button routerLink="/dashboard/doctor">
-              <ion-icon name="person-circle"></ion-icon>
-              <span>Profil</span>
-            </button>
-            <button (click)="confirmLogout()">
-              <ion-icon name="log-out"></ion-icon>
-              <span>Kijelentkezés</span>
-            </button>
-          </div>
+          <ng-container *ngTemplateOutlet="userProfileInfo; context: { $implicit: user }"></ng-container>
+          <ion-icon class="chevron" name="chevron-down-outline" [class.open]="profileOpen"></ion-icon>
         </div>
 
-        <!-- Mobil menü gomb -->
-        <button class="icon-btn mobile-menu-btn"
-                (click)="toggleMobileMenu()"
-                aria-label="Menü"
-                aria-controls="mobile-drawer"
-                [attr.aria-expanded]="mobileMenuOpen">
-          <ion-icon name="menu"></ion-icon>
-        </button>
-      </div>
-    </div>
+        <ion-button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Menü" fill="clear">
+          <ion-icon name="menu-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
 
-    <!-- Alsó menüsor: csak desktopon -->
-    <div class="navbar-bottom desktop-only">
-      <ul>
-        <li *ngFor="let item of menuItems"
-            [routerLink]="item.route"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{
-              paths: 'exact',
-              queryParams: 'subset',
-              matrixParams: 'ignored',
-              fragment: 'ignored'
-            }">
-          <ion-icon [name]="item.icon"></ion-icon>
-          <span>{{ item.label }}</span>
-        </li>
-      </ul>
-    </div>
+    <ion-toolbar class="navbar-bottom desktop-only">
+      <ng-container *ngTemplateOutlet="mainMenuNav"></ng-container>
+    </ion-toolbar>
 
-    <!-- Overlay -->
     <div class="backdrop" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()" aria-hidden="true"></div>
-
-    <!-- Off-canvas drawer -->
     <aside id="mobile-drawer" class="drawer" [class.open]="mobileMenuOpen">
       <div class="drawer-header">
         <div class="user-inline">
-          <div class="epm-avatar">
-            <img
-              ngSrc="{{user.user.pictureUrl}}"
-              alt="Profilkép"
-              class="avatar-img"
-              draggable="false"
-              fill/>
-          </div>
-          <div>
-            <div class="name">{{ user.user.name }}</div>
-            <div class="role">{{ user.user.role }}</div>
-          </div>
+          <ng-container *ngTemplateOutlet="userProfileInfo; context: { $implicit: user, inDrawer: true }"></ng-container>
         </div>
-        <button class="icon-btn" (click)="closeMobileMenu()" aria-label="Bezárás">
-          <ion-icon name="close"></ion-icon>
-        </button>
+        <ion-button fill="clear" (click)="closeMobileMenu()" aria-label="Bezárás">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
       </div>
 
       <nav class="drawer-nav">
-        <ul>
-          <li *ngFor="let item of menuItems"
-              (click)="closeMobileMenu()"
-              [routerLink]="item.route"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{
-              paths: 'exact',
-              queryParams: 'subset',
-              matrixParams: 'ignored',
-              fragment: 'ignored'
-            }">
-            <ion-icon [name]="item.icon"></ion-icon>
-            <span>{{ item.label }}</span>
-          </li>
-        </ul>
+        <ng-container *ngTemplateOutlet="mainMenuNav; context: { inDrawer: true }"></ng-container>
       </nav>
 
       <div class="drawer-footer">
-        <button class="drawer-action" routerLink="/dashboard/doctor">
-          <ion-icon name="person-circle"></ion-icon>
-          <span>Profil</span>
-        </button>
-        <button class="drawer-action" (click)="confirmLogout()">
-          <ion-icon name="log-out"></ion-icon>
-          <span>Kijelentkezés</span>
-        </button>
+        <ng-container *ngTemplateOutlet="profileActions; context: { isDrawer: true }"></ng-container>
       </div>
     </aside>
   </ng-container>
 
+  <ng-template #userProfileInfo let-user let-inDrawer="inDrawer">
+    <ion-avatar class="avatar">
+      <img
+        [ngSrc]="user.user.pictureUrl"
+        alt="Profilkép"
+        draggable="false"
+        width="32"
+        height="32"/> </ion-avatar>
+    <div class="profile-info">
+      <span class="name">{{ user.user.name }}</span>
+      <span class="role">{{ user.user.role }}</span>
+    </div>
+  </ng-template>
+
+  <ng-template #mainMenuNav let-inDrawer="inDrawer">
+    <ul>
+      <li *ngFor="let item of menuItems"
+          (click)="inDrawer && closeMobileMenu()"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"> <ion-icon [name]="item.icon + '-outline'"></ion-icon>
+        <span>{{ item.label }}</span>
+      </li>
+    </ul>
+  </ng-template>
+
+  <ng-template #profileActions let-isDrawer="isDrawer">
+    <ion-button [class.drawer-action]="isDrawer" routerLink="/patient/patient-home" fill="clear" expand="block">
+      <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+      <span>Profil</span>
+    </ion-button>
+    <ion-button [class.drawer-action]="isDrawer" class="delete-account-btn" (click)="confirmAccountDelete()" fill="clear" expand="block">
+      <ion-icon name="trash-outline" slot="start"></ion-icon>
+      <span>Fiók törlése</span>
+    </ion-button>
+    <ion-button [class.drawer-action]="isDrawer" (click)="confirmLogout()" fill="clear" expand="block">
+      <ion-icon name="log-out-outline" slot="start"></ion-icon>
+      <span>Kijelentkezés</span>
+    </ion-button>
+  </ng-template>
+
   <ng-template #navbarSkeleton>
-    <div class="navbar-top">
-      <div class="logo-title">
+    <ion-toolbar class="navbar-top">
+      <div class="logo-title" slot="start">
         <ion-skeleton-text animated style="width:28px;height:28px;border-radius:6px;"></ion-skeleton-text>
         <ion-skeleton-text animated style="width:100px;height:20px;border-radius:6px;"></ion-skeleton-text>
       </div>
 
-      <div class="top-right">
+      <ion-buttons slot="end" class="top-right-actions">
         <ion-skeleton-text animated style="width:32px;height:32px;border-radius:8px;"></ion-skeleton-text>
 
         <div class="profile-block desktop-only">
@@ -153,16 +116,22 @@
         </div>
 
         <ion-skeleton-text class="mobile-menu-btn" animated style="width:32px;height:32px;border-radius:8px;"></ion-skeleton-text>
-      </div>
-    </div>
+      </ion-buttons>
+    </ion-toolbar>
 
-    <div class="navbar-bottom desktop-only">
+    <ion-toolbar class="navbar-bottom desktop-only">
       <ul>
         <li *ngFor="let _ of [1,2,3,4,5]">
           <ion-skeleton-text animated style="width:18px;height:18px;border-radius:4px;margin-right:8px;"></ion-skeleton-text>
           <ion-skeleton-text animated style="width:80px;height:14px;border-radius:6px;"></ion-skeleton-text>
         </li>
       </ul>
-    </div>
+    </ion-toolbar>
   </ng-template>
-</header>
+</ion-header>
+
+<div class="profile-menu-container" *ngIf="profileOpen">
+  <div class="profile-menu">
+    <ng-container *ngTemplateOutlet="profileActions"></ng-container>
+  </div>
+</div>

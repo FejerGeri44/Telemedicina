@@ -19,7 +19,7 @@ app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/patient', require('./routes/patient.routes'));
 app.use('/api/doctor', require('./routes/doctor.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
-app.use('/api/shared', require('./routes/shared.routes'));
+app.use('/api/messages', require('./routes/messages.routes'));
 
 const PORT = process.env.PORT;
 

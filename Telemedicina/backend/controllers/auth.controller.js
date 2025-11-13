@@ -256,6 +256,45 @@ async function me(req, res) {
   }
 }
 
+async function deleteAccount(req, res) {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Nincs bejelentkezve / Felhasználó azonosító hiányzik.' });
+    }
+
+    const baseUser = await UserRepository.findById(userId);
+    if (!baseUser || !baseUser.authUid) {
+      console.warn(`Felhasználó ${userId} authUid nélkül. Folytatás a lokális törléssel.`);
+    } else {
+      const { error: deleteAuthErr } = await supabaseAdmin.auth.admin.deleteUser(baseUser.authUid);
+      if (deleteAuthErr) {
+        console.error('Hiba a Supabase Auth felhasználó törlésekor:', deleteAuthErr);
+      }
+    }
+
+    const isDeleted = await UserRepository.deleteById(userId);
+
+    if (!isDeleted) {
+      return res.status(404).json({ message: 'A felhasználó nem található az adatbázisban.' });
+    }
+
+    res.clearCookie(process.env.COOKIE_NAME, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+      path: '/',
+    });
+
+    return res.status(200).json({ message: 'Fiók sikeresen törölve.' });
+
+  } catch (error) {
+    console.error('Hiba a fiók törlésekor:', error);
+    return res.status(500).json({ message: 'Szerverhiba a fiók törlése közben.' });
+  }
+}
+
 function logout(req, res) {
   res.clearCookie(process.env.COOKIE_NAME, {
     httpOnly: true,
@@ -266,4 +305,4 @@ function logout(req, res) {
   return res.status(200).json({ message: 'Kijelentkezve.' });
 }
 
-module.exports = { registerPatient, registerDoctor, login, logout, me };
+module.exports = { registerPatient, registerDoctor, login, logout, me, deleteAccount };

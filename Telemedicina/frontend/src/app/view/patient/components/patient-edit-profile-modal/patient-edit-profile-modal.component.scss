@@ -1,24 +1,39 @@
+:root {
+  --text-primary: #1e2a3a;
+  --text-secondary: #6b7785;
+  --smoke-color: var(--smoke-color);
+  --accent: var(--accent);
+  --secondary: var(--secondary);
+  --primary: var(--primary);
+  --light-input-background: #f0f2f5;
+  --light-border-color: #000000;
+  --light-text-color: #ffffff;
+}
+
 ion-content {
-  --padding-top: 20px;
-  --padding-end: 20px;
-  --padding-bottom: 80px;
-  --padding-start: 20px;
-}
-
-.epm-content {
-  --padding-top: 20px;
-  --padding-end: 24px;
+  --padding-top: 24px;
+  --padding-end: 28px;
   --padding-bottom: 100px;
-  --padding-start: 24px;
+  --padding-start: 28px;
+  --background: linear-gradient(to bottom, #fefefe, #f7f7f7);
+
+  &.epm-content {
+    --padding-top: 28px;
+    --padding-end: 32px;
+    --padding-bottom: 110px;
+    --padding-start: 32px;
+  }
 }
 
-/* Header blokk */
 .epm-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 20px;
+  margin-bottom: 35px;
+  padding-bottom: 20px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05);
 }
+
 .pc-avatar {
   position: relative;
   width: 100px;
@@ -49,77 +64,225 @@ ion-content {
   place-items: center;
   box-shadow: 0 6px 14px rgba(0,0,0,.12);
   cursor: pointer;
+
+  ion-icon { font-size: 22px; }
 }
-.avatar-edit ion-icon { font-size: 22px; }
 
-.epm-headline h2 { margin: 0; font-weight: 700; }
-.epm-headline .muted { margin: 2px 0 0; color: #6b7785; }
+.epm-headline {
+  h2 {
+    margin: 0;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+  }
 
-/* 2 oszlop nagy kijelzőn */
+  .muted {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+}
+
 .epm-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px 24px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px 40px;
+  margin-bottom: 40px;
 }
-.epm-grid .col { display: grid; gap: 15px; }
-.epm-grid .row { grid-column: 1 / -1; display: grid; gap: 15px; }
+.epm-grid .col,
+.epm-grid .row {
+  display: grid;
+  gap: 25px;
+}
+
+@media (max-width: 1248px) {
+  .epm-grid {
+    display: flex;
+  }
+}
 
 @media (max-width: 900px) {
-  .epm-grid { grid-template-columns: 1fr; }
-  .two-up { grid-template-columns: 1fr; }
-}
-
-/* Gender – pill stílusú rádiók */
-.gender-item { --inner-padding-end: 0; }
-.gender-group {
-  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px;
-}
-.gender-pill {
-  border: 1px solid #d6e3ea;
-  border-radius: 999px;
-  padding: 4px 10px;
-  --inner-padding-end: 8px;
-  background: #f8fbfd;
-}
-.gender-pill ion-label {
-  display: flex; align-items: center; gap: 6px;
-}
-
-/* Sticky action bar */
-.epm-actions {
-  height: 50px;
-  position: sticky;
-  bottom: -40px;
-  display: flex;
-  justify-content: flex-end;
-  padding: 12px 0 8px;
-  background: linear-gradient(to top, #fff 70%, rgba(255,255,255,0));
-  backdrop-filter: blur(2px);
-  z-index: 5;
-}
-
-.btn-accent {
-  width: 150px;
+  .epm-grid {
+    display: grid;
+  }
 }
 
 ion-item {
-  --padding-start: 0;
+  --background: transparent;
   --inner-padding-end: 0;
-  --border-style: none;
+  --min-height: 0;
   margin: 0;
+  --border-radius: 5px;
+  --padding-start: 10px;
 }
 
-/* Meglévő címkék + inputok finomhangolása (tartva a korábbi stílusokat) */
 ion-label.custom-label {
   display: block;
-  font-weight: 500;
-  font-size: 1.5rem;
-  color: var(--smoke-color);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-secondary);
   margin-bottom: 10px;
 }
-ion-input.custom-input {
-  --padding-start: 20px;
-  --padding-end: 20px;
-  --border-radius: 12px;
-  font-size: 1.1rem;
+ion-input.custom-input,
+ion-select {
+  --padding-start: 18px;
+  --padding-end: 18px;
+  --border-radius: 10px;
+  --background: var(--light-input-background);
+  font-size: 1.05rem;
+  font-weight: 500;
+  border: 1px solid var(--light-border-color);
+  transition: all 0.2s ease-in-out;
+
+  &:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
+  }
+}
+ion-select {
+  border: 1px solid var(--light-border-color);
+}
+
+.epm-tags-section {
+  margin-bottom: 20px;
+
+  h3 {
+    color: var(--text-primary);
+    font-weight: 800;
+    margin-bottom: 20px;
+    font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+  }
+}
+
+.tag-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 25px;
+
+  .tag-inputs-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+
+    .tag-item {
+      flex-grow: 1;
+      min-width: 180px;
+    }
+  }
+
+  .tag-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    ion-button {
+      --padding-start: 20px;
+      --padding-end: 20px;
+      --border-radius: 8px;
+      font-weight: 600;
+      min-width: 100px;
+      transition: all 0.2s ease-in-out;
+
+      &[fill="outline"] {
+        --border-color: var(--text-secondary);
+        --color: var(--text-secondary);
+        &:hover {
+          --background: var(--text-secondary);
+          --color: var(--light-text-color);
+        }
+      }
+      &:not([fill="outline"]) {
+        --background: var(--accent);
+        --color: var(--light-text-color);
+        &:hover {
+          --background: color-mix(in srgb, var(--accent) 85%, black);
+        }
+      }
+    }
+  }
+}
+
+.tags-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+
+  ion-chip {
+    --background: var(--primary);
+    --color: var(--light-text-color);
+    --border-color: color-mix(in srgb, var(--primary) 80%, black);
+    --border-width: 2px;
+    --border-style: solid;
+    --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    font-size: 0.85rem;
+    font-weight: 600;
+    height: 36px;
+    padding: 0 12px;
+    cursor: default;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    ion-icon[name="close-circle"] {
+      color: var(--light-text-color);
+      font-size: 1.2rem;
+      margin-left: 8px;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+.epm-actions {
+  height: 60px;
+  position: sticky;
+  width: calc(100% + 62px);
+  bottom: -55px;
+  margin-left: -32px;
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 0 10px;
+  backdrop-filter: blur(4px);
+  z-index: 5;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+
+  .btn-accent {
+    width: 200px;
+    font-weight: 700;
+    --border-radius: 10px;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(var(--accent-rgb), 0.3);
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .epm-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  .tag-editor .tag-inputs-group {
+    flex-direction: column;
+    gap: 15px;
+  }
+  .epm-headline h2 {
+    font-size: clamp(1.2rem, 4vw, 1.6rem);
+  }
+  .epm-tags-section h3 {
+    font-size: clamp(1rem, 3vw, 1.3rem);
+  }
 }

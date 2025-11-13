@@ -204,7 +204,6 @@ export class SystemMessagesComponent implements OnInit {
       { withCredentials: true }
       ).subscribe({
       next: (res) => {
-        console.log(res)
         this.messages = res;
         this.isLoading = false;
       },

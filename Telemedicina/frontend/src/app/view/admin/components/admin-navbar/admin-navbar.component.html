@@ -3,7 +3,7 @@
     <div class="navbar-top">
       <div class="logo-title">
         <img src="pictures/logo.png" alt="CareLink" />
-        <span class="site-title">CareLink</span>
+        <ion-title class="site-title">CareLink</ion-title>
       </div>
 
       <div class="top-right">
@@ -27,6 +27,10 @@
             <button routerLink="/dashboard/admin">
               <ion-icon name="person-circle"></ion-icon>
               <span>Profil</span>
+            </button>
+            <button class="delete-account-btn" (click)="confirmAccountDelete()">
+              <ion-icon name="trash"></ion-icon>
+              <span>Fiók törlése</span>
             </button>
             <button (click)="confirmLogout()">
               <ion-icon name="log-out"></ion-icon>
@@ -106,9 +110,13 @@
       </nav>
 
       <div class="drawer-footer">
-        <button class="drawer-action" routerLink="/dashboard/admin">
+        <button class="drawer-action" routerLink="/admin/admin-home">
           <ion-icon name="person-circle"></ion-icon>
           <span>Profil</span>
+        </button>
+        <button class="drawer-action" (click)="confirmAccountDelete()">
+          <ion-icon name="trash"></ion-icon>
+          <span>Fiók törlése</span>
         </button>
         <button class="drawer-action" (click)="confirmLogout()">
           <ion-icon name="log-out"></ion-icon>

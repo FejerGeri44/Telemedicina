@@ -68,7 +68,7 @@
       <ion-col class="custom-col" *ngFor="let i of [1, 2, 3, 4, 5, 6]">
         <ion-card class="skeleton-card">
           <ion-card-header class="doctor-card-header">
-            <ion-avatar>
+            <ion-avatar class="avatar">
               <ion-skeleton-text animated class="doctor-avatar-skeleton"></ion-skeleton-text>
             </ion-avatar>
             <div class="doctor-header-info">
@@ -107,7 +107,7 @@
       <ion-col class="custom-col" *ngFor="let doctor of paginatedDoctors">
         <ion-card>
           <ion-card-header class="doctor-card-header">
-            <ion-avatar>
+            <ion-avatar class="avatar">
               <img ngSrc="{{doctor.user.pictureUrl}}" class="doctor-avatar" alt="Profilkép" draggable="false" priority fill/>
             </ion-avatar>
             <div class="doctor-header-info">
@@ -133,7 +133,6 @@
           </div>
         </ion-card>
       </ion-col>
-
     </ion-row>
   </ion-grid>
 </div>

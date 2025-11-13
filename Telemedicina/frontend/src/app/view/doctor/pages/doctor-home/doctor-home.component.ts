@@ -36,12 +36,14 @@ import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 })
 export class DoctorHomeComponent implements OnInit, OnDestroy{
   user: Observable<DoctorItem | null>;
+  doctorId: number | null = null;
+
   appointments: Appointment[] = [];
   systemMessages: SystemMessage[] = [];
 
   todaysAppointments: number = 0;
   myPatients: number = 0;
-  unreadMessages: number = 0;
+  unreadSummary: Map<number, number> = new Map();
   pendingAppointments: number = 0;
   rejectedAppointments: number = 0;
 
@@ -75,17 +77,25 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
     })();
   }
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.doctorId = await this.getDoctorUserId();
+
     this.user
       .pipe(takeUntil(this.destroy$))
       .subscribe(u => this.updateRatingStars(u));
 
+    void this.getUnreadSummary();
     this.loadSystemMessagesOnceAfterLogin();
   }
 
   private async getDoctorId(): Promise<number | null> {
     const user = await firstValueFrom(this.user);
     return user?.doctor.id ?? null;
+  }
+
+  private async getDoctorUserId(): Promise<number | null> {
+    const user = await firstValueFrom(this.user);
+    return user?.user.id ?? null;
   }
 
   ngOnDestroy(): void {
@@ -102,7 +112,7 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
     }
 
     this.http.post<SystemMessage[]>(
-      `${environment.apiUrl}/shared/system-messages-for-me`,
+      `${environment.apiUrl}/messages/system-messages-for-me`,
       payload,
       { withCredentials: true }
     ).subscribe({
@@ -138,6 +148,30 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
 
       sessionStorage.setItem(`System-Messages-${message.id}`, '1');
     }
+  }
+
+  async getUnreadSummary(): Promise<void> {
+    if (!this.doctorId) return;
+
+    try {
+      const summary: Array<{ partnerId: number, unreadCount: number }> =
+        await firstValueFrom(this.http.get<any>(
+          `${environment.apiUrl}/messages/unreadSummary`,
+          { withCredentials: true }
+        ));
+
+      this.unreadSummary = new Map(summary.map(s => [s.partnerId, s.unreadCount]));
+    } catch (err) {
+      console.error('❌ Olvasatlan összegzés lekérése sikertelen:', err);
+    }
+  }
+
+  get unreadCountsArray(): number[] {
+    if (this.unreadSummary.size === 0) {
+      return [0];
+    }
+
+    return [...this.unreadSummary.values()];
   }
 
   async loadAppointments(): Promise<Appointment[] | null> {
@@ -289,7 +323,9 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
   }
 
   updateRatingStars(u: DoctorItem | null): void {
-    const r = roundToHalf(u?.doctor?.avgRating ?? 0);
+    const rawRating = Number(u?.doctor?.avgRating ?? 0);
+    const r = roundToHalf(isNaN(rawRating) ? 0 : rawRating);
+
     this.roundedRating = r;
     this.starIcons = buildStarIcons(r);
     this.cdr?.markForCheck?.();

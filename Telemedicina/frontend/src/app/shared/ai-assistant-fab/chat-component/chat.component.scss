@@ -123,9 +123,9 @@
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  padding: 8px; /* Padding a beviteli mező körül */
-  border-top: 1px solid var(--ion-color-step-150, #d7d8da);
-  background: var(--ion-background-color, #ffffff); /* Fehér háttér, hogy elváljon a görgethető tartalomtól */
+  padding: 8px;
+  border-top: 1px solid #d7d8da;
+  background: #ffffff;
 }
 
 .message-input {

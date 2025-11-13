@@ -112,4 +112,16 @@ export class AdminNavbarComponent implements OnInit{
     ev?.stopPropagation();
     this.profileOpen = !this.profileOpen;
   }
+
+  confirmAccountDelete() {
+    void this.alert.show(
+      'Fiók törlése',
+      'Biztosan törölni szeretnéd a fiókodat? Ez a funkció visszafordíthatatlan!', // <-- Megmarad a \n
+      () => this.deleteAccount()
+    )
+  }
+
+  deleteAccount() {
+    this.userService.deleteAccount().subscribe(() => this.nav.navigateRoot('/regist-login?tab=login'));
+  }
 }

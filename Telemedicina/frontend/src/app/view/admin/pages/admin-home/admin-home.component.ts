@@ -76,12 +76,11 @@ export class AdminHomeComponent implements OnInit{
     }
 
     this.http.post<SystemMessage[]>(
-      `${environment.apiUrl}/shared/system-messages-for-me`,
+      `${environment.apiUrl}/messages/system-messages-for-me`,
       payload,
       { withCredentials: true }
     ).subscribe({
       next: (res) => {
-        console.log(res)
         this.systemMessages = res;
         void this.presentSystemMessagesModalsOnce();
         localStorage.setItem(key, '1');

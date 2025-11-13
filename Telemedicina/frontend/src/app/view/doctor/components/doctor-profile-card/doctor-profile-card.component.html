@@ -1,39 +1,74 @@
-<div class="dpc" [ngClass]="{ 'patient-mode': !editable }">
-  <div class="dpc-left">
-    <div class="dpc-avatar">
-      <img ngSrc="{{ user.user.pictureUrl }}" alt="Profilkép" draggable="false" fill/>
+<ion-card class="doctor-card">
+  <ion-toolbar class="dpc-header">
+    <div slot="start" class="dpc-left">
+      <div class="dpc-avatar">
+        <img ngSrc="{{ user.user.pictureUrl }}" alt="Profilkép" draggable="false" fill priority />
+      </div>
+      <div class="pc-name-info">
+        <ion-label>
+          <div class="pc-fullname">Dr. {{ fullName }}</div>
+          <ion-chip class="pc-role">{{ user.user.role }}</ion-chip>
+        </ion-label>
+      </div>
     </div>
-    <div class="pc-name">
-      <div class="pc-fullname">Dr. {{ fullName }}</div>
-      <div class="pc-role">{{ user.user.role }}</div>
-    </div>
-  </div>
 
-  <div class="dpc-right" *ngIf="editable">
-    <ion-button class="btn-accent dpc-edit-top" (click)="edit.emit()">
+    <ion-buttons slot="end" *ngIf="editable">
+      <ion-button class="btn-accent" (click)="edit.emit()" fill="outline">
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        Módosítás
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-card-content>
+    <div class="pc-details pc-details-doctor-card">
+      <div class="col first">
+        <ion-item lines="none" class="pc-item">
+          <ion-label class="label">Specialitás:</ion-label>
+          <span class="value">{{ user.doctor.speciality }}</span>
+        </ion-item>
+        <ion-item lines="none" class="pc-item">
+          <ion-label class="label">Cím:</ion-label>
+          <span class="value">{{ user.user.address || 'N/A' }}</span>
+        </ion-item>
+      </div>
+      <div class="col">
+        <ion-item lines="none" class="pc-item">
+          <ion-label class="label">Mobil telefonszám:</ion-label>
+          <span class="value">{{ formatPhoneNumber(user.user.phoneNumber) || 'N/A' }}</span>
+        </ion-item>
+        <ion-item lines="none" class="pc-item">
+          <ion-label class="label">Email:</ion-label>
+          <span class="value">{{ user.user.email }}</span>
+        </ion-item>
+      </div>
+    </div>
+
+    <div class="dpc-intro" *ngIf="user.doctor.introduction">
+      <h4>Bemutatkozás</h4>
+      <p class="intro">{{ user.doctor.introduction.trim() || "Rövid bemutatkozás..." }}</p>
+    </div>
+
+    <div class="dpc-rating-system-inline" *ngIf="canRate" (mouseleave)="clearHover()">
+      <div class="rating-label">Értékeled az orvost:</div>
+      <div class="rating-stars">
+        <ion-icon
+          *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; let index = index"
+          [name]="getStarIcon( (index + 1) / 2 )"
+          [ngClass]="{ 'star-half-left': (index + 1) % 2 !== 0, 'star-half-right': (index + 1) % 2 === 0 }"
+          (mouseenter)="setHover((index + 1) / 2)"
+          (click)="setRating((index + 1) / 2)"
+          size="small"
+        ></ion-icon>
+      </div>
+      <div class="rating-value">{{ (user.doctor.avgRating | number:'1.1-1') || '—' }} / 5</div>
+    </div>
+  </ion-card-content>
+
+  <ion-footer *ngIf="editable" class="pc-edit-bottom-wrap">
+    <ion-button class="btn-accent" (click)="edit.emit()">
+      <ion-icon name="create-outline" slot="start"></ion-icon>
       Módosítás
     </ion-button>
-  </div>
-
-  <div class="dpc-info">
-    <div class="col first">
-      <div class="row"><span class="lbl">Specialitás:</span> <span class="val">{{ user.doctor.speciality }}</span></div>
-      <div class="row"><span class="lbl">Cím:</span> <span class="val">{{ user.user.address || 'N/A' }}</span></div>
-    </div>
-    <div class="col">
-      <div class="row"><span class="lbl">Mobil telefonszám:</span> <span class="val">{{ formatPhoneNumber(user.user.phoneNumber) || 'N/A' }}</span></div>
-      <div class="row"><span class="lbl">Email:</span> <span class="val">{{ user.user.email }}</span></div>
-    </div>
-  </div>
-
-  <div class="dpc-edit-bottom-wrap" *ngIf="editable">
-    <ion-button class="btn-accent dpc-edit-bottom" (click)="edit.emit()">
-      Módosítás
-    </ion-button>
-  </div>
-
-  <div class="dpc-intro" *ngIf="user.doctor.introduction">
-    <h4>Bemutatkozás</h4>
-    <p class="intro">{{ user.doctor.introduction.trim() || "Rövid bemutatkozás..." }}</p>
-  </div>
-</div>
+  </ion-footer>
+</ion-card>

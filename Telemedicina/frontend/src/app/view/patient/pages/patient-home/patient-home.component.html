@@ -71,7 +71,7 @@
 
   <ion-card class="appointments">
     <div class="card-header">
-      <h2 class="header-title">Közelgő dőpontjaim</h2>
+      <ion-title class="header-title">Közelgő időpontjaim</ion-title>
       <ion-button class="expand-btn" [routerLink]="['/patient/appointment-list']">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
@@ -81,7 +81,7 @@
       <div *ngFor="let app of myAppointments" class="appointment-card">
         <div class="appointment-left">
           <div class="avatar">
-            <img ngSrc="{{app.doctor?.user?.pictureUrl}}" alt="Doktor" class="doctor-image" draggable="false" priority fill/>
+            <img ngSrc="{{app.doctor?.user?.pictureUrl}}" alt="Doktor" class="doctor-image" draggable="false" fill priority/>
           </div>
           <div class="doctor-info">
             <div class="doctor-name">{{ app.doctor?.user?.name }}</div>
@@ -118,12 +118,13 @@
 
     <div *ngIf="isAppointmentsLoaded && myAppointments.length === 0" class="appointment-count">
       <span>N/A</span>
+      <p>Nincs elérhető adat!</p>
     </div>
   </ion-card>
 
   <ion-card class="results">
     <div class="card-header">
-      <h2 class="header-title">Legutóbbi dokumentumok</h2>
+      <ion-title class="header-title">Legutóbbi dokumentumok</ion-title>
       <ion-button class="expand-btn" [routerLink]="['/patient/health-diary']">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>

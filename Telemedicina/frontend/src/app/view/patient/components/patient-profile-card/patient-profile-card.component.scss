@@ -1,125 +1,121 @@
-$card-bg: #ffffff;
-$card-radius: 10px;
-$card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-$accent: var(--accent);
-$secondary: var(--secondary);
-$text-primary: #1e2a3a;
-$text-secondary: #6b7785;
-$chip-bg: #e0f2fe;
-$chip-border: #bae6fd;
-$chip-color: #155e75;
+.patient-card {
+  --background: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  margin: 16px;
+  padding: 0;
+  overflow: hidden;
 
-.card {
-  padding: 20px;
-  background-color: $card-bg;
-  border-radius: $card-radius;
-  margin: 10px;
-  box-shadow: $card-shadow;
-
-  // HEADER
   .pc-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    --background: #f7f9fb;
+    --border-width: 0;
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 
     .pc-left {
-      grid-area: left;
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 15px;
       min-width: 0;
 
       .pc-avatar {
         position: relative;
-        width: 100px;
-        height: 100px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
-        background: #e6f4ff;
+        background: var(--chip-bg);
         display: grid;
         place-items: center;
-        overflow: visible;
-        box-shadow: $card-shadow;
+        overflow: hidden;
+        box-shadow: 0 0 0 4px #e6f4ff;
 
         img {
           border-radius: 50%;
           object-fit: cover;
-          border: 3px solid #fff;
-          box-shadow: 0 0 0 3px #e6f4ff;
+          width: 100%;
+          height: 100%;
         }
       }
 
-      .pc-name {
+      .pc-name-info {
         min-width: 0;
+        ion-label {
+          margin: 0;
+        }
 
         .pc-fullname {
           font-weight: 700;
-          font-size: 1.125rem;
-          line-height: 1.2;
+          font-size: 1.2rem;
+          line-height: 1.3;
+          color: var(--text-primary);
         }
 
         .pc-role {
-          display: inline-block;
-          width: auto;
+          --background: var(--chip-bg);
+          --color: var(--chip-color);
           font-size: 0.75rem;
           font-weight: 600;
-          color: $chip-color;
-          background: $chip-bg;
           padding: 4px 10px;
-          border-radius: 999px;
-          border: 1px solid $chip-border;
-          cursor: default;
-          white-space: normal;
-          word-wrap: break-word;
-          max-width: 100%;
+          height: auto;
+          margin: 4px 0 0 0;
         }
       }
     }
 
-    .pc-edit-top {
-      display: inline-flex;
-      margin-left: auto;
-      margin-bottom: 50px;
+    ion-button {
+      &.btn-accent {
+        --background: transparent;
+        --border-color: var(--accent);
+        --color: var(--accent);
+        --border-radius: 5px;
+        font-weight: 600;
+
+        &:hover {
+          --background: var(--accent);
+          --color: white;
+          --border-radius: 7px;
+        }
+      }
     }
-
-    .btn-accent {
-      --background: transparent;
-      border: 1px solid $accent;
-      border-radius: 5px;
-      color: $accent;
-
-      &:hover {
-        color: white;
-        border-radius: 7px;
+    @media (max-width: 599px) {
+      .btn-accent {
+        display: none;
       }
     }
   }
 
-  .pc-edit-bottom-wrap {
-    display: none;
+  ion-card-content {
+    padding: 20px;
   }
 
   .pc-details {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 12px 16px;
-    padding: 12px 0;
+    gap: 10px 16px;
+    margin-bottom: 15px;
 
     .pc-item {
+      --padding-start: 0;
+      --inner-padding-end: 0;
+      --inner-border-width: 0;
+      --min-height: auto;
       display: flex;
-      gap: 8px;
       align-items: flex-start;
-      min-width: 0;
+      gap: 10px;
 
-      .label {
-        color: $text-secondary;
+      ion-label.label {
         font-weight: 600;
-        white-space: nowrap;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+        margin: 0;
+        flex-basis: 120px;
+        flex-grow: 0;
       }
 
       .value {
-        color: $text-primary;
-        overflow-wrap: anywhere;
-        min-width: 0;
+        color: var(--text-primary);
+        overflow-wrap: break-word;
+        flex-grow: 1;
       }
     }
   }
@@ -127,31 +123,30 @@ $chip-color: #155e75;
   .pc-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    padding: 8px 0 12px;
+    gap: 8px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
 
-    .chip {
-      font-size: 0.75rem;
+    ion-chip {
+      --background: var(--secondary);
+      --color: #ffffff;
+      border: 1px solid var(--primary);
+      --border-style: solid;
+      --box-shadow: none;
+      font-size: 0.8rem;
       font-weight: 600;
-      color: $chip-color;
-      background: $chip-bg;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid $chip-border;
-      display: inline-flex;
-      align-items: center;
+      height: 32px;
       cursor: default;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+      transition: all 0.2s ease-in-out;
 
       &:hover {
-        background: $secondary;
-        color: #fff;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+        --background: var(--primary);
+        --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+      }
 
-        ion-icon {
-          color: #fff;
-        }
+      ion-icon {
+        color: #ffffff;
       }
     }
   }
@@ -159,55 +154,78 @@ $chip-color: #155e75;
   .pc-stats {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 10px 16px;
-    padding-top: 12px;
+    gap: 20px 16px;
+    padding: 10px;
     border-top: 1px solid rgba(0, 0, 0, 0.08);
 
     .stat {
+      --padding-start: 0;
+      --inner-padding-end: 0;
+      --inner-border-width: 0;
+      --min-height: auto;
       display: flex;
-      gap: 8px;
-      justify-content: flex-start;
+      align-items: center;
+      gap: 20px;
 
-      .label {
-        color: $text-secondary;
+      ion-label.label {
         font-weight: 600;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+        margin: 0;
+        flex-basis: 70px;
+        flex-grow: 0;
       }
 
       .value {
-        color: $text-primary;
-        overflow-wrap: anywhere;
+        color: var(--text-primary);
+        overflow-wrap: break-word;
+        flex-grow: 1;
+      }
+    }
+  }
+
+  .pc-edit-bottom-wrap {
+    padding: 10px 20px;
+    background: #f7f9fb;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+
+    ion-button {
+      &.btn-accent {
+        width: calc(100% - 40px);
+        --background: transparent;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        --border-radius: 5px;
+        font-weight: 600;
+
+        &:hover {
+          --background: var(--accent);
+          color: white;
+          --border-radius: 7px;
+        }
       }
     }
   }
 
   @media (min-width: 600px) {
-    .pc-details {
+    .pc-details, .pc-stats {
       grid-template-columns: repeat(2, 1fr);
     }
-    .pc-stats {
-      grid-template-columns: repeat(2, 1fr);
+
+    .pc-edit-bottom-wrap {
+      display: none;
     }
   }
 
   @media (min-width: 1000px) {
     .pc-header {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .pc-left .pc-avatar {
-      width: 96px;
-      height: 96px;
-    }
-
-    .pc-left .pc-name .pc-fullname {
-      font-size: 1.35rem;
-    }
-
-    .btn-accent {
-      align-self: auto;
-      width: auto;
+      .pc-left .pc-avatar {
+        width: 100px;
+        height: 100px;
+      }
+      .pc-left .pc-name-info .pc-fullname {
+        font-size: 1.5rem;
+      }
     }
 
     .pc-details {
@@ -216,31 +234,6 @@ $chip-color: #155e75;
 
     .pc-stats {
       grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  @media (max-width: 999px) {
-    .pc-edit-top {
-      display: none !important;
-    }
-
-    .pc-edit-bottom-wrap {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 12px;
-
-      .pc-edit-bottom {
-        width: 100%;
-        --background: transparent;
-        border: 1px solid $accent;
-        border-radius: 5px;
-        color: $accent;
-
-        &:hover {
-          color: white;
-          border-radius: 7px;
-        }
-      }
     }
   }
 }

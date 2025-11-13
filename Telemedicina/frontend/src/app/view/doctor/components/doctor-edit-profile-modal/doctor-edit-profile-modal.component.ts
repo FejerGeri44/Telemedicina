@@ -8,7 +8,7 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {environment} from '../../../../../../enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../services/user/user.service';
-import {NgIf, NgOptimizedImage} from '@angular/common';
+import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
 
@@ -22,6 +22,7 @@ import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns
     ReactiveFormsModule,
     NgOptimizedImage,
     NgIf,
+    NgForOf,
   ],
   styleUrls: ['./doctor-edit-profile-modal.component.scss']
 })

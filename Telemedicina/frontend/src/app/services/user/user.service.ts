@@ -1,4 +1,4 @@
-import {Injectable, OnInit} from '@angular/core';
+import {Injectable} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {BehaviorSubject, first, Observable, Subscription, switchMap, timer} from 'rxjs';
 import { map, shareReplay, tap } from 'rxjs/operators';
@@ -79,6 +79,16 @@ export class UserService {
         this.stopSessionTimer();
         this._user$.next(null);
         this.clearSystemMessagesFromSessionStorage();
+      }));
+  }
+
+  deleteAccount(): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/auth/account`, { withCredentials: true })
+      .pipe(tap(() => {
+        this.stopSessionTimer();
+        this._user$.next(null);
+        this.clearSystemMessagesFromSessionStorage();
+        this.toast.show("Fiókja véglegesen törölve!", "success");
       }));
   }
 

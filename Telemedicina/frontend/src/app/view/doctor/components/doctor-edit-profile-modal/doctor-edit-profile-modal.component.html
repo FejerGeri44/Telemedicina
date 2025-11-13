@@ -10,54 +10,50 @@
 </ion-header>
 
 <ion-content class="epm-content">
-  <form [formGroup]="editProfileForm" (ngSubmit)="save()">
-    <section class="epm-header">
-      <div class="epm-avatar">
-        <img
-          ngSrc="{{tempPreviewUrl || user.user.pictureUrl}}"
-          alt="Profilkép"
-          class="avatar-img"
-          draggable="false"
-          fill/>
-        <label class="avatar-edit">
-          <ion-icon name="camera"></ion-icon>
-          <input
-            type="file"
-            hidden
-            (change)="onFileSelected($event)"
-            accept="image/*" />
-        </label>
-      </div>
-      <div class="epm-headline">
-        <h2>Dr. {{ user.user.name }}</h2>
-        <p class="muted">{{ user.user.email }}</p>
-      </div>
-    </section>
+  <section class="epm-header">
+    <div class="pc-avatar">
+      <img
+        ngSrc="{{ tempPreviewUrl || user.user.pictureUrl }}"
+        alt="Profilkép"
+        draggable="false"
+        fill
+        priority
+      />
+      <label class="avatar-edit">
+        <ion-icon name="camera"></ion-icon>
+        <input
+          type="file"
+          hidden
+          (change)="onFileSelected($event)"
+          accept="image/*" />
+      </label>
+    </div>
+    <div class="epm-headline">
+      <h2>Dr. {{ user.user.name }}</h2>
+      <p class="muted">{{ user.user.email }}</p>
+    </div>
+  </section>
 
+  <form [formGroup]="editProfileForm" (ngSubmit)="save()">
     <section class="epm-grid">
       <div class="col">
-        <ion-item>
+        <ion-item lines="none">
           <ion-label class="custom-label" position="stacked">Név</ion-label>
           <ion-input
             class="custom-input"
             type="text"
-            formControlName="name"
-            [placeholder]="user.user.name"
+            formControlName="name" [placeholder]="user.user.name"
             fill="outline"
             clearInput>
           </ion-input>
-          <ion-note slot="error" *ngIf="editProfileForm.get('name')?.invalid && editProfileForm.get('name')?.touched">
-            A név nem érvényes.
-          </ion-note>
         </ion-item>
 
-        <ion-item>
+        <ion-item lines="none">
           <ion-label class="custom-label" position="stacked">Cím</ion-label>
           <ion-input
             class="custom-input"
             type="text"
-            formControlName="address"
-            [placeholder]="user.user.address || 'N/A'"
+            formControlName="address" [placeholder]="user.user.address"
             fill="outline"
             clearInput>
           </ion-input>
@@ -65,51 +61,48 @@
       </div>
 
       <div class="col">
-        <ion-item>
+        <ion-item lines="none">
           <ion-label class="custom-label" position="stacked">Mobil</ion-label>
           <ion-input
             class="custom-input"
             type="tel"
-            formControlName="phoneNumber"
-            [placeholder]="formatPhoneNumber(user.user.phoneNumber)"
+            formControlName="phoneNumber" [placeholder]="user.user.phoneNumber"
             fill="outline"
             clearInput>
           </ion-input>
         </ion-item>
 
-        <ion-item>
+        <ion-item lines="none">
           <ion-label class="custom-label" position="stacked">Specialitás</ion-label>
           <ion-input
             class="custom-input"
             type="text"
-            formControlName="speciality"
-            [placeholder]="user.doctor.speciality"
+            formControlName="speciality" [placeholder]="user.doctor.speciality"
             fill="outline"
             clearInput>
           </ion-input>
         </ion-item>
       </div>
-
-      <div class="row">
-        <ion-item>
-          <ion-label class="custom-label" position="stacked">Bemutatkozás</ion-label>
-          <ion-textarea
-            class="custom-textarea"
-            autoGrow="true"
-            [rows]="6"
-            formControlName="introduction"
-            [placeholder]="user.doctor.introduction || 'Részletes bemutatkozás...'"
-            fill="outline">
-          </ion-textarea>
-        </ion-item>
-      </div>
     </section>
+
+    <ion-item>
+      <ion-label class="custom-label" position="stacked">Bemutatkozás</ion-label>
+      <ion-textarea
+        class="custom-textarea"
+        autoGrow="true"
+        [rows]="6"
+        formControlName="introduction"
+        [placeholder]="user.doctor.introduction || 'Részletes bemutatkozás...'"
+        fill="outline">
+      </ion-textarea>
+    </ion-item>
 
     <div class="epm-actions">
       <ion-button
         class="btn-accent"
         type="submit"
-        [disabled]="savingData || editProfileForm.invalid"> Mentés
+        [disabled]="savingData || editProfileForm.invalid || (!editProfileForm.dirty && !file)">
+        Mentés
       </ion-button>
     </div>
   </form>

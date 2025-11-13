@@ -1,6 +1,6 @@
 import {Component, Input, Inject, Renderer2} from '@angular/core';
 import {IonicModule, LoadingController, ModalController} from '@ionic/angular';
-import {DatePipe, NgForOf, NgOptimizedImage, DOCUMENT} from '@angular/common';
+import {NgForOf, NgOptimizedImage, DOCUMENT} from '@angular/common';
 import {formatPhoneNumber, formatTaj, formatTimestamp} from '../../../../../../utils/formatProfileData';
 import {MyDiagnosis} from '../../../../../../utils/interfaces/diagnosis.interface';
 import {DoctorItem} from '../../../../../../utils/interfaces/doctor.interface';
@@ -27,8 +27,7 @@ interface SummaryVM {
   imports: [
     IonicModule,
     NgForOf,
-    NgOptimizedImage,
-    DatePipe
+    NgOptimizedImage
   ],
   templateUrl: './diagnoses-table.component.html',
   standalone: true,

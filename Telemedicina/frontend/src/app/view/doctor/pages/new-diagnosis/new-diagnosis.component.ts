@@ -229,7 +229,7 @@ export class NewDiagnosisComponent implements OnInit{
     return Array.isArray(this.patients) ? this.patients : Object.values(this.patients ?? {});
   }
 
-  getUserNameByPatientId(patient_id: number): string {
+    getUserNameByPatientId(patient_id: number | null): string {
     const id = Number(patient_id);
     if (!Number.isFinite(id)) return '';
 
