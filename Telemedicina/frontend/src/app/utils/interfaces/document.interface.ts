@@ -10,8 +10,8 @@ export interface Document {
 }
 
 export interface DocumentItem {
-  document: Document;
   diagnosis_date: string;
+  document: Document;
   patient: PatientItem;
   doctor: DoctorItem;
 }
