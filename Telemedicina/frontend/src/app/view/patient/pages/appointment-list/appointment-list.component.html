@@ -108,3 +108,15 @@
     </ion-row>
   </ion-grid>
 </div>
+
+<div *ngIf="!isLoading && myAppointments.length === 0" class="no-data-appointments">
+  <div class="no-data-container">
+    <ion-icon name="calendar-outline" class="icon-large"></ion-icon>
+    <p class="main-text">Jelenleg nincs foglalt, közelgő időpontod.</p>
+    <p class="sub-text">Keress egy számodra megfelelő orvost az Orvos keresőben!</p>
+    <ion-button [routerLink]="'/patient/doctor-search'" class="btn-secondary">
+      <ion-icon name="search" slot="start"></ion-icon>
+      Orvos keresése
+    </ion-button>
+  </div>
+</div>

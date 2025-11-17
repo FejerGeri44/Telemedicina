@@ -7,7 +7,7 @@ import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {UserService} from '../../../../services/user/user.service';
-import {Message} from '../../../../utils/interfaces/message.interface';
+import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-messages.service';
 
 @Component({
   selector: 'app-patient-navbar',
@@ -31,9 +31,6 @@ export class PatientNavbarComponent implements OnInit{
   mobileMenuOpen = false;
   private navSub?: Subscription;
 
-  unreadMessages: Message[] = [];
-  unreadCount = 0;
-
   menuItems = [
     { icon: 'home', label: 'Profil', route: 'patient-home' },
     { icon: 'search', label: 'Orvos kereső', route: 'doctor-search' },
@@ -42,14 +39,18 @@ export class PatientNavbarComponent implements OnInit{
     { icon: 'chatbubbles', label: 'Üzenetek', route: 'patient-messages' },
   ];
 
+  unreadCount$: Observable<number>;
+
   constructor(
     private http: HttpClient,
     private router: Router,
     protected userService: UserService,
     private nav: NavController,
-    private alert: AlertService
+    private alert: AlertService,
+    private unreadMessageService: UnreadMessageService
   ) {
     this.user = this.userService.patient$();
+    this.unreadCount$ = this.unreadMessageService.totalCount$;
   }
 
   ngOnInit() {
@@ -59,6 +60,8 @@ export class PatientNavbarComponent implements OnInit{
     this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => this.closeMobileMenu());
+
+    void this.unreadMessageService.fetchUnreadSummary();
   }
 
   confirmLogout() {
@@ -71,29 +74,6 @@ export class PatientNavbarComponent implements OnInit{
 
   logout() {
     this.userService.logout().subscribe(() => this.nav.navigateRoot('/regist-login?tab=login'));
-  }
-
-  public getUnreadMessages() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.post<{unread:any[], count:number}>(
-      'http://localhost:3000/api/getUnreadMessages',
-      {
-        role: 'patient',
-        limit: 200
-      },
-      {
-        headers:
-          { Authorization: `Bearer ${token}` }
-      }
-    ).subscribe({
-      next: (res) => {
-        this.unreadMessages = res.unread ?? [];
-        this.unreadCount = res.count ?? this.unreadMessages.length;
-      },
-      error: (e) => console.error('getUnreadMessages error', e)
-    });
   }
 
   onNotifications() {

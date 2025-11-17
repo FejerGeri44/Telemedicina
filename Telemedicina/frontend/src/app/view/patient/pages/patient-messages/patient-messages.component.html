@@ -22,12 +22,18 @@
         button
         [class.selected]="selectedDoctorId === doctor.user.id"
       >
-        <ion-avatar class="avatar" slot="start">
-          <img ngSrc="{{ doctor.user.pictureUrl }}" [alt]="doctor.user.name" fill priority>
-        </ion-avatar>
+        <div class="profile-small">
+          <ion-avatar class="avatar" slot="start">
+            <img ngSrc="{{ doctor.user.pictureUrl }}" [alt]="doctor.user.name" fill priority>
+          </ion-avatar>
+
+          <div class="doctor-name-mobile">
+            Dr. {{ doctor.user.name }}
+          </div>
+        </div>
 
         <ion-label>
-          <h2>{{ doctor.user.name }}</h2>
+          <h2>Dr. {{ doctor.user.name }}</h2>
           <p>{{ doctor.doctor.speciality }}</p>
         </ion-label>
 
@@ -76,13 +82,24 @@
       </div>
     </ion-header>
 
-    <div class="messages-container">
-      <div *ngIf="!selectedDoctorId" class="select-doctor-placeholder">
-        <p>Válassz ki egy orvost a beszélgetés elkezdéséhez.</p>
-      </div>
+    <div class="messages-container"
+         [ngClass]="{ 'is-empty-state': !selectedDoctorId || (selectedDoctorId && messages.length === 0 && !isLoading) }">
+      <div class="messages-container">
+        <div *ngIf="!selectedDoctorId" class="select-patient-placeholder">
+          <div class="placeholder-content">
+            <ion-icon name="chatbubbles-outline" class="placeholder-icon"></ion-icon>
+            <h3>Kezdj el egy beszélgetést!</h3>
+            <p>Válassz ki egy orvost a bal oldali listáról a csevegés megkezdéséhez.</p>
+          </div>
+        </div>
 
-      <div *ngIf="selectedDoctorId && messages.length === 0 && !isLoading" class="no-messages-placeholder">
-        <p>Még nincs üzenet a beszélgetésben. Kezdj te!</p>
+        <div *ngIf="selectedDoctorId && messages.length === 0 && !isLoading" class="no-messages-placeholder">
+          <div class="placeholder-content">
+            <ion-icon name="document-text-outline" class="placeholder-icon"></ion-icon>
+            <h3>Üdvözlünk a csevegőben!</h3>
+            <p>Ez a beszélgetés még üres. Küldj egy üzenetet, hogy elkezdődjön a kommunikáció.</p>
+          </div>
+        </div>
       </div>
 
       <div *ngIf="selectedDoctorId && messages.length > 0">

@@ -9,13 +9,14 @@
       <ion-buttons slot="end" class="top-right-actions">
         <ion-button class="icon-btn notification" (click)="onNotifications()" aria-label="Értesítések">
           <ion-icon name="notifications-outline"></ion-icon>
-          <span *ngIf="unreadCount > 0"
+          <span *ngIf="unreadCount$ | async as count; else noBadge"
                 class="notif-badge"
                 aria-live="polite"
                 aria-label="Olvasatlan üzenetek száma">
-              {{ unreadCount > 99 ? '99+' : unreadCount }}
+              {{ count > 0 ? (count > 99 ? '99+' : count) : '' }}
           </span>
         </ion-button>
+        <ng-template #noBadge></ng-template>
 
         <div class="profile-block desktop-only" (click)="toggleProfileMenu($event)">
           <ng-container *ngTemplateOutlet="userProfileInfo; context: { $implicit: user }"></ng-container>

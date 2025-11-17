@@ -41,7 +41,7 @@
 
     <div class="pag-controls">
       <ion-icon name="chevron-back-outline"
-                (click)="prevPageSet()"
+                (click)="goToPage(currentPage - 1)"
                 [class.disabled]="currentPage === 1"></ion-icon>
 
       <span *ngFor="let page of visiblePages"
@@ -51,7 +51,7 @@
         </span>
 
       <ion-icon name="chevron-forward-outline"
-                (click)="nextPageSet()"
+                (click)="goToPage(currentPage + 1)"
                 [class.disabled]="currentPage === totalPages"></ion-icon>
     </div>
   </div>

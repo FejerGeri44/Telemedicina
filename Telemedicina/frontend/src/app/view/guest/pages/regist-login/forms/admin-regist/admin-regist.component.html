@@ -1,4 +1,4 @@
-<ion-card>
+<ion-card class="admin-extra">
   <ion-card-header>
     <ion-card-title>Admin felvitele</ion-card-title>
   </ion-card-header>
@@ -7,99 +7,123 @@
     <form [formGroup]="adminForm" (ngSubmit)="onAdminRegister()">
 
       <div class="grid-pair">
-        <ion-input
-          class="field"
-          label="Teljes név"
-          labelPlacement="floating"
-          fill="outline"
-          shape="round"
-          type="text"
-          formControlName="fullName"
-          required
-          clearInput>
-        </ion-input>
+        <ion-item
+          lines="none"
+          [class.ios-custom-style]="this.platform.isIos">
+          <ion-input
+            class="field"
+            label="Teljes név"
+            labelPlacement="floating"
+            fill="outline"
+            shape="round"
+            type="text"
+            formControlName="fullName"
+            required
+            clearInput>
+          </ion-input>
+        </ion-item>
 
-        <ion-input
-          class="field"
-          label="E-mail cím"
-          labelPlacement="floating"
-          fill="outline"
-          shape="round"
-          type="text"
-          formControlName="email"
-          required
-          clearInput>
-        </ion-input>
+        <ion-item
+          lines="none"
+          [class.ios-custom-style]="this.platform.isIos">
+          <ion-input
+            class="field"
+            label="E-mail cím"
+            labelPlacement="floating"
+            fill="outline"
+            shape="round"
+            type="text"
+            formControlName="email"
+            required
+            clearInput>
+          </ion-input>
+        </ion-item>
       </div>
 
       <div class="grid-pair">
-        <ion-input
-          class="field"
-          label="Jelszó"
-          labelPlacement="floating"
-          fill="outline"
-          shape="round"
-          [type]="showPwd1 ? 'text' : 'password'"
-          formControlName="password"
-          required
-          clearInput>
-          <ion-button
-            slot="end"
-            fill="clear"
-            size="small"
-            type="button"
-            (click)="togglePwd1()"
-            aria-label="Jelszó mutatása/elrejtése">
-            <ion-icon [name]="showPwd1 ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-          </ion-button>
-        </ion-input>
+        <ion-item
+          lines="none"
+          [class.ios-custom-style]="this.platform.isIos">
+          <ion-input
+            class="field"
+            label="Jelszó"
+            labelPlacement="floating"
+            fill="outline"
+            shape="round"
+            [type]="showPwd1 ? 'text' : 'password'"
+            formControlName="password"
+            required
+            clearInput>
+            <ion-button
+              slot="end"
+              fill="clear"
+              size="small"
+              type="button"
+              (click)="togglePwd1()"
+              aria-label="Jelszó mutatása/elrejtése">
+              <ion-icon [name]="showPwd1 ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </ion-button>
+          </ion-input>
+        </ion-item>
 
-        <ion-input
-          class="field"
-          label="Jelszó ismét"
-          labelPlacement="floating"
-          fill="outline"
-          shape="round"
-          [type]="showPwd1 ? 'text' : 'password'"
-          formControlName="password_again"
-          required
-          clearInput>
-          <ion-button
-            slot="end"
-            fill="clear"
-            size="small"
-            type="button"
-            (click)="togglePwd2()"
-            aria-label="Jelszó mutatása/elrejtése">
-            <ion-icon [name]="showPwd2 ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-          </ion-button>
-        </ion-input>
+        <ion-item
+          lines="none"
+          [class.ios-custom-style]="this.platform.isIos">
+          <ion-input
+            class="field"
+            label="Jelszó ismét"
+            labelPlacement="floating"
+            fill="outline"
+            shape="round"
+            [type]="showPwd1 ? 'text' : 'password'"
+            formControlName="password_again"
+            required
+            clearInput>
+            <ion-button
+              slot="end"
+              fill="clear"
+              size="small"
+              type="button"
+              (click)="togglePwd2()"
+              aria-label="Jelszó mutatása/elrejtése">
+              <ion-icon [name]="showPwd2 ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </ion-button>
+          </ion-input>
+        </ion-item>
       </div>
 
       <div class="grid-pair">
-        <ion-input
-          class="field"
-          label="Telefonszám"
-          labelPlacement="floating"
-          fill="outline"
-          shape="round"
-          type="tel"
-          formControlName="phoneNumber"
-          required
-          clearInput>
-        </ion-input>
+        <ion-item
+          lines="none"
+          [class.ios-custom-style]="this.platform.isIos">
+          <ion-input
+            class="field"
+            label="Telefonszám"
+            labelPlacement="floating"
+            fill="outline"
+            shape="round"
+            type="tel"
+            formControlName="phoneNumber"
+            required
+            clearInput>
+          </ion-input>
+        </ion-item>
 
-        <ion-input
-          class="field"
-          label="Cím"
-          labelPlacement="floating"
-          fill="outline"
-          shape="round"
-          type="text"
-          formControlName="address"
-          required
-          clearInput>
-        </ion-input>
+        <ion-item
+          lines="none"
+          [class.ios-custom-style]="this.platform.isIos">
+          <ion-input
+            class="field"
+            label="Cím"
+            labelPlacement="floating"
+            fill="outline"
+            shape="round"
+            type="text"
+            formControlName="address"
+            required
+            clearInput>
+          </ion-input>
+        </ion-item>
       </div>
 
       <div class="button-row">

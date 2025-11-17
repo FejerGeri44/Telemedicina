@@ -35,6 +35,27 @@ const UserRepository = {
     return row || null;
   },
 
+  async findByIds(ids, client = sql) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return [];
+    }
+
+    const numericIds = ids.map(Number).filter(id => Number.isFinite(id));
+    if (numericIds.length === 0) {
+      return [];
+    }
+
+    return client`
+      SELECT id, email, name, role,
+             "phoneNumber" AS "phoneNumber",
+             address,
+             "pictureUrl"  AS "pictureUrl",
+             "authUid"     AS "authUid"
+      FROM users
+      WHERE id IN (${client(numericIds)})
+    `;
+  },
+
   async findByEmail(email, client = sql) {
     const [row] = await client`
       SELECT id, email, name, role,

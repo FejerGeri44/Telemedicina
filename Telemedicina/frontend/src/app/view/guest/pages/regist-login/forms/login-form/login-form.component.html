@@ -6,34 +6,42 @@
   <ion-card-content class="form">
     <form [formGroup]="loginForm" (ngSubmit)="login()">
 
-      <ion-input
-        class="field"
-        label="E-mail"
-        labelPlacement="floating"
-        fill="outline"
-        shape="round"
-        formControlName="email"
-        type="email">
-      </ion-input>
+      <ion-item
+        lines="none"
+        [class.ios-custom-style]="this.platform.isIos">
+        <ion-input
+          class="field"
+          label="E-mail"
+          labelPlacement="floating"
+          fill="outline"
+          shape="round"
+          formControlName="email"
+          type="email">
+        </ion-input>
+      </ion-item>
 
-      <ion-input
-        class="field"
-        label="Jelszó"
-        labelPlacement="floating"
-        fill="outline"
-        shape="round"
-        [type]="showPassword ? 'text' : 'password'"
-        formControlName="password">
+      <ion-item
+        lines="none"
+        [class.ios-custom-style]="this.platform.isIos">
+        <ion-input
+          class="field"
+          label="Jelszó"
+          labelPlacement="floating"
+          fill="outline"
+          shape="round"
+          [type]="showPassword ? 'text' : 'password'"
+          formControlName="password">
 
-        <ion-button
-          slot="end"
-          fill="clear"
-          size="small"
-          type="button"
-          (click)="togglePassword()">
-          <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-        </ion-button>
-      </ion-input>
+          <ion-button
+            slot="end"
+            fill="clear"
+            size="small"
+            type="button"
+            (click)="togglePassword()">
+            <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </ion-button>
+        </ion-input>
+      </ion-item>
 
       <div class="button-row">
         <ion-button class="btn-secondary back" type="button" (click)="backToDash()">Vissza</ion-button>

@@ -1,26 +1,26 @@
 .tabs {
   width: 100%;
   margin: auto;
+
+  ion-segment-button {
+    .segment-button {
+      display: flex;
+      flex-direction: row;
+      font-size: 1.2rem;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+  }
 }
 
-.segment-button {
-  display: flex;
-  flex-direction: row;
-  font-size: 1.2rem;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
+.view-container {
+  width: 100%;
+  margin: auto;
 
-.appointments-container {
-  display: flex;
-  gap: 16px;
-  width: 90%;
-  flex-direction: column;
-  --background: none;
-  margin: 0 auto;
-  justify-content: center;
-  align-content: center;
+  @media (max-width: 600px) {
+    margin-bottom: 80px;
+  }
 }
 
 ion-card {
@@ -30,343 +30,335 @@ ion-card {
   margin: 30px auto;
 }
 
-.calendar-hdr {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+ion-card-header {
+  .calendar-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-.calendar-hdr__center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
+    &__center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
 
-.calendar-range {
-  font-size: 0.85rem;
-  color: #6b7280; /* semleges szürke */
-}
-
-
-.week-grid-wrapper {
-  width: 100%;
-  overflow-x: auto;          /* scroll, ha kilóg */
-  -webkit-overflow-scrolling: touch; /* simább görgetés mobilon */
-}
-
-/* A rács fix 1000px (nem törik össze) */
-.week-grid {
-  min-width: 1000px;
-}
-
-.week-grid__head,
-.week-grid__body .row {
-  display: grid;
-  grid-template-columns: 100px repeat(7, 1fr); /* idő + 7 nap */
-  align-items: stretch;
-}
-
-.head-cell {
-  display: flex;
-  flex-direction: column;
-  font-weight: 600;
-  text-align: center;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 6px;
-  background: #f7f7f9;
-  border-top: 1px solid #e6e6ea;
-  border-right: 1px solid #f0f0f3;
-  border-left: 1px solid #f0f0f3;
-  border-bottom: 1px solid #e6e6ea;
-}
-
-.head-cell:first-child{
-  border-left: 1px solid #e6e6ea;
-}
-.head-cell:last-child{
-  border-right: 1px solid #e6e6ea;
-}
-
-.day-name {
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
-}
-.day-date {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.time-cell {
-  display: flex;
-  font-weight: 600;
-  text-align: center;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 6px;
-  background: #fafafa;
-  border-right: 1px solid #eee;
-  border-left: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-}
-
-.cell {
-  background: #f9fbff;
-  min-height: 60px;
-  padding: 8px 10px;
-  border-right: 1px solid #f0f0f3;
-  border-bottom: 1px solid #f0f0f3;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.cell--free {
-  background: #ffffff;
-  border: 1px solid rgba(227, 227, 227, 0.5);
-
-  .cell-title {
-    font-weight: 600;
-    line-height: 1.2;
+      .calendar-range {
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+    }
   }
 }
 
-.cell--pending {
-  background: rgba(220, 211, 116, 0.25);
-  border: 1px solid rgba(206, 175, 44, 0.5);
-
-  .cell-title {
-    font-weight: 600;
-    line-height: 1.2;
+ion-card-content {
+  .week-grid-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
-}
 
-.cell--accepted {
-  background: rgba(141, 236, 117, 0.15);
-  border: 1px solid rgba(47, 210, 47, 0.5);
+  .week-grid {
+    min-width: 1000px;
 
-  .cell-title {
-    font-weight: 600;
-    line-height: 1.2;
-    margin: auto;
+    &__head,
+    &__body .row {
+      display: grid;
+      grid-template-columns: 100px repeat(7, 1fr);
+      align-items: stretch;
+    }
+
+    .time-col.head-cell,
+    .day-col.head-cell {
+      display: flex;
+      flex-direction: column;
+      font-weight: 600;
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 6px;
+      background: #f7f7f9;
+      border-top: 1px solid #e6e6ea;
+      border-right: 1px solid #f0f0f3;
+      border-left: 1px solid #f0f0f3;
+      border-bottom: 1px solid #e6e6ea;
+
+      &:first-child {
+        border-left: 1px solid #e6e6ea;
+      }
+      &:last-child {
+        border-right: 1px solid #e6e6ea;
+      }
+    }
+
+    &__head {
+      .day-name {
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.04em;
+      }
+      .day-date {
+        font-size: 0.9rem;
+        color: #666;
+      }
+    }
+
+    &__body .time-col.time-cell {
+      display: flex;
+      font-weight: 600;
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 6px;
+      background: #fafafa;
+      border-right: 1px solid #eee;
+      border-left: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+    }
+
+    .day-col.cell {
+      background: #f9fbff;
+      min-height: 60px;
+      padding: 8px 10px;
+      border-right: 1px solid #f0f0f3;
+      border-bottom: 1px solid #f0f0f3;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+
+      .cell-title {
+        font-weight: 600;
+        line-height: 1.2;
+      }
+
+      .cell-subtle {
+        font-size: 0.9rem;
+        color: #7a7a7a;
+      }
+
+      .cell-actions {
+        margin-top: auto;
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      &.cell--free {
+        background: #ffffff;
+        border: 1px solid rgba(227, 227, 227, 0.5);
+      }
+
+      &.cell--pending {
+        background: rgba(220, 211, 116, 0.25);
+        border: 1px solid rgba(206, 175, 44, 0.5);
+
+        .pending-action {
+          --background: #3880ff;
+          border: #3880ff 1px solid;
+          border-radius: 5px;
+          font-size: 0.75rem;
+          width: 100px;
+          color: white;
+          transition: all 0.5s ease-in-out;
+
+          &:hover {
+            scale: 1.05;
+            --background: #5c9eff;
+          }
+        }
+      }
+
+      &.cell--accepted {
+        background: rgba(141, 236, 117, 0.15);
+        border: 1px solid rgba(47, 210, 47, 0.5);
+
+        .cell-title {
+          margin: auto;
+        }
+      }
+
+      &.cell--done {
+        background: #cdd8ff;
+        border: 1px solid rgba(52, 96, 131, 0.5);
+        opacity: 0.7;
+
+        .cell-title {
+          margin: auto;
+          color: #666;
+        }
+      }
+
+      .delete {
+        --background: var(--accent);
+        border: var(--accent) 1px solid;
+        border-radius: 5px;
+        font-size: 0.75rem;
+        width: 100px;
+        transition: all 0.5s ease-in-out;
+
+        &:hover {
+          scale: 1.05;
+          --background: transparent;
+          border: var(--accent) 1px solid;
+          color: var(--accent);
+        }
+      }
+    }
   }
-}
-
-.cell--done {
-  background: #cdd8ff;
-  border: 1px solid rgba(52, 96, 131, 0.5);
-  opacity: 0.7;
-
-  .cell-title {
-    font-weight: 600;
-    line-height: 1.2;
-    margin: auto;
-  }
-}
-.cell--done .cell-title {
-  color: #666;
-}
-
-.cell-subtle {
-  font-size: 0.9rem;
-  color: #7a7a7a;
-}
-
-.cell-actions {
-  margin-top: auto;
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-
-.view-container {
-  width: 95%;
-  margin: auto;
-}
-
-
-ion-datetime::part(active) {
-  border-radius: 10px;
-  padding: 10px;
-}
-
-ion-item {
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  --border-style: none;
-  margin: 0;
 }
 
 .newAppointment {
-  width: 500px;
+  width: 100%;
+  max-width: 500px;
   margin: 30px auto;
-  padding: 10px;
-}
 
-.form-row {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-}
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 12px;
 
-.form-column {
-  flex: 1;
-  min-width: 250px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+    .form-column {
+      flex: 1;
+      min-width: 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
 
-ion-label.custom-label {
-  display: block;
-  font-weight: 500;
-  font-size: 1.5rem;
-  color: var(--smoke-color);
-  margin-bottom: 10px;
-}
+      ion-item.custom-item {
+        --padding-start: 0;
+        --inner-padding-end: 0;
+        --border-style: none;
+        margin: 0;
+        --background: transparent;
+        --background-hover: transparent;
 
-ion-select.custom-select {
-  width: 99%;
-  border-radius: 5px;
-  --border-radius: 5px;
-  --padding-start: 15px;
-  --padding-end: 15px;
-  --background: #f4f4f4;
-  --color: #333;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-}
+        ion-label.custom-label {
+          display: block;
+          font-weight: 500;
+          font-size: 1.5rem;
+          color: var(--smoke-color);
+          margin-bottom: 10px;
+        }
 
-ion-select.custom-select::part(placeholder) {
-  color: #aaa;
-}
+        ion-select.custom-select {
+          width: 99%;
+          border-radius: 5px;
+          --border-radius: 5px;
+          --padding-start: 15px;
+          --padding-end: 15px;
+          --background: #f4f4f4;
+          --color: #333;
+          font-size: 1rem;
+          border: 1px solid #ccc;
 
-ion-item.custom-item {
-  --background: transparent;
-  --background-hover: transparent;
-}
+          &::part(placeholder) {
+            color: #aaa;
+          }
+        }
+      }
 
-.submit {
-  margin-top: 20px;
-}
+      .btn-accent {
+        width: 100%;
+        margin-top: 20px;
+        --background: transparent;
+        --border-color: var(--accent);
+        color: var(--accent);
+        --border-radius: 5px;
+        font-weight: 600;
 
-ion-datetime::part(active) {
-  background: #007bff;
-  color: white;
-  font-size: 1.25rem;
-  border-radius: 50%;
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-  opacity: 1;
-}
-
-ion-datetime::part(active):hover {
-  transform: scale(1.1);
-}
-
-ion-datetime::part(calendar-day) {
-  position: relative;
-}
-
-.appointmentDates ion-card-header {
-  display: flex;
-  justify-content: flex-end;
-  align-items: end;
-  padding-right: 1rem;
-}
-
-.delete {
-  --background: var(--accent);
-  border: var(--accent) 1px solid;
-  border-radius: 5px;
-  font-size: 0.75rem;
-  width: 100px;
-  transition: all 0.5s ease-in-out;
-}
-
-.delete:hover {
-  scale: 1.05;
-  --background: transparent;
-  border: var(--accent) 1px solid;
-  color: var(--accent);
-}
-
-.pending-action {
-  --background: #3880ff;
-  border: #3880ff 1px solid;
-  border-radius: 5px;
-  font-size: 0.75rem;
-  width: 100px;
-  color: white;
-  transition: all 0.5s ease-in-out;
-}
-
-.pending-action:hover {
-  scale: 1.05;
-  --background: #5c9eff;
+        &:hover {
+          --background: var(--accent);
+          color: white;
+          --border-radius: 7px;
+        }
+      }
+    }
+  }
 }
 
 @media (max-width: 768px) {
-  .calendar-hdr__center {
+  ion-card-header .calendar-hdr__center {
     gap: 2px;
+    .calendar-range {
+      font-size: 0.75rem;
+    }
   }
 
-  .calendar-range {
-    font-size: 0.75rem;
-  }
-
-  .day-name {
-    font-size: 0.7rem;
-    letter-spacing: 0.02em;
-  }
-
-  .day-date {
-    font-size: 0.78rem;
-  }
-
-  .time-cell,
-  .head-cell {
-    padding: 6px 4px;
-    font-size: 0.8rem;
-  }
-
-  .cell {
-    min-height: 50px;
-    padding: 6px;
-    gap: 4px;
-  }
-
-  .cell-title {
-    font-size: 0.9rem;
-  }
-
-  .cell-subtle {
-    font-size: 0.8rem;
+  ion-card-content .week-grid {
+    .day-col.head-cell,
+    .time-col.head-cell {
+      padding: 6px 4px;
+      font-size: 0.8rem;
+    }
+    &__head {
+      .day-name {
+        font-size: 0.7rem;
+        letter-spacing: 0.02em;
+      }
+      .day-date {
+        font-size: 0.78rem;
+      }
+    }
+    &__body {
+      .time-col.time-cell {
+        padding: 6px 4px;
+        font-size: 0.8rem;
+      }
+      .day-col.cell {
+        min-height: 50px;
+        padding: 6px;
+        gap: 4px;
+        .cell-title {
+          font-size: 0.9rem;
+        }
+        .cell-subtle {
+          font-size: 0.8rem;
+        }
+      }
+    }
   }
 }
 
 @media (max-width: 480px) {
-  .calendar-range {
-    display: none;
+  ion-card-header .calendar-hdr__center {
+    .calendar-range {
+      display: none;
+    }
   }
 
-  .day-name {
-    font-size: 0.65rem;
+  ion-card-content .week-grid {
+    .day-col.head-cell,
+    .time-col.head-cell,
+    &__body .time-col.time-cell {
+      font-size: 0.75rem;
+    }
+    &__head {
+      .day-name {
+        font-size: 0.65rem;
+      }
+      .day-date {
+        font-size: 0.75rem;
+      }
+    }
+    &__body .day-col.cell {
+      min-height: 44px;
+      padding: 4px;
+    }
   }
+}
 
-  .day-date {
-    font-size: 0.75rem;
-  }
-
-  .time-cell,
-  .head-cell {
-    font-size: 0.75rem;
-  }
-
-  .cell {
-    min-height: 44px;
-    padding: 4px;
-  }
+ion-datetime::part(active) {
+  background: transparent;
+  color: var(--primary);
+  border-radius: 15px;
+  padding: 10px 15px;
+  border: 3px dashed var(--primary);
+  font-size: 1.25rem;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+ion-datetime::part(active):hover {
+  transform: scale(1.1);
+}
+ion-datetime::part(calendar-day) {
+  position: relative;
 }

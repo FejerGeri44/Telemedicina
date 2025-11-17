@@ -8,9 +8,10 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {environment} from '../../../../../../enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../services/user/user.service';
-import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
+import {NgOptimizedImage} from '@angular/common';
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
+import {PlatformService} from '../../../../services/platform/platform.service';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -21,8 +22,6 @@ import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns
     FormsModule,
     ReactiveFormsModule,
     NgOptimizedImage,
-    NgIf,
-    NgForOf,
   ],
   styleUrls: ['./doctor-edit-profile-modal.component.scss']
 })
@@ -36,6 +35,7 @@ export class DoctorEditProfileModalComponent implements OnInit {
   savingData: boolean = false;
 
   constructor(
+    protected platform: PlatformService,
     private modalCtrl: ModalController,
     private http: HttpClient,
     private fb: FormBuilder,

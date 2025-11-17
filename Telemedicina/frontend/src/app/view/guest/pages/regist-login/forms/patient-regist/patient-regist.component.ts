@@ -8,6 +8,7 @@ import {ToastService} from '../../../../../../shared/toast/toast.service';
 import {environment} from '../../../../../../../../enviroment';
 import {AdminItem} from '../../../../../../utils/interfaces/admin.interface';
 import {PASSWORD_PATTERN, PHONE_PATTERN, TAJ_PATTERN, TEXT_PATTERN} from '../../../../../../utils/validation-patterns';
+import {PlatformService} from '../../../../../../services/platform/platform.service';
 
 @Component({
   selector: 'app-patient-regist',
@@ -35,6 +36,7 @@ export class PatientRegistComponent {
   loading = false;
 
   constructor(
+    protected platform: PlatformService,
     private http: HttpClient,
     private fb: FormBuilder,
     private modalCtrl: ModalController,

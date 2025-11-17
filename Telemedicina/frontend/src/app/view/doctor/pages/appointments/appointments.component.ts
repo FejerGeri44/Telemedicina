@@ -33,25 +33,30 @@ registerLocaleData(localeHu);
 })
 
 export class AppointmentsComponent implements OnInit{
+  user!: Observable<DoctorItem | null>;
   appointments: MyAppointment[] = [];
+  activeTab: 'week' | 'new' = 'week';
+
   appointmentDates: string[] = [];
   newAppointment: newAppointment = {
-    date: '',
+    date: new Date().toISOString(),
     from: '',
     to: ''
   };
-  user!: Observable<DoctorItem | null>;
+
   private apptBySlot = new Map<string, MyAppointment>();
   selectedDate = new Date();
   weekStart!: Date;
   weekEnd!: Date;
   weekDays: Date[] = [];
   timeSlots: string[] = [];
-  activeTab: 'week' | 'new' = 'week';
+
   appointmentUserDataMap: Record<string, { userId: number; name: string }> = {};
   openMonthPicker = false;
   timeOptions: string[] = [];
+
   locale = 'hu-HU';
+
   appointmentToDelete: any = null;
   savingData: boolean = false;
 

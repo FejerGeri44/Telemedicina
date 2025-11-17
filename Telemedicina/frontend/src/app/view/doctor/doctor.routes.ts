@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import {DoctorRoleGuard} from '../../guards/doctorRole.guard';
 
 export const DOCTOR_ROUTES: Routes = [
   {

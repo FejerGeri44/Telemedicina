@@ -16,7 +16,7 @@ router.post('/getAllMyPatients', authGuard, requireRole('doctor'), doctorControl
 router.post('/getUserDataForDiagnosis', authGuard, requireRole('doctor'), doctorController.getUserDataForDiagnosis);
 router.post('/newDiagnosis', authGuard, requireRole('doctor'), doctorController.newDiagnosis);
 router.post('/appointmentsByPatient', authGuard, requireRole('doctor'), doctorController.appointmentsByPatient);
-router.post('/uploadUserFile', authGuard, requireRole('doctor'), upload.single('file'), doctorController.uploadUserFile);
+router.post('/uploadUserFile', authGuard, requireRole('doctor'), upload.array('files'), doctorController.uploadUserFile);
 router.post('/countMyPendingAppointments', authGuard, requireRole('doctor'), doctorController.countMyPendingAppointments);
 router.post('/countMyRejections', authGuard, requireRole('doctor'), doctorController.countMyRejections);
 router.get('/patients', authGuard, requireRole('doctor'), doctorController.getAllPatients);

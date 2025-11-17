@@ -19,7 +19,7 @@ import {SystemMessage} from '../../utils/interfaces/system-message.interface';
   standalone: true,
   styleUrl: './system-message-modal.component.scss'
 })
-export class SystemMessageModalComponent implements OnInit {
+export class SystemMessageModalComponent {
   @Input() messages: SystemMessage[] = [];
 
   currentIndex = 0;
@@ -32,9 +32,5 @@ export class SystemMessageModalComponent implements OnInit {
 
   dismiss(): void {
     void this.modalCtrl.dismiss();
-  }
-
-  ngOnInit(): void {
-    console.log(this.messages)
   }
 }

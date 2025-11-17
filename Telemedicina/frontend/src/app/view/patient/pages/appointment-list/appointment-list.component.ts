@@ -10,6 +10,7 @@ import {UserService} from '../../../../services/user/user.service';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {formatAppointmentTime, formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-appointment-list',
@@ -17,7 +18,8 @@ import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
     IonicModule,
     NgForOf,
     NgIf,
-    NgOptimizedImage
+    NgOptimizedImage,
+    RouterLink
   ],
   templateUrl: './appointment-list.component.html',
   standalone: true,
@@ -106,7 +108,7 @@ export class AppointmentListComponent {
 
     this.myAppointments = [...this.myAppointments].sort((a, b) => {
       const A = Date.parse(a.starts_at);
-      const B = Date.parse(b.ends_at);
+      const B = Date.parse(b.starts_at);
       return (A - B) * dir;
     });
   }

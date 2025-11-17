@@ -20,6 +20,10 @@ $secondary: var(--secondary);
     gap: 10px;
   }
 
+  @media (max-width: 600px) {
+    margin-bottom: 70px;
+  }
+
   .profile-card {
     grid-column: 1 / -1;
     display: flex;
@@ -33,7 +37,8 @@ $secondary: var(--secondary);
     --background: #ffffff;
     --border-radius: 12px;
     --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-    margin: 16px;
+    margin: 15px;
+    padding: 20px;
     overflow: hidden;
   }
 

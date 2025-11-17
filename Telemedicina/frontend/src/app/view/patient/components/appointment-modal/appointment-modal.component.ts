@@ -225,13 +225,13 @@ export class AppointmentModalComponent implements OnInit{
       to: ends_at
     };
 
-    this.http.post(
+    this.http.post<{ id: number }>(
       `${environment.apiUrl}/patient/registerToAppointment`,
       payload,
       { withCredentials: true }
     ).subscribe({
-      next: () => {
-        this.updateAppointment(patientId, from, to);
+      next: (res) => {
+        this.replaceLocalAppointment(res.id, patientId);
         this.reindexAppointments();
         this.toast.show('Sikeres foglalás!', 'success');
       },
@@ -246,83 +246,24 @@ export class AppointmentModalComponent implements OnInit{
     });
   }
 
-  updateAppointment(patientId: number, from: string, to: string) {
-    const rawList: any[] = Array.isArray(this.appointments)
-      ? this.appointments
-      : (this.appointments && (this as any).appointments?.appointments) || [];
+  private replaceLocalAppointment(appointmentId: number, newPatientId: number) {
+    if (appointmentId === undefined || appointmentId === null) {
+      console.warn('Hiba: Az időpont ID hiányzik a frissítéshez.');
+      return;
+    }
 
-    const getTime = (item: any, keys: string[]) =>
-      keys.map(k => item?.[k]).find(v => v != null);
+    const index = this.appointments.findIndex(a => a.id === appointmentId);
 
-    const getDoctorId = (item: any) =>
-      item?.doctor_id ?? item?.doctorId ?? item?.doctor?.id;
+    if (index !== -1) {
+      const currentAppt = this.appointments[index];
 
-    const toComparable = (val: any): string => {
-      if (!val) return '';
-      let s = String(val).trim();
-
-      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+\-]\d{2}:\d{2})?$/.test(s)) {
-        s = s.replace('T', ' ');
-        s = s.replace(/\.\d+/, '');
-        s = s.replace(/(Z|[+\-]\d{2}:\d{2})$/, '');
-        if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(s)) s += ':00';
-        return s;
-      }
-
-      if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/.test(s)) {
-        return s.length === 16 ? s + ':00' : s;
-      }
-
-      if (/^\d{4}:\d{2}:\d{2}:\d{2}:\d{2}$/.test(s)) {
-        const [Y, M, D, h, m] = s.split(':');
-        return `${Y}-${M}-${D} ${h}:${m}:00`;
-      }
-
-      return s;
-    };
-
-    const starts_at_target = toComparable(this.toSupabaseTimestamp(from));
-    const ends_at_target   = toComparable(this.toSupabaseTimestamp(to));
-    const doctorIdTarget   = Number(this.doctorData?.doctor?.id);
-
-    const idx = rawList.findIndex(item => {
-      const itemStart = toComparable(getTime(item, ['from', 'starts_at', 'start', 'start_at']));
-      const itemEnd   = toComparable(getTime(item, ['to', 'ends_at', 'end', 'end_at']));
-      const itemDocId = Number(getDoctorId(item));
-      return (
-        itemStart === starts_at_target &&
-        itemEnd === ends_at_target &&
-        itemDocId === doctorIdTarget
-      );
-    });
-
-    if (idx !== -1) {
-      const current = rawList[idx];
-
-      const updated = {
-        ...current,
-        starts_at: toComparable(getTime(current, ['from', 'starts_at'])) || starts_at_target,
-        ends_at:   toComparable(getTime(current, ['to', 'ends_at']))   || ends_at_target,
-        patient_id: String(patientId),
-        status: (current.status && current.status !== 'free') ? current.status : 'accepted',
-        doctor_id: Number(getDoctorId(current) ?? doctorIdTarget)
+      this.appointments[index] = {
+        ...currentAppt,
+        patient_id: newPatientId,
+        status: 'pending'
       };
-
-      const newList = [...rawList];
-      newList[idx] = updated;
-
-      if (Array.isArray(this.appointments)) {
-        this.appointments = newList;
-      } else if (this.appointments && (this as any).appointments) {
-        (this as any).appointments = {
-          ...(this as any).appointments,
-          appointments: newList
-        };
-      }
     } else {
-      console.warn('Nem talált egyező appointment a lokális listában.', {
-        starts_at_target, ends_at_target, doctorIdTarget, rawListSample: rawList.slice(0, 3)
-      });
+      console.warn('Nem sikerült megtalálni a frissítendő időpontot a lokális listában.', appointmentId);
     }
   }
 

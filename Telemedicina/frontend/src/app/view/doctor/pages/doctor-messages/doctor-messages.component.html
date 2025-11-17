@@ -22,9 +22,15 @@
         button
         [class.selected]="selectedPatientId === patient.user.id"
       >
-        <ion-avatar class="avatar" slot="start">
-          <img ngSrc="{{ patient.user.pictureUrl }}" [alt]="patient.user.name" fill priority>
-        </ion-avatar>
+        <div class="profile-small">
+          <ion-avatar class="avatar" slot="start">
+            <img ngSrc="{{ patient.user.pictureUrl }}" [alt]="patient.user.name" fill priority>
+          </ion-avatar>
+
+          <div class="patient-name-mobile">
+            Dr. {{ patient.user.name }}
+          </div>
+        </div>
 
         <ion-label>
           <h2>{{ patient.user.name }}</h2>
@@ -76,13 +82,22 @@
       </div>
     </ion-header>
 
-    <div class="messages-container">
+    <div class="messages-container"
+         [ngClass]="{ 'is-empty-state': !selectedPatientId || (selectedPatientId && messages.length === 0 && !isLoading) }">
       <div *ngIf="!selectedPatientId" class="select-patient-placeholder">
-        <p>Válassz ki egy orvost a beszélgetés elkezdéséhez.</p>
+        <div class="placeholder-content">
+          <ion-icon name="chatbubbles-outline" class="placeholder-icon"></ion-icon>
+          <h3>Kezdj el egy beszélgetést!</h3>
+          <p>Válassz ki egy pácienst a bal oldali listáról a csevegés megkezdéséhez.</p>
+        </div>
       </div>
 
       <div *ngIf="selectedPatientId && messages.length === 0 && !isLoading" class="no-messages-placeholder">
-        <p>Még nincs üzenet a beszélgetésben. Kezdj te!</p>
+        <div class="placeholder-content">
+          <ion-icon name="document-text-outline" class="placeholder-icon"></ion-icon>
+          <h3>Üdvözlünk a csevegőben!</h3>
+          <p>Ez a beszélgetés még üres. Küldj egy üzenetet, hogy elkezdődjön a kommunikáció.</p>
+        </div>
       </div>
 
       <div *ngIf="selectedPatientId && messages.length > 0">

@@ -1,41 +1,59 @@
 <div class="filter-bar">
-  <div class="filter-bar__left">
-    <ion-searchbar
-      [debounce]="500"
-      [value]="query"
-      placeholder="Keresés az adatok között..."
-      aria-label="Szabad szöveges kereső"
-      class="custom-search-bar"
-      (ionInput)="query = $event.detail.value || ''"
-      inputmode="text"
-    ></ion-searchbar>
+  <div class="filter-bar__group">
+    <div class="filter-bar__left">
+      <ion-searchbar
+        [debounce]="500"
+        [value]="query"
+        placeholder="Keresés az adatok között..."
+        aria-label="Szabad szöveges kereső"
+        class="custom-search-bar"
+        (ionInput)="query = $event.detail.value || ''; filterData()" inputmode="text"
+      ></ion-searchbar>
+    </div>
+
+    <div class="filter-bar__select">
+      <ion-item lines="none" class="custom-select-item">
+        <ion-select
+          [value]="activeTab"
+          (ionChange)="setTab($event.detail.value)"
+          interface="popover"
+          class="custom-select"
+          aria-label="Adattípus kiválasztása"
+        >
+          <ion-select-option value="appointments">Időpontjaim</ion-select-option>
+          <ion-select-option value="documents">Dokumentumaim</ion-select-option>
+          <ion-select-option value="diagnoses">Diagnózisaim</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
   </div>
 
-  <div class="filter-bar__right">
-    <ion-segment
-      [value]="activeTab"
-      (ionChange)="setTab($event.detail.value)"
-      mode="md"
-      class="custom-segment"
-    >
-      <ion-segment-button value="appointments">
-        <ion-label>Időpontjaim</ion-label>
-      </ion-segment-button>
+  <div class="filter-bar__pagination">
+    <div class="pagination-controls" *ngIf="totalItems > pageSize">
+      <ion-button fill="clear" size="small" [disabled]="currentPage === 1" (click)="changePage(1)">
+        <ion-icon name="caret-back" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" size="small" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+        <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
 
-      <ion-segment-button value="documents">
-        <ion-label>Dokumentumaim</ion-label>
-      </ion-segment-button>
+      <span class="page-indicator">
+        {{ currentPage }} / {{ totalPages }}
+      </span>
 
-      <ion-segment-button value="diagnoses">
-        <ion-label>Diagnózisaim</ion-label>
-      </ion-segment-button>
-    </ion-segment>
+      <ion-button fill="clear" size="small" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+        <ion-icon name="chevron-forward-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" size="small" [disabled]="currentPage === totalPages" (click)="changePage(totalPages)">
+        <ion-icon name="caret-forward" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
   </div>
 </div>
 
 <app-appointment-table
   *ngIf="activeTab === 'appointments' && myAppointmentCalledAndLoaded"
-  [myAppointments]="myAppointments">
+  [myAppointments]="paginatedAppointments">
 </app-appointment-table>
 
 <app-appointment-table-skeleton
@@ -44,7 +62,7 @@
 
 <app-diagnoses-table
   *ngIf="activeTab === 'diagnoses' && myDiagnosesCalledAndLoaded"
-  [myDiagnoses]="myDiagnoses">
+  [myDiagnoses]="paginatedDiagnoses">
 </app-diagnoses-table>
 
 <app-diagnoses-table-skeleton
@@ -53,7 +71,7 @@
 
 <app-document-table
   *ngIf="activeTab === 'documents' && myDocumentCalledAndLoaded"
-  [myDocuments]="myDocuments">
+  [myDocuments]="paginatedDocuments">
 </app-document-table>
 
 <app-document-table-skeleton

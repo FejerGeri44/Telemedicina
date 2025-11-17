@@ -129,7 +129,9 @@
 <div *ngIf="activeTab === 'new'" class="view-container">
   <ion-card class="newAppointment">
     <ion-card-header>
-      <ion-card-title>Új rendelés felvitele</ion-card-title>
+      <ion-card-title>
+        Új rendelés felvitele
+      </ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <div class="form-row">
@@ -154,10 +156,12 @@
             </ion-select>
           </ion-item>
 
-          <ion-button
-            class="btn-accent submit"
-            (click)="addAppointment()"
-            [disabled]="savingData">Hozzáadás</ion-button>
+          <ion-buttons slot="end">
+            <ion-button class="btn-accent" (click)="addAppointment()" [disabled]="savingData" fill="outline">
+              <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+              Hozzáadás
+            </ion-button>
+          </ion-buttons>
         </div>
       </div>
     </ion-card-content>

@@ -37,7 +37,7 @@
   <form [formGroup]="editProfileForm" (ngSubmit)="save()">
     <section class="epm-grid">
       <div class="col">
-        <ion-item lines="none">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
           <ion-label class="custom-label" position="stacked">Név</ion-label>
           <ion-input
             class="custom-input"
@@ -48,7 +48,7 @@
           </ion-input>
         </ion-item>
 
-        <ion-item lines="none">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
           <ion-label class="custom-label" position="stacked">Cím</ion-label>
           <ion-input
             class="custom-input"
@@ -61,7 +61,7 @@
       </div>
 
       <div class="col">
-        <ion-item lines="none">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
           <ion-label class="custom-label" position="stacked">Mobil</ion-label>
           <ion-input
             class="custom-input"
@@ -72,7 +72,7 @@
           </ion-input>
         </ion-item>
 
-        <ion-item lines="none">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
           <ion-label class="custom-label" position="stacked">Specialitás</ion-label>
           <ion-input
             class="custom-input"
@@ -85,7 +85,7 @@
       </div>
     </section>
 
-    <ion-item>
+    <ion-item class="bio" [lines]="this.platform.isIos ? 'full' : 'none'">
       <ion-label class="custom-label" position="stacked">Bemutatkozás</ion-label>
       <ion-textarea
         class="custom-textarea"

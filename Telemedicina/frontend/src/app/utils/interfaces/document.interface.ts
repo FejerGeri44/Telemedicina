@@ -9,7 +9,8 @@ export interface Document {
   storage_path: string;
 }
 
-export interface DocumentItem extends Document{
+export interface DocumentItem {
+  document: Document;
   diagnosis_date: string;
   patient: PatientItem;
   doctor: DoctorItem;

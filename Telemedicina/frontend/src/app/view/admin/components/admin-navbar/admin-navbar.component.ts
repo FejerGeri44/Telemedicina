@@ -1,6 +1,6 @@
 import {Component, HostListener, OnInit} from '@angular/core';
 import {IonicModule, NavController} from '@ionic/angular';
-import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
+import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage, NgTemplateOutlet} from '@angular/common';
 import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/router';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {delay, filter, firstValueFrom, Observable, Subscription, take} from 'rxjs';
@@ -10,21 +10,22 @@ import {UserService} from '../../../../services/user/user.service';
 
 @Component({
   selector: 'app-admin-navbar',
-  imports: [
-    IonicModule,
-    NgIf,
-    RouterLinkActive,
-    RouterModule,
-    NgForOf,
-    NgOptimizedImage,
-    AsyncPipe
-  ],
+    imports: [
+        IonicModule,
+        NgIf,
+        RouterLinkActive,
+        RouterModule,
+        NgForOf,
+        NgOptimizedImage,
+        AsyncPipe,
+        NgTemplateOutlet
+    ],
   templateUrl: './admin-navbar.component.html',
   standalone: true,
   styleUrl: './admin-navbar.component.scss'
 })
 export class AdminNavbarComponent implements OnInit{
-  user!: Observable<AdminItem | null>;
+  user: Observable<AdminItem | null>;
   profileOpen = false;
   mobileMenuOpen = false;
   private navSub?: Subscription;
@@ -78,9 +79,8 @@ export class AdminNavbarComponent implements OnInit{
     this.userService.logout().subscribe(() => this.nav.navigateRoot('/regist-login?tab=login'));
   }
 
-  openMobileMenu() {
+  toggleMobileMenu() {
     this.mobileMenuOpen = true;
-    this.addBodyNoScroll();
   }
 
   closeMobileMenu() {
@@ -101,9 +101,6 @@ export class AdminNavbarComponent implements OnInit{
     }
   }
 
-  private addBodyNoScroll() {
-    document.body.classList.add('no-scroll');
-  }
   private removeBodyNoScroll() {
     document.body.classList.remove('no-scroll');
   }

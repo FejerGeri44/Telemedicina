@@ -1,5 +1,5 @@
 <div class="container">
-  <div class="search-container">
+  <div class="search-container" *ngIf="isLoading || patients.length > 0">
     <ion-searchbar
       (ionInput)="onSearchChange($event)"
       (ionClear)="clearSearch()"
@@ -16,8 +16,7 @@
     </ion-button>
   </div>
 
-  <div style="margin-top: 15px;"></div>
-  <ion-grid *ngIf="isLoading; else patientGrid">
+  <ion-grid *ngIf="isLoading" style="margin-top: 15px;">
     <ion-row>
       <ion-col size="12" size-md="6" size-lg="4" *ngFor="let s of [1,2,3,4,5,6]">
         <ion-card>
@@ -41,10 +40,32 @@
     </ion-row>
   </ion-grid>
 
-  <ng-template #patientGrid>
-    <ion-grid *ngIf="!isLoading && filteredPatients.length > 0; else emptyState">
+  <ng-container *ngIf="!isLoading">
+    <div class="pagination" *ngIf="paginatedPatients.length > 0">
+      <div class="pag-left">
+        Találatok: {{ totalCount }} db
+      </div>
+
+      <div class="pag-controls">
+        <ion-icon name="chevron-back-outline"
+                  (click)="goToPage(currentPage - 1)"
+                  [class.disabled]="currentPage === 1"></ion-icon>
+
+        <span *ngFor="let page of visiblePages"
+              (click)="goToPage(page)"
+              [class.active]="page === currentPage">
+              {{ page }}
+        </span>
+
+        <ion-icon name="chevron-forward-outline"
+                  (click)="goToPage(currentPage + 1)"
+                  [class.disabled]="currentPage === totalPages"></ion-icon>
+      </div>
+    </div>
+
+    <ion-grid *ngIf="filteredPatients.length > 0">
       <ion-row>
-        <ion-col size="12" size-md="6" size-lg="4" *ngFor="let patient of filteredPatients">
+        <ion-col size="12" size-md="6" size-lg="4" *ngFor="let patient of paginatedPatients">
           <ion-card>
             <ion-card-header class="card-header">
               <div class="avatar">
@@ -69,18 +90,31 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-  </ng-template>
 
-  <ng-template #emptyState>
-    <div *ngIf="hasLoadedPatients && filteredPatients.length === 0" class="no-data">
-      <ng-container *ngIf="searchTerm.length > 0">
-        <span class="no-data-text">Nincs találat</span>
-        <span class="no-data-sub">A keresési feltételeknek megfelelő páciens nem található.</span>
-      </ng-container>
-      <ng-container *ngIf="searchTerm.length === 0">
-        <span class="no-data-text">(N/A)</span>
-        <span class="no-data-sub">Jelenleg nincs foglalt időponttal rendelkező páciens.</span>
-      </ng-container>
+    <div *ngIf="filteredPatients.length === 0 && hasLoadedPatients && patients.length > 0" class="no-data-appointments">
+      <div class="no-data-container">
+        <ion-icon name="search-circle-outline" class="icon-large"></ion-icon>
+        <p class="main-text">Nincs találat.</p>
+        <p class="sub-text">A keresési feltételeknek megfelelő páciens nem található.</p>
+      </div>
     </div>
-  </ng-template>
+  </ng-container>
+
+  <div *ngIf="!isLoading && patients.length === 0" class="no-data-appointments">
+    <div class="no-data-container">
+      <ion-icon name="people-outline" class="icon-large"></ion-icon>
+      <p class="main-text">Jelenleg még nincsenek aktív pácienseid.</p>
+      <p class="sub-text">Indítsd el a profilod és a praxisod a rendelési időpontok kiírásával.</p>
+
+      <ion-button [routerLink]="'/doctor/doctor-home'" class="btn-secondary">
+        <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+        Profilom szerkesztése
+      </ion-button>
+
+      <ion-button [routerLink]="'/doctor/appointments'" class="btn-primary">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Rendelési időpontok kiírása
+      </ion-button>
+    </div>
+  </div>
 </div>

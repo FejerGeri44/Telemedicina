@@ -3,6 +3,8 @@ const {buildProfile} = require("../utils/profileBuilder");
 const mime = require('mime-types');
 const crypto = require('crypto');
 const AppointmentRejectionRepository = require("../repositories/appointmentRejection.repository");
+const UserDocumentRepository = require("../repositories/userDocument.repository");
+const DoctorRatingRepository = require("../repositories/doctorRating.repository");
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -731,6 +733,23 @@ exports.newDiagnosis = async (req, res) => {
       return res.status(500).json({ error: 'Nem sikerült elmenteni a diagnózist.' });
     }
 
+    const validUntilDate = new Date();
+    validUntilDate.setDate(validUntilDate.getDate() + 2);
+    const validUntilISO = validUntilDate.toISOString();
+
+    const ratingPayload = {
+      doctor_id: doctorRow?.id,
+      patient_id: patientId,
+      value: 0,
+      valid_until: validUntilISO
+    };
+
+    const insertedRating = await DoctorRatingRepository.create(ratingPayload);
+
+    if (!insertedRating) {
+      console.warn('⚠️ Értékelési rekord létrehozása sikertelen. Folytatás...');
+    }
+
     const { data: encUpd, error: encErr } = await supabaseAdmin
       .from('encounters')
       .update({ diagnosis_id: inserted.id })
@@ -851,41 +870,24 @@ exports.appointmentsByPatient = async (req, res) => {
 
 exports.uploadUserFile = async (req, res) => {
   try {
-    let { patient_id, doctor_id, appointment_id, docType } = req.body || {};
+    let { patient_id, doctor_id, appointment_id, docTypes } = req.body || {};
 
-    if (!patient_id && req.body?.payload) {
-      try {
-        const p = typeof req.body.payload === 'string'
-          ? JSON.parse(req.body.payload)
-          : req.body.payload;
-        patient_id = p.patient_id;
-        doctor_id = p.doctor_id;
-        appointment_id = p.appointment_id;
-        docType = p.docType;
-      } catch (e) {
-        console.warn('payload parse error:', e);
+    let documentTypes = [];
+    try {
+      if (docTypes) {
+        documentTypes = JSON.parse(docTypes);
       }
+    } catch (e) {
+      console.error('JSON parse error on docTypes:', e);
+      return res.status(400).json({ message: 'Érvénytelen docTypes formátum.' });
     }
 
-    if (!req.file) {
-      return res.status(400).json({ message: 'Hiányzik a fájl (file mező).' });
-    }
-    if (!patient_id || !doctor_id || !appointment_id || !docType) {
-      return res.status(400).json({ message: 'Hiányzó kötelező mezők (patient_id, doctor_id, appointment_id, docType).' });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'Hiányzik a fájl(ok) (files mező).' });
     }
 
-    const { data: doctorRow, error: docErr } = await supabaseAdmin
-      .from('doctors')
-      .select('id')
-      .eq('userId', req.user.id)
-      .single();
-
-    if (docErr || !doctorRow) {
-      console.error('doctor lookup error:', docErr);
-      return res.status(403).json({ message: 'Nem sikerült azonosítani az orvost.' });
-    }
-    if (String(doctorRow.id) !== String(doctor_id)) {
-      return res.status(403).json({ message: 'A küldött doctor_id nem egyezik a bejelentkezett orvossal.' });
+    if (!patient_id || !doctor_id || !appointment_id || documentTypes.length !== req.files.length) {
+      return res.status(400).json({ message: 'Hiányzó kötelező mezők, vagy a docTypes/fájlok száma nem egyezik.' });
     }
 
     const { data: encounterRow, error: encErr } = await supabaseAdmin
@@ -906,65 +908,68 @@ exports.uploadUserFile = async (req, res) => {
       });
     }
 
-    const guessedExt =
-      mime.extension(req.file.mimetype) ||
-      path.extname(req.file.originalname).replace('.', '') ||
-      'bin';
-
+    const insertedDocuments = [];
     const sanitize = (v) => String(v).toLowerCase().replace(/[^\p{L}\p{N}_-]+/gu, '');
-    const safeDocType = sanitize(docType);
+
     const safePid = sanitize(patient_id);
     const safeDid = sanitize(doctor_id);
     const safeAid = sanitize(appointment_id);
 
-    const uid = (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
+    for (let i = 0; i < req.files.length; i++) {
+      const file = req.files[i];
+      const currentDocType = documentTypes[i];
 
-    const fileName = `${safeDocType}-${safePid}-${safeAid}-${uid}.${guessedExt}`;
-    const storagePath = `doctor-${safeDid}/patient-${safePid}/${fileName}`;
+      const safeDocType = sanitize(currentDocType);
 
-    const { data: upRes, error: upErr } = await supabaseAdmin.storage
-      .from('user-documents')
-      .upload(storagePath, req.file.buffer, {
-        contentType: req.file.mimetype || 'application/octet-stream',
-        upsert: false
-      });
+      const guessedExt =
+        mime.extension(file.mimetype) ||
+        path.extname(file.originalname).replace('.', '') ||
+        'bin';
 
-    if (upErr) {
-      console.error('Storage upload error:', upErr, { storagePath });
-      return res.status(500).json({
-        message: 'Storage feltöltés hiba',
-        code: upErr?.statusCode || upErr?.status || null,
-        error: upErr?.message || String(upErr),
-        path: storagePath
-      });
+      const uid = (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
+
+      const fileName = `${safeDocType}-${safePid}-${safeAid}-${uid}.${guessedExt}`;
+      const storagePath = `doctor-${safeDid}/patient-${safePid}/${fileName}`;
+
+      const { data: upRes, error: upErr } = await supabaseAdmin.storage
+        .from('user-documents')
+        .upload(storagePath, file.buffer, {
+          contentType: file.mimetype || 'application/octet-stream',
+          upsert: false
+        });
+
+      if (upErr) {
+        console.error('Storage upload error (File skipped):', upErr, { storagePath });
+        continue;
+      }
+
+      const insertObj = {
+        doctor_id: Number.isFinite(Number(doctor_id)) ? Number(doctor_id) : doctor_id,
+        patient_id: Number.isFinite(Number(patient_id)) ? Number(patient_id) : patient_id,
+        encounter_id: encounterRow.id,
+        storage_path: upRes?.path ?? storagePath
+      };
+
+      const inserted = await UserDocumentRepository.create(insertObj);
+
+      if (!inserted) {
+        continue;
+      }
+
+      insertedDocuments.push(inserted);
     }
 
-    const insertObj = {
-      doctor_id: Number.isFinite(Number(doctor_id)) ? Number(doctor_id) : doctor_id,
-      patient_id: Number.isFinite(Number(patient_id)) ? Number(patient_id) : patient_id,
-      encounter_id: encounterRow.id,
-      storage_path: upRes?.path ?? storagePath
-    };
-
-    const { data: inserted, error: insErr } = await supabaseAdmin
-      .from('user_documents')
-      .insert(insertObj)
-      .select()
-      .single();
-
-    if (insErr) {
-      console.error('user_documents insert error:', insErr, { insertObj });
+    if (insertedDocuments.length === 0) {
       return res.status(500).json({
-        message: 'user_documents beszúrás hiba',
-        code: insErr?.code || null,
-        error: String(insErr.message || insErr)
+        message: 'Egyetlen fájlt sem sikerült feltölteni vagy bejegyezni az adatbázisba.'
       });
     }
 
     return res.status(201).json({
-      message: 'Sikeres fájlfeltöltés és mentés.',
-      document: inserted
+      message: `Sikeres fájlfeltöltés és mentés (${insertedDocuments.length} db).`,
+      documents: insertedDocuments
     });
+
   } catch (err) {
     console.error('❌ uploadUserFile error:', err);
     return res.status(500).json({ message: 'Server error', error: String(err?.message || err) });

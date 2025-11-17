@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Orvos értékelése</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="close-button" (click)="dismiss()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="rating-container">
+
+    <h2 class="ion-text-center">Hogy értékelné a konzultációt?</h2>
+    <p class="ion-text-center" *ngIf="rating">Dr. {{ rating.doctor.user.name }} értékelése</p>
+
+    <div class="star-rating-box">
+      <ion-icon
+        *ngFor="let star of stars"
+        [name]="getStarIcon(star)"
+        (click)="rate(star, $event)"
+        class="star-icon"
+        [class.active]="ratingNumber >= star - 0.5"
+      ></ion-icon>
+    </div>
+
+    <p class="current-rating">{{ ratingNumber }} / 5.0</p>
+
+    <ion-item lines="full" class="ion-margin-top">
+      <ion-textarea
+        label="Szöveges visszajelzés (Opcionális)"
+        labelPlacement="floating"
+        rows="4"
+        maxlength="500"
+        [(ngModel)]="comment"
+      ></ion-textarea>
+    </ion-item>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="danger" fill="clear" (click)="clearRating()">
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        Törlés
+      </ion-button>
+    </ion-buttons>
+
+    <ion-buttons slot="end">
+      <ion-button color="primary" fill="solid" (click)="submit()" [disabled]="ratingNumber === 0">
+        <ion-icon slot="start" name="send"></ion-icon>
+        Küldés
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

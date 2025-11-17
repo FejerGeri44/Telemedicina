@@ -55,13 +55,15 @@ export function formatTimestamp(isoString: string): string {
   let formatted = isoString.replace('T', ' ');
   const lastColonIndex = formatted.lastIndexOf(':');
   if (lastColonIndex > 0) {
-    formatted = formatted.substring(0, lastColonIndex + 3).trim();
-    formatted = formatted.substring(0, formatted.length - 3).trim();
+    formatted = formatted.substring(0, lastColonIndex).trim();
   }
 
   if (formatted.length >= 16) {
-    return formatted.substring(0, 16);
+    formatted = formatted.substring(0, 16);
   }
 
-  return formatted;
+  const datePart = formatted.substring(0, 10).replace(/-/g, '.');
+  const timePart = formatted.substring(10);
+
+  return datePart + timePart;
 }

@@ -1,7 +1,7 @@
-import {Component, OnInit, OnDestroy} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
-import {NgForOf, NgIf, DatePipe, NgOptimizedImage} from '@angular/common';
+import {NgClass, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
@@ -10,9 +10,10 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {firstValueFrom, Observable} from 'rxjs';
 import {environment} from '../../../../../../enviroment';
-import { Message } from '../../../../utils/interfaces/message.interface';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import {Message} from '../../../../utils/interfaces/message.interface';
+import {RealtimeChannel} from '@supabase/supabase-js';
 import {SupabaseService} from '../../../../services/chat/supabase.service';
+import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-messages.service';
 
 @Component({
   selector: 'app-patient-messages',
@@ -21,8 +22,8 @@ import {SupabaseService} from '../../../../services/chat/supabase.service';
     FormsModule,
     NgIf,
     NgForOf,
-    DatePipe,
-    NgOptimizedImage
+    NgOptimizedImage,
+    NgClass
   ],
   templateUrl: './patient-messages.component.html',
   standalone: true,
@@ -53,7 +54,8 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
     protected userService: UserService,
     private toast: ToastService,
     private alert: AlertService,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private unreadMessageService: UnreadMessageService
   ) {
     this.user = this.userService.patient$();
   }
@@ -85,16 +87,9 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
     if (!this.patientId) return;
 
     try {
-      const summary: Array<{ partnerId: number, unreadCount: number }> =
-        await firstValueFrom(this.http.get<any>(
-          `${environment.apiUrl}/messages/unreadSummary`,
-          { withCredentials: true }
-        ));
-
-      this.unreadSummary = new Map(summary.map(s => [s.partnerId, s.unreadCount]));
-
+      this.unreadSummary = await this.unreadMessageService.fetchUnreadSummary();
     } catch (err) {
-      console.error('❌ Olvasatlan összegzés lekérése sikertelen:', err);
+      console.error('❌ Olvasatlan összegzés komponensbeli frissítése sikertelen:', err);
     }
   }
 
@@ -127,6 +122,9 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
   async markConversationAsRead(doctorId: number): Promise<void> {
     if (!this.patientId || !doctorId) return;
 
+    const currentUnreadCount = this.unreadSummary.get(doctorId) ?? 0;
+    if (currentUnreadCount === 0) return;
+
     const payload = { doctorId };
 
     try {
@@ -135,6 +133,10 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
         payload,
         { withCredentials: true }
       ));
+
+      this.unreadSummary.set(doctorId, 0);
+      this.unreadMessageService.decrementTotalCount(currentUnreadCount);
+
     } catch (err) {
       console.error('❌ Beszélgetés olvasottnak jelölése sikertelen:', err);
     }

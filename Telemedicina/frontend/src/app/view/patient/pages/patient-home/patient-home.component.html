@@ -71,7 +71,7 @@
 
   <ion-card class="appointments">
     <div class="card-header">
-      <ion-title class="header-title">Közelgő időpontjaim</ion-title>
+      <h2 class="header-title">Közelgő időpontjaim</h2>
       <ion-button class="expand-btn" [routerLink]="['/patient/appointment-list']">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
@@ -124,25 +124,25 @@
 
   <ion-card class="results">
     <div class="card-header">
-      <ion-title class="header-title">Legutóbbi dokumentumok</ion-title>
+      <h2 class="header-title">Legutóbbi dokumentumok</h2>
       <ion-button class="expand-btn" [routerLink]="['/patient/health-diary']">
         <ion-icon name="chevron-forward-outline"></ion-icon>
       </ion-button>
     </div>
 
     <div *ngIf="!isDocumentsLoading" class="documents-wrapper">
-      <div *ngFor="let doc of myDocuments" class="document-card">
+      <div *ngFor="let document of myDocuments" class="document-card">
 
         <div class="document-left">
           <div class="doc-icon-wrapper">
             <ion-icon
-              [name]="getDocumentIcon(getDocumentTypeFromPath(doc.storage_path))"
+              [name]="getDocumentIcon(getDocumentTypeFromPath(document.document.storage_path))"
               class="document-icon"
             ></ion-icon>
           </div>
           <div class="document-info">
             <div class="document-type">
-              {{ getDocumentTypeFromPath(doc.storage_path) | titlecase }}
+              {{ getDocumentTypeFromPath(document.document.storage_path) | titlecase }}
             </div>
             <div class="document-path">
             </div>
@@ -151,10 +151,10 @@
 
         <div class="document-date">
           <div>
-            {{ doc.diagnosis_date | date:'yyyy. MMM. dd.' }}
+            {{ document.diagnosis_date | date:'yyyy. MMM. dd.' }}
           </div>
           <div class="document-time">
-            {{ doc.diagnosis_date | date:'HH:mm' }}
+            {{ document.diagnosis_date | date:'HH:mm' }}
           </div>
         </div>
       </div>

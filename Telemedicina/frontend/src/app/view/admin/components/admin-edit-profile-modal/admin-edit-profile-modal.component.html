@@ -10,47 +10,66 @@
 </ion-header>
 
 <ion-content class="epm-content">
+  <section class="epm-header">
+    <div class="pc-avatar">
+      <img
+        ngSrc="{{tempPreviewUrl || user.user.pictureUrl}}"
+        alt="Profilkép"
+        draggable="false"
+        priority
+        fill/>
+      <label class="avatar-edit">
+        <ion-icon name="camera"></ion-icon>
+        <input
+          type="file"
+          hidden
+          (change)="onFileSelected($event)"
+          accept="image/*" />
+      </label>
+    </div>
+    <div class="epm-headline">
+      <h2>{{ user.user.name }}</h2>
+      <p class="muted">{{ user.user.email }}</p>
+    </div>
+  </section>
+
   <form [formGroup]="editProfileForm" (ngSubmit)="save()">
-    <section class="epm-header">
-      <div class="epm-avatar">
-        <img
-          ngSrc="{{tempPreviewUrl || user.user.pictureUrl}}"
-          alt="Profilkép"
-          class="avatar-img"
-          draggable="false"
-          priority
-          fill/>
-        <label class="avatar-edit">
-          <ion-icon name="camera"></ion-icon>
-          <input
-            type="file"
-            hidden
-            (change)="onFileSelected($event)"
-            accept="image/*" />
-        </label>
+    <section class="epm-grid">
+      <div class="col">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
+          <ion-label class="custom-label" position="stacked">Név</ion-label>
+          <ion-input
+            class="custom-input"
+            type="text"
+            formControlName="name" [placeholder]="user.user.name"
+            fill="outline"
+            clearInput>
+          </ion-input>
+          <ion-note slot="error" *ngIf="editProfileForm.get('name')?.invalid && editProfileForm.get('name')?.touched">
+            A név nem érvényes.
+          </ion-note>
+        </ion-item>
       </div>
-      <div class="epm-headline">
-        <h2>{{ user.user.name }}</h2>
-        <p class="muted">{{ user.user.email }}</p>
+
+      <div class="col">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
+          <ion-label class="custom-label" position="stacked">Mobil</ion-label>
+          <ion-input
+            class="custom-input"
+            type="tel"
+            formControlName="phoneNumber" [placeholder]="formatPhoneNumber(user.user.phoneNumber)"
+            fill="outline"
+            clearInput>
+          </ion-input>
+          <ion-note slot="error" *ngIf="editProfileForm.get('phoneNumber')?.invalid && editProfileForm.get('phoneNumber')?.touched">
+            A telefonszám nem érvényes.
+          </ion-note>
+        </ion-item>
       </div>
     </section>
 
-    <section class="epm-flex">
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Név</ion-label>
-        <ion-input
-          class="custom-input"
-          type="text"
-          formControlName="name" [placeholder]="user.user.name"
-          fill="outline"
-          clearInput>
-        </ion-input>
-        <ion-note slot="error" *ngIf="editProfileForm.get('name')?.invalid && editProfileForm.get('name')?.touched">
-          A név nem érvényes.
-        </ion-note>
-      </ion-item>
-
-      <ion-item>
+    <div class="row">
+      <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
         <ion-label class="custom-label" position="stacked">Cím</ion-label>
         <ion-input
           class="custom-input"
@@ -60,26 +79,15 @@
           clearInput>
         </ion-input>
       </ion-item>
-
-      <ion-item>
-        <ion-label class="custom-label" position="stacked">Mobil</ion-label>
-        <ion-input
-          class="custom-input"
-          type="tel"
-          formControlName="phoneNumber" [placeholder]="formatPhoneNumber(user.user.phoneNumber)"
-          fill="outline"
-          clearInput>
-        </ion-input>
-        <ion-note slot="error" *ngIf="editProfileForm.get('phoneNumber')?.invalid && editProfileForm.get('phoneNumber')?.touched">
-          A telefonszám nem érvényes.
-        </ion-note>
-      </ion-item>
-    </section>
+    </div>
 
     <div class="epm-actions">
       <ion-button
         class="btn-accent"
-        type="submit" [disabled]="savingData || editProfileForm.invalid"> Mentés</ion-button>
+        type="submit"
+        [disabled]="savingData || editProfileForm.invalid || (!editProfileForm.dirty && !file)">
+        Mentés
+      </ion-button>
     </div>
   </form>
 </ion-content>

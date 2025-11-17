@@ -7,10 +7,15 @@
   <ion-card-content>
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
 
+      <input #fileInput type="file"
+             accept=".pdf,image/*,.txt,.csv"
+             (change)="onSelectFiles($event)"
+             hidden
+             multiple />
       <ion-grid class="patient-chooser">
         <ion-row>
           <ion-col size="12" size-md="6">
-            <ion-item class="search-item outlined" lines="none">
+            <ion-item lines="full">
               <ion-icon name="search-outline" slot="start"></ion-icon>
               <ion-input
                 placeholder="Keresés névre vagy TAJ-ra…"
@@ -25,7 +30,7 @@
           </ion-col>
 
           <ion-col size="12" size-md="6">
-            <ion-item class="search-item outlined" lines="none">
+            <ion-item class="required outlined" lines="full">
               <ion-label position="stacked">Páciens</ion-label>
               <ion-select
                 placeholder="Válassz pácienst"
@@ -42,7 +47,7 @@
           </ion-col>
 
           <ion-col size="12" size-md="6">
-            <ion-item class="search-item outlined" lines="none">
+            <ion-item class="required outlined" lines="full">
               <ion-label position="stacked">Időpont</ion-label>
 
               <ion-select
@@ -62,21 +67,10 @@
         </ion-row>
       </ion-grid>
 
-      <ion-item class="file-type">
-        <ion-segment formControlName="docType" class="doc-type-segment" scrollable="true">
-          <ion-segment-button *ngFor="let t of docTypes" [value]="t.value">
-            <div class="seg-inner">
-              <ion-icon [name]="t.icon"></ion-icon>
-              <ion-label>{{ t.label }}</ion-label>
-            </div>
-          </ion-segment-button>
-        </ion-segment>
-      </ion-item>
-
       <div class="uploader-area">
         <ion-grid class="uploader-grid ion-margin-top">
-          <ion-row class="ion-align-items-stretch">
-            <ion-col size="12" size-md="6">
+          <ion-row class="ion-align-items-stretch" *ngIf="files.length === 0">
+            <ion-col size="12">
               <div class="dropzone"
                    [class.dragging]="isDragging"
                    (dragover)="onDragOver($event)"
@@ -85,33 +79,75 @@
 
                 <ion-icon name="cloud-upload-outline" class="dz-icon"></ion-icon>
                 <div class="dz-text">
-                  Húzd ide a fájlt
+                  Húzd ide a fájlokat
                   <span class="dz-sep">vagy</span>
-                  <button type="button" class="linklike" (click)="fileInput.click()">Válassz fájlt</button>
+                  <button type="button" class="linklike" (click)="fileInput.click()">Válassz fájlokat</button>
                 </div>
-
-                <input #fileInput type="file"
-                       accept=".pdf,image/*,.txt,.csv"
-                       (change)="onSelectFile($event)"
-                       hidden />
-
-                <div class="dz-hint">PDF, képek (JPG/PNG), TXT/CSV • max {{maxFileSizeMb}} MB</div>
+                <div class="dz-hint">PDF, képek (JPG/PNG), TXT/CSV • max {{maxFileSizeMb}} MB fájlonként</div>
               </div>
+            </ion-col>
+          </ion-row>
 
-              <div class="file-pill" *ngIf="file">
-                <ion-icon name="document-attach-outline"></ion-icon>
-                <span class="name">{{ file.name }}</span>
-                <span class="size">{{ (file.size/1024/1024) | number:'1.1-1' }} MB</span>
-                <ion-button size="small" fill="clear" (click)="clearFile()">
-                  <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
-                </ion-button>
+          <ion-row *ngIf="files.length > 0">
+            <ion-col size="12" size-md="6">
+              <ion-list lines="none" class="ion-no-padding">
+                <ion-item *ngFor="let f of files; let i = index" class="ion-no-padding">
+                  <div class="file-pill">
+                    <ion-icon
+                      [name]="f.docType ? 'checkmark-sharp' : 'close-sharp'"
+                      [color]="f.docType ? 'success' : 'danger'"
+                      aria-hidden="true">
+                    </ion-icon>
+
+                    <ion-icon [name]="getDocTypeIcon(f.docType)" [color]="f.docType ? 'primary' : 'medium'" aria-hidden="true"></ion-icon>
+
+                    <ion-select
+                      class="doc-type-select"
+                      placeholder="Típus"
+                      [value]="f.docType"
+                      (ionChange)="onDocTypeSelected(f, $event.detail.value)"
+                      interface="popover"
+                      required
+                      aria-label="Dokumentum típus kiválasztása">
+
+                      <ion-select-option *ngFor="let t of docTypes" [value]="t.value">
+                        <ion-icon [name]="t.icon" slot="start" aria-hidden="true"></ion-icon>
+                        {{ t.label }}
+                      </ion-select-option>
+                    </ion-select>
+
+                    <ion-button size="small" fill="clear" (click)="setActiveFile(i)">
+                      <ion-icon slot="icon-only" [name]="activeFileIndex === i ? 'eye' : 'eye-off'" [color]="activeFileIndex === i ? 'primary' : 'medium'"></ion-icon>
+                    </ion-button>
+
+                    <span class="name">{{ f.name }}</span>
+                    <span class="size">{{ (f.size/1024/1024) | number:'1.1-1' }} MB</span>
+
+                    <ion-button size="small" fill="clear" (click)="removeFile(i)">
+                      <ion-icon slot="icon-only" name="close-circle-outline" color="danger"></ion-icon>
+                    </ion-button>
+                  </div>
+                </ion-item>
+              </ion-list>
+
+              <div class="dropzone small-dropzone ion-margin-top"
+                   [class.dragging]="isDragging"
+                   (dragover)="onDragOver($event)"
+                   (dragleave)="onDragLeave()"
+                   (drop)="onDrop($event)">
+                <ion-icon name="add-circle-outline" (click)="fileInput.click()"></ion-icon>
+                <div class="dz-text-small">
+                  Húzz ide még egy fájlt
+                  <span class="dz-sep">vagy</span>
+                  <button type="button" class="linklike" (click)="fileInput.click()">Válassz</button>
+                </div>
               </div>
             </ion-col>
 
-            <ion-col size="12" size-md="6">
-              <ion-card class="preview" *ngIf="previewKind">
+            <ion-col size="12" size-md="6" *ngIf="activeFileIndex !== null && files[activeFileIndex]">
+              <ion-card class="preview">
                 <ion-card-header>
-                  <ion-card-title>Élő előnézet</ion-card-title>
+                  <ion-card-title>Előnézet: {{ files[activeFileIndex].name }}</ion-card-title>
                 </ion-card-header>
                 <ion-card-content>
                   <ng-container [ngSwitch]="previewKind">
@@ -139,12 +175,15 @@
       <div class="actions">
         <ion-button fill="clear" (click)="reset()">
           <ion-icon name="refresh-outline" slot="start"></ion-icon>
-          Törlés
+          Összes törlése
         </ion-button>
         <span class="spacer"></span>
-        <ion-button type="submit" [disabled]="form.invalid">
-          Feltöltés
-          <ion-icon name="send-outline" slot="end"></ion-icon>
+        <ion-button
+          class="btn-primary"
+          type="submit"
+          [disabled]="isUploadDisabled()">
+          <ion-icon name="push-outline" slot="start"></ion-icon>
+          Feltöltés ({{ files.length }} db)
         </ion-button>
       </div>
     </form>

@@ -20,6 +20,12 @@
     align-items: center;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 
+    .profile-small {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .avatar {
       position: relative;
       width: 40px;
@@ -39,7 +45,12 @@
       }
     }
 
+    .patient-name-mobile {
+      display: none;
+    }
+
     ion-label {
+      margin-left: 10px;
       h2 {
         font-weight: 600;
         font-size: 1.1em;
@@ -70,10 +81,13 @@
 .chat-pane {
   height: 80vh;
   background: var(--ion-color-light, #f4f5f8);
-  border-radius: 10px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.15);
   display: grid;
   grid-template-rows: auto 1fr auto;
+  background: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .chat-header {
@@ -153,6 +167,10 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
+
+  &.is-empty-state {
+    justify-content: center;
+  }
 }
 
 .select-patient-placeholder, .no-messages-placeholder {
@@ -160,9 +178,41 @@
   justify-content: center;
   align-items: center;
   height: 100%;
-  color: var(--ion-color-medium);
-  font-style: italic;
   text-align: center;
+  padding: 20px;
+}
+
+.select-patient-placeholder {
+  margin-top: 150px;
+}
+
+.placeholder-content {
+  max-width: 350px;
+  padding: 30px;
+  border-radius: 12px;
+  background: var(--ion-color-light, #ffffff);
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+
+  .placeholder-icon {
+    font-size: 4em;
+    color: var(--ion-color-medium, #929a99);
+    margin-bottom: 15px;
+  }
+
+  h3 {
+    font-weight: 700;
+    color: var(--ion-color-dark);
+    margin: 0 0 10px 0;
+    font-size: 1.4em;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 1em;
+    line-height: 1.4;
+    margin: 0;
+  }
 }
 
 .message-bubble-wrapper {
@@ -269,45 +319,98 @@
 
   .sidebar {
     padding: 10px 0;
+    margin: 10px 0;
+    height: 120px;
     box-shadow: none;
-    border-radius: 0;
-    border-bottom: 1px solid #ddd;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 
     ion-list {
+      height: 100%;
       display: flex;
       flex-direction: row;
       overflow-x: auto;
       padding: 0 10px;
       gap: 15px;
+      overflow-y: hidden;
     }
 
     ion-item {
-      display: block;
-      width: 70px;
-      height: 70px;
+      align-items: center;
+      justify-content: center;
+      display: flex;
+      flex-direction: column;
+      width: 100px;
+      height: auto;
+      border-radius: 10px;
       --padding-start: 0;
       --inner-padding-end: 0;
       --background: transparent;
+      --background-hover: unset;
       --inner-border-width: 0;
       --border-width: 0;
-      border-radius: 50%;
       overflow: visible;
       position: relative;
+      transition: transform 0.2s ease-out;
+      --border-radius: 10px;
+
+      &.selected {
+        --background: var(--ion-color-secondary-tint, #e7f0ff);
+        --border-radius: 10px;
+
+        .avatar {
+          margin-top: 16px;
+        }
+
+        .patient-name-mobile {
+          margin-bottom: 16px;
+        }
+      }
+
+      &:hover:not(.selected) {
+        transform: scale(1.05);
+        --background: var(--ion-color-step-50, #f8f9fa);
+        z-index: 10;
+      }
 
       ion-label {
         display: none;
       }
 
+      .profile-small {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+      }
+
       .avatar {
         width: 60px;
         height: 60px;
-        margin: 5px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        margin: 16px 0 0;
+
+      }
+
+      .patient-name-mobile {
+        display: block;
+        font-size: 0.85rem;
+        text-align: center;
+        width: 100%;
+        margin-top: 5px;
+        color: var(--ion-color-dark);
+        line-height: 1.1;
+        font-weight: bold;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-bottom: 16px;
       }
 
       .unread-badge {
         position: absolute;
-        top: 0;
-        right: 0;
+        top: 15px;
+        right: 15px;
         z-index: 999;
       }
     }
@@ -315,10 +418,11 @@
     ion-list-header, ion-searchbar {
       display: none;
     }
-
-    .chat-pane {
-      height: calc(100vh - 70px);
-    }
+  }
+  .chat-pane {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    height: calc(100vh - 70px - 141px - 30px);
   }
 }
 
@@ -344,6 +448,7 @@
       width: 100%;
       height: 100vh;
       z-index: 100;
+      margin-top: 50px;
       flex-direction: column;
       transition: transform 0.3s ease-in-out;
       transform: translateX(0);
@@ -363,16 +468,28 @@
         width: unset;
         height: auto;
         border-radius: unset;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+        .profile-small {
+          flex-direction: row;
+          align-items: center;
+          width: auto;
+          padding-left: 20px;
+          gap: 10px;
+        }
 
         ion-label {
+          margin-left: 10px;
           display: block;
         }
 
         .avatar {
           width: 40px;
           height: 40px;
-          margin-right: 10px;
+          margin: 0;
+        }
+
+        .patient-name-mobile {
+          display: none;
         }
 
         .unread-badge {

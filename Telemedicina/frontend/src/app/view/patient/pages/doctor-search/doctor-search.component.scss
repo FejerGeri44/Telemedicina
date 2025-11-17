@@ -1,6 +1,10 @@
 .doctor-container {
   width: 95%;
   margin: auto;
+
+  @media (max-width: 600px) {
+    margin-bottom: 70px;
+  }
 }
 
 .search-container {
@@ -92,19 +96,65 @@ ion-icon {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  margin-top: 15px;
-  font-size: 20px;
+  margin-top: 20px;
+  font-size: 16px;
+  padding: 0 10px;
+  flex-wrap: wrap;
+}
+
+.pag-controls {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 5px;
+  background: var(--ion-color-step-50, #f8f9fa);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .pagination span {
   cursor: pointer;
-  transition: transform 0.3s ease;
-  padding: 5px 10px;
+  transition: all 0.2s ease;
+  padding: 6px 12px;
+  min-width: 38px;
+  text-align: center;
+  border-radius: 8px;
+  color: var(--ion-color-dark, #333);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.pagination span:not(.active):hover {
+  background-color: var(--ion-color-step-100, #e9ecef);
+  color: var(--ion-color-primary, #3880ff);
 }
 
 .pagination span.active {
-  font-size: 25px;
-  font-weight: bold;
+  padding: 5px;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: var(--ion-color-primary, #3880ff);
+  color: var(--ion-color-light, #ffffff);
+  box-shadow: 0 2px 5px rgba(56, 128, 255, 0.4);
+  transform: scale(1.05);
+}
+
+.pagination ion-icon {
+  font-size: 1.5rem;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  color: var(--ion-color-medium, #929a99);
+}
+
+.pagination ion-icon:not(.disabled):hover {
+  background-color: var(--ion-color-step-100, #e9ecef);
+  color: var(--ion-color-primary, #3880ff);
+}
+
+.pagination ion-icon.disabled {
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 .doctor-card-header {
@@ -112,7 +162,6 @@ ion-icon {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .doctor-header-info {
@@ -159,9 +208,6 @@ ion-col {
   display: flex;
   justify-content: center;
   gap: 10px;
-  background: rgba(0, 0, 0, 0.025);
-  padding: 25px 0 15px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .rating {

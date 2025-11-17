@@ -11,6 +11,7 @@ import {UserService} from '../../../../services/user/user.service';
 import {NgIf, NgOptimizedImage} from "@angular/common";
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
+import {PlatformService} from '../../../../services/platform/platform.service';
 
 @Component({
   selector: 'app-admin-edit-profile-modal',
@@ -27,6 +28,7 @@ import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns
 })
 export class AdminEditProfileModalComponent implements OnInit {
   @Input() user!: AdminItem;
+
   editProfileForm!: FormGroup;
 
   file: File | null = null;
@@ -34,6 +36,7 @@ export class AdminEditProfileModalComponent implements OnInit {
   savingData: boolean = false;
 
   constructor(
+    protected platform: PlatformService,
     private modalCtrl: ModalController,
     private http: HttpClient,
     private userService: UserService,

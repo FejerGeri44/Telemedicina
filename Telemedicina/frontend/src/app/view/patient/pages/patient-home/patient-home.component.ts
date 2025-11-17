@@ -17,6 +17,8 @@ import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {firstValueFrom, Observable, take} from 'rxjs';
 import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
 import {DocumentItem} from '../../../../utils/interfaces/document.interface';
+import {DoctorRatingItem} from '../../../../utils/interfaces/doctor.interface';
+import {DoctorRatingModalComponent} from '../../components/doctor-rating-modal/doctor-rating-modal.component';
 
 @Component({
   selector: 'app-patient-home',
@@ -36,6 +38,7 @@ export class PatientHomeComponent implements OnInit {
   isDocumentsLoaded: boolean = false;
 
   systemMessages: SystemMessage[] = [];
+  pendingRatings: DoctorRatingItem[] = [];
 
   constructor(
     private http: HttpClient,
@@ -47,6 +50,7 @@ export class PatientHomeComponent implements OnInit {
   }
 
   ngOnInit() {
+    void this.checkForRatingRequests();
     this.loadSystemMessagesOnceAfterLogin();
     void this.fetchAppointments();
     void this.fetchDocuments();
@@ -73,7 +77,7 @@ export class PatientHomeComponent implements OnInit {
       next: (res) => {
         this.systemMessages = res;
         void this.presentSystemMessagesModalsOnce();
-        localStorage.setItem(key, '1');
+        sessionStorage.setItem(key, '1');
         },
       error: (err) => console.error('❌ Rendszerüzenetek hiba:', err)
     });
@@ -101,6 +105,61 @@ export class PatientHomeComponent implements OnInit {
       await modal.onDidDismiss();
 
       sessionStorage.setItem(`System-Messages-${message.id}`, '1');
+    }
+  }
+
+  async checkForRatingRequests() {
+    const key = `Doctor-ratings`;
+    if (sessionStorage.getItem(key) === '1') return;
+
+    const patientId = await this.getPatientId();
+
+    if (!patientId) {
+      console.warn('❌ Hiányzik a patientId, az értékelési kérések lekérdezése kihagyva.');
+      return;
+    }
+
+    const payload = {
+      patientId: patientId
+    }
+
+    console.log(payload)
+    this.http.post<DoctorRatingItem[]>(
+      `${environment.apiUrl}/patient/activeRatingRequests`,
+      payload,
+      {withCredentials: true}
+    ).subscribe({
+      next: (res) => {
+        this.pendingRatings = res;
+        void this.presentDoctorRatingModalsOnce();
+        localStorage.setItem(key, '1');
+      },
+      error: (err) => console.error('❌ Rendszerüzenetek hiba:', err)
+    });
+  }
+
+  async presentDoctorRatingModalsOnce(): Promise<void> {
+    const rate = this.pendingRatings ?? [];
+    if (!rate.length) return;
+
+    const ratings = rate.filter(rate => !sessionStorage.getItem(`Doctor-ratings-${rate.id}`));
+    if (!ratings.length) return;
+
+    for (const rate of ratings) {
+      const modal = await this.modalCtrl.create({
+        component: DoctorRatingModalComponent as any,
+        componentProps: {
+          rating: [rate]
+        },
+
+        cssClass: 'doctor-rating-modal',
+        canDismiss: true,
+        backdropDismiss: true,
+      });
+      await modal.present();
+      await modal.onDidDismiss();
+
+      sessionStorage.setItem(`Doctor-ratings-${rate.id}`, '1');
     }
   }
 

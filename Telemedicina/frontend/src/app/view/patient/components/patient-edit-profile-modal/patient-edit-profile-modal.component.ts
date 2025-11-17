@@ -10,6 +10,7 @@ import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
+import {PlatformService} from '../../../../services/platform/platform.service';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -46,6 +47,7 @@ export class PatientEditProfileModalComponent implements  OnInit {
   ] as const;
 
   constructor(
+    protected platform: PlatformService,
     private modalCtrl: ModalController,
     private http: HttpClient,
     private fb: FormBuilder,

@@ -90,20 +90,8 @@ export class DoctorSearchComponent implements OnInit{
   }
 
   goToPage(page: number) {
-    this.currentPage = page;
-    this.updateVisiblePages();
-  }
-
-  prevPageSet() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updateVisiblePages();
-    }
-  }
-
-  nextPageSet() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
       this.updateVisiblePages();
     }
   }

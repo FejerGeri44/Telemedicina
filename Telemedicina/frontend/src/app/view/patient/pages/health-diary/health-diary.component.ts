@@ -22,6 +22,7 @@ import {DocumentTableComponent} from './components/document-table/document-table
 import {
   DocumentTableSkeletonComponent
 } from './components/document-table/document-table-skeleton/document-table-skeleton.component';
+import {formatAppointmentTime, formatTimestamp} from '../../../../utils/formatProfileData';
 
 type DiaryTab = 'appointments' | 'documents' | 'diagnoses';
 
@@ -48,12 +49,19 @@ export class HealthDiaryComponent {
   myDocuments: DocumentItem[] = [];
   isLoading = true;
 
+  filteredAppointments: MyAppointment[] = [];
+  filteredDiagnoses: MyDiagnosis[] = [];
+  filteredDocuments: DocumentItem[] = [];
+
   myAppointmentCalledAndLoaded: boolean = false;
   myDiagnosesCalledAndLoaded: boolean = false;
   myDocumentCalledAndLoaded: boolean = false;
 
   query = '';
   activeTab: DiaryTab = 'appointments';
+
+  pageSize = 10;
+  currentPage = 1;
 
   constructor(
     private http: HttpClient,
@@ -86,6 +94,7 @@ export class HealthDiaryComponent {
     if (!['appointments', 'documents', 'diagnoses'].includes(newTab)) return;
     if (this.activeTab === newTab) return;
     this.activeTab = newTab;
+    this.currentPage = 1;
 
     switch (newTab) {
       case 'diagnoses':
@@ -124,6 +133,7 @@ export class HealthDiaryComponent {
     ).subscribe({
       next: (res) => {
         this.myAppointments = res;
+        this.filterData();
         this.isLoading = false;
         this.myAppointmentCalledAndLoaded = true;
       },
@@ -152,6 +162,7 @@ export class HealthDiaryComponent {
     ).subscribe({
       next: (res) => {
         this.myDocuments = res;
+        this.filterData();
         this.isLoading = false;
         this.myDocumentCalledAndLoaded = true;
       },
@@ -180,6 +191,7 @@ export class HealthDiaryComponent {
     ).subscribe({
       next: (res) => {
         this.myDiagnoses = res;
+        this.filterData();
         this.isLoading = false;
         this.myDiagnosesCalledAndLoaded = true;
       },
@@ -188,5 +200,78 @@ export class HealthDiaryComponent {
         this.isLoading = false;
       }
     });
+  }
+
+  filterData(): void {
+    const q = this.query.toLowerCase().trim();
+    this.currentPage = 1;
+    if (!q) {
+      this.filteredAppointments = this.myAppointments;
+      this.filteredDiagnoses = this.myDiagnoses;
+      this.filteredDocuments = this.myDocuments;
+      return;
+    }
+
+    this.filteredAppointments = this.myAppointments.filter(appt => {
+      const doctorName = appt.doctor?.user?.name?.toLowerCase() || '';
+      const apptTime = formatAppointmentTime(appt.starts_at, appt.ends_at).toLowerCase();
+
+      return doctorName.includes(q) || apptTime.includes(q);
+    });
+
+    this.filteredDocuments = this.myDocuments.filter(doc => {
+      const doctorName = doc.doctor?.user?.name?.toLowerCase() || '';
+      const diagnosisTime = formatTimestamp(doc.diagnosis_date).toLowerCase();
+
+      return doctorName.includes(q) || diagnosisTime.includes(q);
+    });
+
+    this.filteredDiagnoses = this.myDiagnoses.filter(diag => {
+      const doctorName = diag.doctor_data?.user?.name?.toLowerCase() || '';
+      const diagnosisTime = formatTimestamp(diag.diagnosis_date).toLowerCase();
+
+      return doctorName.includes(q) || diagnosisTime.includes(q);
+    });
+  }
+
+  get totalItems(): number {
+    switch (this.activeTab) {
+      case 'appointments':
+        return this.filteredAppointments.length;
+      case 'documents':
+        return this.filteredDocuments.length;
+      case 'diagnoses':
+        return this.filteredDiagnoses.length;
+      default:
+        return 0;
+    }
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalItems / this.pageSize);
+  }
+
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  private getPaginatedData<T>(data: T[]): T[] {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return data.slice(startIndex, endIndex);
+  }
+
+  get paginatedAppointments(): MyAppointment[] {
+    return this.getPaginatedData(this.filteredAppointments);
+  }
+
+  get paginatedDiagnoses(): MyDiagnosis[] {
+    return this.getPaginatedData(this.filteredDiagnoses);
+  }
+
+  get paginatedDocuments(): DocumentItem[] {
+    return this.getPaginatedData(this.filteredDocuments);
   }
 }

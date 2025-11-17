@@ -15,10 +15,12 @@
 .admins,
 .doctor-applications,
 .messages {
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --background: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  margin: 15px;
   padding: 20px;
-  background-color: #ffffff;
+  overflow: hidden;
 }
 
 .profile-card {

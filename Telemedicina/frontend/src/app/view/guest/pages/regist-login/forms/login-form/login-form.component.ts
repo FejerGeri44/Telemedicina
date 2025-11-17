@@ -12,6 +12,7 @@ import { createClient } from '@supabase/supabase-js';
 import {environment} from '../../../../../../../../enviroment';
 import {firstValueFrom} from 'rxjs';
 import {PASSWORD_PATTERN} from '../../../../../../utils/validation-patterns';
+import {PlatformService} from '../../../../../../services/platform/platform.service';
 const supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
 
 @Component({
@@ -32,6 +33,7 @@ export class LoginFormComponent implements OnInit{
   loading = false;
 
   constructor(
+    protected platform: PlatformService,
     private http: HttpClient,
     private router: Router,
     private fb: FormBuilder,

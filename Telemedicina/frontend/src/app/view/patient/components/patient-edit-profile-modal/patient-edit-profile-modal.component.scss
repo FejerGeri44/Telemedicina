@@ -249,7 +249,7 @@ ion-select {
   position: sticky;
   width: calc(100% + 62px);
   bottom: -55px;
-  margin-left: -32px;
+  margin-left: -30px;
   display: flex;
   justify-content: flex-end;
   padding: 15px 0 10px;
@@ -258,6 +258,7 @@ ion-select {
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
 
   .btn-accent {
+    margin-right: 30px;
     width: 200px;
     font-weight: 700;
     --border-radius: 10px;
@@ -284,5 +285,15 @@ ion-select {
   }
   .epm-tags-section h3 {
     font-size: clamp(1rem, 3vw, 1.3rem);
+  }
+}
+
+@media (max-width: 500px) {
+  .epm-header {
+    flex-direction: column;
+    text-align: center;
+    .epm-headline {
+      h2 { font-size: 1.5rem; }
+    }
   }
 }

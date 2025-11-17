@@ -1,46 +1,57 @@
-<div class="card">
-  <div class="pc-header">
-    <div class="pc-left">
-      <div class="dpc-avatar">
-        <img ngSrc="{{ user.user.pictureUrl }}" alt="Profilkép" draggable="false" priority fill/>
-      </div>
-      <div class="pc-name">
-        <div class="pc-fullname">{{ user.user.name }}</div>
-        <div class="pc-role">{{ user.user.role }}</div>
-      </div>
-    </div>
-
-    <ion-button class="btn-accent pc-edit-top" (click)="edit.emit()" *ngIf="editable">
-      Módosítás
-    </ion-button>
+<ion-card class="admin-card"> <ion-toolbar class="pc-header"> <div slot="start" class="pc-left">
+  <div class="dpc-avatar">
+    <img ngSrc="{{ user.user.pictureUrl }}" alt="Profilkép" draggable="false" priority fill/>
   </div>
-
-  <div class="dpc-info">
-    <div class="col">
-      <div class="row"><span class="lbl">Regisztráció dátuma:</span> <span class="val">{{ user.admin.registDate | date:'yyyy-MM-dd' }}</span></div>
-    </div>
-  </div>
-
-  <div class="pc-stats">
-    <div class="stat">
-      <span class="label">Email:</span>
-      <span class="value">{{ user.user.email }}</span>
-    </div>
-
-    <div class="stat">
-      <span class="label">Mobil:</span>
-      <span class="value">{{ formatPhoneNumber(this.user.user.phoneNumber) }}</span>
-    </div>
-
-    <div class="stat">
-      <span class="label">Cím:</span>
-      <span class="value">{{ user.user.address }}</span>
-    </div>
-  </div>
-
-  <div class="pc-edit-bottom-wrap" *ngIf="editable">
-    <ion-button class="btn-accent edit" (click)="edit.emit()">
-      Módosítás
-    </ion-button>
+  <div class="pc-name-info"> <ion-label>
+    <div class="pc-fullname">{{ user.user.name }}</div>
+    <ion-chip class="pc-role">{{ user.user.role }}</ion-chip> </ion-label>
   </div>
 </div>
+
+  <ion-buttons slot="end" *ngIf="editable" class="pc-edit-top">
+    <ion-button class="btn-accent" (click)="edit.emit()" fill="outline">
+      <ion-icon name="create-outline" slot="start"></ion-icon>
+      Módosítás
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>
+
+  <ion-card-content>
+    <div class="pc-details-admin-card main-data">
+      <div class="col">
+        <ion-item lines="none" class="pc-item">
+          <ion-label class="label">Regisztráció dátuma:</ion-label>
+          <span class="value">{{ user.admin.registDate | date:'yyyy-MM-dd' }}</span>
+        </ion-item>
+      </div>
+    </div>
+
+    <div class="pc-details-admin-card">
+      <div class="col">
+        <ion-item lines="none" class="pc-item">
+          <ion-label class="label">Email:</ion-label>
+          <span class="value">{{ user.user.email }}</span>
+        </ion-item>
+      </div>
+      <div class="col">
+        <ion-item lines="none" class="pc-item">
+          <ion-label class="label">Mobil:</ion-label>
+          <span class="value">{{ formatPhoneNumber(this.user.user.phoneNumber) }}</span>
+        </ion-item>
+      </div>
+      <div class="col">
+        <ion-item lines="none" class="pc-item">
+          <ion-label class="label">Cím:</ion-label>
+          <span class="value">{{ user.user.address }}</span>
+        </ion-item>
+      </div>
+    </div>
+  </ion-card-content>
+
+  <ion-footer *ngIf="editable" class="pc-edit-bottom-wrap">
+    <ion-button class="btn-accent" (click)="edit.emit()">
+      <ion-icon name="create-outline" slot="start"></ion-icon>
+      Módosítás
+    </ion-button>
+  </ion-footer>
+</ion-card>

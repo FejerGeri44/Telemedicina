@@ -1,5 +1,4 @@
 <div class="container">
-  <!-- Szegmens navigáció (ikon + label) -->
   <ion-segment
     [value]="currentStep.toString()"
     (ionChange)="goTo($event.detail.value)"
@@ -19,7 +18,6 @@
     <div class="slider-viewport">
       <div class="slides" [style.transform]="slideTransform">
         <div class="slide">
-          <!-- 0. Alapok -->
           <ion-card *ngSwitchCase="0">
             <ion-card-header>
               <ion-card-title>Alapok</ion-card-title>
@@ -27,8 +25,6 @@
 
             <ion-card-content>
               <ion-list lines="full">
-                <!-- LENYÍLÓ: időpont (from HH:mm) — felhasználónév -->
-                <!-- Ha van appointment -->
                 <ion-item class="required" *ngIf="appointments && appointments.length > 0">
                   <ion-label position="stacked">Időpontok</ion-label>
                   <ion-select placeholder="Válassz pácienst (kezdés – név)"
@@ -41,19 +37,16 @@
                   </ion-select>
                 </ion-item>
 
-                <!-- Ha nincs appointment -->
                 <div *ngIf="appointments && appointments.length === 0" class="empty-state">
                   <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
                   <p class="empty-text">Nincs a mai napra időpont foglalva</p>
                 </div>
 
-                <!-- TAJ (szerkeszthető, memóriába megy) -->
                 <ion-item class="required">
                   <ion-label position="stacked">TAJ</ion-label>
                   <ion-input [value]="formatTaj(draft.patient.taj)" readonly></ion-input>
                 </ion-item>
 
-                <!-- Páciens előnézet (autokitöltve, csak megjelenítés) -->
                 <ion-list-header>
                   <ion-label>Páciens adatok (előnézet)</ion-label>
                 </ion-list-header>
@@ -107,7 +100,6 @@
               </ion-list>
             </ion-card-content>
 
-            <!-- Navigáció a kártya alján (változatlanul működik) -->
             <div class="card-footer">
               <ion-button class="btn-secondary" fill="clear" (click)="back()" [disabled]="currentStep === 0">
                 <ion-icon name="chevron-back-outline"></ion-icon>
@@ -122,14 +114,12 @@
           </ion-card>
         </div>
         <div class="slide">
-          <!-- 0. Vizsgálat -->
           <ion-card>
             <ion-card-header>
               <ion-card-title>Vizsgálat</ion-card-title>
             </ion-card-header>
 
             <ion-card-content>
-              <!-- Tünetek blokk -->
               <ion-grid>
                 <ion-row>
                   <ion-col size="12" size-md="6">
@@ -144,8 +134,7 @@
                   </ion-col>
 
                   <ion-col size="12" size-md="6">
-                    <!-- toggle a vitálokra -->
-                    <ion-item lines="full" style="margin-top: 20px">
+                    <ion-item lines="full" style="margin-top: 5.5%">
                       <ion-label>Vitáljelek rögzítése</ion-label>
                       <ion-note class="optional-hint" slot="end">Opcionális</ion-note>
                       <ion-toggle
@@ -159,7 +148,6 @@
                 </ion-row>
 
                 <ion-row class="ion-margin-top">
-                  <!-- Bal: naptár -->
                   <ion-col size="12" size-md="6">
                     <ion-item class="custom-item">
                       <ion-label position="stacked">Kezdet dátuma</ion-label>
@@ -175,11 +163,7 @@
                     </ion-item>
                   </ion-col>
 
-                  <!-- Jobb: toggle + vitálok -->
                   <ion-col size="12" size-md="6">
-
-
-                    <!-- vitálok tartalom -->
                     <div *ngIf="showExam" class="ion-margin-top">
                       <ion-grid>
                         <ion-row>
@@ -290,7 +274,6 @@
           </ion-card>
         </div>
         <div class="slide">
-          <!-- 3. Diagnózis -->
           <ion-card *ngSwitchCase="2">
             <ion-card-header>
               <ion-card-title>Diagnózis</ion-card-title>
@@ -401,7 +384,6 @@
           </ion-card>
         </div>
         <div class="slide">
-          <!-- 4. Terv / Összegzés -->
           <ion-card *ngSwitchCase="3" id="summaryPrint">
             <ion-card-header>
               <ion-card-title>Összegzés</ion-card-title>
@@ -410,7 +392,6 @@
             <ion-card-content>
               <ion-list lines="full" class="summary-list">
 
-                <!-- Páciens / Időpont -->
                 <ion-item class="section-header">
                   <ion-label>Páciens és időpont</ion-label>
                 </ion-item>
@@ -451,7 +432,6 @@
                   </ion-row>
                 </ion-grid>
 
-                <!-- Tünetek -->
                 <ion-item class="section-header">
                   <ion-label>Tünetek</ion-label>
                 </ion-item>
@@ -480,7 +460,6 @@
                   </ion-row>
                 </ion-grid>
 
-                <!-- Vitáljelek -->
                 <ion-item class="section-header">
                   <ion-label>Vitáljelek</ion-label>
                 </ion-item>
@@ -541,7 +520,6 @@
                   </ion-row>
                 </ion-grid>
 
-                <!-- Diagnózis -->
                 <ion-item class="section-header">
                   <ion-label>Diagnózis</ion-label>
                 </ion-item>
@@ -592,7 +570,6 @@
                   </ion-row>
                 </ion-grid>
 
-                <!-- Plan / státuszok -->
                 <ion-item class="section-header">
                   <ion-label>Plan</ion-label>
                 </ion-item>
@@ -626,7 +603,6 @@
                 </ion-grid>
               </ion-list>
 
-              <!-- (opcionális) gyors gombok -->
               <div class="summary-actions">
                 <ion-button size="small" fill="outline" (click)="printSummary()">
                   <ion-icon name="print-outline" slot="start"></ion-icon>

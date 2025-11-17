@@ -1,9 +1,14 @@
-.message-table-scroll{
+.message-table-scroll {
   width: calc(100% + 20px);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin: -10px;
+
+  @media (max-width: 600px) {
+    margin-bottom: 70px;
+  }
 }
+
 .message-table {
   min-width: 1200px;
   border-collapse: collapse;
@@ -11,166 +16,144 @@
   background: #fff;
   box-shadow: 0 10px 28px rgba(16, 24, 40, 0.08);
   border: 1px solid #eef2f7;
+
+  .table-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    backdrop-filter: blur(6px);
+    background: linear-gradient(180deg, #f7f9fc 0%, #f2f6fb 100%);
+    border-bottom: 1px solid #e6edf5;
+
+    .th {
+      font-weight: 700;
+      color: #1f2937;
+      font-size: 13px;
+    }
+
+    .sort {
+      ion-icon {
+        cursor: pointer;
+      }
+    }
+  }
+
+  .table-row {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .18s ease, box-shadow .18s ease;
+
+    &:hover {
+      background: #f9fbff;
+    }
+  }
+
+  ion-col {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+  }
+
+  .message-column {
+    max-height: 100px;
+    overflow-y: auto;
+  }
+
+  .doctor-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+
+    .avatar {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e6f4ff;
+      display: grid;
+      place-items: center;
+      overflow: visible;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+
+      img {
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #fff;
+        box-shadow: 0 0 0 3px #e6f4ff;
+      }
+    }
+  }
+
+  .actions {
+    .ghost-btn {
+      --padding-start: 5px;
+      --padding-top: 5px;
+      --padding-bottom: 5px;
+      --padding-end: 5px;
+      border-radius: 5px;
+      --background: transparent;
+
+      ion-icon {
+        width: 25px;
+        height: 25px;
+      }
+    }
+  }
+
+  .skeleton-row {
+    pointer-events: none;
+
+    &:hover {
+      background: none !important;
+    }
+
+    .skeleton-icon-button {
+      width: 25px;
+      height: 25px;
+      border-radius: 5px;
+    }
+  }
 }
 
-.message-table .table-header {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  backdrop-filter: blur(6px);
-  background: linear-gradient(180deg, #f7f9fc 0%, #f2f6fb 100%);
-  border-bottom: 1px solid #e6edf5;
-}
-.message-table .th {
-  font-weight: 700;
-  color: #1f2937;
-  font-size: 13px;
-}
-
-/* sorok */
-.message-table .table-row {
-  border-bottom: 1px solid #f1f5f9;
-  transition: background .18s ease, box-shadow .18s ease;
-}
-.message-table .table-row:hover {
-  background: #f9fbff;
-}
-
-/* cellák */
-.message-table ion-col {
+.no-data-appointments {
   display: flex;
-  align-items: center;
-  padding: 12px 14px;
-}
-
-.message-column {
-  max-height: 100px;
-  overflow-y: auto;
-}
-
-.sort ion-icon {
-  cursor: pointer;
-}
-.doctor-info {
-  display: flex;
-  flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-}
-.avatar {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #e6f4ff;
-  display: grid;
-  place-items: center;
-  overflow: visible;
-  box-shadow: 0 4px 12px rgba(0,0,0,.08);
-}
-
-.avatar img {
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #fff;
-  box-shadow: 0 0 0 3px #e6f4ff;
-}
-
-.chips-col {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-}
-.type-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 0.8rem;
-  background: #eef2ff;
-  color: #334155;
-  border: 1px solid #e6ecff;
-}
-.type-chip ion-icon { font-size: 0.8rem; }
-
-.type-chip.info    { background:#e6f0ff; color:#1d4ed8; border-color:#cfe0ff; }
-.type-chip.warning { background:#fff6db; color:#b45309; border-color:#ffe9b0; }
-.type-chip.error   { background:#ffe6e8; color:#b91c1c; border-color:#ffc9cd; }
-
-.aud-chip, .date-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 15px;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 0.8rem;
-  color:#475569;
-  border:1px dashed #e5e7eb;
-  background:#f8fafc;
-}
-
-/* címoszlop: egy sor, ellipszis */
-.title-td {
-  font-weight: 600; color:#0f172a;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-.message-td {
-  color: #334155;
-  line-height: 1.4;
-  white-space: pre-wrap;
-  overflow-y: auto;
-}
-
-.actions .ghost-btn {
-  --padding-start: 5px;
-  --padding-top: 5px;
-  --padding-bottom: 5px;
-  --padding-end: 5px;
-  border-radius: 5px;
-  --background: transparent;
-}
-
-.ghost-btn ion-icon {
-  width: 25px;
-  height: 25px;
-}
-
-.no-data {
+  height: calc(100vh - 76px - 48px);
   text-align: center;
-  margin-top: 24px;
-}
-.no-data-text {
-  display: block;
-  font-size: 24px;
-  font-weight: 700;
-  color: #8b5cf6;
-}
-.no-data-sub {
-  display: block;
-  margin-top: 8px;
-  color: #6b7280;
-}
+  padding: 0 10px;
 
-.skeleton-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-}
+  .no-data-container {
+    max-width: 400px;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.03);
+    border: 2px dashed rgba(0, 0, 0, 0.25);
 
-.skeleton-icon-button {
-  width: 25px;
-  height: 25px;
-  border-radius: 5px;
-}
+    .icon-large {
+      font-size: 3.5rem;
+      color: var(--ion-color-medium, #929a99);
+      margin-bottom: 10px;
+    }
 
-.skeleton-row {
-  pointer-events: none;
-}
-.skeleton-row:hover {
-  background: none !important;
+    .main-text {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--secondary);
+      margin: 0 0 5px 0;
+    }
+
+    .sub-text {
+      font-size: 0.95rem;
+      color: var(--ion-color-medium, #929a99);
+      margin: 0 0 20px 0;
+      line-height: 1.4;
+    }
+
+    .btn-secondary {
+      width: 100%;
+    }
+  }
 }

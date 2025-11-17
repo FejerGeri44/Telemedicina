@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, Renderer2, Inject} from '@angular/core';
+import {Component, Input, Renderer2, Inject} from '@angular/core';
 import {DOCUMENT, NgForOf, NgOptimizedImage} from '@angular/common';
 import {DocumentItem} from '../../../../../../utils/interfaces/document.interface';
 import {IonicModule, ModalController} from '@ionic/angular';
@@ -21,7 +21,7 @@ import {HttpClient} from '@angular/common/http';
   standalone: true,
   styleUrl: './document-table.component.scss'
 })
-export class DocumentTableComponent implements OnInit {
+export class DocumentTableComponent {
   @Input({ required: true }) myDocuments!: DocumentItem[];
 
   constructor(
@@ -31,11 +31,15 @@ export class DocumentTableComponent implements OnInit {
     @Inject(DOCUMENT) private document: Document
   ) {}
 
-  private async getSignedUrl(storagePath: string): Promise<string | null> {
+  private async getSignedUrl(patient_id: number, storagePath: string): Promise<string | null> {
     try {
+      const payload = {
+        storagePath,
+        patient_id
+      }
       const response = await this.http.post<{ signedUrl: string }>(
         `${environment.apiUrl}/patient/getSignedDocumentUrl`,
-        { storagePath },
+        payload,
         { withCredentials: true }
       ).toPromise();
 
@@ -63,7 +67,7 @@ export class DocumentTableComponent implements OnInit {
   }
 
   async viewDocument(document: DocumentItem) {
-    const signedUrl = await this.getSignedUrl(document.storage_path);
+    const signedUrl = await this.getSignedUrl(document.patient.patient.id, document.document.storage_path);
 
     if (signedUrl) {
       window.open(signedUrl, '_blank');
@@ -71,7 +75,7 @@ export class DocumentTableComponent implements OnInit {
   }
 
   async downloadDocument(document: DocumentItem) {
-    const signedUrl = await this.getSignedUrl(document.storage_path);
+    const signedUrl = await this.getSignedUrl(document.patient.patient.id, document.document.storage_path);
 
     if (signedUrl) {
       const downloadLink = this.renderer.createElement('a');
@@ -79,7 +83,7 @@ export class DocumentTableComponent implements OnInit {
       this.renderer.setAttribute(
         downloadLink,
         'download',
-        document.storage_path.split('/').pop() || 'document.pdf'
+        document.document.storage_path.split('/').pop() || 'document.pdf'
       );
       this.renderer.appendChild(this.document.body, downloadLink);
       downloadLink.click();
@@ -88,8 +92,4 @@ export class DocumentTableComponent implements OnInit {
   }
 
   protected readonly formatTimestamp = formatTimestamp;
-
-  ngOnInit(): void {
-    console.log(this.myDocuments)
-  }
 }

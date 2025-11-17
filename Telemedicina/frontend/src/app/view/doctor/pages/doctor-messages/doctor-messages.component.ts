@@ -1,7 +1,7 @@
 import {Component, OnInit, OnDestroy} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
-import {NgForOf, NgIf, DatePipe, NgOptimizedImage} from '@angular/common';
+import {NgForOf, NgIf, NgOptimizedImage, Location, NgClass} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
@@ -14,6 +14,8 @@ import { Message } from '../../../../utils/interfaces/message.interface';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import {SupabaseService} from '../../../../services/chat/supabase.service';
 import {formatTaj} from '../../../../utils/formatProfileData';
+import {Router} from '@angular/router';
+import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-messages.service';
 
 @Component({
   selector: 'app-patient-messages',
@@ -22,8 +24,8 @@ import {formatTaj} from '../../../../utils/formatProfileData';
     FormsModule,
     NgIf,
     NgForOf,
-    DatePipe,
-    NgOptimizedImage
+    NgOptimizedImage,
+    NgClass
   ],
   templateUrl: './doctor-messages.component.html',
   standalone: true,
@@ -52,11 +54,24 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
   constructor(
     private http: HttpClient,
     protected userService: UserService,
+    private router: Router,
+    private location: Location,
+    private supabaseService: SupabaseService,
     private toast: ToastService,
     private alert: AlertService,
-    private supabaseService: SupabaseService
+    private unreadMessageService: UnreadMessageService
   ) {
     this.user = this.userService.doctor$();
+
+    const navigation = this.router.getCurrentNavigation();
+    if (navigation?.extras.state) {
+      const rawPatient = navigation.extras.state['selectedPatient'];
+
+      if (rawPatient) {
+        this.selectedPatient = rawPatient as PatientItem;
+        this.location.replaceState(navigation.extractedUrl.toString());
+      }
+    }
   }
 
   async ngOnInit(): Promise<void> {
@@ -66,8 +81,20 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
         this.doctorPictureUrl = u.user.pictureUrl;
       }
     });
-    void this.getDoctors();
+
+    await this.getDoctors();
     void this.getUnreadSummary();
+
+    if (this.selectedPatient) {
+      const initialPatientId = this.selectedPatient.user.id;
+      const patientToSelect = this.allPatients.find(p => p.user.id === initialPatientId);
+
+      if (patientToSelect) {
+        await this.selectPatient(initialPatientId);
+      } else {
+        this.toast.show('Hiba: Az átadott páciens nem található a listában.', 'danger');
+      }
+    }
   }
 
   ngOnDestroy(): void {
@@ -86,16 +113,9 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
     if (!this.doctorId) return;
 
     try {
-      const summary: Array<{ partnerId: number, unreadCount: number }> =
-        await firstValueFrom(this.http.get<any>(
-          `${environment.apiUrl}/messages/unreadSummary`,
-          { withCredentials: true }
-        ));
-
-      this.unreadSummary = new Map(summary.map(s => [s.partnerId, s.unreadCount]));
-
+      this.unreadSummary = await this.unreadMessageService.fetchUnreadSummary();
     } catch (err) {
-      console.error('❌ Olvasatlan összegzés lekérése sikertelen:', err);
+      console.error('❌ Olvasatlan összegzés komponensbeli frissítése sikertelen:', err);
     }
   }
 
@@ -128,6 +148,9 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
   async markConversationAsRead(patientId: number): Promise<void> {
     if (!this.doctorId || !patientId) return;
 
+    const currentUnreadCount = this.unreadSummary.get(patientId) ?? 0;
+    if (currentUnreadCount === 0) return;
+
     const payload = { patientId };
 
     try {
@@ -136,6 +159,10 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
         payload,
         { withCredentials: true }
       ));
+
+      this.unreadSummary.set(patientId, 0);
+      this.unreadMessageService.decrementTotalCount(currentUnreadCount);
+
     } catch (err) {
       console.error('❌ Beszélgetés olvasottnak jelölése sikertelen:', err);
     }
@@ -280,8 +307,6 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
       receiverUserId,
       content
     }
-
-    console.log(payload)
 
     try {
       const message = await firstValueFrom(this.http.post<Message>(

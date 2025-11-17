@@ -8,6 +8,7 @@ import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {Message} from '../../../../utils/interfaces/message.interface';
+import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-messages.service';
 
 @Component({
   selector: 'app-doctor-navbar',
@@ -43,14 +44,18 @@ export class DoctorNavbarComponent implements OnInit{
     { icon: 'chatbubbles', label: 'Üzenetek', route: 'doctor-messages' }
   ];
 
+  unreadCount$: Observable<number>;
+
   constructor(
     private http: HttpClient,
     private router: Router,
     protected userService: UserService,
     private nav: NavController,
-    private alert: AlertService
+    private alert: AlertService,
+    private unreadMessageService: UnreadMessageService
   ) {
     this.user = this.userService.doctor$();
+    this.unreadCount$ = this.unreadMessageService.totalCount$;
   }
 
   ngOnInit() {
@@ -60,6 +65,8 @@ export class DoctorNavbarComponent implements OnInit{
     this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => this.closeMobileMenu());
+
+    void this.unreadMessageService.fetchUnreadSummary();
   }
 
   confirmLogout() {

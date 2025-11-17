@@ -7,6 +7,7 @@ import {ToastService} from "../../../../../../shared/toast/toast.service";
 import {AdminItem} from '../../../../../../utils/interfaces/admin.interface';
 import {environment} from '../../../../../../../../enviroment';
 import {PASSWORD_PATTERN, PHONE_PATTERN, TEXT_PATTERN} from '../../../../../../utils/validation-patterns';
+import {PlatformService} from '../../../../../../services/platform/platform.service';
 
 @Component({
   selector: 'app-admin-regist',
@@ -30,6 +31,7 @@ export class AdminRegistComponent {
   loading = false;
 
   constructor(
+    protected platform: PlatformService,
       private http: HttpClient,
       private fb: FormBuilder,
       private modalCtrl: ModalController,
