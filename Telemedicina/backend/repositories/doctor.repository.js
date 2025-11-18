@@ -15,6 +15,34 @@ const DoctorRepository = {
     return row;
   },
 
+  async updateDoctorProfile(userId, userFields, doctorFields, supabaseAdmin) {
+    if (Object.keys(userFields).length) {
+      const { error } = await supabaseAdmin
+        .from('users')
+        .update(userFields)
+        .eq('id', userId);
+      if (error) throw error;
+    }
+
+    if (Object.keys(doctorFields).length) {
+      const { error } = await supabaseAdmin
+        .from('doctors')
+        .update(doctorFields)
+        .eq('userId', userId);
+      if (error) throw error;
+    }
+
+    const { data: userRow, error: fetchErr } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (fetchErr) throw fetchErr;
+    if (!userRow) throw new Error('User not found');
+
+    return { userRow };
+  },
+
   async getDoctorWithUserById(doctorId, client = sql) {
     const [row] = await client`
       SELECT
@@ -119,6 +147,233 @@ const DoctorRepository = {
       },
     }));
   },
+
+  async listMyPatientsWithTagsByUserId(currentUserId, supabaseAdmin) {
+    const { data: doc, error: docErr } = await supabaseAdmin
+      .from('doctors')
+      .select('id')
+      .eq('userId', currentUserId)
+      .maybeSingle();
+
+    if (docErr) {
+      throw { type: 'DatabaseError', message: String(docErr.message || docErr), code: 500, detail: 'Doctor ID lookup failed.' };
+    }
+    if (!doc) {
+      return [];
+    }
+    const doctorId = doc.id;
+
+    const acceptedStatuses = ['accepted', 'done'];
+
+    const { data: appointments, error: apptError } = await supabaseAdmin
+      .from('appointments')
+      .select('patient_id')
+      .eq('doctor_id', doctorId)
+      .in('status', acceptedStatuses);
+
+    if (apptError) {
+      throw { type: 'DatabaseError', message: String(apptError.message || apptError), code: 500, detail: 'Appointments lookup failed.' };
+    }
+
+    const requiredPatientIds = [...new Set(
+      (appointments || [])
+        .map(a => a.patient_id)
+        .filter(id => id !== null && id !== undefined)
+    )];
+
+    if (requiredPatientIds.length === 0) {
+      return [];
+    }
+
+    const patientSelectStatement = `
+      id, userId, height, weight, taj, homePhone, birthDate, registDate, gender,
+      user:users (
+        id, name, email, role, phoneNumber, address, pictureUrl
+      )
+    `;
+
+    const { data: patientsData, error: patientsError } = await supabaseAdmin
+      .from('patients')
+      .select(patientSelectStatement)
+      .in('id', requiredPatientIds)
+      .order('id', { ascending: true });
+
+    if (patientsError) {
+      throw { type: 'DatabaseError', message: String(patientsError.message || patientsError), code: 500, detail: 'Patients data fetch failed.' };
+    }
+
+    const patients = Array.isArray(patientsData) ? patientsData : [];
+    const patientIds = [...new Set(patients.map(p => p.id))];
+
+    const { data: tagRows, error: tagsError } = await supabaseAdmin
+      .from('patient_tags')
+      .select('id, patient_id, tag_name, tag_value')
+      .in('patient_id', patientIds);
+
+    if (tagsError) {
+      console.error('❌ Supabase patient_tags lekérdezés hiba:', tagsError);
+    }
+
+    const tagsByPatientId = new Map();
+    (tagRows ?? []).forEach(t => {
+      if (!tagsByPatientId.has(t.patient_id)) tagsByPatientId.set(t.patient_id, []);
+      tagsByPatientId.get(t.patient_id).push({
+        id: t.id,
+        patient_id: t.patient_id,
+        tag_name: t.tag_name,
+        tag_value: t.tag_value
+      });
+    });
+
+    return patients.map(r => ({
+      user: r.user ?? null,
+      patient: {
+        id: r.id,
+        userId: r.userId,
+        height: r.height ?? null,
+        weight: r.weight ?? null,
+        taj: r.taj ?? null,
+        homePhone: r.homePhone ?? null,
+        registDate: r.registDate ?? null,
+        gender: r.gender ?? null,
+        tags: tagsByPatientId.get(r.id) ?? []
+      }
+    }));
+  },
+
+  async countPendingAppointmentsByDoctorId(doctorId, supabaseAdmin) {
+    const { count, error } = await supabaseAdmin
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .eq('doctor_id', doctorId)
+      .eq('status', 'pending');
+
+    if (error) {
+      console.error('❌ Supabase pending count error in repository:', error);
+      throw {
+        type: 'DatabaseError',
+        message: 'Hiba a függőben lévő időpontok számolásakor.',
+        error: String(error.message || error),
+        code: 500
+      };
+    }
+
+    return count ?? 0;
+  },
+
+  async countRejectionsByDoctorId(doctorId, supabaseAdmin) {
+    const { count, error } = await supabaseAdmin
+      .from('appointment_rejection')
+      .select('id', { count: 'exact', head: true })
+      .eq('doctor_id', doctorId);
+
+    if (error) {
+      console.error('❌ Supabase rejection count error in repository:', error);
+      throw {
+        type: 'DatabaseError',
+        message: 'Hiba az elutasítások számolásakor.',
+        error: String(error.message || error),
+        code: 500
+      };
+    }
+
+    return count ?? 0;
+  },
+
+  async listPatientsWithDetailsAndFilter({ q = '', limit = 100, offset = 0, supabaseAdmin }) {
+    limit = Math.min(limit, 500);
+    offset = Math.max(offset, 0);
+
+    const { data: patients, error: pErr } = await supabaseAdmin
+      .from('patients')
+      .select('id,userId,height,weight,taj,homePhone,registDate,gender')
+      .range(offset, offset + limit - 1);
+
+    if (pErr) {
+      throw { type: 'DatabaseError', message: 'Páciensek profil lekérdezési hiba.', error: String(pErr.message || pErr), code: 500 };
+    }
+
+    const list = patients ?? [];
+    if (!list.length) return [];
+
+    const userIds = Array.from(new Set(list.map(r => r.userId).filter(Boolean)));
+    let users = [];
+
+    if (userIds.length) {
+      let userQuery = supabaseAdmin
+        .from('users')
+        .select('id,name,email,role,phoneNumber,address,pictureUrl')
+        .in('id', userIds);
+
+      if (q) {
+        userQuery = userQuery.or(`name.ilike.%${q}%,email.ilike.%${q}%`);
+      }
+
+      const { data: uData, error: uErr } = await userQuery;
+      if (uErr) {
+        throw { type: 'DatabaseError', message: 'Felhasználói adatok lekérdezési hiba.', error: String(uErr.message || uErr), code: 500 };
+      }
+      users = uData ?? [];
+    }
+
+    const userMap = new Map(users.map(u => [u.id, u]));
+
+    const filteredPatients = q ? list.filter(p => userMap.has(p.userId)) : list;
+    if (!filteredPatients.length) return [];
+
+    const patientIds = filteredPatients.map(p => p.id);
+    let tagsByPatient = new Map();
+
+    if (patientIds.length) {
+      const { data: tags, error: tErr } = await supabaseAdmin
+        .from('patient_tags')
+        .select('id, patientId:patient_id, tag_name, tag_value')
+        .in('patient_id', patientIds);
+
+      if (tErr) {
+        throw { type: 'DatabaseError', message: 'Páciens tagek lekérdezési hiba.', error: String(tErr.message || tErr), code: 500 };
+      }
+
+      for (const t of (tags ?? [])) {
+        if (!tagsByPatient.has(t.patientId)) tagsByPatient.set(t.patientId, []);
+        tagsByPatient.get(t.patientId).push({
+          id: t.id,
+          tag_name: t.tag_name,
+          tag_value: t.tag_value
+        });
+      }
+    }
+
+    const assembled = filteredPatients.map(p => {
+      const u = userMap.get(p.userId);
+      return {
+        user: {
+          id: u?.id ?? null,
+          name: u?.name ?? null,
+          email: u?.email ?? null,
+          role: u?.role ?? null,
+          phoneNumber: u?.phoneNumber ?? null,
+          address: u?.address ?? undefined,
+          pictureUrl: u?.pictureUrl ?? undefined
+        },
+        patient: {
+          id: p.id,
+          userId: p.userId,
+          height: p.height ?? null,
+          weight: p.weight ?? null,
+          taj: p.taj ?? null,
+          homePhone: p.homePhone ?? null,
+          registDate: p.registDate ?? null,
+          gender: p.gender ?? null,
+          tags: tagsByPatient.get(p.id) ?? []
+        }
+      };
+    });
+
+    assembled.sort((a, b) => (a.user?.name || '').localeCompare(b.user?.name || ''));
+
+    return assembled;
+  }
 };
 
 module.exports = DoctorRepository;

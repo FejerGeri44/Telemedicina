@@ -15,8 +15,8 @@ const DoctorRatingRepository = {
       return inserted || null;
 
     } catch (err) {
-      console.error('❌ doctor_ratings insert error in repository:', err, { doctor_id, patient_id, valid_until });
-      return null;
+      console.error('❌ doctor_ratings INSERT hiba:', err, { doctor_id, patient_id, valid_until });
+      throw err;
     }
   },
 
@@ -47,7 +47,7 @@ const DoctorRatingRepository = {
 
   async listActiveRatingRequestsWithDetails({ patientId, getPatientFunc, getDoctorFunc }) {
 
-    const rawRatingRequests = await this.getActiveRatingRequestsByPatientId(patientId);
+    const rawRatingRequests = await DoctorRatingRepository.getActiveRatingRequestsByPatientId(patientId);
 
     if (!rawRatingRequests || rawRatingRequests.length === 0) {
       return [];

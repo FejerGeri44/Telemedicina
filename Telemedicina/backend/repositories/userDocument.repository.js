@@ -1,4 +1,8 @@
 const sql = require('../config/db.config');
+const {supabaseAdmin} = require("../utils/supabaseAdmin");
+const mime = require('mime-types');
+const path = require('path');
+const crypto = require('crypto');
 
 const UserDocumentRepository = {
   async create(insertObj) {
@@ -171,6 +175,79 @@ const UserDocumentRepository = {
     }
 
     return { signedUrl: data.signedUrl };
+  },
+
+  async findEncounterByAppointment(patient_id, doctor_id, appointment_id) {
+    const { data: encounterRow, error: encErr } = await supabaseAdmin
+      .from('encounters')
+      .select('id, patient_id, doctor_id, appointment_id')
+      .eq('appointment_id', appointment_id)
+      .eq('patient_id', patient_id)
+      .eq('doctor_id', doctor_id)
+      .maybeSingle();
+
+    if (encErr) {
+      console.error('Encounter lookup error:', encErr);
+      throw { type: 'DatabaseError', message: 'Encounter keresési hiba', error: String(encErr.message || encErr), code: 500 };
+    }
+
+    return encounterRow || null;
+  },
+
+  async uploadAndCreateDocuments({ files, documentTypes, patient_id, doctor_id, appointment_id, encounter_id, supabaseAdmin }) {
+    const insertedDocuments = [];
+    const sanitize = (v) => String(v).toLowerCase().replace(/[^\p{L}\p{N}_-]+/gu, '');
+
+    const safePid = sanitize(patient_id);
+    const safeDid = sanitize(doctor_id);
+    const safeAid = sanitize(appointment_id);
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const currentDocType = documentTypes[i];
+
+      const safeDocType = sanitize(currentDocType);
+
+      const guessedExt =
+        mime.extension(file.mimetype) ||
+        path.extname(file.originalname).replace('.', '') ||
+        'bin';
+
+      const uid = (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
+
+      const fileName = `${safeDocType}-${safePid}-${safeAid}-${uid}.${guessedExt}`;
+      const storagePath = `doctor-${safeDid}/patient-${safePid}/${fileName}`;
+
+      const { data: upRes, error: upErr } = await supabaseAdmin.storage
+        .from('user-documents')
+        .upload(storagePath, file.buffer, {
+          contentType: file.mimetype || 'application/octet-stream',
+          upsert: false
+        });
+
+      if (upErr) {
+        console.error('Storage upload error (File skipped):', upErr, { storagePath });
+        continue;
+      }
+
+      const insertObj = {
+        doctor_id: Number.isFinite(Number(doctor_id)) ? Number(doctor_id) : doctor_id,
+        patient_id: Number.isFinite(Number(patient_id)) ? Number(patient_id) : patient_id,
+        encounter_id: encounter_id,
+        storage_path: upRes?.path ?? storagePath
+      };
+
+      const inserted = await this.create(insertObj);
+
+      if (!inserted) {
+        console.error('Database insert failed (File skipped):', insertObj);
+        continue;
+      }
+
+      insertedDocuments.push(inserted);
+    }
+
+    return insertedDocuments;
   }
 };
 

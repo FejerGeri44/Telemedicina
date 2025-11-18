@@ -11,7 +11,6 @@ router.post('/addAppointment', authGuard, requireRole('doctor'), doctorControlle
 router.post('/approveOrRejectAppointment', authGuard, requireRole('doctor'), doctorController.approveOrRejectAppointment);
 router.post('/deleteAppointment', authGuard, requireRole('doctor'), doctorController.deleteAppointment);
 router.post('/getMyAppointments', authGuard, requireRole('doctor'), doctorController.myAppointments);
-router.post('/resolvePatientNames', authGuard, requireRole('doctor'), doctorController.resolvePatientNames);
 router.post('/getAllMyPatients', authGuard, requireRole('doctor'), doctorController.getAllMyPatients);
 router.post('/getUserDataForDiagnosis', authGuard, requireRole('doctor'), doctorController.getUserDataForDiagnosis);
 router.post('/newDiagnosis', authGuard, requireRole('doctor'), doctorController.newDiagnosis);

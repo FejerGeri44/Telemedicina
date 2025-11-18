@@ -30,24 +30,6 @@ const MessageRepository = {
     `;
   },
 
-  async findById(id) {
-    const [row] = await sql`
-SELECT
-id,
-sender_user_id AS "senderUserId",
-receiver_user_id AS "receiverUserId",
-content,
-"send_date" AS "send_date",
-"isRead_sender" AS "isReadPatient",
-"isRead_receiver" AS "isReadDoctor",
-"isDeleted_sender" AS "isDeletedPatient",
-"isDeleted_receiver" AS "isDeletedDoctor"
-FROM messages
-WHERE id = ${id}
-`;
-    return row || null;
-  },
-
   async listConversation(aUserId, bUserId, { limit = 100, offset = 0, hasBothDirections = true, forRole } = {}) {
     let deleteFilter = sql``;
     if (forRole === 'patient') {
@@ -128,7 +110,6 @@ content,
     `;
   },
 
-
   async markConversationAsReadForReceiver(receiverUserId, senderUserId) {
     const [rows] = await sql`
       UPDATE messages
@@ -143,7 +124,6 @@ content,
     return Array.isArray(rows) ? rows.length : 0;
     },
 
-
   async softDeleteConversationForUser(userId, partnerId, forRole) {
     const col = forRole === 'patient' ? '"isDeleted_sender"' : '"isDeleted_receiver"';
 
@@ -157,11 +137,6 @@ content,
     return rows.map(r => r.id);
   },
 
-
-  async deleteById(id) {
-    const [row] = await sql`DELETE FROM messages WHERE id = ${id} RETURNING id`;
-    return !!row;
-  }
 };
 
 

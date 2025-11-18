@@ -51,7 +51,6 @@ export class AppointmentsComponent implements OnInit{
   weekDays: Date[] = [];
   timeSlots: string[] = [];
 
-  appointmentUserDataMap: Record<string, { userId: number; name: string }> = {};
   openMonthPicker = false;
   timeOptions: string[] = [];
 
@@ -112,9 +111,7 @@ export class AppointmentsComponent implements OnInit{
           this.appointments = appointments;
           this.reindexAppointments();
           this.appointmentDates = appointments.map(appt => appt.starts_at);
-          try {
-            await this.loadPatientNames(appointments);
-          } catch {}
+          try {} catch {}
 
           Promise.resolve().then(() => this.cdr?.markForCheck?.());
           resolve(appointments);
@@ -123,40 +120,6 @@ export class AppointmentsComponent implements OnInit{
           console.error('❌ Hiba az időpontok lekérésekor:', err);
           this.toast.show('Nem sikerült betölteni az időpontokat.', 'danger');
           resolve(null);
-        }
-      });
-    });
-  }
-
-  private async loadPatientNames(appts: MyAppointment[]): Promise<void> {
-
-    const patientIds = [...new Set(
-      appts.map(a => a.patient_id).filter((x): x is number => !!x)
-    )];
-
-    if (patientIds.length === 0) {
-      this.appointmentUserDataMap = {};
-      return;
-    }
-
-    return new Promise<void>((resolve) => {
-      this.http.post<{ map: Record<string, { userId: number; name: string }> }>(
-        `${environment.apiUrl}/doctor/resolvePatientNames`,
-        { patientIds },
-        { withCredentials: true }
-      ).subscribe({
-        next: (res) => {
-          this.appointmentUserDataMap = res.map;
-
-          Promise.resolve().then(() => this.cdr?.markForCheck?.());
-
-          resolve();
-        },
-        error: (err) => {
-          console.error('❌ Hiba a páciensek nevének feloldásakor:', err);
-          this.toast?.show?.('Nem sikerült betölteni a páciensek neveit.', 'danger');
-          this.appointmentUserDataMap = {};
-          resolve();
         }
       });
     });

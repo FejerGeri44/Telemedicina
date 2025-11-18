@@ -3,7 +3,7 @@ const { buildProfile } = require("../utils/profileBuilder");
 const PatientTagRepository = require("../repositories/patientTag.repository");
 const {findByDoctorAndPatient, listActiveRatingRequestsWithDetails} = require("../repositories/doctorRating.repository");
 const {getDoctorWithUserById, getByUserId, listApprovedDoctorsWithUser} = require("../repositories/doctor.repository");
-const {getPatientWithUserById, updatePatientProfile} = require("../repositories/patient.repository");
+const {listPatientsWithUsersById, updatePatientProfile} = require("../repositories/patient.repository");
 const {listByDoctorUserId, registerToAppointment, cancelAppointmentById} = require("../repositories/appointment.repository");
 const {listDiagnosesByPatientWithDetails} = require("../repositories/diagnosis.repository");
 const {listDocumentsByPatientWithDetails, getSignedUrlIfAuthorized} = require("../repositories/userDocument.repository");
@@ -440,7 +440,7 @@ exports.getActiveRatingRequests = async (req, res) => {
 
     const formattedRequests = await listActiveRatingRequestsWithDetails({
       patientId,
-      getPatientFunc: getPatientWithUserById,
+      getPatientFunc: listPatientsWithUsersById,
       getDoctorFunc: getDoctorWithUserById
     });
 

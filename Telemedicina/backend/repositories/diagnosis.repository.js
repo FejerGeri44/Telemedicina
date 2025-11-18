@@ -1,34 +1,18 @@
 const sql3 = require('../config/db.config');
 
+const DIAGNOSIS_SELECT_FIELDS = [
+  'id', 'appointment_id', 'patient_id', 'doctor_id',
+  'chief_complaint', 'onset_date', 'history',
+  'bp_sys', 'bp_dia', 'heart_rate', 'temp_c',
+  'spo2', 'weight_kg', 'height_cm', 'bmi',
+  'exam_summary', 'primary_text',
+  'code_system', 'code', 'certainty_pct',
+  'severity', 'differentials', 'assessment', 'plan_text',
+  'red_flags', 'informed',
+  'diagnosis_date'
+];
 
-const SELECT_COLUMNS = sql3`
-  id,
-  appointment_id AS "appointmentId",
-  patient_id AS "patientId",
-  doctor_id AS "doctorId",
-  chief_complaint AS "chiefComplaint",
-  onset_date AS "onsetDate",
-  history,
-  bp_sys AS "bpSys",
-  bp_dia AS "bpDia",
-  heart_rate AS "heartRate",
-  temp_c AS "tempC",
-  spo2,
-  weight_kg AS "weightKg",
-  height_cm AS "heightCm",
-  bmi,
-  exam_summary AS "examSummary",
-  primary_text AS "primaryText",
-  code_system AS "codeSystem",
-  code,
-  certainty_pct AS "certaintyPct",
-  severity,
-  differentials,
-  assessment,
-  plan_text AS "planText",
-  red_flags AS "redFlags",
-  informed
-`;
+const SELECT_COLUMNS = DIAGNOSIS_SELECT_FIELDS.join(', ');
 
 const DiagnosisRepository = {
   async list({ patientId, doctorId, appointmentId, limit = 50, offset = 0 } = {}) {
@@ -45,13 +29,166 @@ const DiagnosisRepository = {
     `;
   },
 
-  async findById(id) {
-    const [row] = await sql3`
-      SELECT ${SELECT_COLUMNS}
-      FROM diagnoses
-      WHERE id = ${id}
-      `;
-    return row || null;
+  async listPatientDataWithTagsByIds(patientIds, supabaseAdmin) {
+    if (patientIds.length === 0) return [];
+
+    const patientSelectStatement = `
+      id, userId, height, weight, taj, homePhone, birthDate, registDate, gender,
+      user:users (
+        id, name, email, role, phoneNumber, address, pictureUrl
+      )
+    `;
+
+    const { data: patientsData, error: patientsError } = await supabaseAdmin
+      .from('patients')
+      .select(patientSelectStatement)
+      .in('id', patientIds)
+      .order('id', { ascending: true });
+
+    if (patientsError) {
+      throw { type: 'DatabaseError', message: String(patientsError.message || patientsError), code: 500, detail: 'Patients data fetch failed.' };
+    }
+
+    const patients = Array.isArray(patientsData) ? patientsData : [];
+    const patientIdsInResult = [...new Set(patients.map(p => p.id))];
+
+    const { data: tagsData, error: tagsError } = await supabaseAdmin
+      .from('patient_tags')
+      .select('id, patient_id, tag_name, tag_value')
+      .in('patient_id', patientIdsInResult);
+
+    if (tagsError) {
+      console.error('❌ patient_tags lekérdezés hiba:', tagsError);
+    }
+
+    const tagsByPatientId = new Map();
+    (tagsData || []).forEach(t => {
+      if (!tagsByPatientId.has(t.patient_id)) tagsByPatientId.set(t.patient_id, []);
+      tagsByPatientId.get(t.patient_id).push({
+        id: t.id,
+        patient_id: t.patient_id,
+        tag_name: t.tag_name,
+        tag_value: t.tag_value
+      });
+    });
+
+    return patients.map(r => ({
+      user: r.user ?? null,
+      patient: {
+        id: r.id,
+        userId: r.userId,
+        height: r.height ?? null,
+        weight: r.weight ?? null,
+        taj: r.taj ?? null,
+        homePhone: r.homePhone ?? null,
+        birthDate: r.birthDate ?? null,
+        registDate: r.registDate ?? null,
+        gender: r.gender ?? null,
+        tags: tagsByPatientId.get(r.id) ?? []
+      }
+    }));
+  },
+
+  async createDiagnosisAndFinalizeAppointment({ payload: rawPayload, reqBody, userId, supabaseAdmin, DoctorRatingRepository }) {
+    const patientId = reqBody?.patient;
+    const appointmentId = reqBody?.appointmentId;
+
+    const { data: doctorRow, error: docErr } = await supabaseAdmin
+      .from('doctors')
+      .select('id')
+      .eq('userId', userId)
+      .single();
+
+    if (docErr) {
+      throw { type: 'DatabaseError', message: 'Nem sikerült beazonosítani az orvost.', code: 500 };
+    }
+    const doctorId = doctorRow?.id;
+
+    const { data: appt, error: apptErr } = await supabaseAdmin
+      .from('appointments')
+      .select('id, doctor_id, patient_id')
+      .eq('id', appointmentId)
+      .single();
+
+    if (apptErr || !appt) {
+      throw { type: 'NotFoundError', message: 'Időpont nem található.', code: 404 };
+    }
+    if (doctorId && appt.doctor_id !== doctorId) {
+      throw { type: 'ForbiddenError', message: 'Az időpont nem ehhez az orvoshoz tartozik.', code: 403 };
+    }
+
+    const currentTimestamp = new Date().toISOString();
+    const finalPayload = {
+      ...rawPayload,
+      doctor_id: doctorId,
+      patient_id: patientId,
+      appointment_id: appointmentId,
+      diagnosis_date: currentTimestamp,
+    };
+
+    const { data: inserted, error: insErr } = await supabaseAdmin
+      .from('diagnoses')
+      .insert(finalPayload)
+      .select(SELECT_COLUMNS)
+      .single();
+
+    if (insErr) {
+      console.error('❌ Diagnózis beszúrás hiba:', insErr);
+      throw { type: 'DatabaseError', message: 'Nem sikerült elmenteni a diagnózist.', code: 500 };
+    }
+
+    const validUntilDate = new Date();
+    validUntilDate.setDate(validUntilDate.getDate() + 2);
+    const ratingPayload = {
+      doctor_id: doctorId,
+      patient_id: patientId,
+      value: 0,
+      valid_until: validUntilDate.toISOString()
+    };
+
+    const insertedRating = await DoctorRatingRepository.create(ratingPayload);
+    if (!insertedRating) {
+      console.warn('⚠️ Értékelési rekord létrehozása sikertelen. Folytatás...');
+    }
+
+    const { data: encUpd, error: encErr } = await supabaseAdmin
+      .from('encounters')
+      .update({ diagnosis_id: inserted.id })
+      .eq('appointment_id', appointmentId)
+      .is('diagnosis_id', null)
+      .select('id, appointment_id, diagnosis_id');
+
+    let encounterResponse = {};
+    if (encErr) {
+      console.error('⚠️ Encounter frissítés hiba:', encErr);
+      encounterResponse = { _warning: 'Encounter nem frissült (diagnosis_id).' };
+    } else if (!encUpd || encUpd.length === 0) {
+      const { data: probeEnc } = await supabaseAdmin
+        .from('encounters')
+        .select('id, appointment_id, diagnosis_id')
+        .eq('appointment_id', appointmentId)
+        .limit(1);
+
+      if (probeEnc && probeEnc.length > 0) {
+        encounterResponse = { _info: 'Encounterben már volt diagnosis_id, nem írtuk felül.' };
+      } else {
+        encounterResponse = { _warning: 'Ehhez az appointmenthez nincs encounter.' };
+      }
+    } else {
+      encounterResponse = { encounter: encUpd };
+    }
+
+    const { error: updErr } = await supabaseAdmin
+      .from('appointments')
+      .update({ status: 'done' })
+      .eq('id', appointmentId);
+
+    if (updErr) {
+      console.error('⚠️ Appointment státusz frissítés hiba:', updErr);
+      return { ...inserted, ...encounterResponse, _warning: 'Appointment status not updated' };
+    }
+
+    return { ...inserted, ...encounterResponse };
   },
 
   async listDiagnosesByPatientWithDetails(patientId, client = sql3) {

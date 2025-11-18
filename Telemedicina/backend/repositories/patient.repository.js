@@ -71,37 +71,39 @@ const PatientRepository = {
     return row || null;
   },
 
-  async getPatientWithUserById(patientId, client = sql) {
-    const [row] = await client`
-      SELECT
-        p.id AS patient_id,
-        p."userId" AS patient_user_id,
-        p.gender AS patient_gender,
-        p.height AS patient_height,
-        p.weight AS patient_weight,
-        p."birthDate" AS patient_birth_date,
-        p.taj AS patient_taj,
-        p."homePhone" AS patient_home_phone,
-        p."registDate" AS patient_regist_date,
+  async listPatientsWithUsersById(patientId, client = sql) {
+    const ids = Array.isArray(patientIds) ? patientIds : [patientIds];
 
-        u.id AS user_id,
-        u.email AS user_email,
-        u.name AS user_name,
-        u.role AS user_role,
-        u."phoneNumber" AS user_phone_number,
-        u.address AS user_address,
-        u."pictureUrl" AS user_picture_url
-
-      FROM patients p
-      JOIN users u ON p."userId" = u.id
-      WHERE p.id = ${patientId}
-      LIMIT 1
-    `;
-
-    if (!row) {
-      return null;
+    if (ids.length === 0) {
+      return [];
     }
-    return {
+
+    const rows = await client`
+    SELECT
+      p.id AS patient_id,
+      p."userId" AS patient_user_id,
+      p.gender AS patient_gender,
+      p.height AS patient_height,
+      p.weight AS patient_weight,
+      p."birthDate" AS patient_birth_date,
+      p.taj AS patient_taj,
+      p."homePhone" AS patient_home_phone,
+      p."registDate" AS patient_regist_date,
+
+      u.id AS user_id,
+      u.email AS user_email,
+      u.name AS user_name,
+      u.role AS user_role,
+      u."phoneNumber" AS user_phone_number,
+      u.address AS user_address,
+      u."pictureUrl" AS user_picture_url
+
+    FROM patients p
+    JOIN users u ON p."userId" = u.id
+    WHERE p.id IN (${sql.array(ids)})
+  `;
+
+    return rows.map(row => ({
       user: {
         id: row.user_id,
         email: row.user_email,
@@ -122,8 +124,9 @@ const PatientRepository = {
         homePhone: row.patient_home_phone,
         registDate: row.patient_regist_date,
       },
-    };
-  }
+    }));
+  },
+
 };
 
 module.exports = PatientRepository;
