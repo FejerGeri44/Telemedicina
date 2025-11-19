@@ -126,44 +126,12 @@
     padding-top: 12px;
     margin-bottom: 15px;
 
-    & + .dpc-rating-system-inline {
-      border-top: 1px solid rgba(0, 0, 0, 0.05);
-      padding-top: 10px;
-    }
-
     h4 {
       margin: 0 0 6px;
       font-weight: 700;
     }
     .intro {
       white-space: pre-line;
-    }
-  }
-
-  .dpc-rating-system-inline {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 0 10px 0;
-
-    .rating-label {
-      font-weight: 600;
-      color: var(--text-secondary);
-      flex-shrink: 0;
-    }
-    .rating-stars ion-icon {
-      font-size: 18px;
-      color: #f5b301;
-    }
-    .rating-value {
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: #1e2a3a;
-    }
-
-    .rating-stars ion-icon.star-half-right {
-      clip-path: inset(0 0 0 50%);
-      margin-left: -12px;
     }
   }
 

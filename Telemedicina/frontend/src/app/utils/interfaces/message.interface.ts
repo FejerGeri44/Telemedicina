@@ -10,14 +10,16 @@ export interface Message {
   isDeletedPatient: boolean;
 }
 
-export interface DoctorUnreadSummary {
-  doctorId: number;
-  latest: Message;
-  count: number;
+export interface UnreadMessageData {
+  id: number;
+  partnerId: number;
+  isRead_receiver: boolean;
+  content: string;
+  send_date: string;
+  user: {
+    id: number;
+    name: string;
+    role: string;
+    pictureUrl: string;
+  };
 }
-export interface PatientUnreadSummary {
-  patientId: number;
-  latest: Message;
-  count: number;
-}
-

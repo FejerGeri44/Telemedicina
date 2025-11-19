@@ -16,5 +16,6 @@ router.post('/loadMyDiagnoses', authGuard, requireRole('patient'), patientContro
 router.post('/loadMyDocuments', authGuard, requireRole('patient'), patientController.loadMyDocuments);
 router.post('/getSignedDocumentUrl', authGuard, requireRole('patient'), patientController.getSignedDocumentUrl);
 router.post('/activeRatingRequests', authGuard, requireRole('patient'), patientController.getActiveRatingRequests);
+router.post('/submitRating', authGuard, requireRole('patient'), patientController.submitRating);
 
 module.exports = router;

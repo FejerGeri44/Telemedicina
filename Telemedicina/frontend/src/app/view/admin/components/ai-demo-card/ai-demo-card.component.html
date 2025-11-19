@@ -1,3 +1,10 @@
 <ion-card-content>
-  <p>Szia</p>
+  <ion-card-header>
+    <ion-card-title>{{ cardTitle }}</ion-card-title>
+  </ion-card-header>
+
+  <app-ai-assistant-fab
+    [role]="role"
+    [isCalledByAdmin]="true">
+  </app-ai-assistant-fab>
 </ion-card-content>

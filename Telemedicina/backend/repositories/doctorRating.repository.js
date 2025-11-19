@@ -20,69 +20,58 @@ const DoctorRatingRepository = {
     }
   },
 
-  async getActiveRatingRequestsByPatientId(patientId) {
-    const now = new Date().toISOString();
+  async findByDoctorAndPatient(doctorId, patientId, client = sql) {
+    const [row] = await client`
+            SELECT id, doctor_id, patient_id, value, valid_until
+            FROM doctor_ratings
+            WHERE doctor_id = ${doctorId} AND patient_id = ${patientId}
+            LIMIT 1
+        `;
+    if (!row) {
+      return null;
+    }
 
-    return sql`
-      SELECT r.id           AS rating_id,
-             r.doctor_id,
-             r.patient_id,
-             r.value,
-             r.valid_until,
+    return {
+      id: row.id,
+      doctor_id: row.doctor_id,
+      patient_id: row.patient_id,
+      value: row.value,
+      comment: row.comment,
+      valid_until: row.valid_until,
+    };
+  },
 
-             d.speciality,
-             u.name         AS doctor_name,
-             u."pictureUrl" AS doctor_picture_url
-
-      FROM doctor_ratings r
-             JOIN doctors d ON r.doctor_id = d.id
-             JOIN users u ON d."userId" = u.id
-
-      WHERE r.patient_id = ${patientId}
-        AND r.valid_until > ${now}
-        AND r.value = 0
-      ORDER BY r.valid_until
+  async findActiveRequestsByPatientId(patientId, client = sql) {
+    return client`
+      SELECT id,
+             doctor_id,
+             patient_id,
+             value,
+             valid_until
+      FROM doctor_ratings
+      WHERE patient_id = ${patientId}
+        AND valid_until > NOW()
+        AND value = 0
     `;
   },
 
-  async listActiveRatingRequestsWithDetails({ patientId, getPatientFunc, getDoctorFunc }) {
+  async updateRatingValue(ratingId, value, client = sql) {
+    const [updated] = await client`
+      UPDATE doctor_ratings
+      SET value = ${value}
+      WHERE id = ${ratingId}
+      RETURNING *
+    `;
+    return updated;
+  },
 
-    const rawRatingRequests = await DoctorRatingRepository.getActiveRatingRequestsByPatientId(patientId);
-
-    if (!rawRatingRequests || rawRatingRequests.length === 0) {
-      return [];
-    }
-
-    const patientItem = await getPatientFunc(patientId);
-
-    if (!patientItem) {
-      throw { type: 'NotFoundError', message: 'Páciens adatok nem találhatók.', code: 404 };
-    }
-
-    const doctorIds = [...new Set(rawRatingRequests.map(r => r.doctor_id))];
-
-    const doctorItemPromises = doctorIds.map(docId => getDoctorFunc(docId));
-    const doctorItems = await Promise.all(doctorItemPromises);
-    const doctorDataMap = new Map();
-    doctorItems.forEach(item => {
-      if (item) doctorDataMap.set(item.doctor.id, item);
-    });
-
-    return rawRatingRequests
-      .map(raw => {
-        const doctorItem = doctorDataMap.get(raw.doctor_id);
-
-        if (!doctorItem) return null;
-
-        return {
-          id: raw.rating_id,
-          doctor: doctorItem,
-          patient: patientItem,
-          value: raw.value,
-          valid_until: raw.valid_until,
-        };
-      })
-      .filter(item => item !== null);
+  async getCompletedRatingsByDoctorId(doctorId, client = sql) {
+    return client`
+      SELECT value
+      FROM doctor_ratings
+      WHERE doctor_id = ${doctorId}
+        AND value > 0
+    `;
   }
 };
 

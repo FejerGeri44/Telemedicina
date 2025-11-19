@@ -100,13 +100,28 @@ content,
 
   async getUnreadSummaryForUser(userId) {
     return sql`
-      SELECT sender_user_id AS "partnerId",
-             COUNT(id)      AS "unreadCount"
-      FROM messages
-      WHERE receiver_user_id = ${userId}
-        AND "isRead_receiver" = FALSE
-        AND "isDeleted_receiver" = FALSE
-      GROUP BY sender_user_id
+      WITH LatestUnread AS (
+        SELECT
+          m.*,
+          ROW_NUMBER() OVER (PARTITION BY m.sender_user_id ORDER BY m.send_date DESC) as rn
+        FROM messages m
+        WHERE m.receiver_user_id = ${userId}
+          AND m."isRead_receiver" = FALSE
+          AND m."isDeleted_receiver" = FALSE
+      )
+      SELECT
+        lu.*,
+        lu.sender_user_id AS "partnerId",
+        jsonb_build_object(
+          'id', u.id,
+          'name', u.name,
+          'role', u.role,
+          'pictureUrl', u."pictureUrl"
+        ) AS "user"
+      FROM LatestUnread lu
+             JOIN users u ON u.id = lu.sender_user_id
+      WHERE lu.rn = 1
+      ORDER BY lu.send_date DESC;
     `;
   },
 
@@ -136,7 +151,6 @@ content,
   `;
     return rows.map(r => r.id);
   },
-
 };
 
 

@@ -14,6 +14,9 @@ import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {
   AppointmentReviewModalComponent
 } from '../../components/appointment-review-modal/appointment-review-modal.component';
+import {
+  PatientProfileCardComponent
+} from '../../../patient/components/patient-profile-card/patient-profile-card.component';
 
 registerLocaleData(localeHu);
 
@@ -132,21 +135,32 @@ export class AppointmentsComponent implements OnInit{
     };
 
     const appointment = appt as AppointmentWithPatientInfo;
+    const status = appointment.status ? appointment.status.toLowerCase() : 'free';
 
-    if (appointment && appointment.status) {
-      const status = appointment.status.toLowerCase();
-      switch (status) {
-        case 'pending': return 'cell--pending';
-        case 'accepted': return 'cell--accepted';
-        case 'done': return 'cell--done';
-        case 'free':
-        default: return 'cell--free';
+    if (status === 'done') {
+      return 'cell--done';
+    }
+
+    const now = new Date();
+    const startRes = this.parseLocal(String(appointment.starts_at));
+
+    if (!isNaN(startRes.getTime()) && startRes < now) {
+
+      if (appointment.patient_id != null) {
+        return 'cell--noShow';
+      } else {
+        return 'cell--no-appointment';
       }
     }
 
-    if (appointment.patient_id != null) {
+    if (status === 'pending' || appointment.patient_id != null) {
       return 'cell--pending';
     }
+
+    if (status === 'accepted') {
+      return 'cell--accepted';
+    }
+
     return 'cell--free';
   }
 
@@ -277,6 +291,19 @@ export class AppointmentsComponent implements OnInit{
     this.selectedDate = new Date(picked.getFullYear(), picked.getMonth(), 1);
     this.generateWeek(this.selectedDate);
     this.openMonthPicker = false;
+  }
+
+  async openPatientProfile(appointment: MyAppointment) {
+    const modal = await this.modalCtrl.create({
+      component: PatientProfileCardComponent as any,
+      componentProps: {
+        user: appointment.patient,
+        editable: false
+      },
+      cssClass: 'profile-view-modal',
+      backdropDismiss: true
+    });
+    await modal.present();
   }
 
   async addAppointment() {

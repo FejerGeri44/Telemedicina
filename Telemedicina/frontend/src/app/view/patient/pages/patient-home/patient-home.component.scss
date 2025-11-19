@@ -18,6 +18,7 @@ $secondary: var(--secondary);
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-bottom: 70px;
   }
 
   @media (max-width: 600px) {
@@ -32,8 +33,7 @@ $secondary: var(--secondary);
   }
 
   .appointments,
-  .results,
-  .prescriptions {
+  .results {
     --background: #ffffff;
     --border-radius: 12px;
     --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
@@ -283,11 +283,6 @@ $secondary: var(--secondary);
       padding: 20px 0;
       color: #999;
     }
-  }
-
-  .prescriptions {
-    grid-column: 1 / -1;
-    grid-row: 3;
   }
 }
 

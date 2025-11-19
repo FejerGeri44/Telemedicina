@@ -4,3 +4,13 @@ ion-card-content {
   display: block;
   padding: 0;
 }
+
+ion-card-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bolder;
+  color: var(--primary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  line-height: 1.5;
+}

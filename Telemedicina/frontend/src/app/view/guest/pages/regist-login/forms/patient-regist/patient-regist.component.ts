@@ -9,6 +9,7 @@ import {environment} from '../../../../../../../../enviroment';
 import {AdminItem} from '../../../../../../utils/interfaces/admin.interface';
 import {PASSWORD_PATTERN, PHONE_PATTERN, TAJ_PATTERN, TEXT_PATTERN} from '../../../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../../../services/platform/platform.service';
+import {formatPhoneNumberInput, formatTajInput} from '../../../../../../utils/formatInput';
 
 @Component({
   selector: 'app-patient-regist',
@@ -59,7 +60,13 @@ export class PatientRegistComponent {
   onPatientRegister() {
     if (this.patientForm.invalid) {
       this.patientForm.markAllAsTouched();
-      this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
+      if (this.patientForm.get('email')?.invalid) {
+        this.toast.show('Kérlek, adj meg egy érvényes e-mail címet!', 'warning');
+      } else if (this.patientForm.get('password')?.invalid) {
+        this.toast.show('A jelszó nem felel meg a követelményeknek (min. 8 karakter, szám, nagybetű)!', 'warning');
+      } else {
+        this.toast.show('Kérlek, tölts ki minden kötelező mezőt helyesen!', 'warning');
+      }
       return;
     }
 
@@ -75,26 +82,20 @@ export class PatientRegistComponent {
       gender
     } = this.patientForm.getRawValue();
 
-    const emailNorm = String(email ?? '').trim().toLowerCase();
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm);
-    if (!emailOk) {
-      this.patientForm.get('email')?.setErrors({ email: true });
-      this.toast.show('Hibás e-mail cím!', 'danger');
-      return;
-    }
-
     if (password !== password_again) {
       this.patientForm.get('password_again')?.setErrors({ mismatch: true });
       this.toast.show('A jelszavak nem egyeznek!', 'warning');
       return;
     }
 
+    this.loading = true;
+
     const payloadBase: any = {
-      name: String(fullName ?? '').trim(),
-      email: emailNorm,
-      password: String(password ?? ''),
-      phoneNumber: String(phoneNumber ?? '').trim(),
-      address: String(address ?? '').trim(),
+      name: String(fullName).trim(),
+      email: String(email),
+      password: String(password),
+      phoneNumber: String(phoneNumber).trim(),
+      address: String(address).trim(),
       birthDate: new Date(birthDate),
       ...(taj ? { taj: String(taj).trim() } : {}),
       ...(gender ? { gender } : {})
@@ -108,17 +109,25 @@ export class PatientRegistComponent {
               void this.router.navigate(['/regist-login'], {
                 queryParams: {
                   tab: 'login',
-                  toast: 'Sikeres páciens regisztráció!',
+                  toast: 'Sikeres regisztráció! Most már bejelentkezhetsz.',
                   type: 'success',
                   successfulRegist: true
                 }
               });
             }, 500);
+            this.loading = false;
           },
           error: err => {
             console.error(err);
-            const msg = err?.error?.message || 'Hiba történt a páciens regisztráció során.';
-            this.toast.show(msg, 'danger');
+            const msg = err?.error?.message;
+            this.loading = false;
+            if (msg) {
+              this.toast.show(msg, 'danger');
+            } else if (err.status === 0) {
+              this.toast.show('Szerver nem elérhető. Ellenőrizd a kapcsolatot!', 'danger');
+            } else {
+              this.toast.show('Hiba történt az orvos regisztráció során. Kérlek, próbáld újra!', 'danger');
+            }
           }
         });
 
@@ -135,11 +144,12 @@ export class PatientRegistComponent {
         next: () => {
           this.toast.show('Sikeres Páciens felvitel!', 'success');
           void this.modalCtrl.dismiss(true);
+          this.loading = false;
         },
         error: err => {
-          console.error(err);
           const msg = err?.error?.message || 'Hiba történt a regisztráció során!';
           this.toast.show(msg, 'danger');
+          this.loading = false;
         }
       });
     }
@@ -155,5 +165,13 @@ export class PatientRegistComponent {
 
   backToDash() {
     void this.router.navigate(['/']);
+  }
+
+  onTajChange(event: any) {
+    formatTajInput(event, this.patientForm.get('taj'));
+  }
+
+  onPhoneChange(event: any) {
+    formatPhoneNumberInput(event, this.patientForm.get('phoneNumber'));
   }
 }

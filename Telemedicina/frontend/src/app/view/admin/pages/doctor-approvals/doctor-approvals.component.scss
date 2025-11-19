@@ -3,6 +3,20 @@
   margin: auto;
 }
 
+.segment-button {
+  display: flex;
+  flex-direction: row;
+  font-size: 1.2rem;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  ion-icon {
+    width: 30px;
+    height: 30px;
+  }
+}
+
 ion-card {
   padding: 10px 20px 0;
 }
@@ -61,14 +75,13 @@ ion-card {
   align-items: center;
   justify-content: center;
   width: 85%;
-  height: calc(100vh - 110px);
+  height: calc(100vh - 110px - 48px - 20px);
   margin: 0 auto;
   padding: 0 3%;
 }
 
 .no-data {
   text-align: center;
-  margin-top: 24px;
 }
 .no-data-text {
   display: block;
@@ -80,10 +93,4 @@ ion-card {
   display: block;
   margin-top: 8px;
   color: #6b7280;
-}
-
-@media (max-width: 1000px) {
-  .container:has(.no-data) {
-    height: calc(100vh - 50px);
-  }
 }

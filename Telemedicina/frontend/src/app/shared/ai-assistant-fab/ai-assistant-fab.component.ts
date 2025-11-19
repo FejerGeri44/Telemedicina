@@ -1,5 +1,5 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {NgIf, AsyncPipe} from '@angular/common';
+import {NgIf, AsyncPipe, NgClass} from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import {BehaviorSubject, Subscription, timer} from 'rxjs';
 import {AiConfigService} from '../../services/Ai-assistants/AiConfigService';
@@ -17,11 +17,13 @@ type BotRole = 'patient' | 'doctor';
     IonicModule,
     NgIf,
     AsyncPipe,
-    ChatComponent
+    ChatComponent,
+    NgClass
   ],
 })
 export class AiAssistantFabComponent implements OnInit, OnDestroy {
   @Input({ required: true }) role!: BotRole;
+  @Input({ required: true }) isCalledByAdmin!: boolean;
 
   isOpen = new BehaviorSubject<boolean>(false);
   quickStartText: string = 'Miben tudok segíteni?';
@@ -43,6 +45,13 @@ export class AiAssistantFabComponent implements OnInit, OnDestroy {
       this.quickStarts = config.greeting.quickStarts;
     } catch (e) {
       console.error(`Hiba a ${this.role} QuickStart szöveg lekérdezésekor.`, e);
+    }
+
+    if (this.isCalledByAdmin) {
+      this.isOpen.next(true);
+      this.showInitialMessage = false;
+      console.log(`Chat ablak megnyitása: ${this.role} (Admin mód)`);
+      return;
     }
 
     this.messageTimerSub = timer(2000).subscribe(() => {

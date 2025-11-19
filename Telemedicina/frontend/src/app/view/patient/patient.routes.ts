@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import {PatientRoleGuard} from '../../guards/patientRole.guard';
 
 export const PATIENT_ROUTES: Routes = [
   {
@@ -39,6 +38,12 @@ export const PATIENT_ROUTES: Routes = [
           import('./pages/patient-messages/patient-messages.component')
             .then(m => m.PatientMessagesComponent),
       },
+      {
+        path: 'patient-messages/:doctorId',
+        loadComponent: () =>
+          import('./pages/patient-messages/patient-messages.component')
+            .then(m => m.PatientMessagesComponent),
+      }
     ],
   },
 ];

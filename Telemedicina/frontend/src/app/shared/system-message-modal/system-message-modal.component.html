@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>Rendszerüzenet</ion-title>
 
@@ -10,7 +10,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content *ngIf="current as message">
+<div class="inner-content" *ngIf="current as message">
   <div class="card">
     <div class="hero" [ngSwitch]="message?.type">
       <img *ngSwitchCase="'info'" src="pictures/system-message-pictures/information-heroImg.png" alt="info hero">
@@ -41,4 +41,4 @@
       </p>
     </div>
   </div>
-</ion-content>
+</div>

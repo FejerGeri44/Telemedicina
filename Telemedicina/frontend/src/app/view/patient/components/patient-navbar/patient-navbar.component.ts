@@ -1,25 +1,46 @@
 import {Component, HostListener, OnInit} from '@angular/core';
-import {IonicModule, NavController} from '@ionic/angular';
-import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage, NgTemplateOutlet} from '@angular/common';
+import {
+  AsyncPipe,
+  DatePipe,
+  NgForOf,
+  NgIf,
+  NgOptimizedImage,
+  NgTemplateOutlet,
+  SlicePipe,
+  TitleCasePipe
+} from '@angular/common';
 import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/router';
-import {filter, Observable, Subscription} from 'rxjs';
+import {combineLatest, filter, firstValueFrom, Observable, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-messages.service';
+import {DoctorRatingItem} from '../../../../utils/interfaces/doctor.interface';
+import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
+import {SystemMessageService} from '../../../../services/system-messages/system-messages.service';
+import {IonicModule, ModalController, NavController} from '@ionic/angular';
+import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
+import {map} from 'rxjs/operators';
+import {DoctorRatingService} from '../../../../services/doctor-rating/doctor-rating.service';
+import {DoctorRatingModalComponent} from '../doctor-rating-modal/doctor-rating-modal.component';
+import {ToastService} from '../../../../shared/toast/toast.service';
+import {UnreadMessageData} from '../../../../utils/interfaces/message.interface';
 
 @Component({
   selector: 'app-patient-navbar',
   imports: [
-    IonicModule,
     NgIf,
     RouterLinkActive,
     RouterModule,
     NgForOf,
     NgOptimizedImage,
     AsyncPipe,
-    NgTemplateOutlet
+    NgTemplateOutlet,
+    TitleCasePipe,
+    SlicePipe,
+    DatePipe,
+    IonicModule,
   ],
   templateUrl: './patient-navbar.component.html',
   standalone: true,
@@ -29,6 +50,7 @@ export class PatientNavbarComponent implements OnInit{
   user: Observable<PatientItem | null>;
   profileOpen = false;
   mobileMenuOpen = false;
+  notificationsOpen = false;
   private navSub?: Subscription;
 
   menuItems = [
@@ -40,6 +62,13 @@ export class PatientNavbarComponent implements OnInit{
   ];
 
   unreadCount$: Observable<number>;
+  public unreadSystemMessageCount$: Observable<number>;
+  public unreadChatCount$: Observable<number>;
+  public pendingRatingsCount$: Observable<number>;
+
+  latestUnreadMessages$!: Observable<UnreadMessageData[]>;
+  public allSystemMessages$: Observable<SystemMessage[]>;
+  public pendingRatings$: Observable<DoctorRatingItem[]>;
 
   constructor(
     private http: HttpClient,
@@ -47,10 +76,32 @@ export class PatientNavbarComponent implements OnInit{
     protected userService: UserService,
     private nav: NavController,
     private alert: AlertService,
-    private unreadMessageService: UnreadMessageService
+    private toast: ToastService,
+    private modalCtrl: ModalController,
+    private unreadMessageService: UnreadMessageService,
+    private systemMessageService: SystemMessageService,
+    private doctorRatingService: DoctorRatingService
   ) {
     this.user = this.userService.patient$();
-    this.unreadCount$ = this.unreadMessageService.totalCount$;
+
+    this.unreadSystemMessageCount$ = this.systemMessageService.unreadCount$;
+    this.unreadChatCount$ = this.unreadMessageService.totalCount$;
+    this.pendingRatingsCount$ = this.doctorRatingService.pendingCount$;
+
+    this.latestUnreadMessages$ = this.unreadMessageService.latestUnreadMessages$;
+    this.allSystemMessages$ = this.systemMessageService.allSystemMessages$;
+    this.pendingRatings$ = this.doctorRatingService.pendingRatings$;
+    void this.doctorRatingService.checkForRatingRequests(() => this.getPatientId());
+
+    this.unreadCount$ = combineLatest([
+      this.unreadChatCount$,
+      this.systemMessageService.unreadCount$,
+      this.pendingRatingsCount$
+    ]).pipe(
+      map(([chatCount, systemCount, ratingCount]) =>
+        chatCount + systemCount + ratingCount
+      )
+    );
   }
 
   ngOnInit() {
@@ -59,9 +110,61 @@ export class PatientNavbarComponent implements OnInit{
       .subscribe(() => {});
     this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe(() => this.closeMobileMenu());
+      .subscribe(() => this.closeAllDrawers());
 
     void this.unreadMessageService.fetchUnreadSummary();
+    this.systemMessageService.loadSystemMessagesOnceAfterLogin('patient');
+  }
+
+  private async getPatientId(): Promise<number | null> {
+    const user = await firstValueFrom(this.user);
+    return user?.patient.id ?? null;
+  }
+
+  public isMessageUnread(messageId: number): boolean {
+    return !this.systemMessageService.isMessageSeen(messageId);
+  }
+
+  async openSystemMessageModal(message: SystemMessage): Promise<void> {
+    this.closeAllDrawers();
+
+    const modal = await this.modalCtrl.create({
+      component: SystemMessageModalComponent as any,
+      componentProps: {
+        messages: [message]
+      },
+      cssClass: 'system-message-modal',
+      canDismiss: true,
+      backdropDismiss: true,
+    });
+
+    await modal.present();
+    await modal.onDidDismiss();
+
+    this.systemMessageService.markMessageAsSeen(message.id);
+  }
+
+  async showRatingModal(request: DoctorRatingItem): Promise<void> {
+    this.closeAllDrawers();
+
+    const modal = await this.modalCtrl.create({
+      component: DoctorRatingModalComponent as any,
+      componentProps: {
+        rating: request
+      },
+      cssClass: 'doctor-rating-modal',
+      canDismiss: true,
+      backdropDismiss: true,
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+
+    if (data && data.action === 'submit') {
+      this.doctorRatingService.completeRatingRequest(request.id);
+      this.toast.show("Értékelés elküldve, köszönjük a visszajelzését!", "success");
+    }
   }
 
   confirmLogout() {
@@ -77,28 +180,42 @@ export class PatientNavbarComponent implements OnInit{
   }
 
   onNotifications() {
-    void this.router.navigate(['patient/patient-messages']);
+    this.notificationsOpen = !this.notificationsOpen;
+    if (this.notificationsOpen) {
+      this.closeMobileMenu();
+    }
   }
 
   toggleMobileMenu() {
     this.mobileMenuOpen = !this.mobileMenuOpen;
+    if (this.mobileMenuOpen) {
+      this.notificationsOpen = false;
+    }
   }
 
   closeMobileMenu() {
     this.mobileMenuOpen = false;
+    this.removeBodyNoScroll();
+  }
+
+  closeAllDrawers() {
+    this.mobileMenuOpen = false;
+    this.notificationsOpen = false;
     this.profileOpen = false;
     this.removeBodyNoScroll();
   }
 
   @HostListener('document:keydown.escape')
   onEsc() {
-    if (this.mobileMenuOpen) this.closeMobileMenu();
+    if (this.mobileMenuOpen || this.notificationsOpen) {
+      this.closeAllDrawers();
+    }
   }
 
   @HostListener('window:resize')
   onResize() {
-    if (window.innerWidth > 1000 && this.mobileMenuOpen) {
-      this.closeMobileMenu();
+    if (window.innerWidth > 1000 && (this.mobileMenuOpen || this.notificationsOpen)) {
+      this.closeAllDrawers();
     }
   }
 
@@ -109,6 +226,11 @@ export class PatientNavbarComponent implements OnInit{
   toggleProfileMenu(event?: MouseEvent) {
     event?.stopPropagation();
     this.profileOpen = !this.profileOpen;
+  }
+
+  goToMessages(partnerId: number) {
+    this.closeAllDrawers();
+    void this.router.navigate(['/patient/patient-messages', partnerId]);
   }
 
   confirmAccountDelete() {

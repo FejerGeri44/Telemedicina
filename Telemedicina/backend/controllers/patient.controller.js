@@ -1,9 +1,9 @@
 const { supabaseAdmin } = require('../utils/supabaseAdmin');
 const { buildProfile } = require("../utils/profileBuilder");
 const PatientTagRepository = require("../repositories/patientTag.repository");
-const {findByDoctorAndPatient, listActiveRatingRequestsWithDetails} = require("../repositories/doctorRating.repository");
-const {getDoctorWithUserById, getByUserId, listApprovedDoctorsWithUser} = require("../repositories/doctor.repository");
-const {listPatientsWithUsersById, updatePatientProfile} = require("../repositories/patient.repository");
+const {findByDoctorAndPatient, findActiveRequestsByPatientId, updateRatingValue, getCompletedRatingsByDoctorId} = require("../repositories/doctorRating.repository");
+const {getDoctorWithUserById, getByUserId, listApprovedDoctorsWithUser, updateAvgRating} = require("../repositories/doctor.repository");
+const {updatePatientProfile} = require("../repositories/patient.repository");
 const {listByDoctorUserId, registerToAppointment, cancelAppointmentById} = require("../repositories/appointment.repository");
 const {listDiagnosesByPatientWithDetails} = require("../repositories/diagnosis.repository");
 const {listDocumentsByPatientWithDetails, getSignedUrlIfAuthorized} = require("../repositories/userDocument.repository");
@@ -435,28 +435,71 @@ exports.getActiveRatingRequests = async (req, res) => {
     const { patientId } = req.body;
 
     if (!patientId) {
-      return res.status(400).json({ message: 'Hiányzó kötelező mező: patientId.' });
+      return res.status(400).json({ message: "Hiányzó patientId!" });
     }
 
-    const formattedRequests = await listActiveRatingRequestsWithDetails({
-      patientId,
-      getPatientFunc: listPatientsWithUsersById,
-      getDoctorFunc: getDoctorWithUserById
-    });
+    const ratingRequests = await findActiveRequestsByPatientId(patientId);
 
-    if (!formattedRequests || formattedRequests.length === 0) {
+    if (!ratingRequests || ratingRequests.length === 0) {
       return res.status(200).json([]);
     }
 
-    return res.status(200).json(formattedRequests);
+    const enrichedRequests = await Promise.all(
+      ratingRequests.map(async (rating) => {
+        const doctorDetails = await getDoctorWithUserById(rating.doctor_id);
+
+        return {
+          ...rating,
+          doctor: doctorDetails
+        };
+      })
+    );
+
+    res.status(200).json(enrichedRequests);
 
   } catch (err) {
+    console.error('CRITICAL ERROR az értékelési kéréseknél:', err);
+    res.status(500).json({ message: "Szerver hiba történt." });
+  }
+};
 
-    if (err.type === 'NotFoundError') {
-      return res.status(404).json({ message: err.message });
+exports.submitRating = async (req, res) => {
+  try {
+    const { ratingId, doctorId, value } = req.body;
+
+    if (!ratingId || !doctorId || !value) {
+      return res.status(400).json({ message: "Hiányzó adatok (ratingId, doctorId, value)." });
     }
 
-    console.error('❌ Hiba az aktív értékelési kérések lekérdezésekor:', err);
-    return res.status(500).json({ message: 'Server error', error: String(err?.message || err) });
+    console.log(`Értékelés beérkezett - RatingID: ${ratingId}, DoctorID: ${doctorId}, Value: ${value}`);
+
+    const updatedRating = await updateRatingValue(ratingId, value);
+
+    if (!updatedRating) {
+      return res.status(404).json({ message: "Az értékelés nem található vagy nem sikerült frissíteni." });
+    }
+
+    const allRatings = await getCompletedRatingsByDoctorId(doctorId);
+
+    let newAverage = 0;
+    if (allRatings.length > 0) {
+      const sum = allRatings.reduce((acc, curr) => acc + curr.value, 0);
+      newAverage = parseFloat((sum / allRatings.length).toFixed(2));
+    }
+
+    if (newAverage > 5) newAverage = 5;
+
+    console.log(`Új átlag kiszámolva: ${newAverage} (${allRatings.length} db értékelés alapján)`);
+
+    await updateAvgRating(doctorId, newAverage);
+
+    res.status(200).json({
+      message: "Értékelés sikeresen rögzítve.",
+      newAverage: newAverage
+    });
+
+  } catch (err) {
+    console.error('Hiba az értékelés mentésekor:', err);
+    res.status(500).json({ message: "Szerver hiba történt az értékelés feldolgozása során." });
   }
 };

@@ -113,7 +113,6 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
     if (!this.doctorId) return;
 
     try {
-      this.unreadSummary = await this.unreadMessageService.fetchUnreadSummary();
     } catch (err) {
       console.error('❌ Olvasatlan összegzés komponensbeli frissítése sikertelen:', err);
     }

@@ -187,6 +187,38 @@ ion-card-content {
         }
       }
 
+      &.cell--noShow {
+        background: #fff5f5;
+        border: 1px solid #feb2b2;
+        opacity: 0.8;
+
+        .cell-title {
+          color: var(--ion-color-danger);
+          font-weight: bold;
+          margin: auto;
+          font-size: 0.85rem;
+        }
+      }
+
+      &.cell--no-appointment {
+        background: #f4f4f5;
+        border: 1px dashed #d1d5db;
+        pointer-events: none;
+
+        .cell-title {
+          color: #9ca3af;
+          margin: auto;
+          font-weight: normal;
+          text-align: center;
+        }
+      }
+
+      .btn-primary {
+        border-radius: 5px;
+        --border-radius: 0;
+        width: 100%;
+      }
+
       .delete {
         --background: var(--accent);
         border: var(--accent) 1px solid;

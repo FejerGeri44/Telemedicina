@@ -48,21 +48,6 @@
       <h4>Bemutatkozás</h4>
       <p class="intro">{{ user.doctor.introduction.trim() || "Rövid bemutatkozás..." }}</p>
     </div>
-
-    <div class="dpc-rating-system-inline" *ngIf="canRate" (mouseleave)="clearHover()">
-      <div class="rating-label">Értékeled az orvost:</div>
-      <div class="rating-stars">
-        <ion-icon
-          *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; let index = index"
-          [name]="getStarIcon( (index + 1) / 2 )"
-          [ngClass]="{ 'star-half-left': (index + 1) % 2 !== 0, 'star-half-right': (index + 1) % 2 === 0 }"
-          (mouseenter)="setHover((index + 1) / 2)"
-          (click)="setRating((index + 1) / 2)"
-          size="small"
-        ></ion-icon>
-      </div>
-      <div class="rating-value">{{ (user.doctor.avgRating | number:'1.1-1') || '—' }} / 5</div>
-    </div>
   </ion-card-content>
 
   <ion-footer *ngIf="editable" class="pc-edit-bottom-wrap">

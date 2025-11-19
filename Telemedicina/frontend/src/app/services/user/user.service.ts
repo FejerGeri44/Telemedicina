@@ -79,6 +79,7 @@ export class UserService {
         this.stopSessionTimer();
         this._user$.next(null);
         this.clearSystemMessagesFromSessionStorage();
+        this.clearDoctorRatingsFromSessionStorage();
       }));
   }
 
@@ -94,6 +95,22 @@ export class UserService {
 
   clearSystemMessagesFromSessionStorage(): void {
     const prefix = 'System-Messages';
+    const keysToRemove: string[] = [];
+
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && key.startsWith(prefix)) {
+        keysToRemove.push(key);
+      }
+    }
+
+    for (const key of keysToRemove) {
+      sessionStorage.removeItem(key);
+    }
+  }
+
+  clearDoctorRatingsFromSessionStorage(): void {
+    const prefix = 'Doctor-ratings';
     const keysToRemove: string[] = [];
 
     for (let i = 0; i < sessionStorage.length; i++) {

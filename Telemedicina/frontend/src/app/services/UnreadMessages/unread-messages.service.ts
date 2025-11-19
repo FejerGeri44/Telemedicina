@@ -2,50 +2,39 @@ import { Injectable } from '@angular/core';
 import {BehaviorSubject, firstValueFrom, Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../../enviroment';
+import {UnreadMessageData} from '../../utils/interfaces/message.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UnreadMessageService {
-  private unreadCountSubject = new BehaviorSubject<number>(0);
-  public unreadCount$: Observable<number> = this.unreadCountSubject.asObservable();
-  private summaryMapSubject = new BehaviorSubject<Map<number, number>>(new Map());
-  public summaryMap$: Observable<Map<number, number>> = this.summaryMapSubject.asObservable();
   private totalCountSubject = new BehaviorSubject<number>(0);
   public totalCount$: Observable<number> = this.totalCountSubject.asObservable();
-
+  private latestUnreadMessagesSubject = new BehaviorSubject<UnreadMessageData[]>([]);
+  public latestUnreadMessages$: Observable<UnreadMessageData[]> = this.latestUnreadMessagesSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
-  async fetchUnreadSummary(): Promise<Map<number, number>> {
+  async fetchUnreadSummary(): Promise<UnreadMessageData[]> {
     try {
-      const summary: Array<{ partnerId: number, unreadCount: number }> = await firstValueFrom(
-        this.http.get<any>(
+      const latestMessages: UnreadMessageData[] = await firstValueFrom(
+        this.http.get<UnreadMessageData[]>(
           `${environment.apiUrl}/messages/unreadSummary`,
           { withCredentials: true }
         )
       );
 
-      const newMap = new Map(summary.map(s => [s.partnerId, s.unreadCount]));
-      const totalUnread = Array.from(newMap.values()).reduce((sum, count) => sum + count, 0);
+      this.latestUnreadMessagesSubject.next(latestMessages);
 
-      this.summaryMapSubject.next(newMap);
+      const totalUnread = latestMessages.length;
       this.totalCountSubject.next(totalUnread);
 
-      return newMap;
+      return latestMessages;
 
     } catch (err) {
       console.error('❌ Olvasatlan összegzés lekérése sikertelen a Service-ben:', err);
-      return new Map();
+      return [];
     }
-  }
-
-  setUnreadCount(count: number): void {
-    this.unreadCountSubject.next(count);
-  }
-
-  getCurrentCount(): number {
-    return this.unreadCountSubject.value;
   }
 
   decrementTotalCount(amount: number): void {

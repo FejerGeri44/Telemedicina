@@ -9,6 +9,7 @@ import {environment} from '../../../../../../../../enviroment';
 import {AdminItem} from '../../../../../../utils/interfaces/admin.interface';
 import {PASSWORD_PATTERN, PHONE_PATTERN, TEXT_PATTERN} from '../../../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../../../services/platform/platform.service';
+import {formatPhoneNumberInput, formatTajInput} from '../../../../../../utils/formatInput';
 
 @Component({
   selector: 'app-doctor-regist',
@@ -55,7 +56,13 @@ export class DoctorRegistComponent {
   onDoctorRegister() {
     if (this.doctorForm.invalid) {
       this.doctorForm.markAllAsTouched();
-      this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
+      if (this.doctorForm.get('email')?.invalid) {
+        this.toast.show('Kérlek, adj meg egy érvényes e-mail címet!', 'warning');
+      } else if (this.doctorForm.get('password')?.invalid) {
+        this.toast.show('A jelszó nem felel meg a követelményeknek (min. 8 karakter, szám, nagybetű)!', 'warning');
+      } else {
+        this.toast.show('Kérlek, tölts ki minden kötelező mezőt helyesen!', 'warning');
+      }
       return;
     }
 
@@ -68,19 +75,13 @@ export class DoctorRegistComponent {
       speciality,
     } = this.doctorForm.getRawValue();
 
-    const emailNorm = String(email ?? '').trim().toLowerCase();
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm);
-    if (!emailOk) {
-      this.doctorForm.get('email')?.setErrors({ email: true });
-      this.toast.show('Hibás e-mail cím!', 'danger');
-      return;
-    }
-
     if (password !== password_again) {
       this.doctorForm.get('password_again')?.setErrors({ mismatch: true });
       this.toast.show('A jelszavak nem egyeznek!', 'warning');
       return;
     }
+
+    this.loading = true;
 
     const payloadBase: any = {
       name: String(fullName).trim(),
@@ -98,17 +99,19 @@ export class DoctorRegistComponent {
               void this.router.navigate(['/regist-login'], {
                 queryParams: {
                   tab: 'login',
-                  toast: 'Sikeres orvos regisztráció!',
+                  toast: 'Sikeres jelentkezés leadás!',
                   type: 'success',
                   successfulRegist: true
                 }
               });
             }, 500);
+            this.loading = false;
           },
           error: err => {
             console.error(err);
             const msg = err?.error?.message || 'Hiba történt az orvos regisztráció során.';
             this.toast.show(msg, 'danger');
+            this.loading = false;
           }
         });
 
@@ -125,11 +128,13 @@ export class DoctorRegistComponent {
         next: () => {
           this.toast.show('Sikeres Orvos felvitel!', 'success');
           void this.modalCtrl.dismiss(true);
+          this.loading = false;
         },
         error: err => {
           console.error(err);
           const msg = err?.error?.message || 'Hiba történt a regisztráció során!';
           this.toast.show(msg, 'danger');
+          this.loading = false;
         }
       });
     }
@@ -145,5 +150,9 @@ export class DoctorRegistComponent {
 
   backToDash() {
     void this.router.navigate(['/']);
+  }
+
+  onPhoneChange(event: any) {
+    formatPhoneNumberInput(event, this.doctorForm.get('phoneNumber'));
   }
 }

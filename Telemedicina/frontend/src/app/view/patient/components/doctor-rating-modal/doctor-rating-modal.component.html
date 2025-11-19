@@ -1,58 +1,69 @@
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Orvos értékelése</ion-title>
     <ion-buttons slot="end">
-      <ion-button class="close-button" (click)="dismiss()">
-        <ion-icon name="close-outline"></ion-icon>
+      <ion-button (click)="dismiss()" color="medium">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div class="rating-container">
+<div class="inner-content">
+  <div class="modal-wrapper">
 
-    <h2 class="ion-text-center">Hogy értékelné a konzultációt?</h2>
-    <p class="ion-text-center" *ngIf="rating">Dr. {{ rating.doctor.user.name }} értékelése</p>
+    <div class="doctor-profile" *ngIf="rating?.doctor">
+      <div class="avatar-container">
+        <ion-avatar>
+          <img
+            [ngSrc]="rating.doctor.user.pictureUrl"
+            alt="Orvos profilkép"
+            width="100"
+            height="100"
+          />
+        </ion-avatar>
+      </div>
 
-    <div class="star-rating-box">
-      <ion-icon
-        *ngFor="let star of stars"
-        [name]="getStarIcon(star)"
-        (click)="rate(star, $event)"
-        class="star-icon"
-        [class.active]="ratingNumber >= star - 0.5"
-      ></ion-icon>
+      <h2>Dr. {{ rating.doctor.user.name }}</h2>
+      <p class="speciality">{{ rating.doctor.doctor.speciality }}</p>
     </div>
 
-    <p class="current-rating">{{ ratingNumber }} / 5.0</p>
+    <div class="rating-section">
+      <div class="stars-container" (mouseleave)="onMouseLeave()">
+        <ion-icon
+          *ngFor="let star of stars"
+          [name]="getStarIcon(star)"
+          [class.active]="isStarActive(star)"
+          (mousemove)="onMouseMove(star, $event)"
+          (click)="rate(star, $event)"
+        ></ion-icon>
+      </div>
 
-    <ion-item lines="full" class="ion-margin-top">
-      <ion-textarea
-        label="Szöveges visszajelzés (Opcionális)"
-        labelPlacement="floating"
-        rows="4"
-        maxlength="500"
-        [(ngModel)]="comment"
-      ></ion-textarea>
-    </ion-item>
+      <div class="rating-label">
+        <ng-container *ngIf="hoverRating > 0 || ratingNumber > 0">
+          <span>{{ hoverRating > 0 ? hoverRating : ratingNumber }}</span> / 5.0
+        </ng-container>
+        <ng-container *ngIf="hoverRating === 0 && ratingNumber === 0">
+          Érintse meg az értékeléshez
+        </ng-container>
+      </div>
+    </div>
+
   </div>
-</ion-content>
+</div>
 
 <ion-footer>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button color="danger" fill="clear" (click)="clearRating()">
-        <ion-icon slot="start" name="trash-outline"></ion-icon>
-        Törlés
+    <div class="action-buttons">
+      <ion-button class="btn-secondary" (click)="dismiss()">
+        Vissza
       </ion-button>
-    </ion-buttons>
 
-    <ion-buttons slot="end">
-      <ion-button color="primary" fill="solid" (click)="submit()" [disabled]="ratingNumber === 0">
-        <ion-icon slot="start" name="send"></ion-icon>
-        Küldés
+      <ion-button
+        class="btn-primary"
+        (click)="confirmSubmit()"
+        [disabled]="ratingNumber === 0 || isLoading">
+        Mentés
       </ion-button>
-    </ion-buttons>
+    </div>
   </ion-toolbar>
 </ion-footer>

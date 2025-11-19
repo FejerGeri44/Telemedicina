@@ -8,6 +8,7 @@ import {AdminItem} from '../../../../../../utils/interfaces/admin.interface';
 import {environment} from '../../../../../../../../enviroment';
 import {PASSWORD_PATTERN, PHONE_PATTERN, TEXT_PATTERN} from '../../../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../../../services/platform/platform.service';
+import {formatPhoneNumberInput} from '../../../../../../utils/formatInput';
 
 @Component({
   selector: 'app-admin-regist',
@@ -51,7 +52,13 @@ export class AdminRegistComponent {
   onAdminRegister() {
     if (this.adminForm.invalid) {
       this.adminForm.markAllAsTouched();
-      this.toast.show('Kérlek, tölts ki minden kötelező mezőt!', 'warning');
+      if (this.adminForm.get('email')?.invalid) {
+        this.toast.show('Kérlek, adj meg egy érvényes e-mail címet!', 'warning');
+      } else if (this.adminForm.get('password')?.invalid) {
+        this.toast.show('A jelszó nem felel meg a követelményeknek (min. 8 karakter, szám, nagybetű)!', 'warning');
+      } else {
+        this.toast.show('Kérlek, tölts ki minden kötelező mezőt helyesen!', 'warning');
+      }
       return;
     }
 
@@ -64,19 +71,13 @@ export class AdminRegistComponent {
       address,
     } = this.adminForm.getRawValue();
 
-    const emailNorm = String(email ?? '').trim().toLowerCase();
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm);
-    if (!emailOk) {
-      this.adminForm.get('email')?.setErrors({ email: true });
-      this.toast.show('Hibás e-mail cím!', 'danger');
-      return;
-    }
-
     if (password !== password_again) {
       this.adminForm.get('password_again')?.setErrors({ mismatch: true });
       this.toast.show('A jelszavak nem egyeznek!', 'warning');
       return;
     }
+
+    this.loading = true;
 
     const payload = {
       name: String(fullName).trim(),
@@ -94,10 +95,13 @@ export class AdminRegistComponent {
         next: () => {
           this.toast.show("Sikeres Admin felvitel!", "success");
           void this.modalCtrl.dismiss(true);
+          this.loading = false;
         },
         error: err => {
           console.error(err);
-          this.toast.show('Hiba történt a regisztráció során!', 'danger');
+          const msg = err?.error?.message || 'Ismeretlen hiba történt az admin hozzáadásakor.';
+          this.toast.show(msg, 'danger');
+          this.loading = false;
         }
       });
   }
@@ -108,5 +112,9 @@ export class AdminRegistComponent {
 
   togglePwd2() {
     this.showPwd2 = !this.showPwd2;
+  }
+
+  onPhoneChange(event: any) {
+    formatPhoneNumberInput(event, this.adminForm.get('phoneNumber'));
   }
 }

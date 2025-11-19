@@ -87,26 +87,42 @@
                     <div class="cell-title" *ngIf="getApptStatusClass(appt) === 'cell--done'">
                       Diagnosztizálva
                     </div>
+                    <div class="cell-title" *ngIf="getApptStatusClass(appt) === 'cell--noShow'">
+                      Nem jelent meg
+                    </div>
+                    <div class="cell-title" *ngIf="getApptStatusClass(appt) === 'cell--no-appointment'">
+                      Üresen maradt időpont
+                    </div>
                     <div class="cell-title" *ngIf="getApptStatusClass(appt) === 'cell--free'">
                       Szabad
                     </div>
 
                     <div class="cell-actions">
-                      <ng-container *ngIf="getApptStatusClass(appt) === 'cell--pending'">
+                      <ng-container *ngIf="getApptStatusClass(appt) === 'cell--noShow'">
                         <ion-button
+                          class="btn-primary"
                           size="small"
-                          class="pending-action"
-                          (click)="reviewAppointment(appt)"> Elbírálás
+                          (click)="openPatientProfile(appt)">
+                          <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+                          Profil
                         </ion-button>
                       </ng-container>
 
-                      <ng-container *ngIf="getApptStatusClass(appt) !== 'cell--pending'">
-                        <ion-button *ngIf="appt.patient_id == null && getApptStatusClass(appt) == 'cell--free'"
-                          size="small"
-                          class="delete"
-                          (click)="confirmDeleteAppointment(appt)">
-                          Törlés
-                        </ion-button>
+                      <ng-container
+                        *ngIf="getApptStatusClass(appt) !== 'cell--noShow' &&
+                                getApptStatusClass(appt) !== 'cell--no-appointment'">
+
+                        <ng-container *ngIf="getApptStatusClass(appt) === 'cell--pending'">
+                          <ion-button size="small" class="pending-action" (click)="reviewAppointment(appt)">
+                            Elbírálás
+                          </ion-button>
+                        </ng-container>
+
+                        <ng-container *ngIf="getApptStatusClass(appt) === 'cell--free'">
+                          <ion-button size="small" class="delete" (click)="confirmDeleteAppointment(appt)">
+                            Törlés
+                          </ion-button>
+                        </ng-container>
                       </ng-container>
                     </div>
                   </div>

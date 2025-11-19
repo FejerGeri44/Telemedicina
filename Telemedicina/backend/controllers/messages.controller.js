@@ -98,17 +98,13 @@ exports.getUnreadSummary = async (req, res) => {
       return res.status(401).json({ message: 'Hitelesítés szükséges.' });
     }
 
-    const summary = await MessageRepository.getUnreadSummaryForUser(userId);
-    const mappedSummary = summary.map(row => ({
-      partnerId: row.partnerId,
-      unreadCount: parseInt(row.unreadCount, 10)
-    }));
+    const detailedSummary = await MessageRepository.getUnreadSummaryForUser(userId);
 
-    return res.status(200).json(mappedSummary);
+    return res.status(200).json(detailedSummary);
 
   } catch (err) {
-    console.error('❌ Olvasatlan üzenetek lekérése hiba:', err);
-    return res.status(500).json({ message: 'Szerverhiba történt az összegzés során.' });
+    console.error('❌ Részletes olvasatlan üzenetek lekérése hiba:', err);
+    return res.status(500).json({ message: 'Szerverhiba történt a részletes összegzés során.' });
   }
 };
 

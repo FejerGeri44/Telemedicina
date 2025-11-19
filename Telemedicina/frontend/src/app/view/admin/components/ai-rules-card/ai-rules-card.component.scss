@@ -76,7 +76,6 @@ ion-item.filter-input {
   border: 1px solid #eef2f7;
 }
 
-/* sticky fejléc, finom háttér */
 .table .table-header {
   position: sticky;
   top: 0;
@@ -91,7 +90,6 @@ ion-item.filter-input {
   font-size: 13px;
 }
 
-/* sorok */
 .table .table-row {
   border-bottom: 1px solid #f1f5f9;
   transition: background .18s ease, box-shadow .18s ease;
@@ -100,7 +98,6 @@ ion-item.filter-input {
   background: #f9fbff;
 }
 
-/* cellák */
 .table ion-col {
   display: flex;
   align-items: center;
@@ -135,7 +132,6 @@ ion-item.filter-input {
   margin: auto;
 }
 
-/* Lapozó */
 .pager {
   margin-top: 10px;
   padding: 6px 4px;

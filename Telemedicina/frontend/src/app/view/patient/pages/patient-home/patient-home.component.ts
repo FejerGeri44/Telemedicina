@@ -6,7 +6,6 @@ import {AsyncPipe, DatePipe, NgForOf, NgIf, NgOptimizedImage, TitleCasePipe} fro
 
 import { PatientProfileCardComponent } from '../../components/patient-profile-card/patient-profile-card.component';
 import { PatientEditProfileModalComponent } from '../../components/patient-edit-profile-modal/patient-edit-profile-modal.component';
-import { SystemMessageModalComponent } from '../../../../shared/system-message-modal/system-message-modal.component';
 
 import {UserService} from '../../../../services/user/user.service';
 import {MyAppointment} from '../../../../utils/interfaces/appointment.inteface';
@@ -15,10 +14,7 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 import {formatAppointmentTime} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {firstValueFrom, Observable, take} from 'rxjs';
-import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
 import {DocumentItem} from '../../../../utils/interfaces/document.interface';
-import {DoctorRatingItem} from '../../../../utils/interfaces/doctor.interface';
-import {DoctorRatingModalComponent} from '../../components/doctor-rating-modal/doctor-rating-modal.component';
 
 @Component({
   selector: 'app-patient-home',
@@ -37,9 +33,6 @@ export class PatientHomeComponent implements OnInit {
   isDocumentsLoading: boolean = true;
   isDocumentsLoaded: boolean = false;
 
-  systemMessages: SystemMessage[] = [];
-  pendingRatings: DoctorRatingItem[] = [];
-
   constructor(
     private http: HttpClient,
     private modalCtrl: ModalController,
@@ -50,8 +43,6 @@ export class PatientHomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    void this.checkForRatingRequests();
-    this.loadSystemMessagesOnceAfterLogin();
     void this.fetchAppointments();
     void this.fetchDocuments();
   }
@@ -59,108 +50,6 @@ export class PatientHomeComponent implements OnInit {
   private async getPatientId(): Promise<number | null> {
     const user = await firstValueFrom(this.user);
     return user?.patient.id ?? null;
-  }
-
-  loadSystemMessagesOnceAfterLogin(): void {
-    const key = `System-Messages`;
-    if (sessionStorage.getItem(key) === '1') return;
-
-    const payload = {
-      audiences: ['all', 'patient']
-    }
-
-    this.http.post<SystemMessage[]>(
-      `${environment.apiUrl}/messages/system-messages-for-me`,
-      payload,
-      { withCredentials: true }
-    ).subscribe({
-      next: (res) => {
-        this.systemMessages = res;
-        void this.presentSystemMessagesModalsOnce();
-        sessionStorage.setItem(key, '1');
-        },
-      error: (err) => console.error('❌ Rendszerüzenetek hiba:', err)
-    });
-  }
-
-  async presentSystemMessagesModalsOnce(): Promise<void> {
-    const messages = this.systemMessages ?? [];
-    if (!messages.length) return;
-
-    const unseen = messages.filter(message => !sessionStorage.getItem(`System-Messages-${message.id}`));
-    if (!unseen.length) return;
-
-    for (const message of unseen) {
-      const modal = await this.modalCtrl.create({
-        component: SystemMessageModalComponent as any,
-        componentProps: {
-          messages: [message]
-        },
-
-        cssClass: 'system-message-modal',
-        canDismiss: true,
-        backdropDismiss: true,
-      });
-      await modal.present();
-      await modal.onDidDismiss();
-
-      sessionStorage.setItem(`System-Messages-${message.id}`, '1');
-    }
-  }
-
-  async checkForRatingRequests() {
-    const key = `Doctor-ratings`;
-    if (sessionStorage.getItem(key) === '1') return;
-
-    const patientId = await this.getPatientId();
-
-    if (!patientId) {
-      console.warn('❌ Hiányzik a patientId, az értékelési kérések lekérdezése kihagyva.');
-      return;
-    }
-
-    const payload = {
-      patientId: patientId
-    }
-
-    console.log(payload)
-    this.http.post<DoctorRatingItem[]>(
-      `${environment.apiUrl}/patient/activeRatingRequests`,
-      payload,
-      {withCredentials: true}
-    ).subscribe({
-      next: (res) => {
-        this.pendingRatings = res;
-        void this.presentDoctorRatingModalsOnce();
-        localStorage.setItem(key, '1');
-      },
-      error: (err) => console.error('❌ Rendszerüzenetek hiba:', err)
-    });
-  }
-
-  async presentDoctorRatingModalsOnce(): Promise<void> {
-    const rate = this.pendingRatings ?? [];
-    if (!rate.length) return;
-
-    const ratings = rate.filter(rate => !sessionStorage.getItem(`Doctor-ratings-${rate.id}`));
-    if (!ratings.length) return;
-
-    for (const rate of ratings) {
-      const modal = await this.modalCtrl.create({
-        component: DoctorRatingModalComponent as any,
-        componentProps: {
-          rating: [rate]
-        },
-
-        cssClass: 'doctor-rating-modal',
-        canDismiss: true,
-        backdropDismiss: true,
-      });
-      await modal.present();
-      await modal.onDidDismiss();
-
-      sessionStorage.setItem(`Doctor-ratings-${rate.id}`, '1');
-    }
   }
 
   async openEditModal() {

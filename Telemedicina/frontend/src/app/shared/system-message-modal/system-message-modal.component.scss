@@ -1,22 +1,28 @@
+.inner-content {
+  background: #fff;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
 .card {
-  box-shadow: 0 12px 24px rgba(16, 24, 40, 0.08);
+  box-shadow: none;
   background: #fff;
   overflow: hidden;
   max-width: unset;
-  min-height: 500px;
+  min-height: auto;
 }
 
-.hero{
+.hero {
   position: relative;
   width: 100%;
   max-width: 100%;
   aspect-ratio: 5 / 3;
   overflow: hidden;
-  border-bottom: 1px solid #cbcbcb;
+  border: 1px solid #cbcbcb;
   display: block;
 }
 
-.hero img{
+.hero img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -27,12 +33,10 @@
   pointer-events: none;
 }
 
-/* törzs */
 .body {
   padding: 20px;
 }
 
-/* badge-ek sora */
 .badges {
   display: flex;
   gap: 10px;
@@ -60,27 +64,26 @@ ion-badge {
   }
 }
 
-
 .badge-info {
-  --background: #67A8FF7F;
-  --color: #1E40AF;
-  border: 1px solid #5c7ce7;
+  --background: #dbeafe;
+  --color: #1e40af;
+  border: 1px solid #93c5fd;
 }
 
 .badge-warning {
-  --background: #FEF3C7;
-  --color: #B45309;
-  border: 1px solid #FCD34D;
+  --background: #fef3c7;
+  --color: #92400e;
+  border: 1px solid #fcd34d;
 }
 
 .badge-error {
-  --background: #FEE2E2;
-  --color: #B91C1C;
-  border: 1px solid #F87171;
+  --background: #fee2e2;
+  --color: #b91c1c;
+  border: 1px solid #f87171;
 }
 
 .title {
-  margin: 5px 0;
+  margin: 10px 0;
   font-size: 20px;
   font-weight: 700;
   color: #1f2937;
@@ -92,7 +95,7 @@ ion-badge {
 .message {
   white-space: pre-line;
   color: #374151;
-  line-height: 1.5;
+  line-height: 1.6;
   margin: 5px 0 10px 0;
   word-wrap: break-word;
   overflow-wrap: anywhere;
@@ -102,5 +105,5 @@ ion-badge {
 @media (max-width: 380px) {
   .hero { aspect-ratio: 16 / 9; }
   .title { font-size: 18px; }
-  .body { padding: 10px; }
+  .body { padding: 15px; }
 }

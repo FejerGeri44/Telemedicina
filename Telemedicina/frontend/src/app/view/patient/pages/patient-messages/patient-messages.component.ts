@@ -10,10 +10,11 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {firstValueFrom, Observable} from 'rxjs';
 import {environment} from '../../../../../../enviroment';
-import {Message} from '../../../../utils/interfaces/message.interface';
+import {Message, UnreadMessageData} from '../../../../utils/interfaces/message.interface';
 import {RealtimeChannel} from '@supabase/supabase-js';
 import {SupabaseService} from '../../../../services/chat/supabase.service';
 import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-messages.service';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'app-patient-messages',
@@ -33,7 +34,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
   user!: Observable<PatientItem | null>;
   patientId: number | null = null;
   patientPictureUrl: string | null = null;
-  unreadSummary: Map<number, number> = new Map();
+  unreadSummary!: UnreadMessageData[];
   isChatPaneVisible: boolean = false;
 
   doctors!: DoctorItem[];
@@ -55,7 +56,8 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
     private toast: ToastService,
     private alert: AlertService,
     private supabaseService: SupabaseService,
-    private unreadMessageService: UnreadMessageService
+    private unreadMessageService: UnreadMessageService,
+    private route: ActivatedRoute
   ) {
     this.user = this.userService.patient$();
   }
@@ -67,8 +69,9 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
         this.patientPictureUrl = u.user.pictureUrl;
       }
     });
-    void this.getDoctors();
-    void this.getUnreadSummary();
+    await this.getDoctors();
+    await this.getUnreadSummary();
+    this.checkRouteParams();
   }
 
   ngOnDestroy(): void {
@@ -83,6 +86,20 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
     return user?.user.id ?? null;
   }
 
+  private checkRouteParams(): void {
+    const doctorIdParam = this.route.snapshot.paramMap.get('doctorId');
+    if (doctorIdParam) {
+      const doctorId = Number(doctorIdParam);
+
+      const doctorExists = this.allDoctors.find(d => d.user.id === doctorId);
+
+      if (doctorExists) {
+        void this.markConversationAsRead(doctorExists.user.id)
+        void this.selectDoctor(doctorId);
+      }
+    }
+  }
+
   async getUnreadSummary(): Promise<void> {
     if (!this.patientId) return;
 
@@ -94,7 +111,11 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
   }
 
   getUnreadCount(doctorId: number): number {
-    return this.unreadSummary.get(doctorId) ?? 0;
+    if (!this.unreadSummary || this.unreadSummary.length === 0) {
+      return 0;
+    }
+
+    return this.unreadSummary.filter(message => message.partnerId === doctorId).length;
   }
 
   async getDoctors(): Promise<DoctorItem[] | null> {
@@ -121,10 +142,8 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
 
   async markConversationAsRead(doctorId: number): Promise<void> {
     if (!this.patientId || !doctorId) return;
-
-    const currentUnreadCount = this.unreadSummary.get(doctorId) ?? 0;
+    const currentUnreadCount = this.getUnreadCount(doctorId);
     if (currentUnreadCount === 0) return;
-
     const payload = { doctorId };
 
     try {
@@ -134,7 +153,8 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
         { withCredentials: true }
       ));
 
-      this.unreadSummary.set(doctorId, 0);
+      this.unreadSummary = this.unreadSummary.filter(message => message.partnerId !== doctorId);
+
       this.unreadMessageService.decrementTotalCount(currentUnreadCount);
 
     } catch (err) {
@@ -173,7 +193,6 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
 
     if (this.patientId) {
       await this.markConversationAsRead(userId);
-      this.unreadSummary.set(userId, 0);
       await this.loadConversation(userId);
       this.setupRealtime(userId);
       this.isChatPaneVisible = true;

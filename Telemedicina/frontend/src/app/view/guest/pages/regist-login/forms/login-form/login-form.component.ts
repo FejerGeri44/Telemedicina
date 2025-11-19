@@ -86,7 +86,7 @@ export class LoginFormComponent implements OnInit{
 
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
-      this.toast.show('Kötelező mezők!', 'warning');
+      this.toast.show('Kérjük, töltsd ki helyesen az e-mail és jelszó mezőket!', 'warning');
       return;
     }
 
@@ -97,8 +97,17 @@ export class LoginFormComponent implements OnInit{
     this.loading = true;
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password: String(password) });
+
       if (error || !data?.session?.access_token) {
-        this.toast.show(error?.message || 'Hibás belépési adatok.', 'danger');
+        let errorMsg = 'Sikertelen bejelentkezés.';
+
+        if (error?.message.includes('Invalid login credentials')) {
+          errorMsg = 'Helytelen e-mail cím vagy jelszó.';
+        } else if (error?.message.includes('Email not confirmed')) {
+          errorMsg = 'Az e-mail cím még nincs megerősítve.';
+        }
+
+        this.toast.show(errorMsg, 'danger');
         return;
       }
 
@@ -114,6 +123,9 @@ export class LoginFormComponent implements OnInit{
 
       this.userService.setUserFromBackend(resp.user, resp.expiresIn);
       const role = resp.user.user.role;
+
+      this.toast.show(`Üdvözlünk újra, ${resp.user.user.name}!`, 'success');
+
       switch (role) {
         case 'doctor':  void this.router.navigate(['/doctor/doctor-home']); break;
         case 'patient': void this.router.navigate(['/patient/patient-home']); break;
@@ -122,11 +134,16 @@ export class LoginFormComponent implements OnInit{
       }
     } catch (err: any) {
       if (err?.status === 403 && err?.error?.code === 'DOCTOR_PENDING') {
-        this.toast.show('A regisztráció még nincs jóváhagyva!', 'warning');
+        this.toast.show('A fiókod még jóváhagyásra vár. Kérlek, légy türelemmel!', 'warning');
         return;
       }
-      const serverMsg = err?.error?.message || `Hiba (${err?.status ?? '?'}) a bejelentkezésnél.`;
-      this.toast.show(serverMsg, 'danger');
+
+      if (err?.status === 0) {
+        this.toast.show('Nem sikerült kapcsolódni a szerverhez. Ellenőrizd az internetkapcsolatot!', 'danger');
+      } else {
+        const serverMsg = err?.error?.message || 'Váratlan hiba történt a bejelentkezés során. Próbáld újra később!';
+        this.toast.show(serverMsg, 'danger');
+      }
     } finally {
       this.loading = false;
     }

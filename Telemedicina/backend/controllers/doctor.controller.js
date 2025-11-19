@@ -4,12 +4,13 @@ const AppointmentRejectionRepository = require("../repositories/appointmentRejec
 const UserDocumentRepository = require("../repositories/userDocument.repository");
 const DoctorRatingRepository = require("../repositories/doctorRating.repository");
 const {updateDoctorProfile, listMyPatientsWithTagsByUserId, countPendingAppointmentsByDoctorId,
-  countRejectionsByDoctorId, listPatientsWithDetailsAndFilter
+  countRejectionsByDoctorId
 } = require("../repositories/doctor.repository");
 const {createAppointmentAndEncounter, updateAppointmentStatusAndHandleRejection, deleteAppointmentById,
   listAppointmentsWithPatientAndTagsByDoctorId, listAppointmentsByPatientAndDoctor
 } = require("../repositories/appointment.repository");
 const {listPatientDataWithTagsByIds, createDiagnosisAndFinalizeAppointment} = require("../repositories/diagnosis.repository");
+const {listPatientsWithDetailsAndFilter} = require("../repositories/admin.repository");
 
 exports.updateProfile = async (req, res) => {
   try {

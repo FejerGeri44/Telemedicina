@@ -1,9 +1,15 @@
 <ion-segment [value]="selectedTab" (ionChange)="onSegmentChange($event)" class="status-segment">
   <ion-segment-button value="pending">
-    <ion-label>Pending</ion-label>
+    <div class="segment-button">
+      <ion-icon name="hourglass"></ion-icon>
+      <ion-label>Pending</ion-label>
+    </div>
   </ion-segment-button>
   <ion-segment-button value="denied">
-    <ion-label>Denied</ion-label>
+    <div class="segment-button">
+      <ion-icon name="close-circle"></ion-icon>
+      <ion-label>Denied</ion-label>
+    </div>
   </ion-segment-button>
 </ion-segment>
 

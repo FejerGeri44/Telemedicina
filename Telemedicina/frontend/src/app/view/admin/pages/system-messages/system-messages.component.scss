@@ -1,6 +1,5 @@
 .tabs {
   width: 100%;
-  margin: 20px auto;
 }
 
 .segment-button {
@@ -273,9 +272,18 @@ ion-item.custom-item {
   max-width: 200px;
 }
 
+.list:has(.no-data) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 85%;
+  height: calc(100vh - 110px - 48px - 20px);
+  margin: 0 auto;
+  padding: 0 3%;
+}
+
 .no-data {
   text-align: center;
-  margin-top: 24px;
 }
 .no-data-text {
   display: block;

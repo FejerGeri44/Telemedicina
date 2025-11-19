@@ -193,6 +193,31 @@
   overflow-y: auto;
 }
 
+.message:has(.no-data) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 85%;
+  margin: 0 auto;
+  padding: 0 3%;
+}
+
+.no-data {
+  text-align: center;
+  margin-top: 200px;
+}
+.no-data-text {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #8b5cf6;
+}
+.no-data-sub {
+  display: block;
+  margin-top: 8px;
+  color: #6b7280;
+}
+
 @media (max-width: 1000px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
@@ -227,6 +252,10 @@
   .doctor-applications {
     grid-column: 2 / 3;
     grid-row: 3;
+  }
+
+  .no-data {
+    margin: 20px 0;
   }
 }
 

@@ -6,6 +6,10 @@ const UserRepository = require("../repositories/user.repository");
 const UserProfileService = require("../utils/userProfile");
 const SystemMessageRepository = require("../repositories/systemMessage.repository");
 const sql = require("../config/db.config");
+const {updateUserProfile, updateDoctorStatus, listAdminsWithUsersAndFilter, listPatientsWithDetailsAndFilter,
+  listDoctorsWithUsersAndFilter, deleteUsersByIds
+} = require("../repositories/admin.repository");
+const {listDoctorsByStatusWithUser} = require("../repositories/doctor.repository");
 
 const PATIENT_DEFAULT_PICTURE = 'https://ubesundbzjtyxxuwmbgg.supabase.co/storage/v1/object/sign/default-profilePictures/patient.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82NTY3MmI1OS1mMmE2LTQyNGItYWU2OC1hOWZlMzEyMTM3YzUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZWZhdWx0LXByb2ZpbGVQaWN0dXJlcy9wYXRpZW50LnBuZyIsImlhdCI6MTc2MTUwOTE1MSwiZXhwIjoxNzkzMDQ1MTUxfQ.xvmkaDIwoHsPgmR6XZRahidlKg7znEf3B25Rfq5jg_Q';
 const DOCTOR_DEFAULT_PICTURE  = 'https://ubesundbzjtyxxuwmbgg.supabase.co/storage/v1/object/sign/default-profilePictures/doctor.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82NTY3MmI1OS1mMmE2LTQyNGItYWU2OC1hOWZlMzEyMTM3YzUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZWZhdWx0LXByb2ZpbGVQaWN0dXJlcy9kb2N0b3IucG5nIiwiaWF0IjoxNzYxNTA5MTM4LCJleHAiOjE3OTMwNDUxMzh9.PNLCo1K7ilfieKqES8DXbjz8mC2-kEyiWtxRGpDskOk';
@@ -46,7 +50,6 @@ exports.updateProfile = async (req, res) => {
     if (!id) return res.status(400).json({ message: 'Missing user id' });
     const userId = String(id);
 
-    let signedUrlToSave = null;
     let storagePath = null;
 
     if (req.file?.buffer) {
@@ -70,42 +73,41 @@ exports.updateProfile = async (req, res) => {
       storagePath = filePath;
 
       const expiresIn = 7 * 24 * 60 * 60;
-      const { data, error } = await supabaseAdmin.storage
+      const { data, error: signedUrlError } = await supabaseAdmin.storage
         .from('user-profilePictures')
         .createSignedUrl(filePath, expiresIn);
 
-      if (error) {
-        console.error('❌ Signed URL create error:', error);
+      if (signedUrlError) {
+        console.error('❌ Signed URL create error:', signedUrlError);
         return res.status(500).json({ message: 'Signed URL generálása sikertelen.' });
       }
 
-      signedUrlToSave = data.signedUrl;
+      updateFields.pictureUrl = data.signedUrl;
     }
 
-    const userAllowed = ['name', 'address', 'phoneNumber'];
+    const userAllowed = ['name', 'address', 'phoneNumber', 'pictureUrl'];
     const userFields = {};
 
     for (const k of userAllowed) {
       if (updateFields[k] !== undefined) userFields[k] = updateFields[k];
     }
 
-    if (signedUrlToSave) userFields.pictureUrl = signedUrlToSave;
 
-    if (Object.keys(userFields).length) {
-      const { error } = await supabaseAdmin
+    let userRow;
+
+    if (Object.keys(userFields).length === 0) {
+      const { data: fetchRow, error: fetchErr } = await supabaseAdmin
         .from('users')
-        .update(userFields)
-        .eq('id', userId);
-      if (error) throw error;
-    }
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-    const { data: userRow, error: fetchErr } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    if (fetchErr) throw fetchErr;
-    if (!userRow) return res.status(404).json({ message: 'User not found' });
+      if (fetchErr) throw fetchErr;
+      if (!fetchRow) return res.status(404).json({ message: 'User not found' });
+      userRow = fetchRow;
+    } else {
+      userRow = await updateUserProfile(userId, userFields, supabaseAdmin);
+    }
 
     const { user: u, related } = await buildProfile(userRow);
     const loggedUser = { user: u, related };
@@ -118,9 +120,15 @@ exports.updateProfile = async (req, res) => {
       }
     });
 
-  } catch (error) {
-    console.error('❌ Error updating admin profile:', error);
-    return res.status(500).json({ message: 'Server error', error: error.message });
+  } catch (err) {
+    const status = err.code || 500;
+    const message = err.message || 'Server error';
+
+    if (status >= 500) {
+      console.error('❌ Error updating admin profile:', err);
+    }
+
+    return res.status(status).json({ message, error: String(err?.error || err?.message || err) });
   }
 };
 
@@ -128,59 +136,28 @@ exports.loadPendingOrDeniedDoctors = async (req, res) => {
   try {
     const raw = (req.body?.status || '').toString().trim();
     const status = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+
     if (!ALLOWED_STATUSES.has(status)) {
       return res.status(400).json({
         message: 'Érvénytelen status. Engedélyezett: "Pending" vagy "Denied".',
       });
     }
 
-    const { data: doctors, error: dErr } = await supabaseAdmin
-      .from('doctors')
-      .select('id,userId,speciality,introduction,registDate,avgRating,status')
-      .eq('status', status);
-
-    if (dErr) throw dErr;
-
-    const list = doctors ?? [];
-    if (!list.length) return res.status(200).json([]);
-
-    const userIds = Array.from(new Set(list.map(d => d.userId).filter(Boolean)));
-    const { data: users, error: uErr } = await supabaseAdmin
-      .from('users')
-      .select('id,name,email,role,phoneNumber,address,pictureUrl')
-      .in('id', userIds);
-
-    if (uErr) throw uErr;
-
-    const userMap = new Map((users ?? []).map(u => [u.id, u]));
-
-    const result = list.map((doctor) => {
-      const u = userMap.get(doctor.userId);
-      return {
-        user: {
-          id: u?.id,
-          name: u?.name,
-          email: u?.email,
-          role: u?.role,
-          phoneNumber: u?.phoneNumber,
-          address: u?.address ?? undefined,
-          pictureUrl: u?.pictureUrl,
-        },
-        doctor: {
-          id: doctor.id,
-          speciality: doctor.speciality,
-          introduction: doctor.introduction ?? null,
-          avgRating: doctor.avgRating ?? null,
-          registDate: doctor.registDate ?? null,
-          status: doctor.status,
-        }
-      };
-    });
+    const result = await listDoctorsByStatusWithUser(
+      status,
+      supabaseAdmin
+    );
 
     return res.status(200).json(result);
   } catch (err) {
-    console.error('❌ Orvosok lekérési hiba (status alapján):', err);
-    return res.status(500).json({ message: 'Szerverhiba.' });
+    const status = err.code || 500;
+    const message = err.message || 'Szerverhiba.';
+
+    if (status >= 500) {
+      console.error('❌ Orvosok lekérési hiba (Repository):', err);
+    }
+
+    return res.status(status).json({ message, error: String(err?.error || err?.message || err) });
   }
 };
 
@@ -197,8 +174,8 @@ exports.setDoctorStatus = async (req, res) => {
 
     const ALLOWED = new Map([
       ['approved', 'Approved'],
-      ['pending',  'Pending'],
-      ['denied',   'Denied'],
+      ['pending', 'Pending'],
+      ['denied', 'Denied'],
     ]);
 
     const normalized = ALLOWED.get(String(status).trim().toLowerCase());
@@ -208,56 +185,27 @@ exports.setDoctorStatus = async (req, res) => {
       });
     }
 
-    const id = String(doctorId).trim();
+    const result = await updateDoctorStatus(
+      doctorId,
+      normalized,
+      supabaseAdmin
+    );
 
-    const { data: existing, error: getErr } = await supabaseAdmin
-      .from('doctors')
-      .select('id,status')
-      .eq('id', id)
-      .single();
-
-    if (getErr || !existing) {
-      return res.status(404).json({ message: 'Doctor nem található.' });
+    if (result.message === 'A státusz már be van állítva.') {
+      return res.status(200).json(result);
     }
 
-    if (existing.status === normalized) {
-      return res.status(200).json({
-        message: 'A státusz már be van állítva.',
-        doctorId: id,
-        status: normalized,
-        previousStatus: existing.status,
-      });
-    }
+    return res.status(200).json(result);
 
-    const { data: updated, error: upErr } = await supabaseAdmin
-      .from('doctors')
-      .update({ status: normalized })
-      .eq('id', id)
-      .select('id,status')
-      .limit(1);
-
-    if (upErr) {
-      console.error('❌ Supabase update error:', upErr);
-      return res
-        .status(500)
-        .json({ message: 'Szerverhiba a státusz frissítésekor.' });
-    }
-
-    if (!updated || updated.length === 0) {
-      return res
-        .status(500)
-        .json({ message: 'Nem sikerült frissíteni a státuszt.' });
-    }
-
-    return res.status(200).json({
-      message: 'Státusz frissítve.',
-      doctorId: id,
-      status: updated[0].status,
-      previousStatus: existing.status,
-    });
   } catch (e) {
-    console.error('❌ setDoctorStatus hiba:', e);
-    return res.status(500).json({ message: 'Szerverhiba.' });
+    const status = e.code || 500;
+    const message = e.message || 'Szerverhiba.';
+
+    if (status >= 500) {
+      console.error('❌ setDoctorStatus hiba:', e);
+    }
+
+    return res.status(status).json({ message, error: String(e?.error || e?.message || e) });
   }
 };
 
@@ -267,88 +215,13 @@ exports.getAllPatients = async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit || '100', 10), 500);
     const offset = Math.max(parseInt(req.query.offset || '0', 10), 0);
 
-    // 1) Patients
-    const { data: patients, error: pErr } = await supabaseAdmin
-      .from('patients')
-      .select('id,userId,height,weight,taj,homePhone,registDate,gender')
-      .range(offset, offset + limit - 1);
-
-    if (pErr) throw pErr;
-
-    const list = patients ?? [];
-    if (!list.length) return res.status(200).json([]);
-
-    const userIds = Array.from(new Set(list.map(r => r.userId).filter(Boolean)));
-    let users = [];
-    if (userIds.length) {
-      let userQuery = supabaseAdmin
-        .from('users')
-        .select('id,name,email,role,phoneNumber,address,pictureUrl')
-        .in('id', userIds);
-
-      if (q) userQuery = userQuery.or(`name.ilike.%${q}%,email.ilike.%${q}%`);
-
-      const { data: uData, error: uErr } = await userQuery;
-      if (uErr) throw uErr;
-      users = uData ?? [];
-    }
-
-    const userMap = new Map(users.map(u => [u.id, u]));
-    const filteredPatients = q ? list.filter(p => userMap.has(p.userId)) : list;
-    if (!filteredPatients.length) return res.status(200).json([]);
-
-    const patientIds = filteredPatients.map(p => p.id);
-    let tagsByPatient = new Map();
-    if (patientIds.length) {
-      const { data: tags, error: tErr } = await supabaseAdmin
-        .from('patient_tags')
-        .select('id, patientId:patient_id, tag_name, tag_value')
-        .in('patient_id', patientIds);
-
-      if (tErr) throw tErr;
-
-      tagsByPatient = new Map();
-      for (const t of (tags ?? [])) {
-        if (!tagsByPatient.has(t.patientId)) tagsByPatient.set(t.patientId, []);
-        tagsByPatient.get(t.patientId).push({
-          id: t.id,
-          tag_name: t.tag_name,
-          tag_value: t.tag_value
-        });
-      }
-    }
-
-    const assembled = filteredPatients.map(p => {
-      const u = userMap.get(p.userId);
-      return {
-        user: {
-          id: u?.id,
-          name: u?.name,
-          email: u?.email,
-          role: u?.role,
-          phoneNumber: u?.phoneNumber,
-          address: u?.address ?? undefined,
-          pictureUrl: u?.pictureUrl ?? undefined
-        },
-        patient: {
-          id: p.id,
-          userId: p.userId,
-          height: p.height,
-          weight: p.weight,
-          taj: p.taj,
-          homePhone: p.homePhone,
-          registDate: p.registDate,
-          gender: p.gender,
-          tags: tagsByPatient.get(p.id) ?? []
-        }
-      };
+    const assembled = await listPatientsWithDetailsAndFilter({
+      q, limit, offset, supabaseAdmin,
     });
-
-    assembled.sort((a, b) => (a.user?.name || '').localeCompare(b.user?.name || ''));
 
     return res.status(200).json(assembled);
   } catch (err) {
-    console.error('❌ Páciensek lekérdezési hiba (Supabase, több lépés):', err);
+    console.error('❌ Páciensek lekérdezési hiba (Repository):', err);
     return res.status(500).json({
       message: 'Hiba történt a páciensek lekérdezésekor.',
       error: err.message || String(err)
@@ -362,66 +235,13 @@ exports.getAllDoctors = async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit || '100', 10), 500);
     const offset = Math.max(parseInt(req.query.offset || '0', 10), 0);
 
-    const { data: doctors, error: dErr } = await supabaseAdmin
-      .from('doctors')
-      .select('id,userId,speciality,introduction,registDate,avgRating')
-      .or('status.neq.Pending')
-      .range(offset, offset + limit - 1);
-
-    if (dErr) throw dErr;
-    const list = doctors ?? [];
-    if (!list.length) return res.status(200).json([]);
-
-    const userIds = Array.from(new Set(list.map(r => r.userId).filter(Boolean)));
-    let users = [];
-    if (userIds.length) {
-      let uQ = supabaseAdmin
-        .from('users')
-        .select('id,name,email,role,phoneNumber,address,pictureUrl')
-        .in('id', userIds);
-
-      if (q) {
-        uQ = uQ.or(`name.ilike.%${q}%,email.ilike.%${q}%`);
-      }
-
-      const { data: uData, error: uErr } = await uQ;
-      if (uErr) throw uErr;
-      users = uData ?? [];
-    }
-
-    const userMap = new Map(users.map(u => [u.id, u]));
-
-    const filtered = q ? list.filter(d => userMap.has(d.userId)) : list;
-    if (!filtered.length) return res.status(200).json([]);
-
-    const result = filtered.map(d => {
-      const u = userMap.get(d.userId);
-      return {
-        user: {
-          id: u?.id,
-          name: u?.name,
-          email: u?.email,
-          role: u?.role,
-          phoneNumber: u?.phoneNumber,
-          address: u?.address ?? undefined,
-          pictureUrl: u?.pictureUrl ?? undefined
-        },
-        doctor: {
-          id: d.id,
-          userId: d.userId,
-          speciality: d.speciality,
-          introduction: d.introduction,
-          registDate: d.registDate,
-          avgRating: d.avgRating
-        }
-      };
+    const result = await listDoctorsWithUsersAndFilter({
+      q, limit, offset, supabaseAdmin,
     });
-
-    result.sort((a, b) => (a.user?.name || '').localeCompare(b.user?.name || ''));
 
     return res.status(200).json(result);
   } catch (err) {
-    console.error('❌ Hiba a /doctors (Supabase) lekérésnél:', err);
+    console.error('❌ Hiba a /doctors (Repository) lekérésnél:', err);
     return res.status(500).json({ message: 'Szerverhiba.', error: err.message || String(err) });
   }
 };
@@ -432,61 +252,13 @@ exports.getAllAdmins = async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit || '100', 10), 500);
     const offset = Math.max(parseInt(req.query.offset || '0', 10), 0);
 
-    const { data: admins, error: aErr } = await supabaseAdmin
-      .from('admins')
-      .select('id,userId,registDate')
-      .range(offset, offset + limit - 1);
-
-    if (aErr) throw aErr;
-    const list = admins ?? [];
-    if (!list.length) return res.status(200).json([]);
-
-    const userIds = Array.from(new Set(list.map(r => r.userId).filter(Boolean)));
-    let users = [];
-    if (userIds.length) {
-      let uQ = supabaseAdmin
-        .from('users')
-        .select('id,name,email,role,phoneNumber,address,pictureUrl')
-        .in('id', userIds);
-
-      if (q) {
-        uQ = uQ.or(`name.ilike.%${q}%,email.ilike.%${q}%`);
-      }
-
-      const { data: uData, error: uErr } = await uQ;
-      if (uErr) throw uErr;
-      users = uData ?? [];
-    }
-
-    const userMap = new Map(users.map(u => [u.id, u]));
-    const filtered = q ? list.filter(a => userMap.has(a.userId)) : list;
-    if (!filtered.length) return res.status(200).json([]);
-
-    const result = filtered.map(a => {
-      const u = userMap.get(a.userId);
-      return {
-        user: {
-          id: u?.id,
-          name: u?.name,
-          email: u?.email,
-          role: u?.role,
-          phoneNumber: u?.phoneNumber,
-          address: u?.address ?? undefined,
-          pictureUrl: u?.pictureUrl ?? undefined
-        },
-        admin: {
-          id: a.id,
-          userId: a.userId,
-          registDate: a.registDate
-        }
-      };
+    const result = await listAdminsWithUsersAndFilter({
+      q, limit, offset, supabaseAdmin,
     });
-
-    result.sort((a, b) => (a.user?.name || '').localeCompare(b.user?.name || ''));
 
     return res.status(200).json(result);
   } catch (err) {
-    console.error('❌ Hiba a /admins (Supabase) lekérésnél:', err);
+    console.error('❌ Hiba a /admins (Repository) lekérésnél:', err);
     return res.status(500).json({ message: 'Szerverhiba.', error: err.message || String(err) });
   }
 };
@@ -494,6 +266,7 @@ exports.getAllAdmins = async (req, res) => {
 exports.deleteUsers = async (req, res) => {
   try {
     const raw = req.body?.userIds;
+
     if (!Array.isArray(raw) || raw.length === 0) {
       return res.status(400).json({ message: 'Hiányzó vagy üres userIds tömb.' });
     }
@@ -510,21 +283,12 @@ exports.deleteUsers = async (req, res) => {
       return res.status(400).json({ message: 'Nem található érvényes felhasználó ID.' });
     }
 
-    const { data: deletedRows, error } = await supabaseAdmin
-      .from('users')
-      .delete()
-      .in('id', ids)
-      .select('id,role');
+    const deletedRows = await deleteUsersByIds(ids, supabaseAdmin);
 
-    if (error) {
-      console.error('❌ Supabase delete error:', error);
-      return res.status(500).json({ message: 'Szerverhiba a felhasználók törlése közben.' });
-    }
-
-    const deletedCount = deletedRows?.length ?? 0;
+    const deletedCount = deletedRows.length;
     const roles = Array.from(
       new Set(
-        (deletedRows ?? [])
+        deletedRows
           .map(r => r?.role)
           .filter(Boolean)
       )
@@ -535,8 +299,14 @@ exports.deleteUsers = async (req, res) => {
       roles,
     });
   } catch (err) {
-    console.error('❌ Hiba a users törlése közben:', err);
-    return res.status(500).json({ message: 'Szerverhiba a felhasználók törlése közben.' });
+    const status = err.code || 500;
+    const message = err.message || 'Szerverhiba a felhasználók törlése közben.';
+
+    if (status >= 500) {
+      console.error('❌ Hiba a users törlése közben:', err);
+    }
+
+    return res.status(status).json({ message, error: String(err?.error || err?.message || err) });
   }
 };
 
@@ -812,69 +582,15 @@ exports.createSystemMessage = async (req, res) => {
 
 exports.listSystemMessages = async (_req, res) => {
   try {
-    const { data: messages, error: mErr } = await supabaseAdmin
-      .from('system_messages')
-      .select('id, adminId, title, message, type, audience, valid_until, created_at')
-      .order('created_at', { ascending: false });
-    if (mErr) throw mErr;
-
-    if (!messages || messages.length === 0) {
-      return res.status(200).json([]);
-    }
-
-    const adminIds = Array.from(new Set(messages.map(m => m.adminId).filter(Boolean)));
-    const { data: admins, error: aErr } = await supabaseAdmin
-      .from('admins')
-      .select('id, userId, registDate')
-      .in('id', adminIds);
-    if (aErr) throw aErr;
-
-    const userIds = Array.from(new Set((admins ?? []).map(a => a.userId).filter(Boolean)));
-    const { data: users, error: uErr } = await supabaseAdmin
-      .from('users')
-      .select('id, name, email, role, phoneNumber, address, pictureUrl')
-      .in('id', userIds);
-    if (uErr) throw uErr;
-
-    const adminMap = new Map((admins ?? []).map(a => [a.id, a]));
-    const userMap  = new Map((users ?? []).map(u => [u.id, u]));
-
-    const result = messages.map(m => {
-      const a = adminMap.get(m.adminId);
-      const u = a ? userMap.get(a.userId) : undefined;
-
-      return {
-        id: m.id,
-        adminId: m.adminId,
-        title: m.title,
-        message: m.message,
-        type: m.type,
-        audience: m.audience,
-        valid_until: m.valid_until ?? null,
-        created_at: m.created_at,
-        admin: {
-          user: u ? {
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            role: u.role,
-            phoneNumber: u.phoneNumber,
-            address: u.address ?? null,
-            pictureUrl: u.pictureUrl ?? null
-          } : null,
-          admin: a ? {
-            id: a.id,
-            userId: a.user_id,
-            registDate: a.registDate
-          } : null
-        }
-      };
-    });
+    const result = await SystemMessageRepository.listWithAdminDetails(supabaseAdmin);
 
     return res.status(200).json(result);
   } catch (err) {
+    const status = err.code || 500;
+    const message = err.message || 'Szerverhiba.';
+
     console.error('Rendszerüzenetek listázási hiba:', err);
-    return res.status(500).json({ message: 'Szerverhiba.' });
+    return res.status(status).json({ message, error: String(err?.error || err?.message || err) });
   }
 };
 
@@ -887,26 +603,20 @@ exports.deleteSystemMessage = async (req, res) => {
       return res.status(400).json({ message: 'Érvénytelen vagy hiányzó messageId.' });
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('system_messages')
-      .delete()
-      .eq('id', id)
-      .select('id')
-      .limit(1);
+    const deleted = await SystemMessageRepository.deleteById(id, supabaseAdmin);
 
-    if (error) {
-      console.error('❌ Supabase delete error:', error);
-      return res.status(500).json({ message: 'Adatbázis hiba a törlés közben.' });
-    }
+    return res.status(200).json({ message: 'Rendszerüzenet törölve.', id: deleted.id });
 
-    if (!data || data.length === 0) {
-      return res.status(404).json({ message: 'Rendszerüzenet nem található.', id });
-    }
-
-    return res.status(200).json({ message: 'Rendszerüzenet törölve.', id: data[0].id });
   } catch (err) {
+    const status = err.code || 500;
+    const message = err.message || 'Szerverhiba.';
+
+    if (status === 404) {
+      return res.status(404).json({ message: message, id: Number(req.body?.messageId) });
+    }
+
     console.error('❌ Rendszerüzenet törlési hiba:', err);
-    return res.status(500).json({ message: 'Szerverhiba.' });
+    return res.status(status).json({ message, error: String(err?.error || err?.message || err) });
   }
 };
 

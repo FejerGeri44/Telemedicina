@@ -280,72 +280,34 @@ const DoctorRepository = {
     return count ?? 0;
   },
 
-  async listPatientsWithDetailsAndFilter({ q = '', limit = 100, offset = 0, supabaseAdmin }) {
-    limit = Math.min(limit, 500);
-    offset = Math.max(offset, 0);
+  async listDoctorsByStatusWithUser(status, supabaseAdmin) {
+    const { data: doctors, error: dErr } = await supabaseAdmin
+      .from('doctors')
+      .select('id,userId,speciality,introduction,registDate,avgRating,status')
+      .eq('status', status);
 
-    const { data: patients, error: pErr } = await supabaseAdmin
-      .from('patients')
-      .select('id,userId,height,weight,taj,homePhone,registDate,gender')
-      .range(offset, offset + limit - 1);
-
-    if (pErr) {
-      throw { type: 'DatabaseError', message: 'Páciensek profil lekérdezési hiba.', error: String(pErr.message || pErr), code: 500 };
+    if (dErr) {
+      throw { type: 'DatabaseError', message: 'Orvosok lekérési hiba a megadott státusz alapján.', error: String(dErr.message || dErr), code: 500 };
     }
 
-    const list = patients ?? [];
+    const list = doctors ?? [];
     if (!list.length) return [];
 
-    const userIds = Array.from(new Set(list.map(r => r.userId).filter(Boolean)));
-    let users = [];
+    const userIds = Array.from(new Set(list.map(d => d.userId).filter(Boolean)));
 
-    if (userIds.length) {
-      let userQuery = supabaseAdmin
-        .from('users')
-        .select('id,name,email,role,phoneNumber,address,pictureUrl')
-        .in('id', userIds);
+    const { data: users, error: uErr } = await supabaseAdmin
+      .from('users')
+      .select('id,name,email,role,phoneNumber,address,pictureUrl')
+      .in('id', userIds);
 
-      if (q) {
-        userQuery = userQuery.or(`name.ilike.%${q}%,email.ilike.%${q}%`);
-      }
-
-      const { data: uData, error: uErr } = await userQuery;
-      if (uErr) {
-        throw { type: 'DatabaseError', message: 'Felhasználói adatok lekérdezési hiba.', error: String(uErr.message || uErr), code: 500 };
-      }
-      users = uData ?? [];
+    if (uErr) {
+      throw { type: 'DatabaseError', message: 'Felhasználói adatok lekérési hiba.', error: String(uErr.message || uErr), code: 500 };
     }
 
-    const userMap = new Map(users.map(u => [u.id, u]));
+    const userMap = new Map((users ?? []).map(u => [u.id, u]));
 
-    const filteredPatients = q ? list.filter(p => userMap.has(p.userId)) : list;
-    if (!filteredPatients.length) return [];
-
-    const patientIds = filteredPatients.map(p => p.id);
-    let tagsByPatient = new Map();
-
-    if (patientIds.length) {
-      const { data: tags, error: tErr } = await supabaseAdmin
-        .from('patient_tags')
-        .select('id, patientId:patient_id, tag_name, tag_value')
-        .in('patient_id', patientIds);
-
-      if (tErr) {
-        throw { type: 'DatabaseError', message: 'Páciens tagek lekérdezési hiba.', error: String(tErr.message || tErr), code: 500 };
-      }
-
-      for (const t of (tags ?? [])) {
-        if (!tagsByPatient.has(t.patientId)) tagsByPatient.set(t.patientId, []);
-        tagsByPatient.get(t.patientId).push({
-          id: t.id,
-          tag_name: t.tag_name,
-          tag_value: t.tag_value
-        });
-      }
-    }
-
-    const assembled = filteredPatients.map(p => {
-      const u = userMap.get(p.userId);
+    return list.map((doctor) => {
+      const u = userMap.get(doctor.userId);
       return {
         user: {
           id: u?.id ?? null,
@@ -354,25 +316,28 @@ const DoctorRepository = {
           role: u?.role ?? null,
           phoneNumber: u?.phoneNumber ?? null,
           address: u?.address ?? undefined,
-          pictureUrl: u?.pictureUrl ?? undefined
+          pictureUrl: u?.pictureUrl ?? null,
         },
-        patient: {
-          id: p.id,
-          userId: p.userId,
-          height: p.height ?? null,
-          weight: p.weight ?? null,
-          taj: p.taj ?? null,
-          homePhone: p.homePhone ?? null,
-          registDate: p.registDate ?? null,
-          gender: p.gender ?? null,
-          tags: tagsByPatient.get(p.id) ?? []
+        doctor: {
+          id: doctor.id,
+          speciality: doctor.speciality,
+          introduction: doctor.introduction ?? null,
+          avgRating: doctor.avgRating ?? null,
+          registDate: doctor.registDate ?? null,
+          status: doctor.status,
         }
       };
     });
+  },
 
-    assembled.sort((a, b) => (a.user?.name || '').localeCompare(b.user?.name || ''));
-
-    return assembled;
+  async updateAvgRating(doctorId, newAvg, client = sql) {
+    const [updated] = await client`
+      UPDATE doctors
+      SET "avgRating" = ${newAvg}
+      WHERE id = ${doctorId}
+      RETURNING id, "avgRating"
+    `;
+    return updated;
   }
 };
 

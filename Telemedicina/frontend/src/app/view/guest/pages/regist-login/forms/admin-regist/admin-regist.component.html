@@ -54,6 +54,16 @@
             formControlName="password"
             required
             clearInput>
+
+            <div slot="end" class="password-hint-wrapper">
+              <ion-icon name="alert-circle-outline" class="hint-icon"></ion-icon>
+              <div class="hint-tooltip">
+                <strong>Jelszó követelmények:</strong><br>
+                • Legalább 8 karakter<br>
+                • Legalább 1 nagybetű<br>
+                • Legalább 1 szám
+              </div>
+            </div>
             <ion-button
               slot="end"
               fill="clear"
@@ -75,10 +85,20 @@
             labelPlacement="floating"
             fill="outline"
             shape="round"
-            [type]="showPwd1 ? 'text' : 'password'"
+            [type]="showPwd2 ? 'text' : 'password'"
             formControlName="password_again"
             required
             clearInput>
+
+            <div slot="end" class="password-hint-wrapper">
+              <ion-icon name="alert-circle-outline" class="hint-icon"></ion-icon>
+              <div class="hint-tooltip">
+                <strong>Jelszó követelmények:</strong><br>
+                • Legalább 8 karakter<br>
+                • Legalább 1 nagybetű<br>
+                • Legalább 1 szám
+              </div>
+            </div>
             <ion-button
               slot="end"
               fill="clear"
@@ -103,7 +123,9 @@
             fill="outline"
             shape="round"
             type="tel"
+            (ionInput)="onPhoneChange($event)"
             formControlName="phoneNumber"
+            placeholder="06 30 123 4567"
             required
             clearInput>
           </ion-input>

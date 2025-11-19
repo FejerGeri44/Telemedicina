@@ -11,7 +11,7 @@
 </ng-container>
 
 <ng-template #chatWindow>
-  <div class="ai-chat-window">
+  <div [ngClass]="isCalledByAdmin ? 'admin-ai-chat-window' : 'default-ai-chat-window'">
     <ion-header class="chat-header">
       <ion-toolbar color="secondary">
         <ion-buttons slot="start">

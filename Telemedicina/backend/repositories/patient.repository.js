@@ -71,37 +71,46 @@ const PatientRepository = {
     return row || null;
   },
 
+  async getPatientWithUserById(patientId, client = sql) {
+    const results = await PatientRepository.listPatientsWithUsersById(patientId, client); // EGYETLEN ID-t kap
+    return results.length > 0 ? results[0] : null;
+  },
+
   async listPatientsWithUsersById(patientId, client = sql) {
-    const ids = Array.isArray(patientIds) ? patientIds : [patientIds];
+    const rawIds = Array.isArray(patientId) ? patientId : [patientId];
+
+    const ids = rawIds
+      .map(id => Number(id))
+      .filter(id => Number.isInteger(id) && id > 0);
 
     if (ids.length === 0) {
       return [];
     }
 
     const rows = await client`
-    SELECT
-      p.id AS patient_id,
-      p."userId" AS patient_user_id,
-      p.gender AS patient_gender,
-      p.height AS patient_height,
-      p.weight AS patient_weight,
-      p."birthDate" AS patient_birth_date,
-      p.taj AS patient_taj,
-      p."homePhone" AS patient_home_phone,
-      p."registDate" AS patient_regist_date,
+      SELECT
+        p.id AS patient_id,
+        p."userId" AS patient_user_id,
+        p.gender AS patient_gender,
+        p.height AS patient_height,
+        p.weight AS patient_weight,
+        p."birthDate" AS patient_birth_date,
+        p.taj AS patient_taj,
+        p."homePhone" AS patient_home_phone,
+        p."registDate" AS patient_regist_date,
 
-      u.id AS user_id,
-      u.email AS user_email,
-      u.name AS user_name,
-      u.role AS user_role,
-      u."phoneNumber" AS user_phone_number,
-      u.address AS user_address,
-      u."pictureUrl" AS user_picture_url
+        u.id AS user_id,
+        u.email AS user_email,
+        u.name AS user_name,
+        u.role AS user_role,
+        u."phoneNumber" AS user_phone_number,
+        u.address AS user_address,
+        u."pictureUrl" AS user_picture_url
 
-    FROM patients p
-    JOIN users u ON p."userId" = u.id
-    WHERE p.id IN (${sql.array(ids)})
-  `;
+      FROM patients p
+             JOIN users u ON p."userId" = u.id
+      WHERE p.id = ANY(${sql.array(ids)})
+    `;
 
     return rows.map(row => ({
       user: {
@@ -126,7 +135,6 @@ const PatientRepository = {
       },
     }));
   },
-
 };
 
 module.exports = PatientRepository;

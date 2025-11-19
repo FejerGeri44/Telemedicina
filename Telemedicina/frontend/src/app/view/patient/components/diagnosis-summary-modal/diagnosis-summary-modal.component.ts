@@ -22,7 +22,6 @@ export class DiagnosisSummaryModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.buildSummaryVM();
-    console.log("vm:", this.vm)
   }
 
   buildSummaryVM() {
