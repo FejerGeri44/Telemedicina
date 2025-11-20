@@ -1,5 +1,4 @@
 <div class="stats">
-  <!-- Összes (ALL) -->
   <ion-card class="card-all" role="button" tabindex="0"
             (click)="onRoleCard('')"
             (keyup.enter)="onRoleCard('')"
@@ -10,7 +9,6 @@
     </ion-card-header>
   </ion-card>
 
-  <!-- Páciensek -->
   <ion-card class="card-patient" role="button" tabindex="0"
             (click)="onRoleCard('patient')"
             (keyup.enter)="onRoleCard('patient')"
@@ -21,7 +19,6 @@
     </ion-card-header>
   </ion-card>
 
-  <!-- Orvosok -->
   <ion-card class="card-doctor" role="button" tabindex="0"
             (click)="onRoleCard('doctor')"
             (keyup.enter)="onRoleCard('doctor')"
@@ -32,7 +29,6 @@
     </ion-card-header>
   </ion-card>
 
-  <!-- Adminok -->
   <ion-card class="card-admin" role="button" tabindex="0"
             (click)="onRoleCard('admin')"
             (keyup.enter)="onRoleCard('admin')"
@@ -44,7 +40,6 @@
   </ion-card>
 </div>
 
-<!-- FILTER SÁV (helyben szűr dummy listán) -->
 <div class="filters">
   <div class="filter-left">
     <ion-searchbar
@@ -55,10 +50,10 @@
     </ion-searchbar>
     <ion-select interface="popover" class="pill"
                 [value]="role" (ionChange)="onRole($event.detail.value)">
-      <ion-select-option value="">All</ion-select-option>
-      <ion-select-option value="patient">Patient</ion-select-option>
-      <ion-select-option value="doctor">Doctor</ion-select-option>
-      <ion-select-option value="admin">Admin</ion-select-option>
+      <ion-select-option value="">Összes</ion-select-option>
+      <ion-select-option value="patient">Páciens</ion-select-option>
+      <ion-select-option value="doctor">Orvos</ion-select-option>
+      <ion-select-option value="admin">Adminisztrátor</ion-select-option>
     </ion-select>
   </div>
 
@@ -80,12 +75,11 @@
     </ion-button>
     <ion-button class="btn-primary" (click)="addUser()">
       <ion-icon name="add-outline" slot="start"></ion-icon>
-      Add User
+      Hozzáadás
     </ion-button>
   </div>
 </div>
 
-<!-- “TÁBLA” -->
 <div class="users-table-wrap">
   <table class="users-table">
     <thead>
@@ -98,7 +92,7 @@
         </ion-checkbox>
       </th>
       <th class="sort" (click)="sortUsers('name')">
-        Name
+        Név
         <ion-icon
           [name]="sortColumn==='name' ?
             (sortDirection==='asc' ? 'chevron-up-outline' : 'chevron-down-outline') :
@@ -106,7 +100,7 @@
         </ion-icon>
       </th>
       <th class="sort" (click)="sortUsers('role')">
-        Role
+        Jogosultság
         <ion-icon
           [name]="sortColumn==='role' ?
             (sortDirection==='asc' ? 'chevron-up-outline' : 'chevron-down-outline') :
@@ -114,10 +108,10 @@
         </ion-icon>
       </th>
       <th>Email</th>
-      <th>Phone</th>
-      <th>Address</th>
+      <th>Telefonszám</th>
+      <th>Cím</th>
       <th class="sort" (click)="sortUsers('createdAt')">
-        Created
+        Csatlakozási dátum
         <ion-icon
           [name]="sortColumn==='createdAt' ?
             (sortDirection==='asc' ? 'chevron-up-outline' : 'chevron-down-outline') :
@@ -189,7 +183,7 @@
           </div>
         </div>
       </td>
-      <td><ion-badge [ngClass]="roleBadgeClass(user.role)">{{ user.role }}</ion-badge></td>
+      <td><ion-badge [ngClass]="roleBadgeClass(user.role)">{{ getUserRoleLabel(user.role) }}</ion-badge></td>
       <td>{{ user.user.email }}</td>
       <td>{{ formatPhoneNumber(user.user.phoneNumber) }}</td>
       <td>{{ user.user.address || 'N/A' }}</td>

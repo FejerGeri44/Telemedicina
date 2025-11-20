@@ -39,6 +39,12 @@ export const DOCTOR_ROUTES: Routes = [
             .then(m => m.DoctorMessagesComponent),
       },
       {
+        path: 'doctor-messages/:patientId',
+        loadComponent: () =>
+          import('./pages/doctor-messages/doctor-messages.component')
+            .then(m => m.DoctorMessagesComponent),
+      },
+      {
         path: 'document-upload',
         loadComponent: () =>
           import('./pages/document-upload/document-upload.component')

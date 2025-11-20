@@ -2,15 +2,8 @@
   <ion-grid class="message-table">
     <ion-row class="table-header">
       <ion-col size="2"><span class="th">Orvos</span></ion-col>
-      <ion-col size="2"><span class="th">Specialitás</span></ion-col>
-      <ion-col size="2" class="sort" (click)="sortAppointments()">
-        <span class="th">Időpont</span>
-        <ion-icon
-          [name]="sortColumn === 'datetime'
-            ? (sortDirection === 'asc' ? 'chevron-up-outline' : 'chevron-down-outline')
-            : 'swap-vertical-outline'">
-        </ion-icon>
-      </ion-col>
+      <ion-col size="2"><span class="th">Specializáció</span></ion-col>
+      <ion-col size="2" class="sort"><span class="th">Időpont</span></ion-col>
       <ion-col size="2"><span class="th">Cím</span></ion-col>
       <ion-col size="2"><span class="th">Telefonszám</span></ion-col>
       <ion-col size="2" class="text-center"><span class="th">Email</span></ion-col>

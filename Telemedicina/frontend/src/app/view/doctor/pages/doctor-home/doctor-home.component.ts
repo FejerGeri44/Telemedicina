@@ -6,7 +6,6 @@ import {
 } from '../../components/doctor-edit-profile-modal/doctor-edit-profile-modal.component';
 import {RouterLink} from '@angular/router';
 import {DoctorProfileCardComponent} from '../../components/doctor-profile-card/doctor-profile-card.component';
-import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
@@ -16,7 +15,6 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 import {AsyncPipe, DecimalPipe, NgForOf, NgIf} from '@angular/common';
 import {buildStarIcons, roundToHalf} from '../../../../utils/formatDoctorRating';
 import {delay, filter, firstValueFrom, Observable, Subject, take, takeUntil} from 'rxjs';
-import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 
 @Component({
@@ -39,7 +37,6 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
   doctorId: number | null = null;
 
   appointments: Appointment[] = [];
-  systemMessages: SystemMessage[] = [];
 
   todaysAppointments: number = 0;
   myPatients: number = 0;
@@ -83,9 +80,6 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
     this.user
       .pipe(takeUntil(this.destroy$))
       .subscribe(u => this.updateRatingStars(u));
-
-    void this.getUnreadSummary();
-    this.loadSystemMessagesOnceAfterLogin();
   }
 
   private async getDoctorId(): Promise<number | null> {
@@ -101,69 +95,6 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  loadSystemMessagesOnceAfterLogin(): void {
-    const key = `System-Messages`;
-    if (sessionStorage.getItem(key) === '1') return;
-
-    const payload = {
-      audiences: ['all', 'doctor']
-    }
-
-    this.http.post<SystemMessage[]>(
-      `${environment.apiUrl}/messages/system-messages-for-me`,
-      payload,
-      { withCredentials: true }
-    ).subscribe({
-      next: (res) => {
-        this.systemMessages = res;
-        void this.presentSystemMessagesModalsOnce();
-        localStorage.setItem(key, '1');
-      },
-      error: (err) => console.error('❌ Rendszerüzenetek hiba:', err)
-    });
-  }
-
-  async presentSystemMessagesModalsOnce(): Promise<void> {
-    const messages = this.systemMessages ?? [];
-    if (!messages.length) return;
-
-    const unseen = messages.filter(message => !sessionStorage.getItem(`System-Messages-${message.id}`));
-    if (!unseen.length) return;
-
-    for (const message of unseen) {
-      const modal = await this.modalCtrl.create({
-        component: SystemMessageModalComponent as any,
-        componentProps: {
-          messages: [message]
-        },
-
-        cssClass: 'system-message-modal',
-        canDismiss: true,
-        backdropDismiss: true,
-      });
-      await modal.present();
-      await modal.onDidDismiss();
-
-      sessionStorage.setItem(`System-Messages-${message.id}`, '1');
-    }
-  }
-
-  async getUnreadSummary(): Promise<void> {
-    if (!this.doctorId) return;
-
-    try {
-      const summary: Array<{ partnerId: number, unreadCount: number }> =
-        await firstValueFrom(this.http.get<any>(
-          `${environment.apiUrl}/messages/unreadSummary`,
-          { withCredentials: true }
-        ));
-
-      this.unreadSummary = new Map(summary.map(s => [s.partnerId, s.unreadCount]));
-    } catch (err) {
-      console.error('❌ Olvasatlan összegzés lekérése sikertelen:', err);
-    }
   }
 
   get unreadCountsArray(): number[] {

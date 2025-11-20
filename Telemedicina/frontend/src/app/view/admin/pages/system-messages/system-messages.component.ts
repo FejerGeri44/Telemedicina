@@ -38,6 +38,7 @@ export class SystemMessagesComponent implements OnInit {
     validUntil: ''
   };
 
+  locale = 'hu-HU';
   isLoading: boolean = true;
 
   constructor(

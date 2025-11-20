@@ -1,0 +1,32 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title class="ion-align-items-center flex-title">
+      <ion-icon name="settings-outline" aria-hidden="true" class="title-icon"></ion-icon>
+      Beállítások
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<div class="inner-content ion-padding-vertical">
+  <ion-list lines="none" class="danger-zone">
+    <ion-list-header>
+      <ion-label color="danger">Fiók kezelése</ion-label>
+    </ion-list-header>
+
+    <ion-item>
+      <ion-label class="ion-text-wrap">
+        <h3>Fiók törlése</h3>
+        <p>A fiók és az összes adat végleges törlése.</p>
+      </ion-label>
+      <ion-button slot="end" class="btn-accent" (click)="confirmAccountDelete()">
+        <ion-icon name="trash-outline" slot="start"></ion-icon>
+        Törlés
+      </ion-button>
+    </ion-item>
+  </ion-list>
+</div>

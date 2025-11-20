@@ -18,7 +18,7 @@
   <div *ngIf="messages.length !== 0" class="message-table-scroll">
     <ion-grid class="message-table">
       <ion-row class="table-header">
-        <ion-col size="2"><span class="th">Admin</span></ion-col>
+        <ion-col size="2"><span class="th">Adminisztrátor</span></ion-col>
         <ion-col size="2"><span class="th">Típus</span></ion-col>
         <ion-col size="2" class="hide-sm"><span class="th">Cím</span></ion-col>
         <ion-col size="3"><span class="th">Üzenet</span></ion-col>
@@ -175,6 +175,8 @@
               name="validUntil"
               presentation="date"
               [(ngModel)]="formData.validUntil"
+              [locale]="locale"
+              [firstDayOfWeek]="1"
               required>
             </ion-datetime>
           </ion-item>

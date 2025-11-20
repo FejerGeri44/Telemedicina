@@ -12,6 +12,7 @@ import {NgOptimizedImage} from '@angular/common';
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../services/platform/platform.service';
+import {take} from 'rxjs';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -96,14 +97,20 @@ export class DoctorEditProfileModalComponent implements OnInit {
       .patch(`${environment.apiUrl}/doctor/updateProfile`, form, { withCredentials: true })
       .subscribe({
         next: (res: any) => {
-          const logged: LoggedUser = (res?.user ?? res?.updated ?? res) as LoggedUser;
+          const updatedFrontend = mapLoggedToItem(res.user);
 
-          const updatedFrontend = mapLoggedToItem(logged);
-          this.userService.setUser(updatedFrontend);
+          this.userService.user$().pipe(take(1)).subscribe(loggedInUser => {
 
-          this.savingData = false;
-          this.toast.show('Profil frissítve', 'success');
-          void this.modalCtrl.dismiss({ user: updatedFrontend }, 'updated');
+            const isEditingSelf = loggedInUser?.user?.id === updatedFrontend.user.id;
+
+            if (isEditingSelf) {
+              this.userService.setUser(updatedFrontend);
+            }
+
+            this.savingData = false;
+            this.toast.show('Profil frissítve', 'success');
+            void this.modalCtrl.dismiss({ user: updatedFrontend }, 'updated');
+          });
         },
         error: (err) => {
           console.error('❌ Mentési hiba:', err);

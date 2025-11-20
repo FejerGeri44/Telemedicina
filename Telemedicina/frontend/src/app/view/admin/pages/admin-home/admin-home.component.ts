@@ -6,7 +6,6 @@ import {
 } from '../../components/admin-edit-profile-modal/admin-edit-profile-modal.component';
 import {RouterLink} from '@angular/router';
 import {AdminProfileCardComponent} from '../../components/admin-profile-card/admin-profile-card.component';
-import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {AsyncPipe, NgForOf, NgIf} from '@angular/common';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
@@ -37,7 +36,6 @@ export class AdminHomeComponent implements OnInit{
   adminsCount: number = 0;
   pendingDoctors: number = 0;
   loading: boolean = false;
-  systemMessagesForMe: SystemMessage[] = [];
   systemMessages: SystemMessage[] = [];
 
   constructor(
@@ -59,59 +57,11 @@ export class AdminHomeComponent implements OnInit{
   }
 
   ngOnInit() {
-    this.loadSystemMessagesOnceAfterLogin();
     this.countPatients();
     this.countDoctors();
     this.countAdmins();
     this.loadPendingDoctors();
     this.loadMessages();
-  }
-
-  loadSystemMessagesOnceAfterLogin(): void {
-    const key = `System-Messages`;
-    if (sessionStorage.getItem(key) === '1') return;
-
-    const payload = {
-      audiences: ['all', 'admin']
-    }
-
-    this.http.post<SystemMessage[]>(
-      `${environment.apiUrl}/messages/system-messages-for-me`,
-      payload,
-      { withCredentials: true }
-    ).subscribe({
-      next: (res) => {
-        this.systemMessages = res;
-        void this.presentSystemMessagesModalsOnce();
-        localStorage.setItem(key, '1');
-      },
-      error: (err) => console.error('❌ Rendszerüzenetek hiba:', err)
-    });
-  }
-
-  async presentSystemMessagesModalsOnce(): Promise<void> {
-    const messages = this.systemMessages ?? [];
-    if (!messages.length) return;
-
-    const unseen = messages.filter(message => !sessionStorage.getItem(`System-Messages-${message.id}`));
-    if (!unseen.length) return;
-
-    for (const message of unseen) {
-      const modal = await this.modalCtrl.create({
-        component: SystemMessageModalComponent as any,
-        componentProps: {
-          messages: [message]
-        },
-
-        cssClass: 'system-message-modal',
-        canDismiss: true,
-        backdropDismiss: true,
-      });
-      await modal.present();
-      await modal.onDidDismiss();
-
-      sessionStorage.setItem(`System-Messages-${message.id}`, '1');
-    }
   }
 
   countPatients(): void {

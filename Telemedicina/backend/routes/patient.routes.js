@@ -6,7 +6,7 @@ const requireRole = require('../middleware/role.guard')
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.patch('/updateProfile', authGuard, requireRole('patient'), upload.single('picture'), patientController.updateProfile);
+router.patch('/updateProfile', authGuard, requireRole('patient', 'admin'), upload.single('picture'), patientController.updateProfile);
 router.get('/doctors', authGuard, requireRole('patient'), patientController.listDoctors);
 router.post('/getDoctorsAppointments', authGuard, requireRole('patient'), patientController.getDoctorsAppointments);
 router.post('/registerToAppointment', authGuard, requireRole('patient'), patientController.registerToAppointment);

@@ -1,14 +1,30 @@
 import {Component, HostListener, OnInit} from '@angular/core';
-import {IonicModule, NavController} from '@ionic/angular';
-import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage, NgTemplateOutlet} from '@angular/common';
+import {IonicModule, ModalController, NavController} from '@ionic/angular';
+import {
+  AsyncPipe,
+  DatePipe,
+  NgForOf,
+  NgIf,
+  NgOptimizedImage,
+  NgTemplateOutlet,
+  SlicePipe,
+  TitleCasePipe
+} from '@angular/common';
 import {NavigationEnd, Router, RouterLinkActive, RouterModule} from '@angular/router';
-import {filter, Observable, Subscription} from 'rxjs';
+import {combineLatest, filter, Observable, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
-import {Message} from '../../../../utils/interfaces/message.interface';
+import {UnreadMessageData} from '../../../../utils/interfaces/message.interface';
 import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-messages.service';
+import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
+import {map} from 'rxjs/operators';
+import {SystemMessageService} from '../../../../services/system-messages/system-messages.service';
+import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
+import {ToastService} from '../../../../shared/toast/toast.service';
+import {SettingsModalComponent} from '../../../../shared/settings-modal/settings-modal.component';
+import {getUserRoleLabel} from '../../../../utils/formatProfileData';
 
 @Component({
   selector: 'app-doctor-navbar',
@@ -20,7 +36,10 @@ import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-m
     NgForOf,
     NgOptimizedImage,
     AsyncPipe,
-    NgTemplateOutlet
+    NgTemplateOutlet,
+    DatePipe,
+    SlicePipe,
+    TitleCasePipe
   ],
   templateUrl: './doctor-navbar.component.html',
   standalone: true,
@@ -30,10 +49,8 @@ export class DoctorNavbarComponent implements OnInit{
   user: Observable<DoctorItem | null>;
   profileOpen = false;
   mobileMenuOpen = false;
+  notificationsOpen = false;
   private navSub?: Subscription;
-
-  unreadMessages: Message[] = [];
-  unreadCount = 0;
 
   menuItems = [
     { icon: 'home', label: 'Profil', route: 'doctor-home' },
@@ -45,6 +62,11 @@ export class DoctorNavbarComponent implements OnInit{
   ];
 
   unreadCount$: Observable<number>;
+  public unreadSystemMessageCount$: Observable<number>;
+  public unreadChatCount$: Observable<number>;
+
+  latestUnreadMessages$!: Observable<UnreadMessageData[]>;
+  public allSystemMessages$: Observable<SystemMessage[]>;
 
   constructor(
     private http: HttpClient,
@@ -52,10 +74,27 @@ export class DoctorNavbarComponent implements OnInit{
     protected userService: UserService,
     private nav: NavController,
     private alert: AlertService,
-    private unreadMessageService: UnreadMessageService
+    private toast: ToastService,
+    private modalCtrl: ModalController,
+    private unreadMessageService: UnreadMessageService,
+    private systemMessageService: SystemMessageService,
   ) {
     this.user = this.userService.doctor$();
-    this.unreadCount$ = this.unreadMessageService.totalCount$;
+
+    this.unreadSystemMessageCount$ = this.systemMessageService.unreadCount$;
+    this.unreadChatCount$ = this.unreadMessageService.totalCount$;
+
+    this.latestUnreadMessages$ = this.unreadMessageService.latestUnreadMessages$;
+    this.allSystemMessages$ = this.systemMessageService.allSystemMessages$;
+
+    this.unreadCount$ = combineLatest([
+      this.unreadChatCount$,
+      this.systemMessageService.unreadCount$,
+    ]).pipe(
+      map(([chatCount, systemCount]) =>
+        chatCount + systemCount
+      )
+    );
   }
 
   ngOnInit() {
@@ -64,9 +103,33 @@ export class DoctorNavbarComponent implements OnInit{
       .subscribe(() => {});
     this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe(() => this.closeMobileMenu());
+      .subscribe(() => this.closeAllDrawers());
 
     void this.unreadMessageService.fetchUnreadSummary();
+    this.systemMessageService.loadSystemMessagesOnceAfterLogin('doctor');
+  }
+
+  public isMessageUnread(messageId: number): boolean {
+    return !this.systemMessageService.isMessageSeen(messageId);
+  }
+
+  async openSystemMessageModal(message: SystemMessage): Promise<void> {
+    this.closeAllDrawers();
+
+    const modal = await this.modalCtrl.create({
+      component: SystemMessageModalComponent as any,
+      componentProps: {
+        messages: [message]
+      },
+      cssClass: 'system-message-modal',
+      canDismiss: true,
+      backdropDismiss: true,
+    });
+
+    await modal.present();
+    await modal.onDidDismiss();
+
+    this.systemMessageService.markMessageAsSeen(message.id);
   }
 
   confirmLogout() {
@@ -81,52 +144,43 @@ export class DoctorNavbarComponent implements OnInit{
     this.userService.logout().subscribe(() => this.nav.navigateRoot('/regist-login?tab=login'));
   }
 
-  public getUnreadMessages() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.http.post<{unread:any[], count:number}>(
-      'http://localhost:3000/api/getUnreadMessages',
-      {
-        role: 'doctor',
-        limit: 200
-      },
-      {
-        headers:
-          { Authorization: `Bearer ${token}` }
-      }
-    ).subscribe({
-      next: (res) => {
-        this.unreadMessages = res.unread ?? [];
-        this.unreadCount = res.count ?? this.unreadMessages.length;
-      },
-      error: (e) => console.error('getUnreadMessages error', e)
-    });
-  }
-
   onNotifications() {
-    void this.router.navigate(['doctor/doctor-messages']);
+    this.notificationsOpen = !this.notificationsOpen;
+    if (this.notificationsOpen) {
+      this.closeMobileMenu();
+    }
   }
 
   toggleMobileMenu() {
-    this.mobileMenuOpen = true;
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+    if (this.mobileMenuOpen) {
+      this.notificationsOpen = false;
+    }
   }
 
   closeMobileMenu() {
     this.mobileMenuOpen = false;
+    this.removeBodyNoScroll();
+  }
+
+  closeAllDrawers() {
+    this.mobileMenuOpen = false;
+    this.notificationsOpen = false;
     this.profileOpen = false;
     this.removeBodyNoScroll();
   }
 
   @HostListener('document:keydown.escape')
   onEsc() {
-    if (this.mobileMenuOpen) this.closeMobileMenu();
+    if (this.mobileMenuOpen || this.notificationsOpen) {
+      this.closeAllDrawers();
+    }
   }
 
   @HostListener('window:resize')
   onResize() {
-    if (window.innerWidth > 1000 && this.mobileMenuOpen) {
-      this.closeMobileMenu();
+    if (window.innerWidth > 1000 && (this.mobileMenuOpen || this.notificationsOpen)) {
+      this.closeAllDrawers();
     }
   }
 
@@ -139,15 +193,23 @@ export class DoctorNavbarComponent implements OnInit{
     this.profileOpen = !this.profileOpen;
   }
 
-  confirmAccountDelete() {
-    void this.alert.show(
-      'Fiók törlése',
-      'Biztosan törölni szeretnéd a fiókodat? Ez a funkció visszafordíthatatlan!', // <-- Megmarad a \n
-      () => this.deleteAccount()
-    )
+  goToMessages(partnerId: number) {
+    this.closeAllDrawers();
+    void this.router.navigate(['/doctor/doctor-messages', partnerId]);
   }
 
-  deleteAccount() {
-    this.userService.deleteAccount().subscribe(() => this.nav.navigateRoot('/regist-login?tab=login'));
+  async openSettingsModal() {
+    this.closeAllDrawers();
+
+    const modal = await this.modalCtrl.create({
+      component: SettingsModalComponent as any,
+      cssClass: 'settings-modal',
+      canDismiss: true,
+      backdropDismiss: true,
+    });
+
+    await modal.present();
   }
+
+  protected readonly getUserRoleLabel = getUserRoleLabel;
 }

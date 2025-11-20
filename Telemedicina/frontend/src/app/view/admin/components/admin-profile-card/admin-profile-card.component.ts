@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/co
 import {IonicModule} from '@ionic/angular';
 import {DatePipe, NgIf, NgOptimizedImage} from '@angular/common';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
-import {formatPhoneNumber} from '../../../../utils/formatProfileData';
+import {formatPhoneNumber, getUserRoleLabel} from '../../../../utils/formatProfileData';
 
 @Component({
   selector: 'app-admin-profile-card',
@@ -21,4 +21,5 @@ export class AdminProfileCardComponent {
   @Input() editable = false;
   @Output() edit = new EventEmitter<void>();
   protected readonly formatPhoneNumber = formatPhoneNumber;
+    protected readonly getUserRoleLabel = getUserRoleLabel;
 }

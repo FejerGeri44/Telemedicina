@@ -1,8 +1,9 @@
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {DoctorNavbarComponent} from '../components/doctor-navbar/doctor-navbar.component';
 import {IonicModule} from '@ionic/angular';
-import {RouterOutlet} from '@angular/router';
+import {Event as NgEvent, NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import {AiAssistantFabComponent} from '../../../shared/ai-assistant-fab/ai-assistant-fab.component';
+import {filter, Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-doctor-dashboard',
@@ -17,4 +18,29 @@ import {AiAssistantFabComponent} from '../../../shared/ai-assistant-fab/ai-assis
   styleUrl: './doctor-dashboard.component.scss'
 })
 
-export class DoctorDashboardComponent {}
+export class DoctorDashboardComponent implements OnInit, OnDestroy {
+  public showFab: boolean = true;
+  private routerSubscription!: Subscription;
+
+  constructor(private router: Router) {}
+
+  ngOnInit() {
+    this.checkUrl(this.router.url);
+
+    this.routerSubscription = this.router.events.pipe(
+      filter((event: NgEvent): event is NavigationEnd => event instanceof NavigationEnd)
+    ).subscribe((event) => {
+      this.checkUrl(event.urlAfterRedirects);
+    });
+  }
+
+  private checkUrl(url: string) {
+    this.showFab = !url.includes('doctor-messages');
+  }
+
+  ngOnDestroy() {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
+}

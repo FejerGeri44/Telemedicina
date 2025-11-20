@@ -5,9 +5,11 @@
     <router-outlet></router-outlet>
   </main>
 
-  <app-ai-assistant-fab
-    class="fab"
-    [role]="'patient'"
-    [isCalledByAdmin]="false">
-  </app-ai-assistant-fab>
+  @if (showFab) {
+    <app-ai-assistant-fab
+      class="fab"
+      [role]="'patient'"
+      [isCalledByAdmin]="false">
+    </app-ai-assistant-fab>
+  }
 </ion-content>

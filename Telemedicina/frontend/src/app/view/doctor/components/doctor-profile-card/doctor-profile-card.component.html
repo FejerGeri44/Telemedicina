@@ -7,7 +7,7 @@
       <div class="pc-name-info">
         <ion-label>
           <div class="pc-fullname">Dr. {{ fullName }}</div>
-          <ion-chip class="pc-role">{{ user.user.role }}</ion-chip>
+          <ion-chip class="pc-role">{{ getUserRoleLabel(user.user.role) }}</ion-chip>
         </ion-label>
       </div>
     </div>
@@ -24,7 +24,7 @@
     <div class="pc-details pc-details-doctor-card">
       <div class="col first">
         <ion-item lines="none" class="pc-item">
-          <ion-label class="label">Specialitás:</ion-label>
+          <ion-label class="label">Specializáció:</ion-label>
           <span class="value">{{ user.doctor.speciality }}</span>
         </ion-item>
         <ion-item lines="none" class="pc-item">

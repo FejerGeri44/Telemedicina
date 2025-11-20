@@ -7,7 +7,7 @@
       <div class="pc-name-info">
         <ion-label>
           <div class="pc-fullname">{{ user?.user?.name }}</div>
-          <ion-chip class="pc-role">{{ user?.user?.role }}</ion-chip>
+          <ion-chip class="pc-role">{{ getUserRoleLabel(user?.user?.role) }}</ion-chip>
         </ion-label>
       </div>
     </div>

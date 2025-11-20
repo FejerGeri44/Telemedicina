@@ -22,29 +22,10 @@ import {
 export class AppointmentTableComponent {
   @Input({ required: true }) myAppointments!: MyAppointment[];
   isLoading = true;
-  sortColumn: 'datetime' | null = null;
-  sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor(
     private modalCtrl: ModalController
   ) {}
-
-  sortAppointments(): void {
-    if (this.sortColumn !== 'datetime') {
-      this.sortColumn = 'datetime';
-      this.sortDirection = 'asc';
-    } else {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    }
-
-    const dir = this.sortDirection === 'asc' ? 1 : -1;
-
-    this.myAppointments = [...this.myAppointments].sort((a, b) => {
-      const A = Date.parse(a.starts_at);
-      const B = Date.parse(b.ends_at);
-      return (A - B) * dir;
-    });
-  }
 
   async openDoctorProfileModal(doctor: DoctorItem | undefined) {
     const modal = await this.modalCtrl.create({

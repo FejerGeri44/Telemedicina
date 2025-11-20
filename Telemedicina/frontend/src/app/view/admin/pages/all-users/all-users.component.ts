@@ -20,7 +20,7 @@ import {
 import {
   PatientEditProfileModalComponent
 } from '../../../patient/components/patient-edit-profile-modal/patient-edit-profile-modal.component';
-import {formatPhoneNumber} from '../../../../utils/formatProfileData';
+import {formatPhoneNumber, getUserRoleLabel} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
@@ -374,7 +374,6 @@ export class AllUsersComponent implements OnInit{
       console.warn('Ismeretlen role:', role);
       return;
     }
-
     const modal = await this.modalCtrl.create({
       component: component as any,
       componentProps: this.mapToModalProps(selected),
@@ -399,7 +398,7 @@ export class AllUsersComponent implements OnInit{
   }
 
   private mapToModalProps(selected: any) {
-    return { item: selected };
+    return { user: selected };
   }
 
   firstConfirmUserDelete() {
@@ -529,4 +528,5 @@ export class AllUsersComponent implements OnInit{
   }
 
   protected readonly formatPhoneNumber = formatPhoneNumber;
+  protected readonly getUserRoleLabel = getUserRoleLabel;
 }

@@ -67,3 +67,15 @@ export function formatTimestamp(isoString: string): string {
 
   return datePart + timePart;
 }
+
+export const getUserRoleLabel = (role: string | undefined): string => {
+  if (!role) return 'Nincs adat';
+
+  const roleMap: Record<string, string> = {
+    'patient': 'Páciens',
+    'doctor': 'Orvos',
+    'admin': 'Adminisztrátor'
+  };
+
+  return roleMap[role] || role;
+};

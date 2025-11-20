@@ -1,0 +1,46 @@
+.flex-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title-icon {
+  margin-right: 10px;
+  font-size: 1.2em;
+  vertical-align: middle;
+}
+
+.inner-content {
+  background: #f4f5f8;
+  overflow-y: auto;
+  max-height: 60vh;
+  padding: 10px 0;
+}
+
+ion-list {
+  margin-top: 0;
+  margin-bottom: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-inline: 16px;
+}
+
+.danger-zone {
+  border: 1px solid rgba(var(--ion-color-danger-rgb), 0.1);
+
+  .btn-accent {
+    --background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    --border-radius: 5px;
+    font-weight: 600;
+
+    &:hover {
+      --background: var(--accent);
+      color: white;
+      --border-radius: 7px;
+    }
+  }
+}

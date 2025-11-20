@@ -51,13 +51,15 @@
         }
 
         .pc-role {
-          --background: var(--chip-bg);
-          --color: var(--chip-color);
+          --background: #e0f2fe;
+          --color: #155e75;
           font-size: 0.75rem;
           font-weight: 600;
           padding: 4px 10px;
           height: auto;
           margin: 4px 0 0 0;
+          border-radius: 999px;
+          border: 1px solid #bae6fd;
         }
       }
     }

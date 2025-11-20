@@ -11,6 +11,7 @@ import {UserService} from '../../../../services/user/user.service';
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../services/platform/platform.service';
+import {take} from 'rxjs';
 
 @Component({
   selector: 'app-edit-profile-modal',
@@ -27,7 +28,7 @@ import {PlatformService} from '../../../../services/platform/platform.service';
   styleUrls: ['./patient-edit-profile-modal.component.scss']
 })
 export class PatientEditProfileModalComponent implements  OnInit {
-  @Input() user!: PatientItem;
+  @Input({ required: true }) user!: PatientItem;
 
   editProfileForm!: FormGroup;
   newTagKey: string = '';
@@ -176,11 +177,19 @@ export class PatientEditProfileModalComponent implements  OnInit {
       .subscribe({
         next: (res) => {
           const updatedFrontend = mapLoggedToItem(res.user);
-          this.userService.setUser(updatedFrontend);
 
-          this.savingData = false;
-          this.toast.show('Profil frissítve', 'success');
-          void this.modalCtrl.dismiss({ user: updatedFrontend }, 'updated');
+          this.userService.user$().pipe(take(1)).subscribe(loggedInUser => {
+
+            const isEditingSelf = loggedInUser?.user?.id === updatedFrontend.user.id;
+
+            if (isEditingSelf) {
+              this.userService.setUser(updatedFrontend);
+            }
+
+            this.savingData = false;
+            this.toast.show('Profil frissítve', 'success');
+            void this.modalCtrl.dismiss({ user: updatedFrontend }, 'updated');
+          });
         },
         error: (err) => {
           console.error('❌ Mentési hiba:', err);

@@ -111,13 +111,12 @@
           }
         }
 
-        /* ❌ EZT TÖRÖLJÜK: A menüt áthelyeztük a konténerbe a HTML-ben */
         .profile-menu {
           display: none;
         }
       }
 
-      .avatar { /* A profile-block alatti .avatar stílus frissítése */
+      .avatar {
         position: relative;
         width: 32px;
         height: 32px;
@@ -126,7 +125,7 @@
         overflow: hidden;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
-        .avatar-img { /* Ezt a belső szelektor el kell távolítani ha ion-avatar-t használ */
+        .avatar-img {
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -187,8 +186,6 @@
       inset: 0;
       background: rgba(0, 0, 0, 0.4);
       z-index: 9999;
-      opacity: 1;
-      transition: opacity 250ms ease;
     }
 
     .drawer {
@@ -324,8 +321,180 @@
       }
     }
 
+    .notifications-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100dvh;
+      width: 85vw;
+      max-width: 300px;
+      background: var(--ion-color-step-50, #f7f7f7);
+      color: var(--ion-color-dark);
+      box-shadow: -6px 0 16px rgba(0, 0, 0, 0.2);
+      transform: translateX(100%);
+      transition: transform 300ms ease-out;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+
+      &.open {
+        transform: translateX(0);
+      }
+
+      .drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--ion-color-step-150, #d9d9d9);
+
+        ion-button {
+          --color: var(--ion-color-dark);
+        }
+
+        .title {
+          font-size: 1.1rem;
+          font-weight: 600;
+        }
+      }
+
+      .notifications-content {
+        padding: 10px;
+        flex: 1 1 auto;
+        overflow-y: auto;
+
+        .notification-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 15px 12px;
+          margin: 8px 0;
+          border-radius: var(--ion-border-radius, 6px);
+          cursor: pointer;
+          font-size: 1rem;
+          transition: background-color 0.2s ease;
+
+          ion-icon {
+            color: var(--ion-color-medium);
+          }
+
+          &:hover {
+            background: var(--ion-color-step-100, #e6e6e6);
+          }
+
+          &.unread-messages {
+            background: var(--ion-color-step-100, #e6e6e6);
+            font-weight: 600;
+          }
+        }
+
+        .notification-accordion-group {
+          margin-top: 10px;
+          border-radius: var(--ion-border-radius, 6px);
+          overflow: hidden;
+
+          ion-accordion {
+            background: var(--ion-color-step-50, #f7f7f7);
+            border-bottom: 1px solid var(--ion-color-step-150, #d9d9d9);
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .accordion-header-item {
+              --background: transparent;
+              --color: var(--ion-color-dark);
+              --padding-start: 12px;
+              --padding-end: 12px;
+              font-size: 1rem;
+              font-weight: 500;
+
+              &:hover {
+                --background: var(--ion-color-step-100, #e6e6e6);
+              }
+            }
+          }
+          .sub-item {
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: var(--ion-color-dark);
+
+            &:hover {
+              background: var(--ion-color-step-100, #e6e6e6);
+            }
+
+            &.empty-state {
+              text-align: center;
+              opacity: 0.7;
+              font-style: italic;
+            }
+
+            &.link-to-all {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 5px;
+              font-weight: 500;
+              margin-top: 10px;
+              border: 1px solid var(--ion-color-step-150, #d9d9d9);
+              border-radius: var(--ion-border-radius, 6px);
+            }
+          }
+
+          .detailed-notification {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px;
+
+            .partner-avatar img {
+              width: 32px;
+              height: 32px;
+              border-radius: 50%;
+              object-fit: cover;
+              border: 1px solid var(--ion-color-step-150);
+            }
+
+            .message-details {
+              flex-grow: 1;
+              min-width: 0;
+
+              .partner-info {
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+                .partner-role {
+                  font-weight: 400;
+                  font-size: 0.8em;
+                  color: var(--ion-color-medium);
+                }
+              }
+
+              .message-preview {
+                font-size: 0.85rem;
+                color: var(--ion-color-dark);
+                opacity: 0.8;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              }
+            }
+
+            .message-date {
+              font-size: 0.7rem;
+              color: var(--ion-color-medium);
+              align-self: flex-start;
+            }
+          }
+        }
+      }
+    }
+
+
     @media (min-width: 1000px) {
-      /* A media query mostantól a komponens alján lévő menüt jeleníti meg */
       .profile-menu-container {
         display: block;
       }

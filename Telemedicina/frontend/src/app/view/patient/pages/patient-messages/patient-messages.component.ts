@@ -53,9 +53,9 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
   constructor(
     private http: HttpClient,
     protected userService: UserService,
+    private supabaseService: SupabaseService,
     private toast: ToastService,
     private alert: AlertService,
-    private supabaseService: SupabaseService,
     private unreadMessageService: UnreadMessageService,
     private route: ActivatedRoute
   ) {
@@ -69,6 +69,7 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
         this.patientPictureUrl = u.user.pictureUrl;
       }
     });
+
     await this.getDoctors();
     await this.getUnreadSummary();
     this.checkRouteParams();
@@ -154,7 +155,6 @@ export class PatientMessagesComponent implements OnInit, OnDestroy {
       ));
 
       this.unreadSummary = this.unreadSummary.filter(message => message.partnerId !== doctorId);
-
       this.unreadMessageService.decrementTotalCount(currentUnreadCount);
 
     } catch (err) {

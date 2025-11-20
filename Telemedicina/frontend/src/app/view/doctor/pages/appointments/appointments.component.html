@@ -52,6 +52,7 @@
             locale="hu-HU"
             doneText="Kész"
             cancelText="Mégse"
+            [locale]="locale"
             (ionChange)="onMonthPicked($event)"
           ></ion-datetime>
         </ng-template>
@@ -59,18 +60,16 @@
     </ion-card-header>
 
     <ion-card-content>
-      <!-- fej: napok -->
       <div class="week-grid-wrapper">
         <div class="week-grid">
           <div class="week-grid__head">
             <div class="time-col head-cell">Idő</div>
             <div class="day-col head-cell" *ngFor="let d of weekDays">
-              <div class="day-name">{{ d | date:'EEE' }}</div>
+              <div class="day-name">{{ d | date:'EEE':'':locale }}</div>
               <div class="day-date">{{ d | date:'MM.dd.' }}</div>
             </div>
           </div>
 
-          <!-- sorok: időpontok 08:00–20:00 -->
           <div class="week-grid__body">
             <div class="row" *ngFor="let t of timeSlots; trackBy: trackByTime">
               <div class="time-col time-cell">{{ t }}</div>

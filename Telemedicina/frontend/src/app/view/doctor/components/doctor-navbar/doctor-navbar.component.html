@@ -1,6 +1,6 @@
 <ion-header class="navbar" [class.mobile-open]="mobileMenuOpen">
   <ng-container *ngIf="userService.doctor$() | async as user; else navbarSkeleton">
-    <ion-toolbar class="navbar-top" style="--z-index: 10002;">
+    <ion-toolbar class="navbar-top">
       <div class="logo-title" slot="start">
         <img src="pictures/logo.png" alt="CareLink" />
         <ion-title class="site-title">CareLink</ion-title>
@@ -33,7 +33,8 @@
       <ng-container *ngTemplateOutlet="mainMenuNav"></ng-container>
     </ion-toolbar>
 
-    <div class="backdrop" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()" aria-hidden="true"></div>
+    <div class="backdrop" *ngIf="mobileMenuOpen || notificationsOpen" (click)="closeAllDrawers()" aria-hidden="true"></div>
+
     <aside id="mobile-drawer" class="drawer" [class.open]="mobileMenuOpen">
       <div class="drawer-header">
         <div class="user-inline">
@@ -52,6 +53,112 @@
         <ng-container *ngTemplateOutlet="profileActions; context: { isDrawer: true }"></ng-container>
       </div>
     </aside>
+
+    <aside id="notifications-drawer" class="notifications-drawer" [class.open]="notificationsOpen">
+      <div class="drawer-header">
+        <span class="title">Értesítések</span>
+        <ion-button fill="clear" (click)="closeAllDrawers()" aria-label="Bezárás">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="notifications-content">
+        <ion-accordion-group class="notification-accordion-group">
+          <ion-accordion value="unread-messages">
+            <ion-item slot="header" color="light" class="accordion-header-item unread-header">
+              <ion-icon name="chatbubbles-outline" slot="start"></ion-icon>
+              <ion-label>Olvasatlan üzenetek
+                <ion-badge color="danger"
+                           *ngIf="(unreadChatCount$ | async) as unreadCount">
+                  <ng-container *ngIf="unreadCount > 0">
+                    ({{ unreadCount }})
+                  </ng-container>
+                </ion-badge>
+              </ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+
+              <ng-container *ngIf="latestUnreadMessages$ | async as messages">
+                <div *ngIf="messages.length === 0" class="sub-item empty-state">
+                  Nincs új olvasatlan üzeneted.
+                </div>
+
+                <ng-container *ngFor="let message of messages">
+                  <div class="sub-item detailed-notification" (click)="goToMessages(message.user.id)">
+                    <div class="partner-avatar">
+                      <img [ngSrc]="message.user.pictureUrl" alt="Partner profilkép" width="32" height="32" /> </div>
+
+                    <div class="message-details">
+                      <div class="partner-info">
+                        <span class="partner-name">{{ message.user.name }} </span>
+                        <span class="partner-role">({{ getUserRoleLabel(message.user.role) | titlecase }})</span>
+                      </div>
+                      <div class="message-preview">
+                        {{ message.content | slice:0:30 }}...
+                      </div>
+                    </div>
+                    <div class="message-date">
+                      {{ message.send_date | date: 'shortTime' }}
+                    </div>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
+          </ion-accordion>
+
+          <ion-accordion value="system-messages">
+            <ion-item slot="header" color="light" class="accordion-header-item">
+              <ion-icon name="megaphone-outline" slot="start"></ion-icon>
+              <ion-label>
+                Rendszerüzenetek
+                <ion-badge color="danger"
+                           *ngIf="(unreadSystemMessageCount$ | async) as unreadCount">
+                  <ng-container *ngIf="unreadCount > 0">
+                    ({{ unreadCount }})
+                  </ng-container>
+                </ion-badge>
+              </ion-label>
+            </ion-item>
+            <div class="ion-padding" slot="content">
+
+              <ng-container *ngIf="allSystemMessages$ | async as messages">
+
+                <div *ngIf="messages.length === 0" class="sub-item empty-state">
+                  Jelenleg nincs aktív rendszerüzenet.
+                </div>
+
+                <ng-container *ngFor="let message of messages">
+
+                  <div class="sub-item detailed-notification system-message-item"
+                       (click)="openSystemMessageModal(message)">
+
+                    <ion-icon name="ellipse"
+                              color="danger"
+                              class="unread-dot"
+                              *ngIf="isMessageUnread(message.id)"></ion-icon>
+
+                    <ion-icon [name]="message.type === 'error' ? 'close-circle-outline' : (message.type === 'warning' ? 'warning-outline' : 'information-circle-outline')"
+                              slot="start"
+                              class="message-type-icon"></ion-icon>
+                    <div class="message-details">
+                      <div class="partner-info">
+                        <span class="partner-name message-title">{{ message.title }}</span>
+                      </div>
+                      <div class="message-preview">
+                        {{ message.message | slice:0:50 }}...
+                      </div>
+                    </div>
+                    <div class="message-date">
+                      {{ message.created_at | date: 'shortDate' }}
+                    </div>
+                  </div>
+                </ng-container>
+
+              </ng-container>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
+      </div>
+    </aside>
   </ng-container>
 
   <ng-template #userProfileInfo let-user let-inDrawer="inDrawer">
@@ -64,7 +171,7 @@
         height="32"/> </ion-avatar>
     <div class="profile-info">
       <span class="name">{{ user.user.name }}</span>
-      <span class="role">{{ user.user.role }}</span>
+      <span class="role">{{ getUserRoleLabel(user.user.role) }}</span>
     </div>
   </ng-template>
 
@@ -81,13 +188,9 @@
   </ng-template>
 
   <ng-template #profileActions let-isDrawer="isDrawer">
-    <ion-button [class.drawer-action]="isDrawer" routerLink="/doctor/doctor-home" fill="clear" expand="block">
-      <ion-icon name="person-circle-outline" slot="start"></ion-icon>
-      <span>Profil</span>
-    </ion-button>
-    <ion-button [class.drawer-action]="isDrawer" class="delete-account-btn" (click)="confirmAccountDelete()" fill="clear" expand="block">
-      <ion-icon name="trash-outline" slot="start"></ion-icon>
-      <span>Fiók törlése</span>
+    <ion-button [class.drawer-action]="isDrawer" class="delete-account-btn" (click)="openSettingsModal()" fill="clear" expand="block">
+      <ion-icon name="settings-outline" slot="start"></ion-icon>
+      <span>Fiók beállítások</span>
     </ion-button>
     <ion-button [class.drawer-action]="isDrawer" (click)="confirmLogout()" fill="clear" expand="block">
       <ion-icon name="log-out-outline" slot="start"></ion-icon>

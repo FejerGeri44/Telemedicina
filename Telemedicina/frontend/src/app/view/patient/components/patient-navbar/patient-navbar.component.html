@@ -90,7 +90,7 @@
                     <div class="message-details">
                       <div class="partner-info">
                         <span class="partner-name">{{ message.user.name }}</span>
-                        <span class="partner-role">({{ message.user.role | titlecase }})</span>
+                        <span class="partner-role">({{ getUserRoleLabel(message.user.role) | titlecase }})</span>
                       </div>
                       <div class="message-preview">
                         {{ message.content | slice:0:30 }}...
@@ -220,7 +220,7 @@
         height="32"/> </ion-avatar>
     <div class="profile-info">
       <span class="name">{{ user.user.name }}</span>
-      <span class="role">{{ user.user.role }}</span>
+      <span class="role">{{ getUserRoleLabel(user.user.role) }}</span>
     </div>
   </ng-template>
 
@@ -237,13 +237,9 @@
   </ng-template>
 
   <ng-template #profileActions let-isDrawer="isDrawer">
-    <ion-button [class.drawer-action]="isDrawer" routerLink="/patient/patient-home" fill="clear" expand="block">
-      <ion-icon name="person-circle-outline" slot="start"></ion-icon>
-      <span>Profil</span>
-    </ion-button>
-    <ion-button [class.drawer-action]="isDrawer" class="delete-account-btn" (click)="confirmAccountDelete()" fill="clear" expand="block">
-      <ion-icon name="trash-outline" slot="start"></ion-icon>
-      <span>Fiók törlése</span>
+    <ion-button [class.drawer-action]="isDrawer" class="delete-account-btn" (click)="openSettingsModal()" fill="clear" expand="block">
+      <ion-icon name="settings-outline" slot="start"></ion-icon>
+      <span>Fiók beállítások</span>
     </ion-button>
     <ion-button [class.drawer-action]="isDrawer" (click)="confirmLogout()" fill="clear" expand="block">
       <ion-icon name="log-out-outline" slot="start"></ion-icon>

@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {DatePipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
-import {formatPhoneNumber, formatTaj, getAge} from '../../../../utils/formatProfileData';
+import {formatPhoneNumber, formatTaj, getAge, getUserRoleLabel} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 
 @Component({
@@ -35,4 +35,5 @@ export class PatientProfileCardComponent {
   protected readonly formatPhoneNumber = formatPhoneNumber;
   protected readonly formatTaj = formatTaj;
   protected readonly getAge = getAge;
+  protected readonly getUserRoleLabel = getUserRoleLabel;
 }

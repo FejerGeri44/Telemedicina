@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {NgIf, NgOptimizedImage} from '@angular/common';
-import {formatPhoneNumber} from '../../../../utils/formatProfileData';
+import {formatPhoneNumber, getUserRoleLabel} from '../../../../utils/formatProfileData';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 
 @Component({
@@ -25,4 +25,5 @@ export class DoctorProfileCardComponent {
   }
 
   protected readonly formatPhoneNumber = formatPhoneNumber;
+    protected readonly getUserRoleLabel = getUserRoleLabel;
 }

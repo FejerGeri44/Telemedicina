@@ -63,8 +63,8 @@ const SystemMessageRepository = {
         message: m.message,
         type: m.type,
         audience: m.audience,
-        validUntil: m.valid_until ?? null,
-        createdAt: m.created_at,
+        valid_until: m.valid_until ?? null,
+        created_at: m.created_at,
         admin: {
           user: u ? {
             id: u.id,

@@ -1,7 +1,7 @@
 import {Component, OnInit, OnDestroy} from '@angular/core';
 import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
-import {NgForOf, NgIf, NgOptimizedImage, Location, NgClass} from '@angular/common';
+import {NgForOf, NgIf, NgOptimizedImage, NgClass} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
@@ -10,11 +10,11 @@ import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {firstValueFrom, Observable} from 'rxjs';
 import {environment} from '../../../../../../enviroment';
-import { Message } from '../../../../utils/interfaces/message.interface';
+import {Message, UnreadMessageData} from '../../../../utils/interfaces/message.interface';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import {SupabaseService} from '../../../../services/chat/supabase.service';
 import {formatTaj} from '../../../../utils/formatProfileData';
-import {Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-messages.service';
 
 @Component({
@@ -35,7 +35,7 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
   user!: Observable<DoctorItem | null>;
   doctorId: number | null = null;
   doctorPictureUrl: string | null = null;
-  unreadSummary: Map<number, number> = new Map();
+  unreadSummary!: UnreadMessageData[];
   isChatPaneVisible: boolean = false;
 
   patients!: PatientItem[];
@@ -54,24 +54,13 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
   constructor(
     private http: HttpClient,
     protected userService: UserService,
-    private router: Router,
-    private location: Location,
     private supabaseService: SupabaseService,
     private toast: ToastService,
     private alert: AlertService,
-    private unreadMessageService: UnreadMessageService
+    private unreadMessageService: UnreadMessageService,
+    private route: ActivatedRoute
   ) {
     this.user = this.userService.doctor$();
-
-    const navigation = this.router.getCurrentNavigation();
-    if (navigation?.extras.state) {
-      const rawPatient = navigation.extras.state['selectedPatient'];
-
-      if (rawPatient) {
-        this.selectedPatient = rawPatient as PatientItem;
-        this.location.replaceState(navigation.extractedUrl.toString());
-      }
-    }
   }
 
   async ngOnInit(): Promise<void> {
@@ -82,19 +71,9 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
       }
     });
 
-    await this.getDoctors();
-    void this.getUnreadSummary();
-
-    if (this.selectedPatient) {
-      const initialPatientId = this.selectedPatient.user.id;
-      const patientToSelect = this.allPatients.find(p => p.user.id === initialPatientId);
-
-      if (patientToSelect) {
-        await this.selectPatient(initialPatientId);
-      } else {
-        this.toast.show('Hiba: Az átadott páciens nem található a listában.', 'danger');
-      }
-    }
+    await this.getPatients();
+    await this.getUnreadSummary();
+    this.checkRouteParams();
   }
 
   ngOnDestroy(): void {
@@ -109,20 +88,39 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
     return user?.user.id ?? null;
   }
 
+  private checkRouteParams(): void {
+    const patientIdParam = this.route.snapshot.paramMap.get('patientId');
+    if (patientIdParam) {
+      const patientId = Number(patientIdParam);
+
+      const patientExists = this.allPatients.find(p => p.user.id === patientId);
+
+      if (patientExists) {
+        void this.markConversationAsRead(patientExists.user.id)
+        void this.selectPatient(patientId);
+      }
+    }
+  }
+
   async getUnreadSummary(): Promise<void> {
     if (!this.doctorId) return;
 
     try {
+      this.unreadSummary = await this.unreadMessageService.fetchUnreadSummary();
     } catch (err) {
       console.error('❌ Olvasatlan összegzés komponensbeli frissítése sikertelen:', err);
     }
   }
 
   getUnreadCount(doctorId: number): number {
-    return this.unreadSummary.get(doctorId) ?? 0;
+    if (!this.unreadSummary || this.unreadSummary.length === 0) {
+      return 0;
+    }
+
+    return this.unreadSummary.filter(message => message.partnerId === doctorId).length;
   }
 
-  async getDoctors(): Promise<PatientItem[] | null> {
+  async getPatients(): Promise<PatientItem[] | null> {
     return new Promise((resolve) => {
       this.http.get<PatientItem[]>(
         `${environment.apiUrl}/doctor/patients`,
@@ -146,10 +144,8 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
 
   async markConversationAsRead(patientId: number): Promise<void> {
     if (!this.doctorId || !patientId) return;
-
-    const currentUnreadCount = this.unreadSummary.get(patientId) ?? 0;
+    const currentUnreadCount = this.getUnreadCount(patientId);
     if (currentUnreadCount === 0) return;
-
     const payload = { patientId };
 
     try {
@@ -159,7 +155,7 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
         { withCredentials: true }
       ));
 
-      this.unreadSummary.set(patientId, 0);
+      this.unreadSummary = this.unreadSummary.filter(message => message.partnerId !== patientId);
       this.unreadMessageService.decrementTotalCount(currentUnreadCount);
 
     } catch (err) {
@@ -198,7 +194,6 @@ export class DoctorMessagesComponent implements OnInit, OnDestroy {
 
     if (this.doctorId) {
       await this.markConversationAsRead(userId);
-      this.unreadSummary.set(userId, 0);
       await this.loadConversation(userId);
       this.setupRealtime(userId);
       this.isChatPaneVisible = true;

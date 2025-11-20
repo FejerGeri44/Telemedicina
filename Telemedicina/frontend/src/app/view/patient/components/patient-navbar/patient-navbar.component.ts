@@ -26,6 +26,8 @@ import {DoctorRatingService} from '../../../../services/doctor-rating/doctor-rat
 import {DoctorRatingModalComponent} from '../doctor-rating-modal/doctor-rating-modal.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {UnreadMessageData} from '../../../../utils/interfaces/message.interface';
+import {SettingsModalComponent} from '../../../../shared/settings-modal/settings-modal.component';
+import {getUserRoleLabel} from '../../../../utils/formatProfileData';
 
 @Component({
   selector: 'app-patient-navbar',
@@ -233,15 +235,18 @@ export class PatientNavbarComponent implements OnInit{
     void this.router.navigate(['/patient/patient-messages', partnerId]);
   }
 
-  confirmAccountDelete() {
-    void this.alert.show(
-      'Fiók törlése',
-      'Biztosan törölni szeretnéd a fiókodat? Ez a funkció visszafordíthatatlan!', // <-- Megmarad a \n
-      () => this.deleteAccount()
-    )
+  async openSettingsModal() {
+    this.closeAllDrawers();
+
+    const modal = await this.modalCtrl.create({
+      component: SettingsModalComponent as any,
+      cssClass: 'settings-modal',
+      canDismiss: true,
+      backdropDismiss: true,
+    });
+
+    await modal.present();
   }
 
-  deleteAccount() {
-    this.userService.deleteAccount().subscribe(() => this.nav.navigateRoot('/regist-login?tab=login'));
-  }
+  protected readonly getUserRoleLabel = getUserRoleLabel;
 }
