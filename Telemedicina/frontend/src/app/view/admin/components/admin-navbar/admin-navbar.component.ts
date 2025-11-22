@@ -22,11 +22,12 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 import {SystemMessageService} from '../../../../services/system-messages/system-messages.service';
 import {SettingsModalComponent} from '../../../../shared/settings-modal/settings-modal.component';
 import {getUserRoleLabel} from '../../../../utils/formatProfileData';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-admin-navbar',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgIf,
     RouterLinkActive,
     RouterModule,

@@ -1,19 +1,20 @@
 import {Component, OnInit} from '@angular/core';
 import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
-import {IonicModule, SegmentChangeEventDetail} from '@ionic/angular';
+import {SegmentChangeEventDetail} from '@ionic/angular';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {environment} from '../../../../../../enviroment';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 type Tab = 'pending' | 'denied';
 
 @Component({
   selector: 'app-doctor-approvals',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgForOf,
     NgIf,
     NgOptimizedImage

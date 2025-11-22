@@ -1,13 +1,13 @@
 import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {DatePipe, NgIf, NgOptimizedImage} from '@angular/common';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {formatPhoneNumber, getUserRoleLabel} from '../../../../utils/formatProfileData';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-admin-profile-card',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgIf,
     NgOptimizedImage,
     DatePipe

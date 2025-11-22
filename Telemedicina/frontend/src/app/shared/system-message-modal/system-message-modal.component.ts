@@ -1,12 +1,13 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {Component, Input} from '@angular/core';
+import {ModalController} from '@ionic/angular';
 import {DatePipe, NgClass, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault, UpperCasePipe} from '@angular/common';
 import {SystemMessage} from '../../utils/interfaces/system-message.interface';
+import {IONIC_COMPONENTS} from '../ionic-imports';
 
 @Component({
   selector: 'app-system-message-modal',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgIf,
     NgSwitch,
     NgSwitchCase,

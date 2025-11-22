@@ -1,14 +1,15 @@
 import { Component, Input } from '@angular/core';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { NgForOf, NgIf, NgOptimizedImage } from '@angular/common';
 import { DoctorRatingItem } from '../../../../utils/interfaces/doctor.interface';
 import { DoctorRatingService } from '../../../../services/doctor-rating/doctor-rating.service';
 import { AlertService } from '../../../../shared/alert/alert.service.component';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-doctor-rating-modal',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgForOf,
     NgIf,
     NgOptimizedImage

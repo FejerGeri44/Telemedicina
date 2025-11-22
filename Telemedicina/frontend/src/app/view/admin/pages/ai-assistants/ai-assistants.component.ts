@@ -1,17 +1,17 @@
 import {Component, OnInit} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {AiRulesCardComponent} from '../../components/ai-rules-card/ai-rules-card.component';
 import {AiDemoCardComponent} from '../../components/ai-demo-card/ai-demo-card.component';
 import {NgIf} from '@angular/common';
 import {AiConfigService} from '../../../../services/Ai-assistants/AiConfigService';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-ai-assistants',
   templateUrl: './ai-assistants.component.html',
   styleUrls: ['./ai-assistants.component.scss'],
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     AiRulesCardComponent,
     AiDemoCardComponent,

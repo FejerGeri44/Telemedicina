@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
@@ -12,13 +12,14 @@ import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../services/platform/platform.service';
 import {take} from 'rxjs';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-edit-profile-modal',
   templateUrl: './patient-edit-profile-modal.component.html',
   standalone: true,
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     NgIf,
     NgForOf,

@@ -1,16 +1,16 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {ChatMessage, Intent, QuickStartItem} from '../../../services/Ai-assistants/AIInterfaces';
 import {DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
 import {AiConfigService} from '../../../services/Ai-assistants/AiConfigService';
+import {IONIC_COMPONENTS} from '../../ionic-imports';
 
 type ChatMode = 'patient' | 'doctor';
 
 @Component({
   selector: 'app-fab-chat',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     NgClass,
     NgForOf,

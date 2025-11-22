@@ -1,5 +1,4 @@
 import {Component} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {AlertService} from '../../../../shared/alert/alert.service.component';
@@ -11,11 +10,12 @@ import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {formatAppointmentTime, formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {RouterLink} from '@angular/router';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-appointment-list',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgForOf,
     NgIf,
     NgOptimizedImage,

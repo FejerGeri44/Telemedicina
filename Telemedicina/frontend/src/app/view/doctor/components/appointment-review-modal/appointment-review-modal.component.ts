@@ -1,11 +1,12 @@
 import {Component, Input} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {
   PatientProfileCardComponent
 } from '../../../patient/components/patient-profile-card/patient-profile-card.component';
 import {MyAppointment} from '../../../../utils/interfaces/appointment.inteface';
 import {environment} from '../../../../../../enviroment';
 import {HttpClient} from '@angular/common/http';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 interface AppointmentActionResponse {
   message: string;
@@ -16,7 +17,7 @@ interface AppointmentActionResponse {
 @Component({
   selector: 'app-appointment-review-modal',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     PatientProfileCardComponent
   ],
   templateUrl: './appointment-review-modal.component.html',

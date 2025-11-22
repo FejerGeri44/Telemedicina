@@ -1,15 +1,15 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import { IonicModule } from '@ionic/angular';
 import {NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import {UserService} from './services/user/user.service';
 import {filter, Subscription} from 'rxjs';
+import {IONIC_COMPONENTS} from './shared/ionic-imports';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   templateUrl: 'app.component.html',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     RouterOutlet
   ]
 })

@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {DatePipe, NgClass, NgForOf, NgIf, registerLocaleData} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
@@ -17,13 +17,14 @@ import {
 import {
   PatientProfileCardComponent
 } from '../../../patient/components/patient-profile-card/patient-profile-card.component';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 registerLocaleData(localeHu);
 
 @Component({
   selector: 'app-appointments',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     DatePipe,
     NgForOf,

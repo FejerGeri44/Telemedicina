@@ -7,7 +7,7 @@ import {
   ChangeDetectionStrategy
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {NgFor, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 
 import type {
@@ -26,6 +26,7 @@ import {NewQueryResponseModalComponent} from '../new-query-response-modal/new-qu
 import {environment} from '../../../../../../enviroment';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 type BotKind = 'patient' | 'doctor';
 type RuleType = 'choose' | 'greeting' | 'intent' | 'fallback';
@@ -33,8 +34,11 @@ type RuleType = 'choose' | 'greeting' | 'intent' | 'fallback';
 @Component({
   selector: 'app-ai-rules-card',
   imports: [
-    IonicModule,
-    NgIf, NgFor, NgSwitch, NgSwitchCase
+    ...IONIC_COMPONENTS,
+    NgIf,
+    NgFor,
+    NgSwitch,
+    NgSwitchCase
   ],
   templateUrl: './ai-rules-card.component.html',
   standalone: true,

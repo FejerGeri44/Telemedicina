@@ -1,6 +1,5 @@
 import {Component, Injector, OnInit, ViewContainerRef} from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -11,8 +10,8 @@ import {LoggedUser} from '../../../../../../utils/interfaces/logged-user.interfa
 import { createClient } from '@supabase/supabase-js';
 import {environment} from '../../../../../../../../enviroment';
 import {firstValueFrom} from 'rxjs';
-import {PASSWORD_PATTERN} from '../../../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../../../services/platform/platform.service';
+import {IONIC_COMPONENTS} from '../../../../../../shared/ionic-imports';
 const supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
 
 @Component({
@@ -21,8 +20,8 @@ const supabase = createClient(environment.supabaseUrl, environment.supabaseAnonK
   templateUrl: './login-form.component.html',
   styleUrls: ['./login-form.component.scss'],
   imports: [
+    ...IONIC_COMPONENTS,
     CommonModule,
-    IonicModule,
     FormsModule,
     ReactiveFormsModule
   ]

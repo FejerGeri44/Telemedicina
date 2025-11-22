@@ -1,11 +1,11 @@
 import {Component, Input} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {NgForOf} from '@angular/common';
+import {IONIC_COMPONENTS} from '../../../../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-diagnoses-table-skeleton',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgForOf
   ],
   templateUrl: './diagnoses-table-skeleton.component.html',

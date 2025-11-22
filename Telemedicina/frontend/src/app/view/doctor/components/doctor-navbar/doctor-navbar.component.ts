@@ -1,5 +1,5 @@
 import {Component, HostListener, OnInit} from '@angular/core';
-import {IonicModule, ModalController, NavController} from '@ionic/angular';
+import {ModalController, NavController} from '@ionic/angular';
 import {
   AsyncPipe,
   DatePipe,
@@ -25,11 +25,12 @@ import {SystemMessageModalComponent} from '../../../../shared/system-message-mod
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {SettingsModalComponent} from '../../../../shared/settings-modal/settings-modal.component';
 import {getUserRoleLabel} from '../../../../utils/formatProfileData';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-doctor-navbar',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgIf,
     RouterLinkActive,
     RouterModule,

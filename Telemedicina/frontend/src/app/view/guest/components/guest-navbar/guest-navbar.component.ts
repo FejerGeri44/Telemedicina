@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {CommonModule} from '@angular/common';
 import {Router} from '@angular/router';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-guest-navbar',
   standalone: true,
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     CommonModule,
   ],
   templateUrl: './guest-navbar.component.html',

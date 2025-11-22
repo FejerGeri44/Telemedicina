@@ -1,5 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {DecimalPipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
@@ -10,11 +9,12 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {environment} from '../../../../../../enviroment';
 import {buildStarIcons, roundToHalf, StarIcon} from '../../../../utils/formatDoctorRating';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-doctor-search',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     NgForOf,
     NgIf,

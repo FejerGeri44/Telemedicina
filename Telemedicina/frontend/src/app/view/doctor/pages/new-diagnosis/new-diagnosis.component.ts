@@ -1,5 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgForOf, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
@@ -13,11 +12,12 @@ import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {Diagnosis} from '../../../../utils/interfaces/diagnosis.interface';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-new-diagnosis',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     ReactiveFormsModule,
     NgIf,
     NgForOf,

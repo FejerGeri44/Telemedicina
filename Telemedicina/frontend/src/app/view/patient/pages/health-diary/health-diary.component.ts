@@ -17,24 +17,24 @@ import {DiagnosesTableComponent} from './components/diagnoses-table/diagnoses-ta
 import {
   DiagnosesTableSkeletonComponent
 } from './components/diagnoses-table/diagnoses-table-skeleton/diagnoses-table-skeleton.component';
-import {IonicModule} from '@ionic/angular';
 import {DocumentTableComponent} from './components/document-table/document-table.component';
 import {
   DocumentTableSkeletonComponent
 } from './components/document-table/document-table-skeleton/document-table-skeleton.component';
 import {formatAppointmentTime, formatTimestamp} from '../../../../utils/formatProfileData';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 type DiaryTab = 'appointments' | 'documents' | 'diagnoses';
 
 @Component({
   selector: 'app-health-diary',
   imports: [
+    ...IONIC_COMPONENTS,
     NgIf,
     AppointmentTableComponent,
     AppointmentTableSkeletonComponent,
     DiagnosesTableComponent,
     DiagnosesTableSkeletonComponent,
-    IonicModule,
     DocumentTableComponent,
     DocumentTableSkeletonComponent
   ],

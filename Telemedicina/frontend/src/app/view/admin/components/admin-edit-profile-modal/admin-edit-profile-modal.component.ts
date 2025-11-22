@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
@@ -12,11 +12,12 @@ import {NgIf, NgOptimizedImage} from "@angular/common";
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../services/platform/platform.service';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-admin-edit-profile-modal',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     ReactiveFormsModule,
     NgOptimizedImage,

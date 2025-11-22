@@ -146,7 +146,7 @@
         <div class="field">
           <ion-item class="required" lines="none">
             <ion-label position="stacked">Típus</ion-label>
-            <ion-select name="type" [(ngModel)]="formData.type" required>
+            <ion-select name="type" [(ngModel)]="formData.type">
               <ion-select-option value="info">Információ</ion-select-option>
               <ion-select-option value="warning">Figyelmeztetés</ion-select-option>
               <ion-select-option value="error">Hiba</ion-select-option>
@@ -159,7 +159,7 @@
         <div class="field">
           <ion-item class="required" lines="none">
             <ion-label position="stacked">Célcsoport</ion-label>
-            <ion-select name="audience" [(ngModel)]="formData.audience" required>
+            <ion-select name="audience" [(ngModel)]="formData.audience">
               <ion-select-option value="all">Mindenki</ion-select-option>
               <ion-select-option value="patient">Páciensek</ion-select-option>
               <ion-select-option value="doctor">Orvosok</ion-select-option>

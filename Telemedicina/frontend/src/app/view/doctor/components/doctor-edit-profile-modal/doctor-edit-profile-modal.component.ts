@@ -1,25 +1,25 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {FormsModule, ReactiveFormsModule, FormGroup, Validators, FormBuilder} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {formatPhoneNumber} from '../../../../utils/formatProfileData';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {environment} from '../../../../../../enviroment';
-import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {NgOptimizedImage} from '@angular/common';
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../services/platform/platform.service';
 import {take} from 'rxjs';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-edit-profile-modal',
   templateUrl: './doctor-edit-profile-modal.component.html',
   standalone: true,
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     ReactiveFormsModule,
     NgOptimizedImage,

@@ -1,11 +1,11 @@
 import {Component, Input} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {NgForOf} from '@angular/common';
+import {IONIC_COMPONENTS} from '../../../../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-appointment-table-skeleton',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgForOf
   ],
   templateUrl: './appointment-table-skeleton.component.html',

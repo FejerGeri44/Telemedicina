@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
@@ -12,12 +12,13 @@ import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {environment} from '../../../../../../enviroment';
 import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-system-messages',
   imports: [
+    ...IONIC_COMPONENTS,
     FormsModule,
-    IonicModule,
     NgIf,
     NgForOf,
     NgOptimizedImage

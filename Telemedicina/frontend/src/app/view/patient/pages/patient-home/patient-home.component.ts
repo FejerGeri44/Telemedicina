@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
 import {AsyncPipe, DatePipe, NgForOf, NgIf, NgOptimizedImage, TitleCasePipe} from '@angular/common';
 
@@ -15,11 +15,22 @@ import {formatAppointmentTime} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {firstValueFrom, Observable, take} from 'rxjs';
 import {DocumentItem} from '../../../../utils/interfaces/document.interface';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-patient-home',
   standalone: true,
-  imports: [PatientProfileCardComponent, IonicModule, RouterLink, NgIf, NgForOf, NgOptimizedImage, AsyncPipe, DatePipe, TitleCasePipe],
+  imports: [
+    ...IONIC_COMPONENTS,
+    PatientProfileCardComponent,
+    RouterLink,
+    NgIf,
+    NgForOf,
+    NgOptimizedImage,
+    AsyncPipe,
+    DatePipe,
+    TitleCasePipe
+  ],
   templateUrl: './patient-home.component.html',
   styleUrl: './patient-home.component.scss'
 })

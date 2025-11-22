@@ -1,18 +1,19 @@
 import {Component, Input} from '@angular/core';
 import {NgForOf, NgOptimizedImage} from '@angular/common';
 import {formatAppointmentTime, formatPhoneNumber} from '../../../../../../utils/formatProfileData';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {MyAppointment} from '../../../../../../utils/interfaces/appointment.inteface';
 import {DoctorItem} from '../../../../../../utils/interfaces/doctor.interface';
 import {
   DoctorProfileCardComponent
 } from '../../../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
+import {IONIC_COMPONENTS} from '../../../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-appointment-table',
   imports: [
+    ...IONIC_COMPONENTS,
     NgOptimizedImage,
-    IonicModule,
     NgForOf
   ],
   templateUrl: './appointment-table.component.html',

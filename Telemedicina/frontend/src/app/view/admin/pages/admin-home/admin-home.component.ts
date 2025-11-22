@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {
   AdminEditProfileModalComponent
 } from '../../components/admin-edit-profile-modal/admin-edit-profile-modal.component';
@@ -14,11 +14,12 @@ import {UserService} from '../../../../services/user/user.service';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {environment} from '../../../../../../enviroment';
 import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-admin-home',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     RouterLink,
     AdminProfileCardComponent,
     NgForOf,

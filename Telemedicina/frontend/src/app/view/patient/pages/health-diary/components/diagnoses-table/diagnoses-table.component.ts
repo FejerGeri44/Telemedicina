@@ -1,5 +1,5 @@
 import {Component, Input, Inject, Renderer2} from '@angular/core';
-import {IonicModule, LoadingController, ModalController} from '@ionic/angular';
+import {LoadingController, ModalController} from '@ionic/angular';
 import {NgForOf, NgOptimizedImage, DOCUMENT} from '@angular/common';
 import {formatPhoneNumber, formatTaj, formatTimestamp} from '../../../../../../utils/formatProfileData';
 import {MyDiagnosis} from '../../../../../../utils/interfaces/diagnosis.interface';
@@ -13,6 +13,7 @@ import {
 } from '../../../../components/diagnosis-summary-modal/diagnosis-summary-modal.component';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import {IONIC_COMPONENTS} from '../../../../../../shared/ionic-imports';
 
 interface SummaryVM {
   patientName: string; taj: string; phone: string; email: string; appointmentTime: string; diagnosisDate: string;
@@ -25,7 +26,7 @@ interface SummaryVM {
 @Component({
   selector: 'app-diagnoses-table',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgForOf,
     NgOptimizedImage
   ],

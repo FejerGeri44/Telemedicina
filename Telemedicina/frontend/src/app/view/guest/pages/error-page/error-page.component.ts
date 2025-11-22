@@ -1,13 +1,13 @@
 import {Component} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {Location} from '@angular/common';
 import {GuestFooterComponent} from '../../components/guest-footer/guest-footer.component';
 import {GuestNavbarComponent} from '../../components/guest-navbar/guest-navbar.component';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-error-page',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     GuestNavbarComponent,
     GuestFooterComponent
   ],

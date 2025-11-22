@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {AdminProfileCardComponent} from '../../components/admin-profile-card/admin-profile-card.component';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {DatePipe, NgClass, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
@@ -25,13 +25,14 @@ import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {environment} from '../../../../../../enviroment';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 type UserSortKey = 'name' | 'role' | 'createdAt';
 
 @Component({
   selector: 'app-all-users',
     imports: [
-        IonicModule,
+      ...IONIC_COMPONENTS,
         NgForOf,
         DatePipe,
         NgClass,

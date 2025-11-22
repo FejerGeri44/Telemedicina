@@ -1,11 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {IonicModule} from '@ionic/angular';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-guest-footer',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [
+    ...IONIC_COMPONENTS,
+    CommonModule
+  ],
   templateUrl: './guest-footer.component.html',
   styleUrls: ['./guest-footer.component.scss']
 })

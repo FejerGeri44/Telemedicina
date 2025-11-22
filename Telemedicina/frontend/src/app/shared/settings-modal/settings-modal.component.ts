@@ -1,14 +1,15 @@
 import { Component } from '@angular/core';
-import {IonicModule, ModalController, NavController} from '@ionic/angular';
+import {ModalController, NavController} from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import {AlertService} from '../alert/alert.service.component';
 import {UserService} from '../../services/user/user.service';
+import {IONIC_COMPONENTS} from '../ionic-imports';
 
 @Component({
   selector: 'app-settings-modal',
   imports: [
-    IonicModule
+    ...IONIC_COMPONENTS
   ],
   templateUrl: './settings-modal.component.html',
   styleUrl: './settings-modal.component.scss',

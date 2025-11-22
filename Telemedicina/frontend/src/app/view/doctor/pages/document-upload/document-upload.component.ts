@@ -1,7 +1,6 @@
 import {Component, ElementRef, ViewChild} from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import {IonicModule} from '@ionic/angular';
 import {DatePipe, DecimalPipe, NgForOf, NgIf, NgOptimizedImage, NgSwitch, NgSwitchCase} from '@angular/common';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
@@ -12,6 +11,7 @@ import {environment} from '../../../../../../enviroment';
 import {HttpClient} from '@angular/common/http';
 import {formatTaj} from '../../../../utils/formatProfileData';
 import {Appointment} from '../../../../utils/interfaces/appointment.inteface';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 export type DocType = 'recept' | 'beutalo' | 'teszteredmeny' | 'egyeb';
 
@@ -24,7 +24,7 @@ interface UploadedFile extends File {
   templateUrl: './document-upload.component.html',
   standalone: true,
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     ReactiveFormsModule,
     NgForOf,
     NgIf,

@@ -1,13 +1,13 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {DatePipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {formatPhoneNumber, formatTaj, getAge, getUserRoleLabel} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-patient-profile-card',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgForOf,
     NgIf,
     NgOptimizedImage,

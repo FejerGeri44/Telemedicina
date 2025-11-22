@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {NgForOf, NgIf} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
@@ -12,6 +12,7 @@ import {
   QuickStartItem
 } from '../../../../services/Ai-assistants/AIInterfaces';
 import {AiConfigService} from '../../../../services/Ai-assistants/AiConfigService';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 type UpdateKind = 'greeting' | 'intent' | 'fallback' | 'greetingText' | 'fallbackText';
 type Incoming = string | Intent | QuickStartItem | FallbackSuggestion;
@@ -23,7 +24,7 @@ type IntentForm   = { id: number | null; patterns: string; response: string };
 @Component({
   selector: 'app-update-query-response-modal',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgForOf,
     NgIf,
     ReactiveFormsModule,

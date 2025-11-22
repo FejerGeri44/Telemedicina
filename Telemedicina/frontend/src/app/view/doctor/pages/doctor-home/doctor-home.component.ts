@@ -1,6 +1,6 @@
 import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {
   DoctorEditProfileModalComponent
 } from '../../components/doctor-edit-profile-modal/doctor-edit-profile-modal.component';
@@ -16,11 +16,12 @@ import {AsyncPipe, DecimalPipe, NgForOf, NgIf} from '@angular/common';
 import {buildStarIcons, roundToHalf} from '../../../../utils/formatDoctorRating';
 import {delay, filter, firstValueFrom, Observable, Subject, take, takeUntil} from 'rxjs';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-doctor-home',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     RouterLink,
     DoctorProfileCardComponent,
     DecimalPipe,

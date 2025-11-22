@@ -1,6 +1,6 @@
 import {Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {NgClass} from '@angular/common';
+import {IONIC_COMPONENTS} from '../ionic-imports';
 
 @Component({
   selector: 'app-custom-toast',
@@ -13,7 +13,7 @@ import {NgClass} from '@angular/common';
   styleUrls: ['./toast.component.scss'],
   standalone: true,
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgClass
   ],
   encapsulation: ViewEncapsulation.None

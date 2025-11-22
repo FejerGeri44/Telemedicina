@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {DatePipe, NgClass, NgForOf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
@@ -11,11 +11,12 @@ import {UserService} from '../../../../services/user/user.service';
 import {environment} from '../../../../../../enviroment';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {firstValueFrom, Observable} from 'rxjs';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-appointment-modal',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     NgForOf,
     DatePipe,

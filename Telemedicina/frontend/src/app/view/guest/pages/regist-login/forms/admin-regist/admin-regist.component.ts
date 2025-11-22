@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {IonicModule, ModalController} from "@ionic/angular";
+import {ModalController} from "@ionic/angular";
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {HttpClient} from "@angular/common/http";
 import {Router} from "@angular/router";
@@ -9,11 +9,12 @@ import {environment} from '../../../../../../../../enviroment';
 import {PASSWORD_PATTERN, PHONE_PATTERN, TEXT_PATTERN} from '../../../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../../../services/platform/platform.service';
 import {formatPhoneNumberInput} from '../../../../../../utils/formatInput';
+import {IONIC_COMPONENTS} from '../../../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-admin-regist',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     ReactiveFormsModule
   ],

@@ -1,12 +1,12 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {AiAssistantFabComponent} from '../../../../shared/ai-assistant-fab/ai-assistant-fab.component';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-ai-demo-card',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     AiAssistantFabComponent
   ],

@@ -19,7 +19,7 @@ import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-m
 import {DoctorRatingItem} from '../../../../utils/interfaces/doctor.interface';
 import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
 import {SystemMessageService} from '../../../../services/system-messages/system-messages.service';
-import {IonicModule, ModalController, NavController} from '@ionic/angular';
+import {ModalController, NavController} from '@ionic/angular';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {map} from 'rxjs/operators';
 import {DoctorRatingService} from '../../../../services/doctor-rating/doctor-rating.service';
@@ -28,10 +28,12 @@ import {ToastService} from '../../../../shared/toast/toast.service';
 import {UnreadMessageData} from '../../../../utils/interfaces/message.interface';
 import {SettingsModalComponent} from '../../../../shared/settings-modal/settings-modal.component';
 import {getUserRoleLabel} from '../../../../utils/formatProfileData';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-patient-navbar',
   imports: [
+    ...IONIC_COMPONENTS,
     NgIf,
     RouterLinkActive,
     RouterModule,
@@ -41,8 +43,7 @@ import {getUserRoleLabel} from '../../../../utils/formatProfileData';
     NgTemplateOutlet,
     TitleCasePipe,
     SlicePipe,
-    DatePipe,
-    IonicModule,
+    DatePipe
   ],
   templateUrl: './patient-navbar.component.html',
   standalone: true,

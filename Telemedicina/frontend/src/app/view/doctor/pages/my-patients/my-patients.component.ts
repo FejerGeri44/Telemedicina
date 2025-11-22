@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {HttpClient} from '@angular/common/http';
 import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {
@@ -13,11 +13,12 @@ import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {environment} from '../../../../../../enviroment';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-my-patients',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgIf,
     NgForOf,
     NgOptimizedImage,

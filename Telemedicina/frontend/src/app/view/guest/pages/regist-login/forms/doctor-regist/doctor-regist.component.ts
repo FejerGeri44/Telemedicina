@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,15 +9,16 @@ import {environment} from '../../../../../../../../enviroment';
 import {AdminItem} from '../../../../../../utils/interfaces/admin.interface';
 import {PASSWORD_PATTERN, PHONE_PATTERN, TEXT_PATTERN} from '../../../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../../../services/platform/platform.service';
-import {formatPhoneNumberInput, formatTajInput} from '../../../../../../utils/formatInput';
+import {formatPhoneNumberInput} from '../../../../../../utils/formatInput';
+import {IONIC_COMPONENTS} from '../../../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-doctor-regist',
   standalone: true,
     imports: [
+        ...IONIC_COMPONENTS,
         CommonModule,
         FormsModule,
-        IonicModule,
         ReactiveFormsModule
     ],
   templateUrl: './doctor-regist.component.html',

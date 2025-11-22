@@ -1,15 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PatientNavbarComponent } from '../components/patient-navbar/patient-navbar.component';
-import { IonicModule } from '@ionic/angular';
 import { NavigationEnd, Router, Event as NgEvent, RouterOutlet } from '@angular/router';
 import { AiAssistantFabComponent } from '../../../shared/ai-assistant-fab/ai-assistant-fab.component';
 import { filter, Subscription } from 'rxjs';
+import {IONIC_COMPONENTS} from '../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-patient-dashboard',
   imports: [
+    ...IONIC_COMPONENTS,
     PatientNavbarComponent,
-    IonicModule,
     RouterOutlet,
     AiAssistantFabComponent
   ],

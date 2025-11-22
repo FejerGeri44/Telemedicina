@@ -1,6 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {FormsModule, NgForm, ReactiveFormsModule} from '@angular/forms';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {NgForOf, NgIf} from '@angular/common';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AiConfigService} from '../../../../services/Ai-assistants/AiConfigService';
@@ -8,8 +8,8 @@ import type {
   Intent,
   QuickStartItem,
   FallbackSuggestion,
-  ItemID
 } from '../../../../services/Ai-assistants/AIInterfaces';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 type UpdateKind = 'greeting' | 'intent' | 'fallback';
 type ItemForm = { label: string; prompt: string; reply: string; icon: string };
@@ -18,7 +18,7 @@ type IntentForm   = { patterns: string; response: string };
 @Component({
   selector: 'app-new-query-response-modal',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgIf,
     NgForOf,
     ReactiveFormsModule,

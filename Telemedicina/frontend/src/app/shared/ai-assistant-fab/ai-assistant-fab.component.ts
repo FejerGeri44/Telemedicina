@@ -1,10 +1,10 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {NgIf, AsyncPipe, NgClass} from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import {BehaviorSubject, Subscription, timer} from 'rxjs';
 import {AiConfigService} from '../../services/Ai-assistants/AiConfigService';
 import { ChatComponent } from './chat-component/chat.component';
 import type { QuickStartItem } from '../../services/Ai-assistants/AIInterfaces';
+import {IONIC_COMPONENTS} from '../ionic-imports';
 
 type BotRole = 'patient' | 'doctor';
 
@@ -14,7 +14,7 @@ type BotRole = 'patient' | 'doctor';
   styleUrls: ['./ai-assistant-fab.component.scss'],
   standalone: true,
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgIf,
     AsyncPipe,
     ChatComponent,

@@ -1,13 +1,14 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {NgIf} from '@angular/common';
 import {MyDiagnosis} from '../../../../utils/interfaces/diagnosis.interface';
 import {formatPhoneNumber, formatTaj, formatTimestamp} from '../../../../utils/formatProfileData';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-diagnosis-summary-modal',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgIf
   ],
   templateUrl: './diagnosis-summary-modal.component.html',

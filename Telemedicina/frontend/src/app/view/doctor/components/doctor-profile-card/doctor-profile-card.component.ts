@@ -1,15 +1,15 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {NgIf, NgOptimizedImage} from '@angular/common';
 import {formatPhoneNumber, getUserRoleLabel} from '../../../../utils/formatProfileData';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-doctor-profile-card',
   templateUrl: './doctor-profile-card.component.html',
   standalone: true,
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgIf,
     NgOptimizedImage
   ],

@@ -56,13 +56,11 @@
     </div>
   </div>
 
-  <!-- HA NINCS ORVOS -->
   <div *ngIf="!isLoading && paginatedDoctors.length === 0" class="no-data">
     Nincs találat
     <span class="no-data-text">N/A</span>
   </div>
 
-  <!-- SKELETON ÁLLAPOT -->
   <ion-grid *ngIf="isLoading">
     <ion-row>
       <ion-col class="custom-col" *ngFor="let i of [1, 2, 3, 4, 5, 6]">
@@ -101,7 +99,6 @@
     </ion-row>
   </ion-grid>
 
-  <!-- VALÓDI TARTALOM -->
   <ion-grid *ngIf="!isLoading">
     <ion-row>
       <ion-col class="custom-col" *ngFor="let doctor of paginatedDoctors">

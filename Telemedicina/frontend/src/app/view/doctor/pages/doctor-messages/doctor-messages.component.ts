@@ -1,5 +1,4 @@
 import {Component, OnInit, OnDestroy} from '@angular/core';
-import {IonicModule} from '@ionic/angular';
 import {FormsModule} from '@angular/forms';
 import {NgForOf, NgIf, NgOptimizedImage, NgClass} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
@@ -16,11 +15,12 @@ import {SupabaseService} from '../../../../services/chat/supabase.service';
 import {formatTaj} from '../../../../utils/formatProfileData';
 import {ActivatedRoute} from '@angular/router';
 import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-messages.service';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-patient-messages',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     NgIf,
     NgForOf,

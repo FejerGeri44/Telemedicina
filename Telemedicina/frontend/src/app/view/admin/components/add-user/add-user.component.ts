@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {IonicModule, ModalController} from '@ionic/angular';
+import {ModalController} from '@ionic/angular';
 import {AsyncPipe, NgIf} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {PatientRegistComponent} from '../../../guest/pages/regist-login/forms/patient-regist/patient-regist.component';
@@ -8,11 +8,12 @@ import {AdminRegistComponent} from '../../../guest/pages/regist-login/forms/admi
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {UserService} from '../../../../services/user/user.service';
 import {delay, filter, firstValueFrom, Observable, take} from 'rxjs';
+import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-add-user',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     FormsModule,
     PatientRegistComponent,
     DoctorRegistComponent,
