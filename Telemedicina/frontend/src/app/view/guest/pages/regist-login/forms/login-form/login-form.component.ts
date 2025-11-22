@@ -12,6 +12,7 @@ import {environment} from '../../../../../../../../enviroment';
 import {firstValueFrom} from 'rxjs';
 import {PlatformService} from '../../../../../../services/platform/platform.service';
 import {IONIC_COMPONENTS} from '../../../../../../shared/ionic-imports';
+import {PASSWORD_PATTERN} from '../../../../../../utils/validation-patterns';
 const supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
 
 @Component({
@@ -45,7 +46,7 @@ export class LoginFormComponent implements OnInit{
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required,
-        //Validators.pattern(PASSWORD_PATTERN)
+        Validators.pattern(PASSWORD_PATTERN)
       ]],
     });
   }
