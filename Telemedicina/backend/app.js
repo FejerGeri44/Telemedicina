@@ -5,8 +5,16 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:4200',
+  'https://telemedicina-carelink.vercel.app'
+];
+
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || 'http://localhost:4200',
+  origin: [
+    'http://localhost:4200',
+    'https://telemedicina-carelink.vercel.app'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
