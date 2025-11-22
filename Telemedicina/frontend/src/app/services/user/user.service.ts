@@ -1,15 +1,14 @@
-import {Injectable} from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {BehaviorSubject, first, Observable, Subscription, switchMap, timer} from 'rxjs';
+import { BehaviorSubject, first, Observable, Subscription, switchMap, timer } from 'rxjs';
 import { map, shareReplay, tap } from 'rxjs/operators';
-
 import { FrontendUser, LoggedUser, mapLoggedToItem, isPatientItem, isDoctorItem, isAdminItem } from './user.mapper';
-import {AdminItem} from '../../utils/interfaces/admin.interface';
-import {DoctorItem} from '../../utils/interfaces/doctor.interface';
-import {PatientItem} from '../../utils/interfaces/patient.interface';
-import {environment} from '../../../../enviroment';
-import {Router} from '@angular/router';
-import {ToastService} from '../../shared/toast/toast.service';
+import { AdminItem } from '../../utils/interfaces/admin.interface';
+import { DoctorItem } from '../../utils/interfaces/doctor.interface';
+import { PatientItem } from '../../utils/interfaces/patient.interface';
+import { environment } from '../../../../enviroment';
+import { Router } from '@angular/router';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -20,7 +19,7 @@ export class UserService {
 
   constructor(
     private http: HttpClient,
-    private router: Router,
+    private injector: Injector,
     private toast: ToastService
   ) {
     this.initialLoad$ = this.http
@@ -128,11 +127,15 @@ export class UserService {
   private autoLogout(): void {
     this.stopSessionTimer();
     this._user$.next(null);
+
+    // ITT KÉRJÜK EL A ROUTERT:
+    const router = this.injector.get(Router);
+
     this.http.post<void>(`${environment.apiUrl}/auth/logout`, {}, { withCredentials: true })
       .pipe(first())
       .subscribe(() => {
         this.toast.show("Munkamenet lejárt, lépj be ismét!", "warning");
-        void this.router.navigate(['/regist-login']);
+        void router.navigate(['/regist-login']); // this.router helyett router
       });
   }
 
