@@ -23,11 +23,11 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/patient', require('./routes/patient.routes'));
-app.use('/api/doctor', require('./routes/doctor.routes'));
-app.use('/api/admin', require('./routes/admin.routes'));
-app.use('/api/messages', require('./routes/messages.routes'));
+app.use('/auth', require('./routes/auth.routes'));
+app.use('/patient', require('./routes/patient.routes'));
+app.use('/doctor', require('./routes/doctor.routes'));
+app.use('/admin', require('./routes/admin.routes'));
+app.use('/messages', require('./routes/messages.routes'));
 
 const PORT = process.env.PORT;
 
