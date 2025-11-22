@@ -98,7 +98,7 @@ export class PatientRegistComponent {
       phoneNumber: String(phoneNumber).trim(),
       address: String(address).trim(),
       birthDate: new Date(birthDate),
-      ...(taj ? { taj: String(taj).trim() } : {}),
+      ...(taj ? { taj: String(taj).replace(/\s/g, '') } : {}),
       ...(gender ? { gender } : {})
     };
 

@@ -2,7 +2,7 @@ export const TEXT_PATTERN = /^[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9.,\s
 
 export const PHONE_PATTERN = /^\+?[0-9\s\(\)\-\/]*$/;
 
-export const TAJ_PATTERN = /^[0-9]{9}$/;
+export const TAJ_PATTERN = /^(\d{3} \d{3} \d{3}|\d{9})$/;
 
 export const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
 
