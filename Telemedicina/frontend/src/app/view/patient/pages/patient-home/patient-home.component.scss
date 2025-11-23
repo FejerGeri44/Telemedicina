@@ -144,7 +144,7 @@ $secondary: var(--secondary);
       }
     }
 
-    .appointment-count {
+    .appointment-count, .document-count {
       display: flex;
       flex-direction: column;
       align-items: center;

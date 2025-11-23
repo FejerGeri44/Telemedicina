@@ -422,7 +422,7 @@
   .chat-pane {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-    height: calc(100vh - 70px - 141px - 30px);
+    height: calc(100dvh - 70px - 141px - 30px);
   }
 }
 
@@ -446,7 +446,7 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 100vh;
+      height: 100dvh;
       z-index: 100;
       margin-top: 50px;
       flex-direction: column;
@@ -506,7 +506,7 @@
       left: 0;
       width: 100%;
       margin-top: 50px;
-      height: calc(100vh - 50px);
+      height: calc(100dvh - 50px);
       z-index: 200;
       transition: transform 0.3s ease-in-out;
       transform: translateX(100%);
