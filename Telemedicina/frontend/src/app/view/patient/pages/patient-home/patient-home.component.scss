@@ -144,7 +144,7 @@ $secondary: var(--secondary);
       }
     }
 
-    .appointment-count, .document-count {
+    .appointment-count {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -263,25 +263,26 @@ $secondary: var(--secondary);
           }
         }
       }
-
-      .document-count {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: calc(100% - 40px);
-
-        span {
-          font-size: 3rem;
-          color: $secondary;
-          font-weight: bold;
-        }
-      }
     }
 
     .document-count {
-      text-align: center;
-      padding: 20px 0;
-      color: #999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100% - 40px);
+
+      span {
+        font-size: 3rem;
+        color: $secondary;
+        font-weight: bold;
+      }
+
+      p {
+        font-size: 1rem;
+        padding-bottom: 40px;
+        color: var(--smoke-color);
+      }
     }
   }
 }
