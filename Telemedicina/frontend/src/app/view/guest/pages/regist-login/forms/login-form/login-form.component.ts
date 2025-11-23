@@ -124,7 +124,6 @@ export class LoginFormComponent implements OnInit{
       this.userService.setUserFromBackend(resp.user, resp.expiresIn);
       const role = resp.user.user.role;
 
-      this.toast.show(`Üdvözlünk újra, ${resp.user.user.name}!`, 'success');
 
       switch (role) {
         case 'doctor':  void this.router.navigate(['/doctor/doctor-home']); break;
