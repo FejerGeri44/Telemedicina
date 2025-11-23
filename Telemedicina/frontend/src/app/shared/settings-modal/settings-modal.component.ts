@@ -33,11 +33,6 @@ export class SettingsModalComponent {
     return this.modalCtrl.dismiss(null, 'cancel');
   }
 
-  async saveSettings() {
-    console.log('Beállítások mentése...');
-    await this.modalCtrl.dismiss({ saved: true }, 'confirm');
-  }
-
   confirmAccountDelete() {
     void this.alert.show(
       'Fiók törlése',
@@ -48,5 +43,6 @@ export class SettingsModalComponent {
 
   deleteAccount() {
     this.userService.deleteAccount().subscribe(() => this.nav.navigateRoot('/regist-login?tab=login'));
+    void this.modalCtrl.dismiss();
   }
 }

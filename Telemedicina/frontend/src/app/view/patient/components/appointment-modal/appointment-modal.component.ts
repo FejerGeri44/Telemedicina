@@ -185,11 +185,17 @@ export class AppointmentModalComponent implements OnInit{
 
   private parseLocal(dt: string): Date {
     if (!dt) return new Date(NaN);
-    if (dt.includes('T')) return new Date(dt);
-    const [d, t='00:00:00'] = dt.split(' ');
-    const [y,m,day] = d.split('-').map(Number);
-    const [hh,mm,ss] = t.split(':').map(Number);
-    return new Date(y, m-1, day, hh, mm, ss ?? 0, 0);
+
+    let cleanDt = dt.replace('T', ' ');
+    if (cleanDt.includes('+')) cleanDt = cleanDt.split('+')[0];
+    if (cleanDt.includes('Z')) cleanDt = cleanDt.split('Z')[0];
+    if (cleanDt.includes('.')) cleanDt = cleanDt.split('.')[0];
+
+    const [d, t = '00:00:00'] = cleanDt.split(' ');
+    const [y, m, day] = d.split('-').map(Number);
+    const [hh, mm, ss] = t.split(':').map(Number);
+
+    return new Date(y, m - 1, day, hh, mm, ss ?? 0, 0);
   }
 
   private reindexAppointments() {
