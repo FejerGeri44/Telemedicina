@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {HttpClient} from '@angular/common/http';
 import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {

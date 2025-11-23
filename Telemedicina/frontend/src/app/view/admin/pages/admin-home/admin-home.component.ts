@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {
   AdminEditProfileModalComponent
 } from '../../components/admin-edit-profile-modal/admin-edit-profile-modal.component';

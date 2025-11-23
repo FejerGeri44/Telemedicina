@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {DecimalPipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { AppointmentModalComponent } from '../../components/appointment-modal/appointment-modal.component';
 import {DoctorProfileCardComponent} from '../../../doctor/components/doctor-profile-card/doctor-profile-card.component';
 import {ToastService} from '../../../../shared/toast/toast.service';

@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {NgIf} from '@angular/common';
 import {MyDiagnosis} from '../../../../utils/interfaces/diagnosis.interface';
 import {formatPhoneNumber, formatTaj, formatTimestamp} from '../../../../utils/formatProfileData';

@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { Router } from '@angular/router';

@@ -1,6 +1,6 @@
 import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {
   DoctorEditProfileModalComponent
 } from '../../components/doctor-edit-profile-modal/doctor-edit-profile-modal.component';

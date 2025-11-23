@@ -19,7 +19,6 @@ import {UnreadMessageService} from '../../../../services/UnreadMessages/unread-m
 import {DoctorRatingItem} from '../../../../utils/interfaces/doctor.interface';
 import {SystemMessage} from '../../../../utils/interfaces/system-message.interface';
 import {SystemMessageService} from '../../../../services/system-messages/system-messages.service';
-import {ModalController, NavController} from '@ionic/angular';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {map} from 'rxjs/operators';
 import {DoctorRatingService} from '../../../../services/doctor-rating/doctor-rating.service';
@@ -29,6 +28,8 @@ import {UnreadMessageData} from '../../../../utils/interfaces/message.interface'
 import {SettingsModalComponent} from '../../../../shared/settings-modal/settings-modal.component';
 import {getUserRoleLabel} from '../../../../utils/formatProfileData';
 import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
+import { ModalController } from '@ionic/angular/standalone';
+import { NavController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-patient-navbar',

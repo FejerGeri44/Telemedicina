@@ -1,7 +1,8 @@
 import {Component, Input, Renderer2, Inject} from '@angular/core';
 import {DOCUMENT, NgForOf, NgOptimizedImage} from '@angular/common';
 import {DocumentItem} from '../../../../../../utils/interfaces/document.interface';
-import {IonicModule, ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
+
 import {DoctorItem} from '../../../../../../utils/interfaces/doctor.interface';
 import {
   DoctorProfileCardComponent
@@ -9,11 +10,12 @@ import {
 import {formatTimestamp} from '../../../../../../utils/formatProfileData';
 import {environment} from '../../../../../../../../enviroment';
 import {HttpClient} from '@angular/common/http';
+import {IONIC_COMPONENTS} from '../../../../../../shared/ionic-imports';
 
 @Component({
   selector: 'app-document-table',
   imports: [
-    IonicModule,
+    ...IONIC_COMPONENTS,
     NgForOf,
     NgOptimizedImage
   ],

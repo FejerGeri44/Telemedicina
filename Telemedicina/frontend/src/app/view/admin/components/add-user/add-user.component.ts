@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {AsyncPipe, NgIf} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {PatientRegistComponent} from '../../../guest/pages/regist-login/forms/patient-regist/patient-regist.component';

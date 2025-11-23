@@ -13,6 +13,7 @@ import {firstValueFrom} from 'rxjs';
 import {PlatformService} from '../../../../../../services/platform/platform.service';
 import {IONIC_COMPONENTS} from '../../../../../../shared/ionic-imports';
 import {PASSWORD_PATTERN} from '../../../../../../utils/validation-patterns';
+
 const supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
 
 @Component({

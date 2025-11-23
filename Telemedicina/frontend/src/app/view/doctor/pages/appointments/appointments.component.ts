@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {FormsModule} from '@angular/forms';
 import {DatePipe, NgClass, NgForOf, NgIf, registerLocaleData} from '@angular/common';
 import {HttpClient} from '@angular/common/http';

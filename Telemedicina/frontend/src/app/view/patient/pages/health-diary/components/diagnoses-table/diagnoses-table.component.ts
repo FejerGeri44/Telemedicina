@@ -1,5 +1,5 @@
 import {Component, Input, Inject, Renderer2} from '@angular/core';
-import {LoadingController, ModalController} from '@ionic/angular';
+import { ModalController, LoadingController } from '@ionic/angular/standalone';
 import {NgForOf, NgOptimizedImage, DOCUMENT} from '@angular/common';
 import {formatPhoneNumber, formatTaj, formatTimestamp} from '../../../../../../utils/formatProfileData';
 import {MyDiagnosis} from '../../../../../../utils/interfaces/diagnosis.interface';

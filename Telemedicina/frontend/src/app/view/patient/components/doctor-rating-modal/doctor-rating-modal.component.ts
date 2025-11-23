@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { NgForOf, NgIf, NgOptimizedImage } from '@angular/common';
 import { DoctorRatingItem } from '../../../../utils/interfaces/doctor.interface';
 import { DoctorRatingService } from '../../../../services/doctor-rating/doctor-rating.service';

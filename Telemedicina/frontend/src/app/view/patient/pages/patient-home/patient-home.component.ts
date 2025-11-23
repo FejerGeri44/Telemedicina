@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import {AsyncPipe, DatePipe, NgForOf, NgIf, NgOptimizedImage, TitleCasePipe} from '@angular/common';
 

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {ModalController, NavController} from '@ionic/angular';
+import {ModalController, NavController} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import {AlertService} from '../alert/alert.service.component';

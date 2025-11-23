@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {SystemMessageModalComponent} from '../../../../shared/system-message-modal/system-message-modal.component';
 import {NgForOf, NgIf, NgOptimizedImage} from '@angular/common';

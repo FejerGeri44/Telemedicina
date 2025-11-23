@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {
   PatientProfileCardComponent
 } from '../../../patient/components/patient-profile-card/patient-profile-card.component';

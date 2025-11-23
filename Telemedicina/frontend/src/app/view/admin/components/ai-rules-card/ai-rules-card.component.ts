@@ -7,7 +7,7 @@ import {
   ChangeDetectionStrategy
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {NgFor, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 
 import type {

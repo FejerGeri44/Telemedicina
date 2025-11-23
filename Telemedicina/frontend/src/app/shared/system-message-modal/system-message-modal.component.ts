@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {DatePipe, NgClass, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault, UpperCasePipe} from '@angular/common';
 import {SystemMessage} from '../../utils/interfaces/system-message.interface';
 import {IONIC_COMPONENTS} from '../ionic-imports';

@@ -1,6 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {FormsModule, NgForm, ReactiveFormsModule} from '@angular/forms';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {NgForOf, NgIf} from '@angular/common';
 import {ToastService} from '../../../../shared/toast/toast.service';
 import {AiConfigService} from '../../../../services/Ai-assistants/AiConfigService';

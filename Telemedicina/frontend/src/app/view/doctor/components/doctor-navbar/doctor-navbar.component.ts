@@ -1,5 +1,5 @@
 import {Component, HostListener, OnInit} from '@angular/core';
-import {ModalController, NavController} from '@ionic/angular';
+import {ModalController, NavController} from '@ionic/angular/standalone';
 import {
   AsyncPipe,
   DatePipe,

@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {NgForOf, NgOptimizedImage} from '@angular/common';
 import {formatAppointmentTime, formatPhoneNumber} from '../../../../../../utils/formatProfileData';
-import {ModalController} from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {MyAppointment} from '../../../../../../utils/interfaces/appointment.inteface';
 import {DoctorItem} from '../../../../../../utils/interfaces/doctor.interface';
 import {
