@@ -58,7 +58,6 @@ ion-title {
 }
 
 ion-button.btn-primary {
-  width: 70%;
   border-radius: var(--ion-button-radius);
   --border-radius: var(--button-radius);
   --background: var(--primary);
@@ -72,23 +71,22 @@ ion-button.btn-primary {
   text-align: center;
   line-height: 1.2;
   word-break: break-word;
-}
 
-ion-button.btn-primary:hover {
-  background: var(--primary);
-  color: var(--light-text-color);
-  border-radius: var(--button-radius);
-  box-shadow: var(--button-shadow);
-  transform: translateY(-2px);
-}
+  &:hover {
+    background: var(--primary);
+    color: var(--light-text-color);
+    border-radius: var(--button-radius);
+    box-shadow: var(--button-shadow);
+    transform: translateY(-2px);
+  }
 
-ion-button.btn-primary:active {
-  transform: scale(0.98);
-  box-shadow: none;
+  &:active {
+    transform: scale(0.98);
+    box-shadow: none;
+  }
 }
 
 ion-button.btn-secondary {
-  width: 30%;
   border-radius: var(--ion-button-radius);
   --border-radius: var(--button-radius);
   --background: none;
@@ -102,19 +100,19 @@ ion-button.btn-secondary {
   text-align: center;
   line-height: 1.2;
   word-break: break-word;
-}
 
-ion-button.btn-secondary:hover {
-  background: var(--primary);
-  color: var(--light-text-color);
-  border-radius: var(--button-radius);
-  box-shadow: var(--button-shadow);
-  transform: translateY(-2px);
-}
+  &:hover {
+    background: var(--primary);
+    color: var(--light-text-color);
+    border-radius: var(--button-radius);
+    box-shadow: var(--button-shadow);
+    transform: translateY(-2px);
+  }
 
-ion-button.btn-secondary:active {
-  transform: scale(0.98);
-  box-shadow: none;
+  &:active {
+    transform: scale(0.98);
+    box-shadow: none;
+  }
 }
 
 ion-button.btn-accent {
@@ -130,19 +128,19 @@ ion-button.btn-accent {
   text-align: center;
   line-height: 1.2;
   word-break: break-word;
-}
 
-ion-button.btn-accent:hover {
-  background: var(--accent);
-  color: var(--light-text-color);
-  border-radius: var(--button-radius);
-  box-shadow: var(--button-shadow);
-  transform: translateY(-2px);
-}
+  &:hover {
+    background: var(--accent);
+    color: var(--light-text-color);
+    border-radius: var(--button-radius);
+    box-shadow: var(--button-shadow);
+    transform: translateY(-2px);
+  }
 
-ion-button.btn-accent:active {
-  transform: scale(0.98);
-  box-shadow: none;
+  &:active {
+    transform: scale(0.98);
+    box-shadow: none;
+  }
 }
 
 ion-modal {

@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   background: linear-gradient(120deg, #f4fdff 0%, #e8fbff 100%);
-  padding: 100px 0;
+  margin-top: 56px;
   overflow: hidden;
 
   .hero-grid {
@@ -15,7 +15,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    height: calc(100vh - 80px);
+    min-height: calc(100vh - 56px);
   }
 
   .hero-content {
@@ -40,10 +40,12 @@
       display: flex;
       gap: 1rem;
 
-      ion-button {
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
+      .btn-primary {
+        width: 60%;
+      }
+
+      .btn-secondary {
+        width: 40%;
       }
     }
 
@@ -302,9 +304,6 @@
 }
 
 @media (max-width: 768px) {
-  .hero {
-    padding-bottom: clamp(100px, 30%, 150px);
-  }
   ion-row.hero-row {
     display: flex;
     flex-wrap: wrap;
@@ -321,11 +320,6 @@
     order: 0;
     width: 100%;
     max-width: 100%;
-  }
-
-  ion-col.hero-right .image-wrapper,
-  ion-col.hero-right .hero-image {
-    margin-bottom: 1.5rem;
   }
 }
 
