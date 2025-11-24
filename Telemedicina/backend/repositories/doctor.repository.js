@@ -242,14 +242,14 @@ const DoctorRepository = {
   },
 
   async countPendingAppointmentsByDoctorId(doctorId, supabaseAdmin) {
-    const now = new Date().toISOString();
+    const today = new Date().toISOString();
 
     const { count, error } = await supabaseAdmin
       .from('appointments')
       .select('id', { count: 'exact', head: true })
       .eq('doctor_id', doctorId)
       .eq('status', 'pending')
-      .gt('starts_at', now);
+      .gt('starts_at', today);
 
     if (error) {
       console.error('❌ Supabase pending count error in repository:', error);
