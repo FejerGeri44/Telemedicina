@@ -213,7 +213,7 @@ ion-card-content {
         }
       }
 
-      .btn-primary {
+      .btn-primary, .btn-secondary {
         border-radius: 5px;
         --border-radius: 0;
         width: 100%;
@@ -222,11 +222,14 @@ ion-card-content {
       }
 
       .delete {
+        border-radius: 5px;
+        --border-radius: 0;
+        width: 100%;
+        max-width: 150px;
+        margin: 0 auto;
         --background: var(--accent);
         border: var(--accent) 1px solid;
-        border-radius: 5px;
         font-size: 0.75rem;
-        width: 100px;
         transition: all 0.5s ease-in-out;
 
         &:hover {

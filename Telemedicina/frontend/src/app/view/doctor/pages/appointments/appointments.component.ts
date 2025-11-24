@@ -154,7 +154,7 @@ export class AppointmentsComponent implements OnInit{
       }
     }
 
-    if (status === 'pending' || appointment.patient_id != null) {
+    if (status === 'pending' && appointment.patient_id != null) {
       return 'cell--pending';
     }
 
@@ -390,6 +390,7 @@ export class AppointmentsComponent implements OnInit{
   }
 
   async reviewAppointment(appointment: MyAppointment) {
+    console.log(appointment)
     const modal = await this.modalCtrl.create({
       component: AppointmentReviewModalComponent as any,
       componentProps: {

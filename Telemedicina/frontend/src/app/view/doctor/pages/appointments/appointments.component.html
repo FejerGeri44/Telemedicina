@@ -22,13 +22,11 @@
         </ion-button>
 
         <div class="calendar-hdr__center">
-          <!-- Hónapváltó gomb: megnyit egy month-year választót -->
           <ion-button fill="clear" (click)="openMonthPicker = true">
             {{ weekStart | date:'yyyy. MMM' }}
             <ion-icon name="chevron-down-outline"></ion-icon>
           </ion-button>
 
-          <!-- (opcionális) heti tartomány infó a hónap alatt -->
           <div class="calendar-range">
             {{ weekStart | date:'MMM d.' }} – {{ weekEnd | date:'MMM d.' }}
           </div>
@@ -39,7 +37,6 @@
         </ion-button>
       </div>
 
-      <!-- Hónapválasztó (month-year) modalban -->
       <ion-modal
         class="calendarModal"
         [isOpen]="openMonthPicker"
@@ -97,10 +94,9 @@
                     </div>
 
                     <div class="cell-actions">
-                      <ng-container *ngIf="getApptStatusClass(appt) === 'cell--noShow'">
+                      <ng-container *ngIf="getApptStatusClass(appt) === ('cell--noShow' || 'cell--accepted')">
                         <ion-button
                           class="btn-primary"
-                          size="small"
                           (click)="openPatientProfile(appt)">
                           <ion-icon name="person-circle-outline" slot="start"></ion-icon>
                           Profil
@@ -112,13 +108,19 @@
                                 getApptStatusClass(appt) !== 'cell--no-appointment'">
 
                         <ng-container *ngIf="getApptStatusClass(appt) === 'cell--pending'">
-                          <ion-button size="small" class="pending-action" (click)="reviewAppointment(appt)">
+                          <ion-button
+                            class="btn-secondary"
+                            (click)="reviewAppointment(appt)">
+                            <ion-icon name="help-circle-outline" slot="start"></ion-icon>
                             Elbírálás
                           </ion-button>
                         </ng-container>
 
                         <ng-container *ngIf="getApptStatusClass(appt) === 'cell--free'">
-                          <ion-button size="small" class="delete" (click)="confirmDeleteAppointment(appt)">
+                          <ion-button
+                            class="delete"
+                            (click)="confirmDeleteAppointment(appt)">
+                            <ion-icon name="close-circle-outline" slot="start"></ion-icon>
                             Törlés
                           </ion-button>
                         </ng-container>
