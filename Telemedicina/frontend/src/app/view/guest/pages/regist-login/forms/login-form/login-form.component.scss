@@ -109,16 +109,16 @@ ion-input.field.ng-invalid.ng-dirty::part(native) {
 @media (max-width: 600px) {
   .button-row {
     flex-direction: column;
-  }
 
-  btn.btn-primary {
-    order: 1;
-    width: 98%;
-  }
+    .btn-primary {
+      order: 1;
+      width: 98%;
+    }
 
-  .btn-secondary {
-    order: 2;
-    width: 98%;
+    .btn-secondary {
+      order: 2;
+      width: 98%;
+    }
   }
 }
 
