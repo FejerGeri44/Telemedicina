@@ -84,7 +84,7 @@
 
             <div class="button-row">
               <ion-button class="btn-secondary" (click)="openPatientModal(patient)">Profil megtekintése</ion-button>
-              <ion-button class="btn-primary" (click)="goToMessages(patient)">Üzenet</ion-button>
+              <ion-button class="btn-primary" (click)="goToMessages(patient.user.id)">Üzenet</ion-button>
             </div>
           </ion-card>
         </ion-col>

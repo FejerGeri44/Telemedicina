@@ -143,28 +143,8 @@ export class MyPatientsComponent {
     await modal.present();
   }
 
-  goToMessages(raw: any) {
-    const normalized = this.normalizePatientForMessages(raw);
-    void this.router.navigate(['/doctor/doctor-messages'], {
-      state: { selectedPatient: normalized }
-    });
-  }
-
-  private normalizePatientForMessages(src: any) {
-    if (src?.patient && src?.user) {
-      const { patient, user } = src;
-      const merged: PatientItem = {
-        user: user,
-        patient: patient
-      };
-
-      if (merged.patient.userId == null && user?.id != null) {
-        (merged as any).userId = user.id;
-      }
-
-      return merged;
-    }
-    return src;
+  goToMessages(partnerId: number) {
+    void this.router.navigate(['/doctor/doctor-messages', partnerId]);
   }
 
   get paginatedPatients(): PatientItem[] {
