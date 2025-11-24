@@ -163,6 +163,8 @@ export class AppointmentModalComponent implements OnInit{
 
     } else if (cssClass.includes('btn-accepted')) {
       this.toast.show('Erre az időpontra nincs rendelés kiírva!', 'warning');
+    } else if (cssClass.includes('btn-passed')) {
+      this.toast.show('Ez az időpont már elmúlt!', 'warning');
     } else {
       this.toast.show('Ez az időpont már foglalt!', 'danger');
     }
@@ -173,6 +175,14 @@ export class AppointmentModalComponent implements OnInit{
     const appt = this.apptBySlot.get(key);
 
     if (!appt) return 'btn-date btn-accepted';
+
+    const startTime = this.parseLocal(String(appt.starts_at));
+    const now = new Date();
+
+    if (startTime < now) {
+      return 'btn-date btn-passed';
+    }
+
     if (appt.patient_id == null) return 'btn-date btn-free';
     return 'btn-date btn-booked';
   }

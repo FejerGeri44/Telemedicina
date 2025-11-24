@@ -201,12 +201,14 @@ export class AppointmentsComponent implements OnInit{
     const day = date.getDay();
     const diff = date.getDate() - day + (day === 0 ? -6 : 1);
     const start = new Date(date.setDate(diff));
+
     this.weekStart = new Date(start);
     this.weekEnd = new Date(start);
-    this.weekEnd.setDate(this.weekStart.getDate() + 6);
+
+    this.weekEnd.setDate(this.weekStart.getDate() + 4);
 
     this.weekDays = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 5; i++) {
       const d = new Date(this.weekStart);
       d.setDate(this.weekStart.getDate() + i);
       this.weekDays.push(d);

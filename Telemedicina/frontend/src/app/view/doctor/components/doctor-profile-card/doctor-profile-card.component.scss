@@ -89,34 +89,36 @@
 
   ion-card-content {
     padding: 20px;
-  }
 
-  .pc-details-doctor-card {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px 16px;
-    margin-bottom: 15px;
+    .pc-details {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px 16px;
+      margin-bottom: 15px;
 
-    .pc-item {
-      --padding-start: 0;
-      --inner-padding-end: 0;
-      --inner-border-width: 0;
-      --min-height: auto;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
+      .pc-item {
+        --padding-start: 0;
+        --inner-padding-end: 0;
+        --inner-border-width: 0;
+        --min-height: auto;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
 
-      ion-label.label {
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin: 0;
-        flex-basis: 100px;
-      }
+        ion-label.label {
+          font-weight: 600;
+          color: var(--text-secondary);
+          flex-shrink: 0;
+          margin: 0;
+          flex-basis: 120px;
+          flex-grow: 0;
+        }
 
-      .value {
-        color: var(--text-primary);
-        overflow-wrap: break-word;
-        flex-grow: 1;
+        .value {
+          color: var(--text-primary);
+          overflow-wrap: break-word;
+          flex-grow: 1;
+        }
       }
     }
   }

@@ -21,27 +21,26 @@
   </ion-toolbar>
 
   <ion-card-content>
-    <div class="pc-details pc-details-doctor-card">
-      <div class="col first">
-        <ion-item lines="none" class="pc-item">
-          <ion-label class="label">Specializáció:</ion-label>
-          <span class="value">{{ user.doctor.speciality }}</span>
-        </ion-item>
-        <ion-item lines="none" class="pc-item">
-          <ion-label class="label">Cím:</ion-label>
-          <span class="value">{{ user.user.address || 'N/A' }}</span>
-        </ion-item>
-      </div>
-      <div class="col">
-        <ion-item lines="none" class="pc-item">
-          <ion-label class="label">Mobil telefonszám:</ion-label>
-          <span class="value">{{ formatPhoneNumber(user.user.phoneNumber) || 'N/A' }}</span>
-        </ion-item>
-        <ion-item lines="none" class="pc-item">
-          <ion-label class="label">Email:</ion-label>
-          <span class="value">{{ user.user.email }}</span>
-        </ion-item>
-      </div>
+    <div class="pc-details">
+      <ion-item lines="none" class="pc-item">
+        <ion-label class="label">Specializáció:</ion-label>
+        <span class="value">{{ user.doctor.speciality }}</span>
+      </ion-item>
+
+      <ion-item lines="none" class="pc-item">
+        <ion-label class="label">Cím:</ion-label>
+        <span class="value">{{ user.user.address || 'N/A' }}</span>
+      </ion-item>
+
+      <ion-item lines="none" class="pc-item">
+        <ion-label class="label">Mobil telefonszám:</ion-label>
+        <span class="value">{{ formatPhoneNumber(user.user.phoneNumber) || 'N/A' }}</span>
+      </ion-item>
+
+      <ion-item lines="none" class="pc-item">
+        <ion-label class="label">Email:</ion-label>
+        <span class="value">{{ user.user.email }}</span>
+      </ion-item>
     </div>
 
     <div class="dpc-intro" *ngIf="user.doctor.introduction">

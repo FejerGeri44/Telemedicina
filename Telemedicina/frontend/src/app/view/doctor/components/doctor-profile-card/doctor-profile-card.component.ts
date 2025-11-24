@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {NgIf, NgOptimizedImage} from '@angular/common';
-import {formatPhoneNumber, getUserRoleLabel} from '../../../../utils/formatProfileData';
+import {DatePipe, NgIf, NgOptimizedImage} from '@angular/common';
+import {formatPhoneNumber, formatTaj, getAge, getUserRoleLabel} from '../../../../utils/formatProfileData';
 import {DoctorItem} from '../../../../utils/interfaces/doctor.interface';
 import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 
@@ -11,7 +11,8 @@ import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
   imports: [
     ...IONIC_COMPONENTS,
     NgIf,
-    NgOptimizedImage
+    NgOptimizedImage,
+    DatePipe
   ],
   styleUrls: ['./doctor-profile-card.component.scss']
 })
@@ -26,4 +27,6 @@ export class DoctorProfileCardComponent {
 
   protected readonly formatPhoneNumber = formatPhoneNumber;
     protected readonly getUserRoleLabel = getUserRoleLabel;
+  protected readonly getAge = getAge;
+  protected readonly formatTaj = formatTaj;
 }
