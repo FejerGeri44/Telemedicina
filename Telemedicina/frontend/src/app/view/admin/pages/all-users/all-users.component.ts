@@ -482,6 +482,7 @@ export class AllUsersComponent implements OnInit{
   async addUser() {
     const modal = await this.modalCtrl.create({
       component: AddUserComponent as any,
+      cssClass: 'user-add-modal'
     });
 
     await modal.present();

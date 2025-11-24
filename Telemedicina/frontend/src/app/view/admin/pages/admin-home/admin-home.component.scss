@@ -108,7 +108,6 @@
   border: 1px solid #eef2f7;
 }
 
-/* sticky fejléc, finom háttér */
 .message-table .table-header {
   position: sticky;
   top: 0;
@@ -203,19 +202,23 @@
 }
 
 .no-data {
-  text-align: center;
-  margin-top: 200px;
-}
-.no-data-text {
-  display: block;
-  font-size: 24px;
-  font-weight: 700;
-  color: #8b5cf6;
-}
-.no-data-sub {
-  display: block;
-  margin-top: 8px;
-  color: #6b7280;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 40px);
+
+  span {
+    font-size: 3rem;
+    color: var(--secondary);
+    font-weight: bold;
+  }
+
+  p {
+    font-size: 1rem;
+    padding-bottom: 40px;
+    color: var(--smoke-color);
+  }
 }
 
 @media (max-width: 1000px) {

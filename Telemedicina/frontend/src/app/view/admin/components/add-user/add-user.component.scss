@@ -1,13 +1,62 @@
-.appointment-modal-card {
-  margin-bottom: 70px;
+:host {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 ion-header {
   padding-left: 10px;
+  flex-shrink: 0;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 ion-segment {
   margin: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--ion-background-color, #fff);
+
+  ion-segment-button {
+    --padding-start: 10px;
+    --padding-end: 10px;
+    flex-direction: row;
+    align-items: center;
+
+    .segment-button {
+      display: flex;
+      flex-direction: row;
+      font-size: 1rem;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+
+      ion-icon {
+        width: 30px;
+        height: 30px;
+      }
+    }
+  }
+
+  @media (max-width: 599px) {
+    ion-segment-button {
+      ion-label {
+        display: none;
+      }
+
+      ion-icon {
+        font-size: 1.4rem;
+        margin: 0;
+      }
+    }
+  }
 }
 
 .form-container {

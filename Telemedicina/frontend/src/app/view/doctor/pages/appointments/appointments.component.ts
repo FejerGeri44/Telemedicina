@@ -396,7 +396,7 @@ export class AppointmentsComponent implements OnInit{
       componentProps: {
         appointment: appointment
       },
-      cssClass: 'profile-view-modal'
+      cssClass: 'appointment-review-modal'
     });
 
     await modal.present();

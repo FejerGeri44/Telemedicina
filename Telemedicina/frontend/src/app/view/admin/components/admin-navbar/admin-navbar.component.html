@@ -139,7 +139,8 @@
           (click)="inDrawer && closeMobileMenu()"
           [routerLink]="item.route"
           routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"> <ion-icon [name]="item.icon + '-outline'"></ion-icon>
+          [routerLinkActiveOptions]="{ exact: true }">
+        <ion-icon [name]="item.icon + '-outline'"></ion-icon>
         <span>{{ item.label }}</span>
       </li>
     </ul>

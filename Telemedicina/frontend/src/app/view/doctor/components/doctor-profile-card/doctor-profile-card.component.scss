@@ -92,8 +92,7 @@
 
     .pc-details {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px 16px;
+      gap: 10px 30px;
       margin-bottom: 15px;
 
       .pc-item {
@@ -117,6 +116,7 @@
         .value {
           color: var(--text-primary);
           overflow-wrap: break-word;
+          word-break: break-word;
           flex-grow: 1;
         }
       }
@@ -161,7 +161,7 @@
   }
 
   @media (min-width: 600px) {
-    .pc-details-doctor-card {
+    .pc-details {
       grid-template-columns: repeat(2, 1fr);
     }
 
@@ -181,19 +181,8 @@
       }
     }
 
-    .pc-details-doctor-card {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
     .pc-edit-bottom-wrap {
       display: none;
-    }
-
-  }
-
-  @media (max-width: 599px) {
-    .pc-details-doctor-card {
-      grid-template-columns: 1fr;
     }
   }
 }

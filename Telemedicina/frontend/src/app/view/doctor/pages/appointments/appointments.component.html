@@ -94,8 +94,9 @@
                     </div>
 
                     <div class="cell-actions">
-                      <ng-container *ngIf="getApptStatusClass(appt) === ('cell--noShow' || 'cell--accepted')">
+                      <ng-container *ngIf="['cell--noShow', 'cell--accepted'].includes(getApptStatusClass(appt))">
                         <ion-button
+                          size="small"
                           class="btn-primary"
                           (click)="openPatientProfile(appt)">
                           <ion-icon name="person-circle-outline" slot="start"></ion-icon>
@@ -109,6 +110,7 @@
 
                         <ng-container *ngIf="getApptStatusClass(appt) === 'cell--pending'">
                           <ion-button
+                            size="small"
                             class="btn-secondary"
                             (click)="reviewAppointment(appt)">
                             <ion-icon name="help-circle-outline" slot="start"></ion-icon>
@@ -118,6 +120,7 @@
 
                         <ng-container *ngIf="getApptStatusClass(appt) === 'cell--free'">
                           <ion-button
+                            size="small"
                             class="delete"
                             (click)="confirmDeleteAppointment(appt)">
                             <ion-icon name="close-circle-outline" slot="start"></ion-icon>

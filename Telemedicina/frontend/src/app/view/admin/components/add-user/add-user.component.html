@@ -2,25 +2,37 @@
   <ion-toolbar>
     <h2>Felhasználó hozzáadása</h2>
     <ion-buttons slot="end">
-      <ion-button class="close-button" (click)="dismiss()">Bezárás</ion-button>
+      <ion-button fill="clear" (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<div class="modal-body">
   <ion-segment [(ngModel)]="selectedRole" value="patient">
     <ion-segment-button value="patient">
-      <ion-label>Páciens</ion-label>
+      <div class="segment-button">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>Páciens</ion-label>
+      </div>
     </ion-segment-button>
+
     <ion-segment-button value="doctor">
-      <ion-label>Orvos</ion-label>
+      <div class="segment-button">
+        <ion-icon name="medkit-outline"></ion-icon>
+        <ion-label>Orvos</ion-label>
+      </div>
     </ion-segment-button>
+
     <ion-segment-button value="admin">
-      <ion-label>Adminisztrátor</ion-label>
+      <div class="segment-button">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        <ion-label>Adminisztrátor</ion-label>
+      </div>
     </ion-segment-button>
   </ion-segment>
 
-  <!-- Komponensek váltása -->
   <div class="form-container" *ngIf="userService.admin$() | async as user">
     <app-patient-regist
       *ngIf="selectedRole === 'patient'"
@@ -41,4 +53,4 @@
       [adminUser]="user">
     </app-admin-regist>
   </div>
-</ion-content>
+</div>

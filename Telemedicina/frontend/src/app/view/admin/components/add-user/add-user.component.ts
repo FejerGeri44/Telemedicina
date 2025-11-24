@@ -46,7 +46,7 @@ export class AddUserComponent {
     })();
   }
 
-  dismiss() {
+  close() {
     void this.modalCtrl.dismiss();
   }
 }

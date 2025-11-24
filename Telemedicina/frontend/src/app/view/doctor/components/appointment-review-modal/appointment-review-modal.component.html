@@ -9,12 +9,20 @@
   </ion-toolbar>
 </ion-header>
 
-<app-patient-profile-card
-  [user]="appointment.patient"
-  [editable]="false">
-</app-patient-profile-card>
-
-<div class="pending-actions">
-  <ion-button class="btn-accent" (click)="onRejectClick(appointment.id)" [disabled]="isLoading">Elutasítás</ion-button>
-  <ion-button class="btn-primary" (click)="onApproveClick(appointment.id)" [disabled]="isLoading">Jóváhagyás</ion-button>
+<div class="modal-body">
+  <app-patient-profile-card
+    [user]="appointment.patient"
+    [editable]="false">
+  </app-patient-profile-card>
 </div>
+
+<ion-footer class="ion-no-border">
+  <div class="pending-actions">
+    <ion-button class="btn-accent" (click)="onRejectClick(appointment.id)" [disabled]="isLoading">
+      Elutasítás
+    </ion-button>
+    <ion-button class="btn-primary" (click)="onApproveClick(appointment.id)" [disabled]="isLoading">
+      Jóváhagyás
+    </ion-button>
+  </div>
+</ion-footer>
