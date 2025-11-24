@@ -149,8 +149,8 @@
       </div>
 
       <div class="button-row">
-        <ion-button *ngIf="!calledByAdmin" class="btn-secondary back" type="button" (click)="backToDash()">Vissza</ion-button>
-        <ion-button [ngClass]="{ 'full-width': calledByAdmin }" class="btn-primary submit" type="submit" [disabled]="loading">Orvos regisztráció</ion-button>
+        <ion-button *ngIf="!calledByAdmin" class="btn-secondary" type="button" (click)="backToDash()">Vissza</ion-button>
+        <ion-button [ngClass]="{ 'full-width': calledByAdmin }" class="btn-primary" type="submit" [disabled]="loading">Orvos regisztráció</ion-button>
       </div>
 
     </form>

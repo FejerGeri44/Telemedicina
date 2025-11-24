@@ -181,6 +181,14 @@ ion-card {
         width: 100%;
         margin-top: 15px;
 
+        .btn-secondary {
+          width: 30%;
+        }
+
+        .btn-primary {
+          width: 70%;
+        }
+
         ion-button {
           &.full-width {
             width: 100%;
@@ -190,12 +198,12 @@ ion-card {
         @media (max-width: 600px) {
           flex-direction: column;
 
-          ion-button.submit {
+          .btn-primary {
             order: 1;
             width: 98%;
           }
 
-          ion-button.back {
+          .btn-secondary {
             order: 2;
             width: 98%;
           }

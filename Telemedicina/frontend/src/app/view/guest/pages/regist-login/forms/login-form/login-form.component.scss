@@ -96,6 +96,14 @@ ion-input.field.ng-invalid.ng-dirty::part(native) {
   gap: 8px;
   justify-content: flex-end;
   margin-top: 8px;
+
+  .btn-secondary {
+    width: 30%;
+  }
+
+  .btn-primary {
+    width: 70%;
+  }
 }
 
 @media (max-width: 600px) {
@@ -103,12 +111,12 @@ ion-input.field.ng-invalid.ng-dirty::part(native) {
     flex-direction: column;
   }
 
-  ion-button.submit {
+  btn.btn-primary {
     order: 1;
     width: 98%;
   }
 
-  ion-button.back {
+  .btn-secondary {
     order: 2;
     width: 98%;
   }
