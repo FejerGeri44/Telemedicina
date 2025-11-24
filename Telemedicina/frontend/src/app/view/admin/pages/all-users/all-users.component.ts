@@ -256,7 +256,8 @@ export class AllUsersComponent implements OnInit{
         component: PatientProfileCardComponent as any,
         componentProps: {
           user: user,
-          editable: false
+          editable: false,
+          isModal: true
         },
         cssClass: 'profile-view-modal',
         backdropDismiss: true
@@ -267,7 +268,8 @@ export class AllUsersComponent implements OnInit{
         component: DoctorProfileCardComponent as any,
         componentProps: {
           user: user,
-          editable: false
+          editable: false,
+          isModal: true
         },
         cssClass: 'profile-view-modal',
         backdropDismiss: true
@@ -278,7 +280,8 @@ export class AllUsersComponent implements OnInit{
         component: AdminProfileCardComponent as any,
         componentProps: {
           user: user,
-          editable: false
+          editable: false,
+          isModal: true
         },
         cssClass: 'profile-view-modal',
         backdropDismiss: true

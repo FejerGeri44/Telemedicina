@@ -301,7 +301,8 @@ export class AppointmentsComponent implements OnInit{
       component: PatientProfileCardComponent as any,
       componentProps: {
         user: appointment.patient,
-        editable: false
+        editable: false,
+        isModal: true
       },
       cssClass: 'profile-view-modal',
       backdropDismiss: true

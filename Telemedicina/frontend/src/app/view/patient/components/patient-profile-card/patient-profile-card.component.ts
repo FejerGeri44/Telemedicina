@@ -3,6 +3,7 @@ import {DatePipe, NgForOf, NgIf, NgOptimizedImage} from '@angular/common';
 import {formatPhoneNumber, formatTaj, getAge, getUserRoleLabel} from '../../../../utils/formatProfileData';
 import {PatientItem} from '../../../../utils/interfaces/patient.interface';
 import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
+import {ModalController} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-patient-profile-card',
@@ -20,7 +21,10 @@ import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
 export class PatientProfileCardComponent {
   @Input({ required: true }) user!: PatientItem | undefined;
   @Input({ required: true }) editable = false;
+  @Input() isModal: boolean = false;
   @Output() edit = new EventEmitter<void>();
+
+  constructor(private modalCtrl: ModalController) {}
 
   iconFor(name: string): string | null {
     const n = (name || '').toLowerCase();
@@ -30,6 +34,10 @@ export class PatientProfileCardComponent {
     if (n.includes('gyógyszer')) return 'bandage-outline';
     if (n.includes('diéta')) return 'leaf-outline';
     return null;
+  }
+
+  close() {
+    void this.modalCtrl.dismiss();
   }
 
   protected readonly formatPhoneNumber = formatPhoneNumber;

@@ -153,7 +153,7 @@
 .text-center { justify-content: center; }
 
 .form-wrap {
-  width: 95%;
+  width: calc(100% - 40px);
   max-width: 1000px;
   margin: 40px auto;
   background: #fff;
@@ -289,12 +289,30 @@ ion-item.custom-item {
   display: block;
   font-size: 24px;
   font-weight: 700;
-  color: #8b5cf6;
+  color: var(--secondary);
 }
 .no-data-sub {
   display: block;
   margin-top: 8px;
   color: #6b7280;
+}
+
+@media (max-width: 1000px) {
+  .message-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .message-table {
+    border-collapse: collapse;
+    background-color: white;
+  }
+  .form-wrap {
+    margin: 20px auto;
+    padding: 12px;
+    border-radius: 12px;
+  }
 }
 
 @media (max-width: 800px) {
@@ -321,22 +339,5 @@ ion-item.custom-item {
     width: 100%;
     max-width: unset;
     order: 2;
-  }
-}
-@media (max-width: 1000px) {
-  .message-table-scroll {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .message-table {
-    border-collapse: collapse;
-    background-color: white;
-  }
-  .form-wrap {
-    margin: 20px auto;
-    padding: 12px;
-    border-radius: 12px;
   }
 }

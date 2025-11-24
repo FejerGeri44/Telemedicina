@@ -1,3 +1,14 @@
+<ion-header *ngIf="isModal">
+  <ion-toolbar>
+    <ion-title>Orvosi profil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
 <ion-card class="doctor-card">
   <ion-toolbar class="dpc-header">
     <div slot="start" class="dpc-left">

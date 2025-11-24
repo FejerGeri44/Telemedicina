@@ -173,7 +173,7 @@ export class DoctorSearchComponent implements OnInit{
       componentProps: {
         doctorData: doctor,
       },
-      cssClass: 'registerTo-appointment-modal'
+      cssClass: 'appointment-booking-modal'
     });
 
     await modal.present();
@@ -186,9 +186,11 @@ export class DoctorSearchComponent implements OnInit{
       componentProps: {
         user: doctor,
         editable: false,
-        canRate: true
+        canRate: true,
+        isModal: true
       },
-      cssClass: 'profile-view-modal'
+      cssClass: 'profile-view-modal',
+      backdropDismiss: true
     });
 
     await modal.present();

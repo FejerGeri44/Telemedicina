@@ -1,3 +1,14 @@
+<ion-header *ngIf="isModal">
+  <ion-toolbar>
+    <ion-title>Páciensi profil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
 <ion-card class="patient-card">
   <ion-toolbar class="pc-header">
     <div slot="start" class="pc-left">

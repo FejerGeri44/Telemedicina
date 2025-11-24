@@ -10,18 +10,55 @@
   --light-text-color: #ffffff;
 }
 
-ion-content {
-  --padding-top: 24px;
-  --padding-end: 28px;
-  --padding-bottom: 100px;
-  --padding-start: 28px;
-  --background: linear-gradient(to bottom, #fefefe, #f7f7f7);
+:host {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  max-height: 100%;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #fefefe, #f7f7f7);
+}
+
+ion-header {
+  flex-shrink: 0;
+  background: transparent;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 24px 28px 20px;
 
   &.epm-content {
     --padding-top: 28px;
     --padding-end: 32px;
     --padding-bottom: 110px;
     --padding-start: 32px;
+  }
+}
+
+ion-footer {
+  flex-shrink: 0;
+  background: #f7f7f7;
+  padding: 10px 32px 20px;
+
+  .footer-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    .btn-accent {
+      width: 200px;
+      font-weight: 700;
+      --border-radius: 10px;
+      margin: 0;
+      transition: all 0.2s ease-in-out;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(var(--accent-rgb), 0.3);
+      }
+    }
   }
 }
 
@@ -244,29 +281,20 @@ ion-select {
   }
 }
 
-.epm-actions {
-  height: 60px;
-  position: sticky;
-  width: calc(100% + 62px);
-  bottom: -55px;
-  margin-left: -30px;
-  display: flex;
-  justify-content: flex-end;
-  padding: 15px 0 10px;
-  backdrop-filter: blur(4px);
-  z-index: 5;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+ion-footer {
+  width: calc(100% - 40px);
+  flex-shrink: 0;
+  padding: 10px 20px 20px;
 
-  .btn-accent {
-    margin-right: 30px;
-    width: 200px;
-    font-weight: 700;
-    --border-radius: 10px;
-    transition: all 0.2s ease-in-out;
+  .footer-actions {
+    display: flex;
+    justify-content: flex-end;
 
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(var(--accent-rgb), 0.3);
+    .btn-accent {
+      width: 100%;
+      max-width: 200px;
+      font-weight: 700;
+      --border-radius: 10px;
     }
   }
 }

@@ -9,7 +9,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="epm-content">
+<div class="modal-body">
   <section class="epm-header">
     <div class="pc-avatar">
       <img
@@ -34,10 +34,10 @@
     </div>
   </section>
 
-  <form [formGroup]="editProfileForm" (ngSubmit)="save()">
+  <form [formGroup]="editProfileForm">
     <section class="epm-grid">
       <div class="col">
-        <ion-item [lines]="this.platform.isIos  ? 'full' : 'none'">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
           <ion-label class="custom-label" position="stacked">Név</ion-label>
           <ion-input
             class="custom-input"
@@ -48,7 +48,7 @@
           </ion-input>
         </ion-item>
 
-        <ion-item [lines]="this.platform.isIos  ? 'full' : 'none'">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
           <ion-label class="custom-label" position="stacked">Cím</ion-label>
           <ion-input
             class="custom-input"
@@ -61,7 +61,7 @@
       </div>
 
       <div class="col">
-        <ion-item [lines]="this.platform.isIos  ? 'full' : 'none'">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
           <ion-label class="custom-label" position="stacked">Mobil</ion-label>
           <ion-input
             class="custom-input"
@@ -72,7 +72,7 @@
           </ion-input>
         </ion-item>
 
-        <ion-item [lines]="this.platform.isIos  ? 'full' : 'none'">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
           <ion-label class="custom-label" position="stacked">Otthoni telefon</ion-label>
           <ion-input
             class="custom-input"
@@ -98,7 +98,7 @@
           </ion-input>
         </ion-item>
 
-        <ion-item [lines]="this.platform.isIos  ? 'full' : 'none'">
+        <ion-item [lines]="this.platform.isIos ? 'full' : 'none'">
           <ion-label class="custom-label" position="stacked">Testsúly (kg)</ion-label>
           <ion-input
             class="custom-input"
@@ -161,14 +161,16 @@
           <ion-icon name="close-circle" (click)="removeTag(i)"></ion-icon> </ion-chip>
       </div>
     </section>
-
-    <div class="epm-actions">
-      <ion-button
-        class="btn-accent"
-        type="submit"
-        [disabled]="savingData || editProfileForm.invalid || (!editProfileForm.dirty && !file)">
-        Mentés
-      </ion-button>
-    </div>
   </form>
-</ion-content>
+</div>
+
+<ion-footer class="ion-no-border">
+  <div class="footer-actions">
+    <ion-button
+      class="btn-accent"
+      (click)="save()"
+      [disabled]="savingData || editProfileForm.invalid || (!editProfileForm.dirty && !file)">
+      Mentés
+    </ion-button>
+  </div>
+</ion-footer>

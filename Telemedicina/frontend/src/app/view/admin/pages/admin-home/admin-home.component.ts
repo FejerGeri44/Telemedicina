@@ -140,7 +140,7 @@ export class AdminHomeComponent implements OnInit{
 
     const modal = await this.modalCtrl.create({
       component: AdminEditProfileModalComponent as any,
-      cssClass: 'Admin-profile-edit-modal',
+      cssClass: 'profile-edit-modal',
       componentProps: {
         user
       }

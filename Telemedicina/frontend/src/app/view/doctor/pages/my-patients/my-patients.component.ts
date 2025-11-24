@@ -134,7 +134,8 @@ export class MyPatientsComponent {
       component: PatientProfileCardComponent as any,
       componentProps: {
         user: patient,
-        editable: false
+        editable: false,
+        isModal: true
       },
       cssClass: 'profile-view-modal',
       backdropDismiss: true

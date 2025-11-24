@@ -68,7 +68,7 @@ export class PatientHomeComponent implements OnInit {
 
     const modal = await this.modalCtrl.create({
       component: PatientEditProfileModalComponent as any,
-      cssClass: 'Profile-edit-modal',
+      cssClass: 'profile-edit-modal',
       componentProps: { user }
     });
 

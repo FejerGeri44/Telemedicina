@@ -268,7 +268,7 @@ export class DoctorHomeComponent implements OnInit, OnDestroy{
 
     const modal = await this.modalCtrl.create({
       component: DoctorEditProfileModalComponent as any,
-      cssClass: 'Profile-edit-modal',
+      cssClass: 'profile-edit-modal',
       componentProps: {
         user,
       }
