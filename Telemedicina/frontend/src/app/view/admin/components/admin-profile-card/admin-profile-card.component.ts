@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {DatePipe, NgIf, NgOptimizedImage} from '@angular/common';
+import {NgIf, NgOptimizedImage} from '@angular/common';
 import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {formatPhoneNumber, getUserRoleLabel} from '../../../../utils/formatProfileData';
 import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
@@ -10,8 +10,7 @@ import {ModalController} from '@ionic/angular/standalone';
   imports: [
     ...IONIC_COMPONENTS,
     NgIf,
-    NgOptimizedImage,
-    DatePipe
+    NgOptimizedImage
   ],
   templateUrl: './admin-profile-card.component.html',
   standalone: true,

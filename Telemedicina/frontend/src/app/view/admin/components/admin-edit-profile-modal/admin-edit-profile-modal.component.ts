@@ -8,7 +8,7 @@ import {AdminItem} from '../../../../utils/interfaces/admin.interface';
 import {environment} from '../../../../../../enviroment';
 import {LoggedUser} from '../../../../utils/interfaces/logged-user.interface';
 import {UserService} from '../../../../services/user/user.service';
-import {NgIf, NgOptimizedImage} from "@angular/common";
+import {NgOptimizedImage} from "@angular/common";
 import {mapLoggedToItem} from '../../../../services/user/user.mapper';
 import {PHONE_PATTERN, TEXT_PATTERN} from '../../../../utils/validation-patterns';
 import {PlatformService} from '../../../../services/platform/platform.service';
@@ -20,8 +20,7 @@ import {IONIC_COMPONENTS} from '../../../../shared/ionic-imports';
     ...IONIC_COMPONENTS,
     FormsModule,
     ReactiveFormsModule,
-    NgOptimizedImage,
-    NgIf
+    NgOptimizedImage
   ],
   templateUrl: './admin-edit-profile-modal.component.html',
   standalone: true,
