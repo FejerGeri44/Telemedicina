@@ -1,15 +1,13 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import {UserService} from './services/user/user.service';
-import {filter, Subscription} from 'rxjs';
-import {IONIC_COMPONENTS} from './shared/ionic-imports';
+import {filter, Subscription, switchMap} from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   templateUrl: 'app.component.html',
   imports: [
-    ...IONIC_COMPONENTS,
     RouterOutlet
   ]
 })
@@ -23,13 +21,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.routerSubscription = this.router.events.pipe(
-      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
-    ).subscribe((event: NavigationEnd) => {
-      const currentUrl = event.urlAfterRedirects;
-
-      if (this.shouldRunRefresh(currentUrl)) {
-        this.userService.refresh().subscribe();
-      }
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      filter((event: NavigationEnd) => this.shouldRunRefresh(event.urlAfterRedirects)),
+      switchMap(() => this.userService.refresh())
+    ).subscribe({
+      next: (res) => console.log('Refresh sikeres', res),
+      error: (err) => console.error('Refresh hiba', err)
     });
   }
 
