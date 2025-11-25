@@ -21,7 +21,7 @@ export class AdminRoleGuard implements CanActivate {
     return this.userService.userWithInitialLoad$().pipe(
       map(user => {
         if (!user) {
-          void this.router.navigate(['/error']);
+          void this.router.navigate(['/error'], { replaceUrl: true });
           return false;
         }
 
@@ -30,7 +30,7 @@ export class AdminRoleGuard implements CanActivate {
         if (actualRole === requiredRole) {
           return true;
         } else {
-          void this.router.navigate(['/error']);
+          void this.router.navigate(['/error'], { replaceUrl: true });
           return false;
         }
       })
