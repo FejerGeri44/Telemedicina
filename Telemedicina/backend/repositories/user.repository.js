@@ -1,4 +1,5 @@
 const sql = require('../config/db.config');
+const {supabaseAdmin} = require("../utils/supabaseAdmin");
 
 const UserRepository = {
 
@@ -35,27 +36,6 @@ const UserRepository = {
     return row || null;
   },
 
-  async findByIds(ids, client = sql) {
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return [];
-    }
-
-    const numericIds = ids.map(Number).filter(id => Number.isFinite(id));
-    if (numericIds.length === 0) {
-      return [];
-    }
-
-    return client`
-      SELECT id, email, name, role,
-             "phoneNumber" AS "phoneNumber",
-             address,
-             "pictureUrl"  AS "pictureUrl",
-             "authUid"     AS "authUid"
-      FROM users
-      WHERE id IN (${client(numericIds)})
-    `;
-  },
-
   async findByEmail(email, client = sql) {
     const [row] = await client`
       SELECT id, email, name, role,
@@ -88,9 +68,20 @@ const UserRepository = {
     const [row] = await client`
       DELETE FROM users
       WHERE id = ${id}
-      RETURNING id
+        RETURNING id, "authUid"
     `;
-    return !!row;
+
+    if (!row) return false;
+
+    if (row.authUid) {
+      const { error } = await supabaseAdmin.auth.admin.deleteUser(row.authUid);
+
+      if (error) {
+        console.error('Hiba a Supabase Auth user törlésekor:', error);
+      }
+    }
+
+    return true;
   },
 };
 
