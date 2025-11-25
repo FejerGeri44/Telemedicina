@@ -21,7 +21,7 @@
 
         <ion-title>{{ chatTitle }}</ion-title>
 
-        <ion-buttons slot="end">
+        <ion-buttons *ngIf="!isCalledByAdmin" slot="end">
           <ion-button (click)="toggleChat()" aria-label="Chat bezárása">
             <ion-icon slot="icon-only" name="close"></ion-icon>
           </ion-button>

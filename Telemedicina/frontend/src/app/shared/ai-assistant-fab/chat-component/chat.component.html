@@ -6,9 +6,10 @@
       <ion-item
         class="chat-message-item"
         [ngClass]="{'user-message': msg.sender === 'user', 'assistant-message': msg.sender === 'assistant'}">
+
         <div class="message-bubble">
           <p>{{ msg.text }}</p>
-          <ion-note slot="end" class="message-timestamp">
+          <ion-note class="message-timestamp">
             {{ msg.timestamp | date:'HH:mm' }}
           </ion-note>
         </div>
@@ -16,12 +17,13 @@
 
       <div
         class="quick-starts-area"
-        *ngIf="i === 0 && showQuickStarts"> <ion-chip
-        *ngFor="let item of quickStarts"
-        (click)="handleQuickStart(item)">
-        <ion-icon [name]="item.icon"></ion-icon>
-        <ion-label>{{ item.label }}</ion-label>
-      </ion-chip>
+        *ngIf="i === 0 && showQuickStarts">
+        <ion-chip
+          *ngFor="let item of quickStarts"
+          (click)="handleQuickStart(item)"
+          outline="false"> <ion-icon [name]="item.icon"></ion-icon>
+          <ion-label>{{ item.label }}</ion-label>
+        </ion-chip>
       </div>
 
     </ng-container>
@@ -30,18 +32,19 @@
   <div class="input-area">
     <ion-textarea
       class="message-input"
-      label="Üzenet küldése..."
-      labelPlacement="floating"
-      fill="outline"
+      placeholder="Írjon üzenetet..."
+      fill="none"
       rows="1"
       autoGrow="true"
       [(ngModel)]="message"
-      (keyup.enter)="sendMessage()"> </ion-textarea>
+      (keyup.enter)="sendMessage()">
+    </ion-textarea>
+
     <ion-button
       class="send-button"
       [disabled]="isSendButtonDisabled"
-      (click)="sendMessage()" shape="round">
-      <ion-icon name="send" slot="icon-only"></ion-icon>
+      (click)="sendMessage()">
+      <ion-icon name="send" color="light"></ion-icon>
     </ion-button>
   </div>
 </div>
