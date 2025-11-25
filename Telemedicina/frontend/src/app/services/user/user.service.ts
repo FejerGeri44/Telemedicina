@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, first, Observable, Subscription, switchMap, timer } from 'rxjs';
+import { BehaviorSubject, first, Observable, Subscription, switchMap, timer, catchError, of } from 'rxjs';
 import { map, shareReplay, tap } from 'rxjs/operators';
 import { FrontendUser, LoggedUser, mapLoggedToItem, isPatientItem, isDoctorItem, isAdminItem } from './user.mapper';
 import { AdminItem } from '../../utils/interfaces/admin.interface';
@@ -29,6 +29,12 @@ export class UserService {
         tap(user => {
           this._user$.next(user);
           this._isLoaded$.next(true);
+        }),
+        catchError((error) => {
+          console.log('Nincs bejelentkezve vagy API hiba:', error);
+          this._user$.next(null);
+          this._isLoaded$.next(true);
+          return of(null);
         }),
         first(),
         shareReplay(1)

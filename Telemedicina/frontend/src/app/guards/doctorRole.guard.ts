@@ -21,7 +21,7 @@ export class DoctorRoleGuard implements CanActivate {
     return this.userService.userWithInitialLoad$().pipe(
       map(user => {
         if (!user) {
-          void this.router.navigate(['/']);
+          void this.router.navigate(['/error']);
           return false;
         }
 
