@@ -1,26 +1,29 @@
 <ng-container *ngIf="!(isOpen | async); else chatWindow">
   <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="ai-fab-container">
-    <ion-fab-button (click)="toggleChat()">
-      <ion-icon name="chatbubbles"></ion-icon>
-    </ion-fab-button>
-
     <div class="initial-message-bubble" *ngIf="showInitialMessage">
       {{ quickStartText }}
     </div>
+
+    <ion-fab-button (click)="toggleChat()">
+      <ion-icon name="chatbox-ellipses"></ion-icon>
+    </ion-fab-button>
   </ion-fab>
 </ng-container>
 
 <ng-template #chatWindow>
   <div [ngClass]="isCalledByAdmin ? 'admin-ai-chat-window' : 'default-ai-chat-window'">
-    <ion-header class="chat-header">
-      <ion-toolbar color="secondary">
+
+    <ion-header class="chat-header" mode="ios">
+      <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-icon class="header-icon" name="logo-reddit"></ion-icon>
+          <ion-icon class="header-icon" name="sparkles"></ion-icon>
         </ion-buttons>
+
         <ion-title>{{ chatTitle }}</ion-title>
+
         <ion-buttons slot="end">
           <ion-button (click)="toggleChat()" aria-label="Chat bezárása">
-            <ion-icon name="close"></ion-icon>
+            <ion-icon slot="icon-only" name="close"></ion-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
