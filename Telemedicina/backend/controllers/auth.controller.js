@@ -218,6 +218,7 @@ const login = async (req, res) => {
       secure: true,
       maxAge: 3600_000,
       path: '/',
+      partitioned: true
     });
 
     const { user: u, related } = await buildProfile(existingUser);
