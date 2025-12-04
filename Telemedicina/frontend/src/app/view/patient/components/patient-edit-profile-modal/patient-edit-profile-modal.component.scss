@@ -13,8 +13,8 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  max-height: 100dvh;
+  height: auto;
+  max-height: 100%;
   overflow: hidden;
   background: linear-gradient(to bottom, #fefefe, #f7f7f7);
 }

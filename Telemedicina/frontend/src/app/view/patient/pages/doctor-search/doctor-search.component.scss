@@ -16,14 +16,25 @@
   margin: 20px auto 0;
   padding: 0 10px;
 
-  ion-searchbar {
+  ion-searchbar.ios-style {
     display: flex;
     justify-content: center;
     width: 100%;
     max-width: 400px;
-    padding: 0;
-    --border-radius: 5px;
     margin: auto;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-inline: 0;
+    --background: #ffffff;
+    --color: #333333;
+    --placeholder-color: #8e8e93;
+    --icon-color: #8e8e93;
+    --border-radius: 10px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    --box-shadow: none;
+    box-shadow: none;
+    height: 44px;
   }
 
   .search-button {
