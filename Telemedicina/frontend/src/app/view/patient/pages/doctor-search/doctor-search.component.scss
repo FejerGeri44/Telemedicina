@@ -9,19 +9,24 @@
 
 .search-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   width: 100%;
   max-width: 500px;
   margin: 20px auto 0;
   padding: 0 10px;
 
-  ion-searchbar.ios-style {
+  .search-input-row {
     display: flex;
-    justify-content: center;
+    flex-direction: row;
+    align-items: center;
     width: 100%;
-    max-width: 400px;
-    margin: auto;
+    gap: 10px;
+  }
+
+  ion-searchbar {
+    padding: 0;
     --background: #ffffff;
     --color: #333333;
     --placeholder-color: #8e8e93;
@@ -32,17 +37,19 @@
     --box-shadow: none;
     box-shadow: none;
     height: 44px;
+    flex-grow: 1;
   }
 
   .search-button {
     height: 50px;
-    width: 70px;
+    width: 100%;
     --border-radius: 10px;
     border-radius: 10px;
     --background: var(--primary);
     --color: #ffffff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
+    margin-top: 5px;
   }
 
   .search-button:hover {

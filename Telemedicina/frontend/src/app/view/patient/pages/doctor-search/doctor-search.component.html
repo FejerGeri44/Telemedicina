@@ -2,27 +2,30 @@
   <div class="header">
     <div class="upper-section">
       <div class="search-container">
-        <ion-searchbar
-          (ionInput)="onSearchInput($event)"
-          (ionClear)="clearSearch()"
-          [value]="inputSearchTerm"
-          placeholder="Keresés név alapján..."
-          animated="true"
-          clear-icon="close-circle">
-        </ion-searchbar>
 
-        <div class="filter-container">
-          <ion-icon name="options" (click)="toggleFilters()"></ion-icon>
+        <div class="search-input-row">
+          <ion-searchbar
+            (ionInput)="onSearchInput($event)"
+            (ionClear)="clearSearch()"
+            [value]="inputSearchTerm"
+            placeholder="Keresés név alapján..."
+            animated="true"
+            clear-icon="close-circle">
+          </ion-searchbar>
 
-          <ion-list *ngIf="showFilters" class="filter-panel">
-            <ion-item *ngFor="let specialty of specialties" lines="none" (click)="toggleSpecialty(specialty)" button>
-              <ion-checkbox
-                slot="start"
-                [checked]="selectedSpecialties.includes(specialty)">
-              </ion-checkbox>
-              <ion-label>{{ specialty }}</ion-label>
-            </ion-item>
-          </ion-list>
+          <div class="filter-container">
+            <ion-icon name="options" (click)="toggleFilters()"></ion-icon>
+
+            <ion-list *ngIf="showFilters" class="filter-panel">
+              <ion-item *ngFor="let specialty of specialties" lines="none" (click)="toggleSpecialty(specialty)" button>
+                <ion-checkbox
+                  slot="start"
+                  [checked]="selectedSpecialties.includes(specialty)">
+                </ion-checkbox>
+                <ion-label>{{ specialty }}</ion-label>
+              </ion-item>
+            </ion-list>
+          </div>
         </div>
 
         <ion-button

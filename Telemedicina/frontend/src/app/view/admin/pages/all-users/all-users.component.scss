@@ -37,7 +37,6 @@ ion-card-title {
   justify-content: center;
 }
 
-/* ====== FILTER SÁV ====== */
 .filters {
   background: var(--primary);
   display: flex;
@@ -68,6 +67,11 @@ ion-card-title {
   padding: 0 5px 0 0;
   --border-radius: 5px;
 }
+
+.searchbar-input.sc-ion-searchbar-ios {
+  background: unset;
+}
+
 .filters .pill {
   width: auto;
   margin: auto;
