@@ -9,7 +9,7 @@ app.use(cors({
   origin: [
     'http://localhost:4200',
     'https://telemedicina-carelink.vercel.app',
-    'http://127.0.0.1:5000'
+    'http://127.0.0.1:8080'
 ],
   credentials: true,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
