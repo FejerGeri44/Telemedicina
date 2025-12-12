@@ -2,7 +2,6 @@ const sql = require('../config/db.config');
 const {supabaseAdmin} = require("../utils/supabaseAdmin");
 
 const UserRepository = {
-
   async create({
                  email, name, role,
                  phoneNumber = null,

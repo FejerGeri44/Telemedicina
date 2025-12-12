@@ -22,7 +22,6 @@ import {IONIC_COMPONENTS} from '../ionic-imports';
 })
 export class SystemMessageModalComponent {
   @Input() messages: SystemMessage[] = [];
-
   currentIndex = 0;
 
   constructor(private modalCtrl: ModalController) {}
