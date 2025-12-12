@@ -25,7 +25,7 @@ export class AppComponent implements OnInit, OnDestroy {
       filter((event: NavigationEnd) => this.shouldRunRefresh(event.urlAfterRedirects)),
       switchMap(() => this.userService.refresh())
     ).subscribe({
-      next: (res) => console.log('Refresh sikeres', res),
+      next: (res) => {},
       error: (err) => console.error('Refresh hiba', err)
     });
   }

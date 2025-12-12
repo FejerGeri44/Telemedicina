@@ -1,5 +1,6 @@
 .tabs {
   width: 100%;
+  margin: 10px 0;
 }
 
 .segment-button {
@@ -125,7 +126,6 @@
   background:#f8fafc;
 }
 
-/* címoszlop: egy sor, ellipszis */
 .title-td {
   font-weight: 600; color:#0f172a;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -138,7 +138,6 @@
   overflow-y: auto;
 }
 
-/* akció gomb */
 .actions .ghost-btn {
   --padding-start: 6px; --padding-end: 6px;
   --border-radius: 10px;
@@ -149,7 +148,6 @@
   background: #fff1f2;
 }
 
-/* középre igazítás util */
 .text-center { justify-content: center; }
 
 .form-wrap {
@@ -190,12 +188,10 @@ ion-icon {
   width: 50%;
 }
 
-/* Mezők egységes függőleges ritmusa */
 .field {
   margin: 10px 0;
 }
 
-/* Ion item belső padding finomhangolása */
 ion-item {
   --inner-padding-top: 8px;
   --inner-padding-bottom: 8px;
@@ -216,17 +212,14 @@ ion-datetime {
   max-width: unset;
 }
 
-/* Szövegmező kényelmes magasság */
 ion-textarea {
   min-height: 250px;
 }
 
-/* Select placeholder szín finom */
 ion-select::part(placeholder) {
   color: var(--ion-color-medium);
 }
 
-/* Dátumválasztó */
 ion-datetime {
   width: 100%;
 }
@@ -309,9 +302,9 @@ ion-item.custom-item {
     background-color: white;
   }
   .form-wrap {
-    margin: 20px auto;
-    padding: 12px;
-    border-radius: 12px;
+    margin: 30px auto;
+    padding: 10px;
+    border-radius: 10px;
   }
 }
 

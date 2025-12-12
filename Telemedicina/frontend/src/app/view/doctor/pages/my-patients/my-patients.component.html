@@ -4,15 +4,16 @@
       (ionInput)="onSearchChange($event)"
       (ionClear)="clearSearch()"
       [value]="searchTerm"
-      [debounce]="300"
       placeholder="Keresés név alapján..."
       animated="true"
       clear-icon="close-circle">
     </ion-searchbar>
+
     <ion-button
       (click)="applySearch()"
       class="search-button">
-      <ion-icon name="search" slot="icon-only"></ion-icon>
+      <ion-icon name="search" slot="start"></ion-icon>
+      Keresés
     </ion-button>
   </div>
 

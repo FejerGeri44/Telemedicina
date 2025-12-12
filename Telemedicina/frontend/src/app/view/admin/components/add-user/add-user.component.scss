@@ -7,8 +7,11 @@
 }
 
 ion-header {
-  padding-left: 10px;
   flex-shrink: 0;
+
+  h2 {
+    margin-left: 10px;
+  }
 }
 
 .modal-body {
