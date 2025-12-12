@@ -28,20 +28,14 @@
 
   .search-button {
     height: 50px;
-    width: 50px;
+    width: 100%;
     --border-radius: 10px;
     border-radius: 10px;
     --background: var(--primary);
     --color: #ffffff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
-
-    &:hover {
-      @media (min-width: 768px) {
-        --background: rgba(67, 100, 141, 0.9);
-        transform: translateY(-2px);
-      }
-    }
+    margin-top: 5px;
   }
 }
 
