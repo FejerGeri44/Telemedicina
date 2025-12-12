@@ -46,9 +46,9 @@ export class AdminEditProfileModalComponent implements OnInit {
 
   ngOnInit() {
     this.editProfileForm = this.fb.group({
-      name: [this.user.user.name || '', [Validators.pattern(TEXT_PATTERN)]],
-      address: [this.user.user.address || '', [Validators.pattern(TEXT_PATTERN)]],
-      phoneNumber: [this.user.user.phoneNumber || '', [Validators.pattern(PHONE_PATTERN)]],
+      name: [this.user.user.name || null, [Validators.pattern(TEXT_PATTERN)]],
+      address: [this.user.user.address || null, [Validators.pattern(TEXT_PATTERN)]],
+      phoneNumber: [this.user.user.phoneNumber || null, [Validators.pattern(PHONE_PATTERN)]],
     });
   }
 

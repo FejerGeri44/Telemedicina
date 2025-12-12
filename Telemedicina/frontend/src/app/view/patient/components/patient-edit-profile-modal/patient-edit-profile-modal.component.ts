@@ -59,10 +59,10 @@ export class PatientEditProfileModalComponent implements  OnInit {
 
   ngOnInit() {
     this.editProfileForm = this.fb.group({
-      name: [this.user.user.name || '', [Validators.pattern(TEXT_PATTERN)]],
-      address: [this.user.user.address || '', [Validators.pattern(TEXT_PATTERN)]],
-      phoneNumber: [this.user.user.phoneNumber || '', [Validators.pattern(PHONE_PATTERN)]],
-      homePhone: [this.user.patient.homePhone || '', [Validators.pattern(PHONE_PATTERN)]],
+      name: [this.user.user.name || null, [Validators.pattern(TEXT_PATTERN)]],
+      address: [this.user.user.address || null, [Validators.pattern(TEXT_PATTERN)]],
+      phoneNumber: [this.user.user.phoneNumber || null, [Validators.pattern(PHONE_PATTERN)]],
+      homePhone: [this.user.patient.homePhone || null, [Validators.pattern(PHONE_PATTERN)]],
       height: [this.user.patient.height || null, [Validators.min(50), Validators.max(300)]],
       weight: [this.user.patient.weight || null, [Validators.min(10), Validators.max(500)]],
       tags: this.fb.array(this.user.patient.tags?.map(t => this.createTagGroup(t.id, t.tag_name, t.tag_value)) || [])
