@@ -283,9 +283,10 @@ exports.deleteUsers = async (req, res) => {
       return res.status(400).json({ message: 'Nem található érvényes felhasználó ID.' });
     }
 
-    const deletedRows = await deleteUsersByIds(ids, supabaseAdmin);
+    const deletedRows = await deleteUsersByIds(ids);
 
     const deletedCount = deletedRows.length;
+
     const roles = Array.from(
       new Set(
         deletedRows
@@ -295,18 +296,19 @@ exports.deleteUsers = async (req, res) => {
     );
 
     return res.status(200).json({
-      message: deletedCount > 0 ? 'Felhasználók sikeresen törölve.' : 'Nem történt törlés.',
+      message: deletedCount > 0
+        ? `${deletedCount} felhasználó sikeresen törölve.`
+        : 'Nem történt törlés (lehet, hogy az ID-k nem léteztek).',
       roles,
     });
+
   } catch (err) {
     const status = err.code || 500;
     const message = err.message || 'Szerverhiba a felhasználók törlése közben.';
 
-    if (status >= 500) {
-      console.error('❌ Hiba a users törlése közben:', err);
-    }
+    console.error('❌ Hiba a users törlése közben:', err);
 
-    return res.status(status).json({ message, error: String(err?.error || err?.message || err) });
+    return res.status(status).json({ message, error: String(err?.message || err) });
   }
 };
 

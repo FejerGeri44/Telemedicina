@@ -265,16 +265,6 @@ async function deleteAccount(req, res) {
       return res.status(401).json({ message: 'Nincs bejelentkezve / Felhasználó azonosító hiányzik.' });
     }
 
-    const baseUser = await UserRepository.findById(userId);
-    if (!baseUser || !baseUser.authUid) {
-      console.warn(`Felhasználó ${userId} authUid nélkül. Folytatás a lokális törléssel.`);
-    } else {
-      const { error: deleteAuthErr } = await supabaseAdmin.auth.admin.deleteUser(baseUser.authUid);
-      if (deleteAuthErr) {
-        console.error('Hiba a Supabase Auth felhasználó törlésekor:', deleteAuthErr);
-      }
-    }
-
     const isDeleted = await UserRepository.deleteById(userId);
 
     if (!isDeleted) {

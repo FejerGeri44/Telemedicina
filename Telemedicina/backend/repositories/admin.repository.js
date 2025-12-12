@@ -1,4 +1,5 @@
 const sql = require('../config/db.config');
+const {deleteById} = require("./user.repository");
 
 const AdminRepository = {
   async create({ userId, registDate = null }, client = sql) {
@@ -334,24 +335,26 @@ const AdminRepository = {
     return result;
   },
 
-  async deleteUsersByIds(userIds, supabaseAdmin) {
-    const { data: deletedRows, error } = await supabaseAdmin
-      .from('users')
-      .delete()
-      .in('id', userIds)
-      .select('id,role');
+  async deleteUsersByIds(ids) {
+    const usersToDelete = await sql`
+    SELECT id, role
+    FROM users
+    WHERE id IN ${sql(ids)}
+  `;
 
-    if (error) {
-      console.error('❌ Supabase delete error in repository:', error);
-      throw {
-        type: 'DatabaseError',
-        message: 'Szerverhiba a felhasználók törlése közben.',
-        error: String(error.message || error),
-        code: 500
-      };
+    if (!usersToDelete || usersToDelete.length === 0) {
+      return [];
     }
 
-    return deletedRows ?? [];
+    const deletePromises = usersToDelete.map(async (user) => {
+      const success = await deleteById(user.id);
+
+      return success ? user : null;
+    });
+
+    const results = await Promise.all(deletePromises);
+
+    return results.filter(user => user !== null);
   }
 };
 
