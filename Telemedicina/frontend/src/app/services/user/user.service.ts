@@ -134,14 +134,13 @@ export class UserService {
     this.stopSessionTimer();
     this._user$.next(null);
 
-    // ITT KÉRJÜK EL A ROUTERT:
     const router = this.injector.get(Router);
 
     this.http.post<void>(`${environment.apiUrl}/auth/logout`, {}, { withCredentials: true })
       .pipe(first())
       .subscribe(() => {
         this.toast.show("Munkamenet lejárt, lépj be ismét!", "warning");
-        void router.navigate(['/regist-login']); // this.router helyett router
+        void router.navigate(['/regist-login']);
       });
   }
 
