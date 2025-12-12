@@ -29,6 +29,7 @@
   .search-button {
     height: 50px;
     width: 100%;
+    max-width: 400px;
     --border-radius: 10px;
     border-radius: 10px;
     --background: var(--primary);
