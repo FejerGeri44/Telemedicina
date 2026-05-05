@@ -33,3 +33,48 @@ npm install
 # Backend mappában
 cd ../backend
 npm install
+```
+
+## Környezeti változók beállítása
+
+A futtatáshoz .env fájlok létrehozása szükséges a frontend és a backend mappákban. Az alábbi változókat kell definiálni:
+
+```bash
+SUPABASE_URL: A Supabase projekt API végpontja.
+
+SUPABASE_KEY: Anonim (public) API kulcs a Supabase eléréséhez.
+
+JWT_SECRET: A backend által használt saját token aláíró kulcs.
+
+cryptoKey: A frontend oldali lokális adattárolás (Local Storage) titkosítási kulcsa.
+```
+
+##Az alkalmazás indítása
+
+### Backend indítása:
+
+A backend mappában futtassa a következő parancsot:
+
+```bash
+npm start
+```
+
+### Frontend indítása:
+
+A frontend mappában futtassa a következő parancsot:
+
+```bash
+ng serve
+```
+
+Az alkalmazás alapértelmezetten a **http://localhost:4200** címen lesz elérhető.
+
+## Tesztelés és demó adatok
+
+Az alkalmazás tartalmaz előre feltöltött tesztadatokat (Orvosok, Páciensek, Időpontok) a Supabase adatbázisban.
+
+Tesztelés adminisztrátor fiókhoz:
+
+* Email: admin@admmin.com
+
+* Jelszó: Administrator1
