@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "audience": "patient",
+    "locale": "hu-HU"
+  },
+  "greeting": {
+    "quickStartText": "Szia, miben segíthetek?",
+    "quickStarts": [
+      {
+        "id": 0,
+        "icon": "send",
+        "label": "Navigáció",
+        "prompt": "Hogyan jutok el hozzátok?",
+        "reply": "A rendelőnk címe: 1111 Budapest, Minta u. 1. Tömegközlekedéssel: M4 metró, Minta tér megálló; autóval az udvarban parkolás lehetséges."
+      },
+      {
+        "id": 1,
+        "icon": "medkit",
+        "label": "Orvos keresés",
+        "prompt": "Szeretnék orvost választani",
+        "reply": "Segítek! Add meg a szakterületet (pl. kardiológia), és mutatom a rendelőben elérhető orvosokat és időpontokat."
+      },
+      {
+        "id": 2,
+        "icon": "flask",
+        "label": "Gyógyszer",
+        "prompt": "Információ egy gyógyszerről",
+        "reply": "Írd be a gyógyszer nevét (pl. Algopyrin), és megmutatom az adagolást, ellenjavallatokat és gyakori kérdéseket."
+      }
+    ]
+  },
+  "intents": [
+    {
+      "id": 0,
+      "patterns": [
+        "fejfájás"
+      ],
+      "response": "Próbáljon meg bevenni maximálisan napi 2 darab fájdalomcsillapítót!"
+    }
+  ],
+  "fallback": {
+    "suggestionText": "Ebben nem vagyok biztos. Javaslom, hogy vedd fel a kapcsolatot szakemberrel.",
+    "suggestions": [
+      {
+        "id": 0,
+        "icon": "calendar",
+        "label": "Időpontfoglalás",
+        "prompt": "Szeretnék időpontot foglalni orvoshoz.",
+        "reply": "Rendben! Kérlek, add meg, milyen szakterületre vagy orvoshoz szeretnél időpontot foglalni, és megmutatom a legközelebbi szabad időpontokat."
+      },
+      {
+        "id": 1,
+        "icon": "chatbubble-ellipses",
+        "label": "Üzenet az asszisztensnek",
+        "prompt": "Szeretnék üzenetet küldeni az asszisztensnek.",
+        "reply": "Természetesen! Írd le röviden, miben segíthetek — például kérhetsz tájékoztatást a rendelési időkről, gyógyszerfelírásról vagy vizsgálati eredményekről."
+      }
+    ]
+  }
+}
