@@ -153,8 +153,8 @@ export class DoctorApprovalsComponent implements OnInit{
 
   denialConfirmation(doctor: DoctorItem) {
     void this.alert.show(
-      'Engedély megadása',
-      'Biztosan megadja az Orvosnak a regisztrációs engedélyt?',
+      'Orvos elutasítása',
+      'Biztosan elutasítja az Orvos regisztrációját?',
       () => this.denyDoctor(doctor)
     )
   }
