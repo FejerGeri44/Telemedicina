@@ -181,7 +181,10 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Hiányzó access token.' });
     }
 
-    const decoded = jwt.verify(accessToken, process.env.SUPABASE_JWT_SECRET);
+    const decoded = jwt.verify(accessToken, process.env.SUPABASE_JWT_SECRET, {
+      algorithms: ['HS256', 'ES256']
+    });
+
     if (decoded.aud !== 'authenticated') {
       return res.status(401).json({ message: 'Érvénytelen token (audience).' });
     }
