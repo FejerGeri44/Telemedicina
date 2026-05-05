@@ -7,8 +7,8 @@ const DoctorRepository    = require('../repositories/doctor.repository');
 const {buildProfile} = require("../utils/profileBuilder");
 
 const { supabaseAdmin } = require('../utils/supabaseAdmin');
-const PATIENT_DEFAULT_PICTURE = 'https://ubesundbzjtyxxuwmbgg.supabase.co/storage/v1/object/sign/default-profilePictures/patient.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82NTY3MmI1OS1mMmE2LTQyNGItYWU2OC1hOWZlMzEyMTM3YzUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZWZhdWx0LXByb2ZpbGVQaWN0dXJlcy9wYXRpZW50LnBuZyIsImlhdCI6MTc2MTUwOTE1MSwiZXhwIjoxNzkzMDQ1MTUxfQ.xvmkaDIwoHsPgmR6XZRahidlKg7znEf3B25Rfq5jg_Q';
-const DOCTOR_DEFAULT_PICTURE  = 'https://ubesundbzjtyxxuwmbgg.supabase.co/storage/v1/object/sign/default-profilePictures/doctor.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82NTY3MmI1OS1mMmE2LTQyNGItYWU2OC1hOWZlMzEyMTM3YzUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZWZhdWx0LXByb2ZpbGVQaWN0dXJlcy9kb2N0b3IucG5nIiwiaWF0IjoxNzYxNTA5MTM4LCJleHAiOjE3OTMwNDUxMzh9.PNLCo1K7ilfieKqES8DXbjz8mC2-kEyiWtxRGpDskOk';
+const PATIENT_DEFAULT_PICTURE = 'https://vozjenetdqbetssbrrvk.supabase.co/storage/v1/object/public/default-profilePictures/patient.png';
+const DOCTOR_DEFAULT_PICTURE  = 'https://vozjenetdqbetssbrrvk.supabase.co/storage/v1/object/public/default-profilePictures/doctor.png';
 
 function toE164HU(input) {
   if (!input) return null;
